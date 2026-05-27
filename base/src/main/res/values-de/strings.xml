@@ -475,7 +475,7 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="failed_to_update_robert_rules">Die R.O.B.E.R.T-Regeln konnten nicht aktualisiert werden.</string>
     <string name="successfully_updated_robert_rules">Die R. O. B. E. R. T-Regeln wurden erfolgreich aktualisiert.</string>
     <string name="share_app">App teilen</string>
-    <string name="share_app_description">"%s lädt dich ein, sich Windscribe anzuschließen. Gib bei der Anmeldung ihren Benutzernamen an und ihr erhaltet beide 1 GB kostenlose Daten, die euren Konten hinzugefügt werden. Wenn du zum Pro Abonnement wechselst, bekommen sie es auch!\n%s"</string>
+    <string name="share_app_description">"%1$s lädt dich ein, sich Windscribe anzuschließen. Gib bei der Anmeldung ihren Benutzernamen an und ihr erhaltet beide 1 GB kostenlose Daten, die euren Konten hinzugefügt werden. Wenn du zum Pro Abonnement wechselst, bekommen sie es auch!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Immer erlauben\" Standortzugriff erforderlich!</string>
     <string name="enable_location_access">Aktivieren des Standortzugriffs</string>
     <string name="location_permission_required">Standortgenehmigung erforderlich</string>

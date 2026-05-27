@@ -1,6 +1,5 @@
 package com.windscribe.vpn.wsnet
 
-import android.util.Log
 import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetBridgeAPI
 import com.wsnet.lib.WSNetPingManager
@@ -11,7 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Singleton
 
 /**
  * Thread-safe wrapper around WSNet that manages initialization state and provides safe access.
@@ -23,7 +21,6 @@ import javax.inject.Singleton
  * - All methods are thread-safe
  */
 class WSNetWrapper {
-
     private val logger = LoggerFactory.getLogger("wsnet-wrapper")
     private val initialized = AtomicBoolean(false)
     private val _isReady = MutableStateFlow(false)
@@ -51,7 +48,7 @@ class WSNetWrapper {
         languageCode: String,
         persistentSettings: String?,
         ignoreTestDomains: Boolean,
-        amneziaWgVersion: String
+        amneziaWgVersion: String,
     ): Boolean {
         if (initialized.get()) {
             logger.warn("WSNet already initialized")
@@ -72,7 +69,7 @@ class WSNetWrapper {
                 persistentSettings,
                 { log -> logWsNetMessage(log) },
                 ignoreTestDomains,
-                amneziaWgVersion
+                amneziaWgVersion,
             )
             wsNetInstance = WSNet.instance()
             initialized.set(true)
@@ -91,7 +88,7 @@ class WSNetWrapper {
      */
     fun configureAdvancedParameters(
         countryOverride: String?,
-        isProtocolTweaksEnabled: Boolean
+        isProtocolTweaksEnabled: Boolean,
     ) {
         withWSNet { wsNet ->
             try {
@@ -111,17 +108,13 @@ class WSNetWrapper {
      * Check if WSNet is initialized and ready to use.
      * Thread-safe, non-blocking.
      */
-    fun isInitialized(): Boolean {
-        return initialized.get() && WSNet.isValid()
-    }
+    fun isInitialized(): Boolean = initialized.get() && WSNet.isValid()
 
     /**
      * Get the raw WSNet instance. Only use if you've checked isInitialized() first.
      * Prefer using the safe accessors instead.
      */
-    fun getInstance(): WSNet? {
-        return if (isInitialized()) wsNetInstance else null
-    }
+    fun getInstance(): WSNet? = if (isInitialized()) wsNetInstance else null
 
     /**
      * Safely get the ping manager, returns null if WSNet is not ready.
@@ -215,6 +208,7 @@ class WSNetWrapper {
                     logger.debug(actualMsg)
                 }
             }
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
     }
 }

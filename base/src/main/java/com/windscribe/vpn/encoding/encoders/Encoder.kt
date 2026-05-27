@@ -12,10 +12,17 @@ import java.io.OutputStream
  * encodings).
  */
 interface Encoder {
+    @Throws(IOException::class)
+    fun decode(
+        data: String,
+        out: OutputStream,
+    ): Int
 
     @Throws(IOException::class)
-    fun decode(data: String, out: OutputStream): Int
-
-    @Throws(IOException::class)
-    fun encode(data: ByteArray, off: Int, length: Int, out: OutputStream): Int
+    fun encode(
+        data: ByteArray,
+        off: Int,
+        length: Int,
+        out: OutputStream,
+    ): Int
 }

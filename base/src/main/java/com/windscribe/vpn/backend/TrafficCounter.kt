@@ -42,7 +42,10 @@ class TrafficCounter(
     init {
         scope.launch {
             vpnConnectionStateManager.state.collect {
-                if (it.status == VPNState.Status.Connected && appContext.vpnController.vpnBackendHolder.activeBackend?.reconnecting == true) {
+                if (it.status == VPNState.Status.Connected &&
+                    appContext.vpnController.vpnBackendHolder.activeBackend
+                        ?.reconnecting == true
+                ) {
                     logger.debug("VPN reconnecting.")
                     startUpdatingTrafficStats()
                 } else if (it.status == VPNState.Status.Connected) {
@@ -67,26 +70,27 @@ class TrafficCounter(
     private fun startUpdatingTrafficStats() {
         stopUpdatingTrafficStats()
         if (preferencesHelper.notificationStat) {
-            trafficCounterJob = scope.launchPeriodicAsync(updateIntervalInMs) {
-                val requiresUpdate = lastUpload > 0 && lastDownload > 0
-                if (requiresUpdate) {
-                    val totalDownload = TrafficStats.getTotalRxBytes()
-                    val totalUpload = TrafficStats.getTotalTxBytes()
-                    val downloadDifference = (totalDownload - lastDownload).coerceAtLeast(0) / 2
-                    val uploadDifference = (totalUpload - lastUpload).coerceAtLeast(0) / 2
-                    sessionDownload += downloadDifference
-                    sessionUpload += uploadDifference
-                    lastDownload = totalDownload
-                    lastUpload = totalUpload
-                    val statsChanged = downloadDifference > 0 && uploadDifference > 0
-                    if (statsChanged) {
-                        buildTrafficHistory(sessionDownload, sessionUpload)
+            trafficCounterJob =
+                scope.launchPeriodicAsync(updateIntervalInMs) {
+                    val requiresUpdate = lastUpload > 0 && lastDownload > 0
+                    if (requiresUpdate) {
+                        val totalDownload = TrafficStats.getTotalRxBytes()
+                        val totalUpload = TrafficStats.getTotalTxBytes()
+                        val downloadDifference = (totalDownload - lastDownload).coerceAtLeast(0) / 2
+                        val uploadDifference = (totalUpload - lastUpload).coerceAtLeast(0) / 2
+                        sessionDownload += downloadDifference
+                        sessionUpload += uploadDifference
+                        lastDownload = totalDownload
+                        lastUpload = totalUpload
+                        val statsChanged = downloadDifference > 0 && uploadDifference > 0
+                        if (statsChanged) {
+                            buildTrafficHistory(sessionDownload, sessionUpload)
+                        }
+                    } else {
+                        lastDownload = TrafficStats.getTotalRxBytes()
+                        lastUpload = TrafficStats.getTotalTxBytes()
                     }
-                } else {
-                    lastDownload = TrafficStats.getTotalRxBytes()
-                    lastUpload = TrafficStats.getTotalTxBytes()
                 }
-            }
         }
     }
 
@@ -102,25 +106,30 @@ class TrafficCounter(
         lastUpload = 0
     }
 
-    private fun buildTrafficHistory(downloadDifference: Long, uploadDifference: Long) {
+    private fun buildTrafficHistory(
+        downloadDifference: Long,
+        uploadDifference: Long,
+    ) {
         scope.launch {
-            val download = WindUtilities.humanReadableByteCount(
-                downloadDifference,
-                false,
-                Windscribe.appContext.resources
-            )
-            val upload = WindUtilities.humanReadableByteCount(
-                uploadDifference,
-                false,
-                Windscribe.appContext.resources
-            )
+            val download =
+                WindUtilities.humanReadableByteCount(
+                    downloadDifference,
+                    false,
+                    Windscribe.appContext.resources,
+                )
+            val upload =
+                WindUtilities.humanReadableByteCount(
+                    uploadDifference,
+                    false,
+                    Windscribe.appContext.resources,
+                )
             _stats.emit(
                 Traffic(
                     "Out: " +
-                            upload + " | " +
-                            "In: " +
-                            download
-                )
+                        upload + " | " +
+                        "In: " +
+                        download,
+                ),
             )
         }
     }
@@ -137,4 +146,6 @@ class TrafficCounter(
     }
 }
 
-data class Traffic(val text: String? = null)
+data class Traffic(
+    val text: String? = null,
+)

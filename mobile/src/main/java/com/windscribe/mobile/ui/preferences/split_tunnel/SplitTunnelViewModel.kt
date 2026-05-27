@@ -12,12 +12,12 @@ import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.SortByName
 import com.windscribe.vpn.commonutils.SortBySelected
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.Collections
+import javax.inject.Inject
 
 abstract class SplitTunnelViewModel : ViewModel() {
     abstract val showProgress: StateFlow<Boolean>
@@ -28,228 +28,240 @@ abstract class SplitTunnelViewModel : ViewModel() {
     abstract val searchKeyword: StateFlow<String>
     abstract val showSystemApps: StateFlow<Boolean>
     abstract val appIconCache: AppIconCache
+
     open fun onModeSelected(mode: DropDownStringItem) {}
+
     open fun onAppSelected(app: InstalledAppsData) {}
+
     open fun onSplitTunnelSettingChanged() {}
+
     open fun onQueryTextChange(query: String) {}
+
     open fun onShowSystemAppsToggle() {}
 }
 
 @HiltViewModel
-class SplitTunnelViewModelImpl @Inject constructor(
-    val preferenceHelper: PreferencesHelper,
-    override val appIconCache: AppIconCache
-) : SplitTunnelViewModel() {
-    private val _showProgress = MutableStateFlow(false)
-    override val showProgress: StateFlow<Boolean> = _showProgress
-    override val modes: List<DropDownStringItem>
-        get() {
-            val modes = appContext.resources.getStringArray(R.array.split_mode_list)
-            val keys = appContext.resources.getStringArray(R.array.split_mode_list_keys)
-            return keys.zip(modes).map { DropDownStringItem(it.first, it.second) }
+class SplitTunnelViewModelImpl
+    @Inject
+    constructor(
+        val preferenceHelper: PreferencesHelper,
+        override val appIconCache: AppIconCache,
+    ) : SplitTunnelViewModel() {
+        private val _showProgress = MutableStateFlow(false)
+        override val showProgress: StateFlow<Boolean> = _showProgress
+        override val modes: List<DropDownStringItem>
+            get() {
+                val modes = appContext.resources.getStringArray(R.array.split_mode_list)
+                val keys = appContext.resources.getStringArray(R.array.split_mode_list_keys)
+                return keys.zip(modes).map { DropDownStringItem(it.first, it.second) }
+            }
+        private val _selectedModeKey = MutableStateFlow(preferenceHelper.splitRoutingMode)
+        override val selectedModeKey: StateFlow<String> = _selectedModeKey
+        private val _apps = MutableStateFlow(emptyList<InstalledAppsData>())
+        private val _isSplitTunnelEnabled = MutableStateFlow(preferenceHelper.splitTunnelToggle)
+        override val isSplitTunnelEnabled = _isSplitTunnelEnabled
+        private val _searchKeyword = MutableStateFlow("")
+        override val searchKeyword: StateFlow<String> = _searchKeyword
+        private val _filteredApps = MutableStateFlow(emptyList<InstalledAppsData>())
+        override val filteredApps: StateFlow<List<InstalledAppsData>> = _filteredApps
+        private val _showSystemApps = MutableStateFlow(preferenceHelper.showSystemApps)
+        override val showSystemApps: StateFlow<Boolean> = _showSystemApps
+
+        // Store current app order positions to maintain consistency
+        private var currentAppOrder = mutableMapOf<String, Int>()
+
+        init {
+            loadApps(true)
         }
-    private val _selectedModeKey = MutableStateFlow(preferenceHelper.splitRoutingMode)
-    override val selectedModeKey: StateFlow<String> = _selectedModeKey
-    private val _apps = MutableStateFlow(emptyList<InstalledAppsData>())
-    private val _isSplitTunnelEnabled = MutableStateFlow(preferenceHelper.splitTunnelToggle)
-    override val isSplitTunnelEnabled = _isSplitTunnelEnabled
-    private val _searchKeyword = MutableStateFlow("")
-    override val searchKeyword: StateFlow<String> = _searchKeyword
-    private val _filteredApps = MutableStateFlow(emptyList<InstalledAppsData>())
-    override val filteredApps: StateFlow<List<InstalledAppsData>> = _filteredApps
-    private val _showSystemApps = MutableStateFlow(preferenceHelper.showSystemApps)
-    override val showSystemApps: StateFlow<Boolean> = _showSystemApps
-    // Store current app order positions to maintain consistency
-    private var currentAppOrder = mutableMapOf<String, Int>()
 
-
-    init {
-        loadApps(true)
-    }
-
-    private fun loadApps(initialLoad: Boolean = false) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _showProgress.value = true
-            val savedApps = preferenceHelper.installedApps
-            val pm = appContext.packageManager
-            val installedApps =
-                pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            val appList = mutableListOf<InstalledAppsData>()
-            installedApps.forEach {
-                val isSystemApp = (it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 1
-                val app = InstalledAppsData(
-                    pm.getApplicationLabel(it).toString(),
-                    it.packageName
-                )
-                app.isSystemApp = isSystemApp
-                for (installedAppsData in savedApps) {
-                    if (app.packageName == installedAppsData) {
-                        app.isChecked = true
+        private fun loadApps(initialLoad: Boolean = false) {
+            viewModelScope.launch(Dispatchers.IO) {
+                _showProgress.value = true
+                val savedApps = preferenceHelper.installedApps
+                val pm = appContext.packageManager
+                val installedApps =
+                    pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                val appList = mutableListOf<InstalledAppsData>()
+                installedApps.forEach {
+                    val isSystemApp = (it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 1
+                    val app =
+                        InstalledAppsData(
+                            pm.getApplicationLabel(it).toString(),
+                            it.packageName,
+                        )
+                    app.isSystemApp = isSystemApp
+                    for (installedAppsData in savedApps) {
+                        if (app.packageName == installedAppsData) {
+                            app.isChecked = true
+                        }
+                    }
+                    appList.add(app)
+                }
+                Collections.sort(appList, SortByName())
+                if (initialLoad) {
+                    Collections.sort(appList, SortBySelected())
+                    // Store the initial order after sorting by selected status
+                    currentAppOrder.clear()
+                    appList.forEachIndexed { index, app ->
+                        currentAppOrder[app.packageName] = index
                     }
                 }
-                appList.add(app)
-            }
-            Collections.sort(appList, SortByName())
-            if (initialLoad) {
-                Collections.sort(appList, SortBySelected())
-                // Store the initial order after sorting by selected status
-                currentAppOrder.clear()
-                appList.forEachIndexed { index, app ->
-                    currentAppOrder[app.packageName] = index
-                }
-            }
-            _apps.emit(appList)
-            _showProgress.value = false
-            applyFilters()
-        }
-    }
-
-    override fun onModeSelected(mode: DropDownStringItem) {
-        viewModelScope.launch {
-            preferenceHelper.splitRoutingMode = mode.key
-            _selectedModeKey.value = mode.key
-            // Auto-select/unselect Windscribe app based on mode
-            when (mode.key) {
-                "Inclusive" -> addWindscribeToList(true)
-                "Exclusive" -> addWindscribeToList(false)
+                _apps.emit(appList)
+                _showProgress.value = false
+                applyFilters()
             }
         }
-    }
 
-    override fun onAppSelected(app: InstalledAppsData) {
-        viewModelScope.launch(Dispatchers.IO) {
-            updateSavedApps(app)
-            updateAppListInPlace(app)
-        }
-    }
-
-    private fun updateSavedApps(app: InstalledAppsData) {
-        val apps = preferenceHelper.installedApps.toMutableList()
-        if (app.isChecked) {
-            apps.remove(app.packageName)
-        } else {
-            apps.add(app.packageName)
-        }
-        preferenceHelper.installedApps = apps.toList()
-    }
-
-    private suspend fun updateAppListInPlace(app: InstalledAppsData) {
-        val currentApps = _apps.value.toMutableList()
-        val appIndex = currentApps.indexOfFirst { it.packageName == app.packageName }
-        if (appIndex != -1) {
-            currentApps[appIndex].isChecked = !currentApps[appIndex].isChecked
-            val newAppsList = createNewAppsList(currentApps)
-            newAppsList[appIndex].isChecked = currentApps[appIndex].isChecked
-            emitUpdatedLists(newAppsList)
-        }
-    }
-
-    private fun createNewAppsList(currentApps: MutableList<InstalledAppsData>): MutableList<InstalledAppsData> {
-        return currentApps.map { appData ->
-            val newApp = InstalledAppsData(appData.appName, appData.packageName)
-            newApp.isChecked = appData.isChecked
-            newApp.isSystemApp = appData.isSystemApp
-            newApp
-        }.toMutableList()
-    }
-
-    private suspend fun emitUpdatedLists(newAppsList: MutableList<InstalledAppsData>) {
-        _apps.emit(newAppsList)
-        val query = _searchKeyword.value
-        val showSystemApps = _showSystemApps.value
-        if (query.isEmpty()) {
-            _filteredApps.emit(newAppsList.filter { !it.isSystemApp || showSystemApps })
-        } else {
-            val filteredApps = newAppsList.filter {
-                it.appName.contains(query, true)
-            }
-            _filteredApps.emit(filteredApps.filter { !it.isSystemApp || showSystemApps })
-        }
-    }
-
-    override fun onSplitTunnelSettingChanged() {
-        viewModelScope.launch {
-            val updatedState = _isSplitTunnelEnabled.value.not()
-            _isSplitTunnelEnabled.emit(updatedState)
-            preferenceHelper.splitTunnelToggle = updatedState
-
-            // Auto-select/unselect Windscribe app when turning ON split tunneling
-            if (updatedState) {
-                val currentMode = _selectedModeKey.value
-                when (currentMode) {
+        override fun onModeSelected(mode: DropDownStringItem) {
+            viewModelScope.launch {
+                preferenceHelper.splitRoutingMode = mode.key
+                _selectedModeKey.value = mode.key
+                // Auto-select/unselect Windscribe app based on mode
+                when (mode.key) {
                     "Inclusive" -> addWindscribeToList(true)
                     "Exclusive" -> addWindscribeToList(false)
                 }
             }
         }
-    }
 
-    override fun onQueryTextChange(query: String) {
-        viewModelScope.launch {
-            _searchKeyword.emit(query)
-            applyFilters()
-        }
-    }
-
-    override fun onShowSystemAppsToggle() {
-        viewModelScope.launch {
-            val updatedState = _showSystemApps.value.not()
-            _showSystemApps.emit(updatedState)
-            preferenceHelper.showSystemApps = updatedState
-            applyFilters()
-        }
-    }
-
-    private suspend fun applyFilters() {
-        val query = _searchKeyword.value
-        val allApps = _apps.value
-        val showSystemApps = _showSystemApps.value
-        val filtered = allApps.filter { app ->
-            val matchesSearch = if (query.isEmpty()) {
-                true
-            } else {
-                app.appName.contains(query, true)
+        override fun onAppSelected(app: InstalledAppsData) {
+            viewModelScope.launch(Dispatchers.IO) {
+                updateSavedApps(app)
+                updateAppListInPlace(app)
             }
-            matchesSearch
         }
-        _filteredApps.emit(filtered.filter { !it.isSystemApp || showSystemApps })
-    }
 
-    private suspend fun addWindscribeToList(checked: Boolean) {
-        val pm = appContext.packageManager
-        val packageName = appContext.packageName
-        try {
-            val applicationInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-            val windscribeApp = InstalledAppsData(
-                pm.getApplicationLabel(applicationInfo).toString(),
-                applicationInfo.packageName
-            )
-            windscribeApp.isSystemApp = false
-
-            // Update saved apps
-            val savedApps = preferenceHelper.installedApps.toMutableList()
-            if (checked) {
-                // Add to list if not already present
-                if (!savedApps.contains(packageName)) {
-                    savedApps.add(packageName)
-                }
+        private fun updateSavedApps(app: InstalledAppsData) {
+            val apps = preferenceHelper.installedApps.toMutableList()
+            if (app.isChecked) {
+                apps.remove(app.packageName)
             } else {
-                // Remove from list
-                savedApps.remove(packageName)
+                apps.add(app.packageName)
             }
-            preferenceHelper.installedApps = savedApps
+            preferenceHelper.installedApps = apps.toList()
+        }
 
-            // Update in-memory app list
+        private suspend fun updateAppListInPlace(app: InstalledAppsData) {
             val currentApps = _apps.value.toMutableList()
-            val appIndex = currentApps.indexOfFirst { it.packageName == packageName }
+            val appIndex = currentApps.indexOfFirst { it.packageName == app.packageName }
             if (appIndex != -1) {
-                currentApps[appIndex].isChecked = checked
+                currentApps[appIndex].isChecked = !currentApps[appIndex].isChecked
                 val newAppsList = createNewAppsList(currentApps)
-                newAppsList[appIndex].isChecked = checked
+                newAppsList[appIndex].isChecked = currentApps[appIndex].isChecked
                 emitUpdatedLists(newAppsList)
             }
-        } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
+        }
+
+        private fun createNewAppsList(currentApps: MutableList<InstalledAppsData>): MutableList<InstalledAppsData> =
+            currentApps
+                .map { appData ->
+                    val newApp = InstalledAppsData(appData.appName, appData.packageName)
+                    newApp.isChecked = appData.isChecked
+                    newApp.isSystemApp = appData.isSystemApp
+                    newApp
+                }.toMutableList()
+
+        private suspend fun emitUpdatedLists(newAppsList: MutableList<InstalledAppsData>) {
+            _apps.emit(newAppsList)
+            val query = _searchKeyword.value
+            val showSystemApps = _showSystemApps.value
+            if (query.isEmpty()) {
+                _filteredApps.emit(newAppsList.filter { !it.isSystemApp || showSystemApps })
+            } else {
+                val filteredApps =
+                    newAppsList.filter {
+                        it.appName.contains(query, true)
+                    }
+                _filteredApps.emit(filteredApps.filter { !it.isSystemApp || showSystemApps })
+            }
+        }
+
+        override fun onSplitTunnelSettingChanged() {
+            viewModelScope.launch {
+                val updatedState = _isSplitTunnelEnabled.value.not()
+                _isSplitTunnelEnabled.emit(updatedState)
+                preferenceHelper.splitTunnelToggle = updatedState
+
+                // Auto-select/unselect Windscribe app when turning ON split tunneling
+                if (updatedState) {
+                    val currentMode = _selectedModeKey.value
+                    when (currentMode) {
+                        "Inclusive" -> addWindscribeToList(true)
+                        "Exclusive" -> addWindscribeToList(false)
+                    }
+                }
+            }
+        }
+
+        override fun onQueryTextChange(query: String) {
+            viewModelScope.launch {
+                _searchKeyword.emit(query)
+                applyFilters()
+            }
+        }
+
+        override fun onShowSystemAppsToggle() {
+            viewModelScope.launch {
+                val updatedState = _showSystemApps.value.not()
+                _showSystemApps.emit(updatedState)
+                preferenceHelper.showSystemApps = updatedState
+                applyFilters()
+            }
+        }
+
+        private suspend fun applyFilters() {
+            val query = _searchKeyword.value
+            val allApps = _apps.value
+            val showSystemApps = _showSystemApps.value
+            val filtered =
+                allApps.filter { app ->
+                    val matchesSearch =
+                        if (query.isEmpty()) {
+                            true
+                        } else {
+                            app.appName.contains(query, true)
+                        }
+                    matchesSearch
+                }
+            _filteredApps.emit(filtered.filter { !it.isSystemApp || showSystemApps })
+        }
+
+        private suspend fun addWindscribeToList(checked: Boolean) {
+            val pm = appContext.packageManager
+            val packageName = appContext.packageName
+            try {
+                val applicationInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+                val windscribeApp =
+                    InstalledAppsData(
+                        pm.getApplicationLabel(applicationInfo).toString(),
+                        applicationInfo.packageName,
+                    )
+                windscribeApp.isSystemApp = false
+
+                // Update saved apps
+                val savedApps = preferenceHelper.installedApps.toMutableList()
+                if (checked) {
+                    // Add to list if not already present
+                    if (!savedApps.contains(packageName)) {
+                        savedApps.add(packageName)
+                    }
+                } else {
+                    // Remove from list
+                    savedApps.remove(packageName)
+                }
+                preferenceHelper.installedApps = savedApps
+
+                // Update in-memory app list
+                val currentApps = _apps.value.toMutableList()
+                val appIndex = currentApps.indexOfFirst { it.packageName == packageName }
+                if (appIndex != -1) {
+                    currentApps[appIndex].isChecked = checked
+                    val newAppsList = createNewAppsList(currentApps)
+                    newAppsList[appIndex].isChecked = checked
+                    emitUpdatedLists(newAppsList)
+                }
+            } catch (e: PackageManager.NameNotFoundException) {
+                e.printStackTrace()
+            }
         }
     }
-}

@@ -9,7 +9,7 @@ import java.io.Serializable
 data class WgConnectResponse(
     @SerializedName("config")
     @Expose
-    val config: WgConnectConfig
+    val config: WgConnectConfig,
 ) : Serializable
 
 @Keep
@@ -19,5 +19,5 @@ data class WgConnectConfig(
     val address: String,
     @SerializedName("DNS")
     @Expose
-    val dns: String
+    val dns: String,
 )

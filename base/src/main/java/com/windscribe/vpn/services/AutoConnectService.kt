@@ -34,7 +34,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class AutoConnectService : Service() {
-
     @Inject
     lateinit var autoConnectionManager: AutoConnectionManager
 
@@ -74,7 +73,7 @@ class AutoConnectService : Service() {
         // AutoConnectService uses specialUse type - it auto-connects VPN on network changes.
         startForegroundImmediately(
             NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
         )
         // Must precede field use below: Hilt populates @Inject fields in super.onCreate().
         super.onCreate()
@@ -84,7 +83,7 @@ class AutoConnectService : Service() {
             NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
             VPNState.Status.UnsecuredNetwork,
             clearActions = true,
-            serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
         )
         serviceScope.launch {
             vpnConnectionStateManager.state.collectLatest {
@@ -99,18 +98,23 @@ class AutoConnectService : Service() {
         serviceScope.launch {
             networkInfoManager.networkInfo.collectLatest { networkInfo ->
                 val isWhitelisted = deviceStateManager.isCurrentNetworkWhitelisted.value
-                logger.debug("Network: ${networkInfo?.networkName}, AutoSecure: ${networkInfo?.isAutoSecureOn}, Whitelisted: $isWhitelisted")
+                logger.debug(
+                    "Network: ${networkInfo?.networkName}, AutoSecure: ${networkInfo?.isAutoSecureOn}, Whitelisted: $isWhitelisted",
+                )
 
                 if (networkInfo?.isAutoSecureOn == true &&
                     !isWhitelisted &&
                     vpnConnectionStateManager.state.value.status == VPNState.Status.Disconnected &&
-                    userRepository.user.value?.accountStatus == User.AccountStatus.Okay) {
+                    userRepository.user.value?.accountStatus == User.AccountStatus.Okay
+                ) {
                     logger.debug("Auto secure ON for ${networkInfo.networkName} (not whitelisted) - connecting to VPN")
                     autoConnectionManager.reset()
                     vpnController.connectAsync()
                 } else if (networkInfo?.isAutoSecureOn == true && isWhitelisted) {
                     logger.debug("Auto secure ON for ${networkInfo.networkName} but network is whitelisted - skipping auto-connect")
-                } else if (networkInfo?.isAutoSecureOn == false && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
+                } else if (networkInfo?.isAutoSecureOn == false &&
+                    vpnConnectionStateManager.state.value.status == VPNState.Status.Connected
+                ) {
                     logger.debug("Auto secure OFF for ${networkInfo.networkName} - disconnecting from VPN")
                     vpnController.disconnectAsync()
                 }
@@ -125,17 +129,19 @@ class AutoConnectService : Service() {
         super.onDestroy()
     }
 
-    override fun onBind(intent: Intent): IBinder {
-        return Binder()
-    }
+    override fun onBind(intent: Intent): IBinder = Binder()
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
             VPNState.Status.UnsecuredNetwork,
             clearActions = true,
-            serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
         )
         return if (canAccessNetworkName()) {
             logger.debug("Auto connect service started and waiting for network changes.")
@@ -172,11 +178,13 @@ fun Context.stopAutoConnectService() {
 }
 
 fun Context.canAccessNetworkName(): Boolean {
-    val isBackgroundPermissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
-    } else {
-        return true
-    }
-    val isForegroundPermissionGranted = checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    val isBackgroundPermissionGranted =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
+        } else {
+            return true
+        }
+    val isForegroundPermissionGranted =
+        checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     return isBackgroundPermissionGranted && isForegroundPermissionGranted
 }

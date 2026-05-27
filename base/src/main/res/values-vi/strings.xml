@@ -471,7 +471,7 @@ Vị trí được chọn cuối cùng.</string>
     <string name="failed_to_update_robert_rules">Không cập nhật được quy tắc của Robert.</string>
     <string name="successfully_updated_robert_rules">Cập nhật thành công các quy tắc của Robert.</string>
     <string name="share_app">Chia sẻ ứng dụng</string>
-    <string name="share_app_description">"Chúng tôi đang mời bạn tham gia Windscribe. Cung cấp tên người dùng của họ khi đăng ký và cả hai bạn sẽ nhận được 1GB dữ liệu miễn phí được thêm vào tài khoản của mình. Nếu bạn đi chuyên nghiệp, họ cũng sẽ trở nên chuyên nghiệp!\n%s"</string>
+    <string name="share_app_description">"%1$s đang mời bạn tham gia Windscribe. Cung cấp tên người dùng của họ khi đăng ký và cả hai bạn sẽ nhận được 1GB dữ liệu miễn phí được thêm vào tài khoản của mình. Nếu bạn đi chuyên nghiệp, họ cũng sẽ trở nên chuyên nghiệp!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">Yêu cầu truy cập vị trí \"Cho phép mọi lúc\"!</string>
     <string name="enable_location_access">Bật quyền truy cập thông tin vị trí</string>
     <string name="location_permission_required">Yêu cầu quyền truy cập thông tin vị trí</string>

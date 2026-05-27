@@ -12,14 +12,20 @@ import android.os.SystemClock
 import java.lang.Exception
 import java.lang.NullPointerException
 
-class MockLocationProvider constructor(private val providerName: String, ctx: Context) {
-
-    private val locationManager: LocationManager = ctx.getSystemService(
-        Context.LOCATION_SERVICE
-    ) as LocationManager
+class MockLocationProvider constructor(
+    private val providerName: String,
+    ctx: Context,
+) {
+    private val locationManager: LocationManager =
+        ctx.getSystemService(
+            Context.LOCATION_SERVICE,
+        ) as LocationManager
 
     @Throws(MockLocationPermissionException::class)
-    fun pushLocation(lat: Double, lon: Double) {
+    fun pushLocation(
+        lat: Double,
+        lon: Double,
+    ) {
         try {
             val location = Location(providerName)
             location.latitude = lat
@@ -78,4 +84,5 @@ class MockLocationProvider constructor(private val providerName: String, ctx: Co
         }
     }
 }
+
 class MockLocationPermissionException : Throwable()

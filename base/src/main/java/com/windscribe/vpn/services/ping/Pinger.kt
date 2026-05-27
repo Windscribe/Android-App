@@ -12,5 +12,8 @@ interface Pinger {
      * Returns the round-trip time in milliseconds on success, or -1 on any failure
      * (DNS resolution failure, timeout, unreachable, native error, etc.).
      */
-    suspend fun ping(host: String, timeoutMs: Int): Int
+    suspend fun ping(
+        host: String,
+        timeoutMs: Int,
+    ): Int
 }

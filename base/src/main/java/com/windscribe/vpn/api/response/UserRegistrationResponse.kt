@@ -13,7 +13,6 @@ import com.google.gson.annotations.SerializedName
  */
 @Keep
 class UserRegistrationResponse {
-
     @SerializedName("billing_plan_id")
     @Expose
     val billingPlanId: Int? = null
@@ -68,20 +67,19 @@ class UserRegistrationResponse {
     val isInGhostMode: Boolean
         get() = username == "na"
 
-    override fun toString(): String {
-        return "UserRegistrationResponse{" +
-                "session_auth_hash=[REDACTED]" +
-                ", username='" + userNameValue + '\'' +
-                ", user_id='" + userId + '\'' +
-                ", traffic_used='" + trafficUsed + '\'' +
-                ", traffic_max='" + trafficMax + '\'' +
-                ", status='" + userAccountStatus + '\'' +
-                ", billing_plan_id='" + billingPlanId + '\'' +
-                ", is_premium='" + isPremium + '\'' +
-                ", reg_date='" + regDate + '\'' +
-                ", loc_rev='" + locRev + '\'' +
-                ", loc_hash='" + locationHash + '\'' +
-                ", secure_links_secret=[REDACTED]" +
-                '}'
-    }
+    override fun toString(): String =
+        "UserRegistrationResponse{" +
+            "session_auth_hash=[REDACTED]" +
+            ", username='" + userNameValue + '\'' +
+            ", user_id='" + userId + '\'' +
+            ", traffic_used='" + trafficUsed + '\'' +
+            ", traffic_max='" + trafficMax + '\'' +
+            ", status='" + userAccountStatus + '\'' +
+            ", billing_plan_id='" + billingPlanId + '\'' +
+            ", is_premium='" + isPremium + '\'' +
+            ", reg_date='" + regDate + '\'' +
+            ", loc_rev='" + locRev + '\'' +
+            ", loc_hash='" + locationHash + '\'' +
+            ", secure_links_secret=[REDACTED]" +
+            '}'
 }

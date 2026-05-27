@@ -23,18 +23,37 @@ interface PreferencesHelper {
     val selectionFlow: kotlinx.coroutines.flow.Flow<String>
 
     fun clearAllData()
+
     fun clearOldSessionAuth()
+
     fun getPreviousAccountStatus(userNameKey: String): Int
+
     fun getPreviousUserStatus(userNameKey: String): Int
-    fun setPreviousAccountStatus(userNameKey: String, userAccountStatus: Int)
-    fun setPreviousUserStatus(userNameKey: String, userStatus: Int)
+
+    fun setPreviousAccountStatus(
+        userNameKey: String,
+        userAccountStatus: Int,
+    )
+
+    fun setPreviousUserStatus(
+        userNameKey: String,
+        userStatus: Int,
+    )
+
     fun getDefaultProtoInfo(): Pair<String, String>
+
     fun getDefaultNetworkInfo(networkName: String): NetworkInfo
+
     fun isSuggested(): Boolean
+
     fun userIsInGhostMode(): Boolean
+
     fun increaseConnectionCount()
+
     fun getConnectionCount(): Int
+
     fun getBackupParameter(): Int
+
     var isHapticFeedbackEnabled: Boolean
     var alcListString: String?
     var autoStartOnBoot: Boolean
@@ -174,26 +193,37 @@ interface PreferencesHelper {
  * Returns true if mode is MANUAL or if mode is AUTO and API suggests it should be enabled.
  */
 val PreferencesHelper.isProtocolTweaksEnabled: Boolean
-    get() = when (protocolTweaksMode) {
-        PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL -> true
-        PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED -> false
-        PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO -> {
-            // In Auto mode, check if API has recommended a config
-            // If amneziaWgConfigId is present in session, it means API recommends enabling
-            val sessionJson = getSession
-            if (!sessionJson.isNullOrEmpty()) {
-                try {
-                    val session = com.google.gson.Gson().fromJson(
-                        sessionJson,
-                        com.windscribe.vpn.api.response.UserSessionResponse::class.java
-                    )
-                    !session.serverInventory?.amneziaWgConfigId.isNullOrEmpty()
-                } catch (e: Exception) {
+    get() =
+        when (protocolTweaksMode) {
+            PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL -> {
+                true
+            }
+
+            PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED -> {
+                false
+            }
+
+            PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO -> {
+                // In Auto mode, check if API has recommended a config
+                // If amneziaWgConfigId is present in session, it means API recommends enabling
+                val sessionJson = getSession
+                if (!sessionJson.isNullOrEmpty()) {
+                    try {
+                        val session =
+                            com.google.gson.Gson().fromJson(
+                                sessionJson,
+                                com.windscribe.vpn.api.response.UserSessionResponse::class.java,
+                            )
+                        !session.serverInventory?.amneziaWgConfigId.isNullOrEmpty()
+                    } catch (e: Exception) {
+                        false
+                    }
+                } else {
                     false
                 }
-            } else {
+            }
+
+            else -> {
                 false
             }
         }
-        else -> false
-    }

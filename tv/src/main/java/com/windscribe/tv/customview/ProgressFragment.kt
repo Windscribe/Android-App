@@ -17,16 +17,20 @@ import com.windscribe.tv.databinding.FragmentProgressBinding
 class ProgressFragment : Fragment() {
     private var progressText = ""
     private lateinit var binding: FragmentProgressBinding
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentProgressBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         updateProgressStatus(progressText)
     }
@@ -36,17 +40,23 @@ class ProgressFragment : Fragment() {
         super.onDestroyView()
     }
 
-    fun add(activity: AppCompatActivity, container: Int, addToBackStack: Boolean) {
+    fun add(
+        activity: AppCompatActivity,
+        container: Int,
+        addToBackStack: Boolean,
+    ) {
         // Check if activity is still alive before committing fragment
         if (activity.isDestroyed || activity.isFinishing) {
             return
         }
 
-        enterTransition = Slide(Gravity.BOTTOM)
-            .addTarget(R.id.progress_fragment_container)
-        val transaction = activity.supportFragmentManager
-            .beginTransaction()
-            .add(container, this)
+        enterTransition =
+            Slide(Gravity.BOTTOM)
+                .addTarget(R.id.progress_fragment_container)
+        val transaction =
+            activity.supportFragmentManager
+                .beginTransaction()
+                .add(container, this)
         if (addToBackStack) {
             transaction.addToBackStack(this.javaClass.name)
         }
@@ -58,7 +68,7 @@ class ProgressFragment : Fragment() {
         progressText: String,
         activity: AppCompatActivity,
         container: Int,
-        addToBackStack: Boolean
+        addToBackStack: Boolean,
     ) {
         this.progressText = progressText
         add(activity, container, addToBackStack)

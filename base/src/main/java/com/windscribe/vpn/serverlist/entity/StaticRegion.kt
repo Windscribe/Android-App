@@ -15,7 +15,6 @@ import com.windscribe.vpn.api.response.ServerCredentialsResponse
 @Keep
 @Entity(tableName = "StaticRegion")
 class StaticRegion {
-
     @SerializedName("city_name")
     @Expose
     var cityName: String? = null
@@ -94,23 +93,22 @@ class StaticRegion {
 
     fun getStaticIpNode(): NodeStatic? = nodeStatic
 
-    override fun toString(): String {
-        return "StaticRegion{" +
-                "id=" + id +
-                ", ipId=" + ipId +
-                ", staticIp='" + staticIp + '\'' +
-                ", type='" + type + '\'' +
-                ", name='" + name + '\'' +
-                ", countryCode='" + countryCode + '\'' +
-                ", shortName='" + shortName + '\'' +
-                ", cityName='" + cityName + '\'' +
-                ", serverId=" + serverId +
-                ", nodeStatic=" + nodeStatic +
-                ", credentials=" + credentials +
-                ", deviceName='" + deviceName + '\'' +
-                ", OvpnX509='" + ovpnX509 + '\'' +
-                ", pingHost='" + pingHost + '\'' +
-                ", status='" + status + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "StaticRegion{" +
+            "id=" + id +
+            ", ipId=" + ipId +
+            ", staticIp='" + staticIp + '\'' +
+            ", type='" + type + '\'' +
+            ", name='" + name + '\'' +
+            ", countryCode='" + countryCode + '\'' +
+            ", shortName='" + shortName + '\'' +
+            ", cityName='" + cityName + '\'' +
+            ", serverId=" + serverId +
+            ", nodeStatic=" + nodeStatic +
+            ", credentials=" + credentials +
+            ", deviceName='" + deviceName + '\'' +
+            ", OvpnX509='" + ovpnX509 + '\'' +
+            ", pingHost='" + pingHost + '\'' +
+            ", status='" + status + '\'' +
+            '}'
 }

@@ -16,23 +16,25 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
-class RobertSyncWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted workerParameters: WorkerParameters,
-    private val apiManager: ApiCallManager
-) : CoroutineWorker(context, workerParameters) {
-
-    override suspend fun doWork(): Result {
-        return try {
-            val result = result<GenericSuccess> {
-                apiManager.syncRobert()
+class RobertSyncWorker
+    @AssistedInject
+    constructor(
+        @Assisted context: Context,
+        @Assisted workerParameters: WorkerParameters,
+        private val apiManager: ApiCallManager,
+    ) : CoroutineWorker(context, workerParameters) {
+        override suspend fun doWork(): Result {
+            return try {
+                val result =
+                    result<GenericSuccess> {
+                        apiManager.syncRobert()
+                    }
+                return when (result) {
+                    is CallResult.Error -> Result.failure()
+                    is CallResult.Success<*> -> Result.success()
+                }
+            } catch (_: Exception) {
+                Result.failure()
             }
-            return when (result) {
-                is CallResult.Error -> Result.failure()
-                is CallResult.Success<*> -> Result.success()
-            }
-        } catch (_: Exception) {
-            Result.failure()
         }
     }
-}

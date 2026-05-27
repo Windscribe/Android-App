@@ -10,7 +10,6 @@ import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 
 @Dao
 interface DatacenterAndLocationDao {
-
     @Transaction
     @Query("Select * from Datacenter where city_id=:cityId limit 1")
     fun getDatacenterAndLocation(cityId: Int): DatacenterAndLocation?

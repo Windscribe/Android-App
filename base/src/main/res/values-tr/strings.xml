@@ -471,7 +471,7 @@ son seçilen yer.</string>
     <string name="failed_to_update_robert_rules">Robert kuralları güncellenemedi.</string>
     <string name="successfully_updated_robert_rules">Robert kuralları başarıyla güncellendi.</string>
     <string name="share_app">Uygulamayı Paylaş</string>
-    <string name="share_app_description">"%s sizi Windscribe\a katılmaya davet ediyor. Kayıt sırasında kullanıcı adlarını girin ve ikiniz de hesaplarınıza 1 GB ücretsiz veri eklensin. Eğer profesyonel olursanız, onlar da profesyonel olurlar!\n%s"</string>
+    <string name="share_app_description">"%1$s sizi Windscribe\a katılmaya davet ediyor. Kayıt sırasında kullanıcı adlarını girin ve ikiniz de hesaplarınıza 1 GB ücretsiz veri eklensin. Eğer profesyonel olursanız, onlar da profesyonel olurlar!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Her zaman izin ver\" Konum Erişimi Gerekli!</string>
     <string name="enable_location_access">Konum Erişimini Etkinleştir</string>
     <string name="location_permission_required">Konum izni gereklidir</string>

@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class AccessIpResponse {
-
     @SerializedName("hosts")
     @Expose
     val hosts: List<String>? = null

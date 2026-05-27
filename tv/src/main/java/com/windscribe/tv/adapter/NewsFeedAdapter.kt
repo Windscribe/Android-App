@@ -16,45 +16,50 @@ import com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
 import com.windscribe.tv.serverlist.customviews.State
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 
-class NewsFeedAdapter(private val mNotificationList: List<WindNotification>?) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private inner class NewsFeedViewHolder @SuppressLint("NotifyDataSetChanged") constructor(
-        itemView: View
-    ) : RecyclerView.ViewHolder(itemView) {
-        val tvTitle: PreferenceHeaderItemMain = itemView.findViewById(R.id.newsFeedItem)
-        private var windNotification: WindNotification? = null
-        fun bind(windNotification: WindNotification) {
-            this.windNotification = windNotification
-            tvTitle.text = windNotification.notificationTitle
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                tvTitle.text = Html.fromHtml(
-                    windNotification.notificationTitle,
-                    Html.FROM_HTML_MODE_LEGACY
-                )
-            } else {
-                tvTitle.text = Html.fromHtml(windNotification.notificationTitle)
-            }
-            val state = stateArray[windNotification.notificationId, -1]
-            if (state == 1) {
-                stateArray.clear()
-                tvTitle.setState(State.TwoState.SELECTED)
-                tvTitle.requestFocus()
-                listener?.onNewsFeedItemClick(windNotification)
-            } else {
-                tvTitle.setState(State.TwoState.NOT_SELECTED)
-            }
-        }
+class NewsFeedAdapter(
+    private val mNotificationList: List<WindNotification>?,
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private inner class NewsFeedViewHolder
+        @SuppressLint("NotifyDataSetChanged")
+        constructor(
+            itemView: View,
+        ) : RecyclerView.ViewHolder(itemView) {
+            val tvTitle: PreferenceHeaderItemMain = itemView.findViewById(R.id.newsFeedItem)
+            private var windNotification: WindNotification? = null
 
-        init {
-            tvTitle.setOnClickListener {
-                windNotification?.let {
+            fun bind(windNotification: WindNotification) {
+                this.windNotification = windNotification
+                tvTitle.text = windNotification.notificationTitle
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    tvTitle.text =
+                        Html.fromHtml(
+                            windNotification.notificationTitle,
+                            Html.FROM_HTML_MODE_LEGACY,
+                        )
+                } else {
+                    tvTitle.text = Html.fromHtml(windNotification.notificationTitle)
+                }
+                val state = stateArray[windNotification.notificationId, -1]
+                if (state == 1) {
                     stateArray.clear()
-                    stateArray.put(it.notificationId, 1)
-                    notifyDataSetChanged()
+                    tvTitle.setState(State.TwoState.SELECTED)
+                    tvTitle.requestFocus()
+                    listener?.onNewsFeedItemClick(windNotification)
+                } else {
+                    tvTitle.setState(State.TwoState.NOT_SELECTED)
+                }
+            }
+
+            init {
+                tvTitle.setOnClickListener {
+                    windNotification?.let {
+                        stateArray.clear()
+                        stateArray.put(it.notificationId, 1)
+                        notifyDataSetChanged()
+                    }
                 }
             }
         }
-    }
 
     interface NewsFeedListener {
         fun onNewsFeedItemClick(windNotification: WindNotification)
@@ -62,22 +67,26 @@ class NewsFeedAdapter(private val mNotificationList: List<WindNotification>?) :
 
     private var listener: NewsFeedListener? = null
     private val stateArray = SparseIntArray()
-    override fun getItemCount(): Int {
-        return mNotificationList?.size ?: 0
-    }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun getItemCount(): Int = mNotificationList?.size ?: 0
+
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         val windNotification = mNotificationList?.get(position)
         if (windNotification != null) {
             (holder as NewsFeedViewHolder).bind(windNotification)
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return NewsFeedViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.news_feed_view, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): RecyclerView.ViewHolder =
+        NewsFeedViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.news_feed_view, parent, false),
         )
-    }
 
     @SuppressLint("NotifyDataSetChanged")
     fun setItemSelected(notificationId: Int) {

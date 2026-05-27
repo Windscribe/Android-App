@@ -14,15 +14,13 @@ import org.json.JSONObject
  * Pojo classes
  */
 object JsonResponseConverter {
-
     @JvmStatic
-    fun getErrorClass(jsonObject: JSONObject): ApiErrorResponse {
-        return Gson().fromJson(jsonObject.toString(), ApiErrorResponse::class.java)
-    }
+    fun getErrorClass(jsonObject: JSONObject): ApiErrorResponse = Gson().fromJson(jsonObject.toString(), ApiErrorResponse::class.java)
 
     @JvmStatic
     @Throws(JSONException::class)
-    fun <T> getResponseClass(mJsonObject: JSONObject, tClass: Class<T>): T {
-        return Gson().fromJson(mJsonObject.getJSONObject(JSON_RESPONSE_KEY).toString(), tClass)
-    }
+    fun <T> getResponseClass(
+        mJsonObject: JSONObject,
+        tClass: Class<T>,
+    ): T = Gson().fromJson(mJsonObject.getJSONObject(JSON_RESPONSE_KEY).toString(), tClass)
 }

@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class UserSessionResponse {
-
     @SerializedName("alc")
     @Expose
     var alcList: List<String>? = null
@@ -113,28 +112,27 @@ class UserSessionResponse {
 
     fun sipCount(): Int = sip?.count ?: 0
 
-    override fun toString(): String {
-        return "UserSessionResponse{" +
-                "ourIp=" + ourIp +
-                ", ourLocation='" + ourLocation + '\'' +
-                ", ourDc=" + ourDc +
-                ", ourAddress='" + ourAddress + '\'' +
-                ", reBill=" + reBill +
-                ", ignoreUdpTest=" + ignoreUdpTest +
-                ", trafficUsed='" + trafficUsed + '\'' +
-                ", trafficMax='" + trafficMax + '\'' +
-                ", userAccountStatus=" + userAccountStatus +
-                ", emailStatus=" + emailStatus +
-                ", billingPlanID=" + billingPlanID +
-                ", isPremium=" + isPremium +
-                ", registrationDate='" + registrationDate + '\'' +
-                ", lastResetDate='" + lastResetDate + '\'' +
-                ", locationRevision='" + locationRevision + '\'' +
-                ", locationHash='" + locationHash + '\'' +
-                ", premiumExpiryDate='" + premiumExpiryDate + '\'' +
-                ", alcList=" + alcList +
-                ", sip=" + sip +
-                ", serverInventory=" + serverInventory +
-                '}'
-    }
+    override fun toString(): String =
+        "UserSessionResponse{" +
+            "ourIp=" + ourIp +
+            ", ourLocation='" + ourLocation + '\'' +
+            ", ourDc=" + ourDc +
+            ", ourAddress='" + ourAddress + '\'' +
+            ", reBill=" + reBill +
+            ", ignoreUdpTest=" + ignoreUdpTest +
+            ", trafficUsed='" + trafficUsed + '\'' +
+            ", trafficMax='" + trafficMax + '\'' +
+            ", userAccountStatus=" + userAccountStatus +
+            ", emailStatus=" + emailStatus +
+            ", billingPlanID=" + billingPlanID +
+            ", isPremium=" + isPremium +
+            ", registrationDate='" + registrationDate + '\'' +
+            ", lastResetDate='" + lastResetDate + '\'' +
+            ", locationRevision='" + locationRevision + '\'' +
+            ", locationHash='" + locationHash + '\'' +
+            ", premiumExpiryDate='" + premiumExpiryDate + '\'' +
+            ", alcList=" + alcList +
+            ", sip=" + sip +
+            ", serverInventory=" + serverInventory +
+            '}'
 }

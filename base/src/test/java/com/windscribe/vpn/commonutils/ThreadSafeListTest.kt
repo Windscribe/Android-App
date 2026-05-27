@@ -8,7 +8,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class ThreadSafeListTest {
-
     @Test
     fun `new list is empty`() {
         val list = ThreadSafeList<String>()

@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">Falha ao atualizar as regras de Robert.</string>
     <string name="successfully_updated_robert_rules">Regras Robert atualizadas com sucesso.</string>
     <string name="share_app">Partilhar App</string>
-    <string name="share_app_description">"%s está convidando você a se juntar ao Windscribe. Forneça seu nome de usuário no momento da inscrição e ambos receberão 1 gb de dados gratuitos adicionados às suas contas. Se você for profissional, eles também serão profissionais!\n%s"</string>
+    <string name="share_app_description">"%1$s está convidando você a se juntar ao Windscribe. Forneça seu nome de usuário no momento da inscrição e ambos receberão 1 gb de dados gratuitos adicionados às suas contas. Se você for profissional, eles também serão profissionais!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Permitir o tempo todo\" Acesso à localização necessário!</string>
     <string name="enable_location_access">Ativar acesso à localização</string>
     <string name="location_permission_required">Permissão de localização necessária</string>

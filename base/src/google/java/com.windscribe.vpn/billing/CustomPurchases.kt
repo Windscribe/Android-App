@@ -6,4 +6,7 @@ package com.windscribe.vpn.billing
 
 import com.android.billingclient.api.Purchase
 
-class CustomPurchases(val responseCode: Int, val purchase: List<Purchase>)
+class CustomPurchases(
+    val responseCode: Int,
+    val purchase: List<Purchase>,
+)

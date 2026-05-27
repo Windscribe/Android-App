@@ -19,15 +19,14 @@ class NetworkInfo(
     @ColumnInfo(name = "protocol")
     var protocol: String?,
     @ColumnInfo(name = "port")
-    var port: String?
+    var port: String?,
 ) {
-    override fun toString(): String {
-        return "NetworkInfo{" +
-                "networkName='" + networkName + '\'' +
-                ", isAutoSecureOn=" + isAutoSecureOn +
-                ", isPreferredOn=" + isPreferredOn +
-                ", protocol='" + protocol + '\'' +
-                ", port='" + port + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "NetworkInfo{" +
+            "networkName='" + networkName + '\'' +
+            ", isAutoSecureOn=" + isAutoSecureOn +
+            ", isPreferredOn=" + isPreferredOn +
+            ", protocol='" + protocol + '\'' +
+            ", port='" + port + '\'' +
+            '}'
 }

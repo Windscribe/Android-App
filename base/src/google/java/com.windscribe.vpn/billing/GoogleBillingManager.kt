@@ -25,8 +25,10 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import org.slf4j.LoggerFactory
 
-class GoogleBillingManager(private val app: Application) : PurchasesUpdatedListener, DefaultLifecycleObserver {
-
+class GoogleBillingManager(
+    private val app: Application,
+) : PurchasesUpdatedListener,
+    DefaultLifecycleObserver {
     /**
      * One-shot purchase events. Backed by a zero-replay SharedFlow so they are not
      * re-delivered on configuration change, mirroring the old SingleLiveEvent behavior.
@@ -62,9 +64,11 @@ class GoogleBillingManager(private val app: Application) : PurchasesUpdatedListe
             }
             Unit
         }
-        val consumeParams = ConsumeParams.newBuilder()
-            .setPurchaseToken(purchase.purchaseToken)
-            .build()
+        val consumeParams =
+            ConsumeParams
+                .newBuilder()
+                .setPurchaseToken(purchase.purchaseToken)
+                .build()
         mBillingClient.consumeAsync(consumeParams, consumeResponseListener)
     }
 
@@ -72,27 +76,30 @@ class GoogleBillingManager(private val app: Application) : PurchasesUpdatedListe
         // Create a new BillingClient in onCreate().
         // Since the BillingClient can only be used once, we need to create a new instance
         // after ending the previous connection to the Google Play Store in onDestroy().
-        mBillingClient = BillingClient.newBuilder(app)
-            .setListener(this)
-            .enablePendingPurchases() // Not used for subscriptions.
-            .build()
+        mBillingClient =
+            BillingClient
+                .newBuilder(app)
+                .setListener(this)
+                .enablePendingPurchases() // Not used for subscriptions.
+                .build()
         if (!mBillingClient.isReady) {
-            mBillingClient.startConnection(object : BillingClientStateListener {
-                override fun onBillingServiceDisconnected() {
-                    //Service disconnected
-                    _onBillingSetupFailure.tryEmit(BillingConstants.PLAY_STORE_UPDATE)
-                }
-
-                override fun onBillingSetupFinished(billingResult: BillingResult) {
-                    val responseCode = billingResult.responseCode
-                    if (responseCode == OK) {
-                        _onBillingSetUpSuccess.tryEmit(responseCode)
-                        getRecentPurchases()
-                    } else {
-                        _onBillingSetupFailure.tryEmit(responseCode)
+            mBillingClient.startConnection(
+                object : BillingClientStateListener {
+                    override fun onBillingServiceDisconnected() {
+                        _onBillingSetupFailure.tryEmit(BillingConstants.PLAY_STORE_UPDATE)
                     }
-                }
-            })
+
+                    override fun onBillingSetupFinished(billingResult: BillingResult) {
+                        val responseCode = billingResult.responseCode
+                        if (responseCode == OK) {
+                            _onBillingSetUpSuccess.tryEmit(responseCode)
+                            getRecentPurchases()
+                        } else {
+                            _onBillingSetupFailure.tryEmit(responseCode)
+                        }
+                    }
+                },
+            )
         }
     }
 
@@ -104,11 +111,17 @@ class GoogleBillingManager(private val app: Application) : PurchasesUpdatedListe
         }
     }
 
-    fun launchBillingFlow(mActivity: AppCompatActivity, params: BillingFlowParams) {
+    fun launchBillingFlow(
+        mActivity: AppCompatActivity,
+        params: BillingFlowParams,
+    ) {
         mBillingClient.launchBillingFlow(mActivity, params)
     }
 
-    override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
+    override fun onPurchasesUpdated(
+        billingResult: BillingResult,
+        purchases: List<Purchase>?,
+    ) {
         if (purchases == null) {
             _purchaseUpdateEvent.tryEmit(CustomPurchases(billingResult.responseCode, ArrayList()))
         } else {
@@ -117,10 +130,11 @@ class GoogleBillingManager(private val app: Application) : PurchasesUpdatedListe
     }
 
     fun querySkuDetailsAsync(subs: List<QueryProductDetailsParams.Product>) {
-        val productDetailsParams = QueryProductDetailsParams
-            .newBuilder()
-            .setProductList(subs)
-            .build()
+        val productDetailsParams =
+            QueryProductDetailsParams
+                .newBuilder()
+                .setProductList(subs)
+                .build()
         mBillingClient.queryProductDetailsAsync(productDetailsParams) { billingResult, list ->
             _querySkuDetailEvent.tryEmit(CustomProductDetails(billingResult, list))
         }
@@ -130,9 +144,11 @@ class GoogleBillingManager(private val app: Application) : PurchasesUpdatedListe
         if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
             if (!purchase.isAcknowledged) {
                 logger.info("Trying to Consume a subscription")
-                val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
-                    .setPurchaseToken(purchase.purchaseToken)
-                    .build()
+                val acknowledgePurchaseParams =
+                    AcknowledgePurchaseParams
+                        .newBuilder()
+                        .setPurchaseToken(purchase.purchaseToken)
+                        .build()
                 mBillingClient.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
                     if (billingResult.responseCode == OK) {
                         _onProductConsumeSuccess.tryEmit(purchase)
@@ -151,7 +167,7 @@ class GoogleBillingManager(private val app: Application) : PurchasesUpdatedListe
 
     private fun getRecentPurchases() {
         mBillingClient.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()
+            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build(),
         ) { billingResult, purchases ->
             if (billingResult.responseCode == OK) {
                 if (purchases.isNotEmpty()) {
@@ -163,7 +179,7 @@ class GoogleBillingManager(private val app: Application) : PurchasesUpdatedListe
             }
         }
         mBillingClient.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build()
+            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
         ) { billingResult, purchases ->
             if (billingResult.responseCode == OK) {
                 if (purchases.isNotEmpty()) {

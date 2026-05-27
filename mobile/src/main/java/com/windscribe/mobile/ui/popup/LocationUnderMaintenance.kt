@@ -22,7 +22,6 @@ import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
-
 @Composable
 fun LocationUnderMaintenanceScreen() {
     val navController = LocalNavController.current
@@ -37,7 +36,7 @@ fun LocationUnderMaintenanceScreen() {
         Spacer(Modifier.height(32.dp))
         PopupPrimaryActionButton(
             modifier = Modifier,
-            stringResource(com.windscribe.vpn.R.string.check_status)
+            stringResource(com.windscribe.vpn.R.string.check_status),
         ) {
             activity?.openUrl(NetworkKeyConstants.NODE_STATUS_URL)
             navController.popBackStack()
@@ -45,7 +44,7 @@ fun LocationUnderMaintenanceScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         PopupSecondaryActionButton(
             modifier = Modifier,
-            stringResource(com.windscribe.vpn.R.string.back)
+            stringResource(com.windscribe.vpn.R.string.back),
         ) {
             navController.popBackStack()
         }
@@ -56,7 +55,7 @@ fun LocationUnderMaintenanceScreen() {
 @Composable
 private fun LocationUnderMaintenanceScreenPreviewContent() {
     CompositionLocalProvider(
-        LocalNavController provides rememberNavController()
+        LocalNavController provides rememberNavController(),
     ) {
         LocationUnderMaintenanceScreen()
     }

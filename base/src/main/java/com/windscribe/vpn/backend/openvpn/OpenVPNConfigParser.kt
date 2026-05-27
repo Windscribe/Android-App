@@ -8,7 +8,6 @@ import de.blinkt.openvpn.core.ConfigParser
 import java.io.Reader
 
 class OpenVPNConfigParser {
-
     @Throws(Exception::class)
     fun getEmbeddedPassword(reader: Reader): String {
         val configParser = ConfigParser()

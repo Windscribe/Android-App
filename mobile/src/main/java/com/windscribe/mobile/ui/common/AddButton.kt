@@ -23,17 +23,17 @@ import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 fun AddButton(
     @StringRes buttonTitle: Int,
     secondaryTitle: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.05f))
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.05f)),
     ) {
         Text(
             secondaryTitle,
             style = font16,
             color = MaterialTheme.colorScheme.serverListSecondaryColor,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )
         if (secondaryTitle.isNotEmpty()) {
             Spacer(modifier = Modifier.weight(1f))
@@ -41,11 +41,13 @@ fun AddButton(
                 stringResource(buttonTitle),
                 style = font16,
                 color = AppColors.cyberBlue.copy(0.7f),
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 13.dp)
-                    .clickable {
-                        onClick()
-                    })
+                modifier =
+                    Modifier
+                        .padding(horizontal = 16.dp, vertical = 13.dp)
+                        .clickable {
+                            onClick()
+                        },
+            )
         }
     }
 }
@@ -53,20 +55,23 @@ fun AddButton(
 @Composable
 fun AddButton(
     @StringRes buttonTitle: Int,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.05f)).fillMaxWidth()
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.05f)).fillMaxWidth(),
     ) {
         Text(
             stringResource(buttonTitle),
             style = font16,
             color = AppColors.cyberBlue.copy(0.7f),
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 13.dp)
-                .clickable {
-                    onClick()
-                })
+            modifier =
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 13.dp)
+                    .clickable {
+                        onClick()
+                    },
+        )
     }
 }

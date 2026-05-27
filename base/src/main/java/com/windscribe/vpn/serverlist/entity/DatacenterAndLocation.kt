@@ -9,7 +9,6 @@ import androidx.room.Relation
 
 @Keep
 class DatacenterAndLocation {
-
     @Embedded
     var datacenter: Datacenter = Datacenter()
 

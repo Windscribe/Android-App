@@ -12,7 +12,6 @@ import com.windscribe.vpn.localdatabase.tables.UserStatusTable
 
 @Dao
 interface UserStatusDao {
-
     @Query("Delete from user_account_info")
     suspend fun delete()
 

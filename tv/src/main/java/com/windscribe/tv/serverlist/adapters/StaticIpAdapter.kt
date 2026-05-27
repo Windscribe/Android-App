@@ -21,9 +21,11 @@ import com.windscribe.vpn.serverlist.entity.StaticRegion
 class StaticIpAdapter(
     private val locations: List<StaticRegion>,
     dataDetails: ServerListData,
-    private val listener: DatacenterClickListener
+    private val listener: DatacenterClickListener,
 ) : RecyclerView.Adapter<StaticHolder>() {
-    inner class StaticHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class StaticHolder(
+        itemView: View,
+    ) : RecyclerView.ViewHolder(itemView) {
         private val btnConnect: ConnectButtonView = itemView.findViewById(R.id.connect)
         private val detailStar: ImageView = itemView.findViewById(R.id.pro_label)
         private val extraView: TextView = itemView.findViewById(R.id.extra)
@@ -31,6 +33,7 @@ class StaticIpAdapter(
         private val latencyView: TextView = itemView.findViewById(R.id.latency)
         private val nodeNameLabel: TextView = itemView.findViewById(R.id.nodeName)
         private val nodeNickNameLabel: TextView = itemView.findViewById(R.id.nodeNickName)
+
         fun bind(region: StaticRegion) {
             nodeNameLabel.text = region.cityName
             nodeNickNameLabel.text = region.countryCode
@@ -44,7 +47,7 @@ class StaticIpAdapter(
             extraView.text = region.staticIp
             btnConnect.setColorFilter(
                 ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                PorterDuff.Mode.MULTIPLY
+                PorterDuff.Mode.MULTIPLY,
             )
             btnConnect.setOnClickListener {
                 if (region.status == 0) {
@@ -76,12 +79,15 @@ class StaticIpAdapter(
             } else {
                 btnConnect.setColorFilter(
                     ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
+                    PorterDuff.Mode.MULTIPLY,
                 )
             }
         }
 
-        private fun setHighlightText(hasFocus: Boolean, region: StaticRegion) {
+        private fun setHighlightText(
+            hasFocus: Boolean,
+            region: StaticRegion,
+        ) {
             if (region.status != null && region.status == 0) {
                 highlightTextView.text = highlightTextView.resources.getString(com.windscribe.vpn.R.string.unavailable)
             } else {
@@ -96,22 +102,27 @@ class StaticIpAdapter(
     }
 
     private val dataDetails: ServerListData
-    override fun getItemCount(): Int {
-        return locations.size
-    }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
+    override fun getItemCount(): Int = locations.size
 
-    override fun onBindViewHolder(staticHolder: StaticHolder, i: Int) {
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun onBindViewHolder(
+        staticHolder: StaticHolder,
+        i: Int,
+    ) {
         val region = locations[i]
         staticHolder.bind(region)
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): StaticHolder {
-        val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.static_item_view, viewGroup, false)
+    override fun onCreateViewHolder(
+        viewGroup: ViewGroup,
+        i: Int,
+    ): StaticHolder {
+        val view =
+            LayoutInflater
+                .from(viewGroup.context)
+                .inflate(R.layout.static_item_view, viewGroup, false)
         return StaticHolder(view)
     }
 

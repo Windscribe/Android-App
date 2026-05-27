@@ -16,11 +16,13 @@ fun ForceStatusBarIcons(forceLight: Boolean = false) {
     if (activity == null) return
     WindowCompat.setDecorFitsSystemWindows(activity.window, false)
     SideEffect {
-        WindowCompat.getInsetsController(activity.window, view)
-            .isAppearanceLightStatusBars = if (forceLight) {
+        WindowCompat
+            .getInsetsController(activity.window, view)
+            .isAppearanceLightStatusBars =
+            if (forceLight) {
                 false
-        } else {
-            !isDark
-        }
+            } else {
+                !isDark
+            }
     }
 }

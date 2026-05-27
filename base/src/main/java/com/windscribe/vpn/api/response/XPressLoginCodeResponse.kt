@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class XPressLoginCodeResponse {
-
     @SerializedName("sig")
     @Expose
     var signature: String? = null
@@ -27,12 +26,11 @@ class XPressLoginCodeResponse {
     @Expose
     var xPressLoginCode: String? = null
 
-    override fun toString(): String {
-        return "XPressLoginCodeResponse{" +
-                "xPressLoginCode='" + xPressLoginCode + '\'' +
-                ", ttl=" + ttl +
-                ", signature='" + signature + '\'' +
-                ", time=" + time +
-                '}'
-    }
+    override fun toString(): String =
+        "XPressLoginCodeResponse{" +
+            "xPressLoginCode='" + xPressLoginCode + '\'' +
+            ", ttl=" + ttl +
+            ", signature='" + signature + '\'' +
+            ", time=" + time +
+            '}'
 }

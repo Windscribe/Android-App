@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class ItemPurchased {
-
     @SerializedName("orderId")
     @Expose
     val orderId: String? = null

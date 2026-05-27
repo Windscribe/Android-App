@@ -18,6 +18,7 @@ class TwoFactorFragment : Fragment() {
     private var fragmentCallBack: FragmentCallback? = null
     private var password: String? = null
     private var username: String? = null
+
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
             fragmentCallBack = activity as FragmentCallback?
@@ -26,13 +27,18 @@ class TwoFactorFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentTwoFactorBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         username = arguments?.getString("username")
         password = arguments?.getString("password")
@@ -54,7 +60,11 @@ class TwoFactorFragment : Fragment() {
             username?.let {
                 password?.let { pass ->
                     fragmentCallBack?.onLoginButtonClick(
-                        it, pass, binding.twoFaEdit.text.toString(), null, null
+                        it,
+                        pass,
+                        binding.twoFaEdit.text.toString(),
+                        null,
+                        null,
                     )
                 }
             }
@@ -76,9 +86,13 @@ class TwoFactorFragment : Fragment() {
 
     private fun resetButtonTextColor() {
         binding.back.setTextColor(
-            if (binding.back.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
-                R.color.colorWhite50
-            )
+            if (binding.back.hasFocus()) {
+                requireActivity().resources.getColor(R.color.colorWhite)
+            } else {
+                requireActivity().resources.getColor(
+                    R.color.colorWhite50,
+                )
+            },
         )
     }
 }

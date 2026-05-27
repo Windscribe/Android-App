@@ -1,9 +1,7 @@
 package com.windscribe.mobile.ui.auth
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -44,30 +42,32 @@ import com.windscribe.mobile.ui.theme.font24
 fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal? = null) {
     val uiState by viewModel?.uiState?.collectAsState() ?: remember {
         mutableStateOf(
-            EmergencyConnectUIState.Disconnected
+            EmergencyConnectUIState.Disconnected,
         )
     }
     val connectionProgressText by viewModel?.connectionProgressText?.collectAsState()
         ?: remember { mutableStateOf("") }
     AppBackground {
         EmergencyConnectCloseIcon(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(16.dp),
         )
         Column(
-            modifier = Modifier
-                .widthIn(min = 325.dp, max = 373.dp)
-                .padding(16.dp)
-                .align(Alignment.Center),
+            modifier =
+                Modifier
+                    .widthIn(min = 325.dp, max = 373.dp)
+                    .padding(16.dp)
+                    .align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 EmergencyConnectHeroIcon()
                 Spacer(modifier = Modifier.height(16.dp))
@@ -99,11 +99,15 @@ private fun HandleToast(viewModel: EmergencyConnectViewModal?) {
 }
 
 @Composable
-fun EmergencyConnectButton(uiState: EmergencyConnectUIState, onClick: () -> Unit) {
-    val buttonText = when (uiState) {
-        EmergencyConnectUIState.Disconnected -> stringResource(id = com.windscribe.vpn.R.string.connect)
-        else -> stringResource(id = com.windscribe.vpn.R.string.disconnect)
-    }
+fun EmergencyConnectButton(
+    uiState: EmergencyConnectUIState,
+    onClick: () -> Unit,
+) {
+    val buttonText =
+        when (uiState) {
+            EmergencyConnectUIState.Disconnected -> stringResource(id = com.windscribe.vpn.R.string.connect)
+            else -> stringResource(id = com.windscribe.vpn.R.string.disconnect)
+        }
     NextButton(modifier = Modifier.padding(), buttonText, enabled = true, onClick = onClick)
 }
 
@@ -113,13 +117,14 @@ fun EmergencyConnectCloseIcon(modifier: Modifier = Modifier) {
     IconButton(
         onClick = {
             navController.popBackStack()
-        }, modifier = modifier
+        },
+        modifier = modifier,
     ) {
         Icon(
             painter = painterResource(id = R.drawable.close),
             contentDescription = "Close",
             tint = AppColors.white,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp),
         )
     }
 }
@@ -130,7 +135,7 @@ fun EmergencyConnectHeroIcon() {
         painter = painterResource(id = R.drawable.emergency_icon_white),
         contentDescription = null,
         modifier = Modifier.size(60.dp),
-        tint = AppColors.white
+        tint = AppColors.white,
     )
 }
 
@@ -140,40 +145,44 @@ fun EmergencyConnectTitle() {
         text = stringResource(id = com.windscribe.vpn.R.string.emergency_connect),
         style = font24,
         textAlign = TextAlign.Center,
-        color = AppColors.white
+        color = AppColors.white,
     )
 }
 
 @Composable
 fun EmergencyConnectDescription(uiState: EmergencyConnectUIState) {
-    val descriptionText = when (uiState) {
-        EmergencyConnectUIState.Disconnected -> stringResource(id = com.windscribe.vpn.R.string.emergency_connect_description)
-        EmergencyConnectUIState.Connected -> stringResource(id = com.windscribe.vpn.R.string.emergency_connected_description)
-        EmergencyConnectUIState.Connecting -> ""
-    }
+    val descriptionText =
+        when (uiState) {
+            EmergencyConnectUIState.Disconnected -> stringResource(id = com.windscribe.vpn.R.string.emergency_connect_description)
+            EmergencyConnectUIState.Connected -> stringResource(id = com.windscribe.vpn.R.string.emergency_connected_description)
+            EmergencyConnectUIState.Connecting -> ""
+        }
     if (descriptionText.isEmpty()) return
     Text(
         text = descriptionText,
         style = font16,
         textAlign = TextAlign.Center,
         color = AppColors.white.copy(alpha = 0.50f),
-        modifier = Modifier.padding(horizontal = 16.dp)
+        modifier = Modifier.padding(horizontal = 16.dp),
     )
 }
 
 @Composable
-fun EmergencyConnectProgressBar(uiState: EmergencyConnectUIState, connectionProgressText: String) {
+fun EmergencyConnectProgressBar(
+    uiState: EmergencyConnectUIState,
+    connectionProgressText: String,
+) {
     if (uiState == EmergencyConnectUIState.Connecting) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = connectionProgressText,
                 style = font16,
-                color = AppColors.white.copy(alpha = 0.50f)
+                color = AppColors.white.copy(alpha = 0.50f),
             )
             Spacer(modifier = Modifier.height(16.dp))
             CircularProgressIndicator(
                 modifier = Modifier.size(48.dp),
-                color = AppColors.white
+                color = AppColors.white,
             )
         }
     }
@@ -188,7 +197,7 @@ fun EmergencyConnectCancelButton() {
         Text(
             text = stringResource(id = com.windscribe.vpn.R.string.cancel),
             style = font16,
-            color = AppColors.white.copy(alpha = 0.50f)
+            color = AppColors.white.copy(alpha = 0.50f),
         )
     }
 }

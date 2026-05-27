@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class VerifyExpressLoginResponse {
-
     @SerializedName("success")
     @Expose
     val success: Int = 0
@@ -18,9 +17,8 @@ class VerifyExpressLoginResponse {
     val isSuccessful: Boolean
         get() = success == 1
 
-    override fun toString(): String {
-        return "ClaimAccountResponse{" +
-                ", success=" + success +
-                '}'
-    }
+    override fun toString(): String =
+        "ClaimAccountResponse{" +
+            ", success=" + success +
+            '}'
 }

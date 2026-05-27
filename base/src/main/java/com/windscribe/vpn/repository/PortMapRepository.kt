@@ -9,7 +9,6 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,87 +18,92 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PortMapRepository @Inject constructor(
-    private val apiCallManager: IApiCallManager,
-    private val preferencesHelper: PreferencesHelper
-) {
-    private var cachedPortMap: PortMapResponse? = null
+class PortMapRepository
+    @Inject
+    constructor(
+        private val apiCallManager: IApiCallManager,
+        private val preferencesHelper: PreferencesHelper,
+    ) {
+        private var cachedPortMap: PortMapResponse? = null
 
-    suspend fun getPortMap(): Result<PortMapResponse> {
-        // Return cached if available
-        cachedPortMap?.let { return Result.success(it) }
+        suspend fun getPortMap(): Result<PortMapResponse> {
+            // Return cached if available
+            cachedPortMap?.let { return Result.success(it) }
 
-        val currentPortMap = preferencesHelper.portMapVersion
-        if (currentPortMap != NetworkKeyConstants.PORT_MAP_VERSION) {
-            return Result.failure(WindScribeException("Port map version outdated"))
-        }
-
-        // Try to load from preferences
-        val cachedJson = preferencesHelper.portMap
-        val cachedResult = runCatching {
-            Gson().fromJson(cachedJson, PortMapResponse::class.java)
-        }.onSuccess { cachedPortMap = it }
-            .mapCatching { Result.success(it) }
-            .getOrNull()
-
-        if (cachedResult != null) return cachedResult
-
-        // Try API or fallback to hardcoded
-        return if (WindUtilities.isOnline()) {
-            getPortMapFromApi().recoverCatching {
-                getHardCodedPortMap().getOrThrow()
+            val currentPortMap = preferencesHelper.portMapVersion
+            if (currentPortMap != NetworkKeyConstants.PORT_MAP_VERSION) {
+                return Result.failure(WindScribeException("Port map version outdated"))
             }
-        } else {
-            getHardCodedPortMap()
-        }
-    }
 
-    fun getPortMapWithCallback(callback: (PortMapResponse) -> Unit) {
-        cachedPortMap?.let {
-            callback(it)
-            return
-        }
+            // Try to load from preferences
+            val cachedJson = preferencesHelper.portMap
+            val cachedResult =
+                runCatching {
+                    Gson().fromJson(cachedJson, PortMapResponse::class.java)
+                }.onSuccess { cachedPortMap = it }
+                    .mapCatching { Result.success(it) }
+                    .getOrNull()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val result = getPortMap()
-            result.onSuccess { portMap ->
-                cachedPortMap = portMap
-                withContext(Dispatchers.Main) {
-                    callback(portMap)
+            if (cachedResult != null) return cachedResult
+
+            // Try API or fallback to hardcoded
+            return if (WindUtilities.isOnline()) {
+                getPortMapFromApi().recoverCatching {
+                    getHardCodedPortMap().getOrThrow()
                 }
-            }.onFailure {
-                // Silently fail - caller will handle missing callback
+            } else {
+                getHardCodedPortMap()
             }
         }
-    }
 
-    private fun getHardCodedPortMap(): Result<PortMapResponse> {
-        return runCatching {
-            appContext.resources.openRawResource(R.raw.port_map).use { inputStream ->
-                val text = inputStream.bufferedReader().readText()
-                Gson().fromJson(text, PortMapResponse::class.java)
+        fun getPortMapWithCallback(callback: (PortMapResponse) -> Unit) {
+            cachedPortMap?.let {
+                callback(it)
+                return
+            }
+
+            CoroutineScope(Dispatchers.IO).launch {
+                val result = getPortMap()
+                result
+                    .onSuccess { portMap ->
+                        cachedPortMap = portMap
+                        withContext(Dispatchers.Main) {
+                            callback(portMap)
+                        }
+                    }.onFailure {
+                        // Silently fail - caller will handle missing callback
+                    }
             }
         }
-    }
 
-    private suspend fun getPortMapFromApi(): Result<PortMapResponse> {
-        return when (val result = result<PortMapResponse> {
-            apiCallManager.getPortMap()
-        }) {
-            is CallResult.Error -> {
-                Result.failure(WindScribeException(result.errorMessage))
+        private fun getHardCodedPortMap(): Result<PortMapResponse> =
+            runCatching {
+                appContext.resources.openRawResource(R.raw.port_map).use { inputStream ->
+                    val text = inputStream.bufferedReader().readText()
+                    Gson().fromJson(text, PortMapResponse::class.java)
+                }
             }
 
-            is CallResult.Success -> {
-                preferencesHelper.portMapVersion = NetworkKeyConstants.PORT_MAP_VERSION
-                preferencesHelper.portMap = Gson().toJson(result.data)
-                cachedPortMap = result.data
-                Result.success(result.data)
+        private suspend fun getPortMapFromApi(): Result<PortMapResponse> =
+            when (
+                val result =
+                    result<PortMapResponse> {
+                        apiCallManager.getPortMap()
+                    }
+            ) {
+                is CallResult.Error -> {
+                    Result.failure(WindScribeException(result.errorMessage))
+                }
+
+                is CallResult.Success -> {
+                    preferencesHelper.portMapVersion = NetworkKeyConstants.PORT_MAP_VERSION
+                    preferencesHelper.portMap = Gson().toJson(result.data)
+                    cachedPortMap = result.data
+                    Result.success(result.data)
+                }
             }
+
+        fun clearCache() {
+            cachedPortMap = null
         }
     }
-
-    fun clearCache() {
-        cachedPortMap = null
-    }
-}

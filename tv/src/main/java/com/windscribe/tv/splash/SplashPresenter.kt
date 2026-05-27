@@ -3,11 +3,15 @@
  */
 package com.windscribe.tv.splash
 
-import com.windscribe.tv.splash.SplashView
 import kotlinx.coroutines.CoroutineScope
 
 interface SplashPresenter {
-    fun bind(view: SplashView, scope: CoroutineScope)
+    fun bind(
+        view: SplashView,
+        scope: CoroutineScope,
+    )
+
     fun checkNewMigration()
+
     fun onDestroy()
 }

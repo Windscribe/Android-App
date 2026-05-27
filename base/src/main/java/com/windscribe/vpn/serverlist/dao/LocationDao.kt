@@ -12,7 +12,6 @@ import com.windscribe.vpn.serverlist.entity.Location
 
 @Dao
 abstract class LocationDao {
-
     @Insert(onConflict = REPLACE)
     abstract suspend fun addAll(regions: List<Location>)
 

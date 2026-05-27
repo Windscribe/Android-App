@@ -4,8 +4,6 @@
 
 package com.windscribe.vpn.state
 
-import android.R.attr.name
-import android.util.Log
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
@@ -24,9 +22,8 @@ import javax.inject.Singleton
 class NetworkInfoManager(
     private val preferencesHelper: PreferencesHelper,
     private val localDbInterface: LocalDbInterface,
-    private val deviceStateManager: DeviceStateManager
+    private val deviceStateManager: DeviceStateManager,
 ) {
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val logger = LoggerFactory.getLogger("network-info-manager")
 
@@ -41,17 +38,19 @@ class NetworkInfoManager(
                 return@launch
             }
             try {
-                var network = withContext(Dispatchers.IO) {
-                    localDbInterface.getNetwork(currentDetail.name)
-                }
+                var network =
+                    withContext(Dispatchers.IO) {
+                        localDbInterface.getNetwork(currentDetail.name)
+                    }
 
                 if (network == null) {
                     withContext(Dispatchers.IO) {
                         localDbInterface.addNetwork(preferencesHelper.getDefaultNetworkInfo(currentDetail.name))
                     }
-                    network = withContext(Dispatchers.IO) {
-                        localDbInterface.getNetwork(currentDetail.name)
-                    }
+                    network =
+                        withContext(Dispatchers.IO) {
+                            localDbInterface.getNetwork(currentDetail.name)
+                        }
                 }
                 _networkInfo.emit(network)
             } catch (e: Exception) {

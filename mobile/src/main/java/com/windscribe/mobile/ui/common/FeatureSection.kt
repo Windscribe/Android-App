@@ -28,14 +28,18 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.theme.font28
 import kotlinx.coroutines.delay
 
-data class FeatureItem(val imageRes: Int, val text: String)
-
-val featureList = listOf(
-    FeatureItem(R.drawable.feature_servers, "Servers in over 69 countries and 134 cities."),
-    FeatureItem(R.drawable.feature_secure, "Automatically Secure any Network"),
-    FeatureItem(R.drawable.feature_logging, "Strict No-Logging Policy"),
-    FeatureItem(R.drawable.feature_quick, "Works with Shortcuts & Quick Settings"),
+data class FeatureItem(
+    val imageRes: Int,
+    val text: String,
 )
+
+val featureList =
+    listOf(
+        FeatureItem(R.drawable.feature_servers, "Servers in over 69 countries and 134 cities."),
+        FeatureItem(R.drawable.feature_secure, "Automatically Secure any Network"),
+        FeatureItem(R.drawable.feature_logging, "Strict No-Logging Policy"),
+        FeatureItem(R.drawable.feature_quick, "Works with Shortcuts & Quick Settings"),
+    )
 
 @Composable
 fun FeatureSection(modifier: Modifier = Modifier) {
@@ -49,20 +53,21 @@ fun FeatureSection(modifier: Modifier = Modifier) {
     }
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
     ) {
         val currentFeature = featureList[currentIndex]
 
         Image(
             painter = painterResource(currentFeature.imageRes),
             contentDescription = "Feature Image",
-            modifier = Modifier.size(120.dp)
+            modifier = Modifier.size(120.dp),
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = currentFeature.text,
             style = font28,
-            color = Color(0xFFFFFFFF)
+            color = Color(0xFFFFFFFF),
         )
         Spacer(modifier = Modifier.height(24.dp))
         DotsIndicator(currentIndex)
@@ -73,18 +78,19 @@ fun FeatureSection(modifier: Modifier = Modifier) {
 fun DotsIndicator(currentIndex: Int) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         featureList.indices.forEach { index ->
-            val alpha = animateFloatAsState(
-                targetValue = if (index == currentIndex) 1f else 0.4f,
-                animationSpec = tween(durationMillis = 500, easing = LinearEasing)
-            )
+            val alpha =
+                animateFloatAsState(
+                    targetValue = if (index == currentIndex) 1f else 0.4f,
+                    animationSpec = tween(durationMillis = 500, easing = LinearEasing),
+                )
 
             Surface(
                 shape = CircleShape,
                 color = Color.White.copy(alpha = alpha.value),
-                modifier = Modifier.size(8.dp)
+                modifier = Modifier.size(8.dp),
             ) {}
         }
     }

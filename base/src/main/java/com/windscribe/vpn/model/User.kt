@@ -6,15 +6,23 @@ package com.windscribe.vpn.model
 
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.constants.UserStatusConstants
-import com.windscribe.vpn.model.User.AccountStatus.*
-import com.windscribe.vpn.model.User.EmailStatus.*
+import com.windscribe.vpn.model.User.AccountStatus.Banned
+import com.windscribe.vpn.model.User.AccountStatus.Expired
+import com.windscribe.vpn.model.User.AccountStatus.Okay
+import com.windscribe.vpn.model.User.EmailStatus.Confirmed
+import com.windscribe.vpn.model.User.EmailStatus.EmailProvided
+import com.windscribe.vpn.model.User.EmailStatus.NoEmail
 import java.lang.Exception
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.Objects
 import java.util.concurrent.TimeUnit
 
-class User(private val sessionResponse: UserSessionResponse) {
-
+class User(
+    private val sessionResponse: UserSessionResponse,
+) {
     val alcList: String?
         get() {
             val alcListString = StringBuilder()
@@ -58,7 +66,9 @@ class User(private val sessionResponse: UserSessionResponse) {
         }
 
     enum class AccountStatus {
-        Okay, Expired, Banned
+        Okay,
+        Expired,
+        Banned,
     }
 
     val accountStatus: AccountStatus
@@ -80,7 +90,9 @@ class User(private val sessionResponse: UserSessionResponse) {
         }
 
     enum class EmailStatus {
-        NoEmail, EmailProvided, Confirmed
+        NoEmail,
+        EmailProvided,
+        Confirmed,
     }
 
     val emailStatus: EmailStatus
@@ -112,8 +124,8 @@ class User(private val sessionResponse: UserSessionResponse) {
             return TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)
         }
 
-    fun nextResetDate(): String? {
-        return if (resetDate != null) {
+    fun nextResetDate(): String? =
+        if (resetDate != null) {
             try {
                 val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 val lastResetDate = formatter.parse(resetDate)
@@ -128,10 +140,9 @@ class User(private val sessionResponse: UserSessionResponse) {
         } else {
             null
         }
-    }
-    override fun toString(): String {
-        return "Account Status: $accountStatus | User Status: $userStatusInt | Ghost $isGhost | Email Status: $emailStatus | Sip count $sipCount"
-    }
+
+    override fun toString(): String =
+        "Account Status: $accountStatus | User Status: $userStatusInt | Ghost $isGhost | Email Status: $emailStatus | Sip count $sipCount"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -182,5 +193,4 @@ class User(private val sessionResponse: UserSessionResponse) {
         result = 31 * result + (resetDate?.hashCode() ?: 0)
         return result
     }
-
 }

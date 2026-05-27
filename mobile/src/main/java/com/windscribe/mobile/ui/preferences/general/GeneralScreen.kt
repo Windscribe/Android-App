@@ -62,7 +62,7 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
                 description = com.windscribe.vpn.R.string.location_order_description,
                 items = viewModel?.orderByItems ?: emptyList(),
                 selectedItemKey = viewModel?.selectedOrderBy ?: "",
-                onSelect = { viewModel?.onOrderByItemSelected(it) }
+                onSelect = { viewModel?.onOrderByItemSelected(it) },
             )
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -73,14 +73,14 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
                 description = com.windscribe.vpn.R.string.language_description,
                 items = viewModel?.languageItems ?: emptyList(),
                 selectedItemKey = viewModel?.selectedLanguage ?: "",
-                onSelect = { viewModel?.onLanguageItemSelected(it) }
+                onSelect = { viewModel?.onLanguageItemSelected(it) },
             )
             Spacer(modifier = Modifier.height(14.dp))
             SwitchItemView(
                 com.windscribe.vpn.R.string.show_location_health,
                 R.drawable.ic_location_load,
                 com.windscribe.vpn.R.string.location_load_description,
-                isLocationLoadEnabled
+                isLocationLoadEnabled,
             ) {
                 viewModel?.onLocationLoadItemClicked()
             }
@@ -90,7 +90,7 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
                 icon = R.drawable.ic_notification_stats,
                 description = com.windscribe.vpn.R.string.notification_stats_description,
                 isNotificationStatEnabled,
-                onSelect = { viewModel?.onNotificationStatEnabledClick() }
+                onSelect = { viewModel?.onNotificationStatEnabledClick() },
             )
             Spacer(modifier = Modifier.height(14.dp))
             SwitchItemView(
@@ -98,7 +98,7 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
                 icon = R.drawable.ic_haptic,
                 description = com.windscribe.vpn.R.string.haptic_feedback_description,
                 isHapticEnabled,
-                onSelect = { viewModel?.onHapticToggleButtonClicked() }
+                onSelect = { viewModel?.onHapticToggleButtonClicked() },
             )
             Spacer(modifier = Modifier.height(14.dp))
             VersionName(viewModel)
@@ -112,21 +112,21 @@ private fun VersionName(viewModel: GeneralViewModel?) {
         Modifier
             .background(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(size = 12.dp)
-            )
-            .padding(start = 14.dp, top = 14.dp, end = 14.dp, bottom = 14.dp),
+                shape = RoundedCornerShape(size = 12.dp),
+            ).padding(start = 14.dp, top = 14.dp, end = 14.dp, bottom = 14.dp),
     ) {
         Text(
             text = stringResource(com.windscribe.vpn.R.string.version),
-            style = font16.copy(
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primaryTextColor
-            ),
+            style =
+                font16.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primaryTextColor,
+                ),
         )
         Spacer(modifier = Modifier.weight(1.0f))
         Text(
             text = viewModel?.versionName ?: "",
-            style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor)
+            style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
         )
     }
 }

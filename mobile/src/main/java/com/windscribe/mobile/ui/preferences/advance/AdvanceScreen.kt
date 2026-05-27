@@ -50,9 +50,10 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
     val focusManager = LocalFocusManager.current
     PreferenceBackground {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
         ) {
             PreferencesNavBar(title = stringResource(R.string.advance)) {
                 navController.popBackStack()
@@ -60,27 +61,31 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
             Spacer(modifier = Modifier.height(20.dp))
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.TopCenter
+                contentAlignment = Alignment.TopCenter,
             ) {
                 Column(
-                    modifier = Modifier
-                        .widthIn(max = 473.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier =
+                        Modifier
+                            .widthIn(max = 473.dp)
+                            .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     OutlinedTextField(
                         value = params,
                         onValueChange = {
                             viewModel?.updateParams(it)
                         },
-                        modifier = Modifier
-                            .height(250.dp)
-                            .fillMaxWidth()
-                            .background(
-                                color = MaterialTheme.colorScheme.primaryTextColor.copy(
-                                    alpha = 0.05f
-                                ), shape = RoundedCornerShape(12.dp)
-                            ),
+                        modifier =
+                            Modifier
+                                .height(250.dp)
+                                .fillMaxWidth()
+                                .background(
+                                    color =
+                                        MaterialTheme.colorScheme.primaryTextColor.copy(
+                                            alpha = 0.05f,
+                                        ),
+                                    shape = RoundedCornerShape(12.dp),
+                                ),
                         singleLine = false,
                         maxLines = Int.MAX_VALUE,
                         placeholder = {
@@ -90,38 +95,40 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
                             )
                         },
                         textStyle = font12.copy(textAlign = TextAlign.Start),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            disabledTextColor = MaterialTheme.colorScheme.primaryTextColor,
-                            disabledContainerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                            disabledBorderColor = Color.Transparent,
-                            disabledLabelColor = MaterialTheme.colorScheme.primaryTextColor,
-                            disabledPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
-                            errorBorderColor = Color.Transparent,
-                            errorContainerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                            errorCursorColor = MaterialTheme.colorScheme.primaryTextColor,
-                            errorLabelColor = MaterialTheme.colorScheme.primaryTextColor,
-                            errorLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
-                            errorPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
-                            errorTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
-                            focusedLabelColor = MaterialTheme.colorScheme.primaryTextColor,
-                            focusedLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
-                            focusedPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
-                            focusedTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.primaryTextColor,
-                            unfocusedLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
-                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
-                            unfocusedTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
-                            cursorColor = MaterialTheme.colorScheme.primaryTextColor,
-                            selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                                handleColor = MaterialTheme.colorScheme.primaryTextColor,
-                                backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.4f)
-                            )
-                        )
+                        colors =
+                            OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.primaryTextColor,
+                                disabledContainerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                                disabledBorderColor = Color.Transparent,
+                                disabledLabelColor = MaterialTheme.colorScheme.primaryTextColor,
+                                disabledPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
+                                errorBorderColor = Color.Transparent,
+                                errorContainerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                                errorCursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                                errorLabelColor = MaterialTheme.colorScheme.primaryTextColor,
+                                errorLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                                errorPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
+                                errorTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                                focusedLabelColor = MaterialTheme.colorScheme.primaryTextColor,
+                                focusedLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                                focusedPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
+                                focusedTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.primaryTextColor,
+                                unfocusedLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                                unfocusedPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
+                                unfocusedTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                                cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                                selectionColors =
+                                    androidx.compose.foundation.text.selection.TextSelectionColors(
+                                        handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                                        backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.4f),
+                                    ),
+                            ),
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         NextButton(
                             text = stringResource(R.string.save),
@@ -129,18 +136,18 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
                             onClick = {
                                 focusManager.clearFocus()
                                 viewModel?.saveAdvanceParams(params)
-                            }
+                            },
                         )
                         TextButton(
                             onClick = {
                                 focusManager.clearFocus()
                                 viewModel?.clearAdvanceParams()
                             },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
                                 text = stringResource(R.string.clear),
-                                color = MaterialTheme.colorScheme.primaryTextColor
+                                color = MaterialTheme.colorScheme.primaryTextColor,
                             )
                         }
                     }

@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class RegToken {
-
     @SerializedName("id")
     @Expose
     val id: String? = null

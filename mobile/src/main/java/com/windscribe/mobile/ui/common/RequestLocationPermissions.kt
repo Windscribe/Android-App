@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -20,9 +19,7 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 
 @Composable
-fun RequestLocationPermissions(
-    onGranted: () -> Unit
-) {
+fun RequestLocationPermissions(onGranted: () -> Unit) {
     val activity = LocalContext.current as AppStartActivity
     val navController = LocalNavController.current
     val permissionDialogType = remember { mutableStateOf(PermissionDialogType.None) }
@@ -30,44 +27,51 @@ fun RequestLocationPermissions(
 
     // Move string resources to composable body to survive recomposition
     val missingPermissionTitle = stringResource(com.windscribe.vpn.R.string.missing_location_permission)
-    val missingPermissionDescription = stringResource(com.windscribe.vpn.R.string.location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time)
+    val missingPermissionDescription =
+        stringResource(
+            com.windscribe.vpn.R.string
+                .location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time,
+        )
     val openSettingsLabel = stringResource(com.windscribe.vpn.R.string.open_settings)
     val locationDisclosureTitle = stringResource(com.windscribe.vpn.R.string.location_permission_disclosure_title)
     val backgroundLocationDisclosureMessage = stringResource(com.windscribe.vpn.R.string.background_location_permission_disclosure_message)
     val grantPermissionLabel = stringResource(com.windscribe.vpn.R.string.grant_permission)
 
     val showDialog = { data: DialogData, onConfirm: () -> Unit ->
-        val callback = object : DialogCallback() {
-            override fun onDismiss() {
-                permissionDialogType.value = PermissionDialogType.None
-                navController.popBackStack()
-            }
+        val callback =
+            object : DialogCallback() {
+                override fun onDismiss() {
+                    permissionDialogType.value = PermissionDialogType.None
+                    navController.popBackStack()
+                }
 
-            override fun onConfirm() {
-                permissionDialogType.value = PermissionDialogType.None
-                navController.popBackStack()
-                onConfirm()
+                override fun onConfirm() {
+                    permissionDialogType.value = PermissionDialogType.None
+                    navController.popBackStack()
+                    onConfirm()
+                }
             }
-        }
         activity.viewmodel.setDialogCallback(data, callback)
         navController.navigate(Screen.OverlayDialog.route)
     }
 
-    val missingPermissionData = DialogData(
-        R.drawable.ic_attention_icon,
-        missingPermissionTitle,
-        missingPermissionDescription,
-        openSettingsLabel
-    )
+    val missingPermissionData =
+        DialogData(
+            R.drawable.ic_attention_icon,
+            missingPermissionTitle,
+            missingPermissionDescription,
+            openSettingsLabel,
+        )
     LaunchedEffect(Unit) {
         permissionHelper.backgroundCallback = { granted ->
             if (granted) {
                 onGranted()
             } else {
                 showDialog(missingPermissionData) {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", activity.packageName, null)
-                    }
+                    val intent =
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", activity.packageName, null)
+                        }
                     intent.resolveActivity(activity.packageManager)?.let {
                         try {
                             activity.startActivity(intent)
@@ -88,9 +92,10 @@ fun RequestLocationPermissions(
                 }
             } else {
                 showDialog(missingPermissionData) {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", activity.packageName, null)
-                    }
+                    val intent =
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", activity.packageName, null)
+                        }
                     intent.resolveActivity(activity.packageManager)?.let {
                         try {
                             activity.startActivity(intent)
@@ -105,29 +110,34 @@ fun RequestLocationPermissions(
         when {
             !permissionHelper.isGranted(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 permissionHelper.foregroundLocationPermissionLauncher.launch(
-                    Manifest.permission.ACCESS_FINE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION,
                 )
             }
 
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !permissionHelper.isGranted(Manifest.permission.ACCESS_BACKGROUND_LOCATION) -> {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                !permissionHelper.isGranted(
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                )
+            -> {
                 permissionDialogType.value = PermissionDialogType.BackgroundLocation
             }
 
-            else -> onGranted()
+            else -> {
+                onGranted()
+            }
         }
     }
 
-
-
     when (permissionDialogType.value) {
         PermissionDialogType.BackgroundLocation -> {
-            val backgroundLocationData = DialogData(
-                R.drawable.location_instruction_icon,
-                locationDisclosureTitle,
-                backgroundLocationDisclosureMessage,
-                grantPermissionLabel,
-                iconAtBottom = true
-            )
+            val backgroundLocationData =
+                DialogData(
+                    R.drawable.location_instruction_icon,
+                    locationDisclosureTitle,
+                    backgroundLocationDisclosureMessage,
+                    grantPermissionLabel,
+                    iconAtBottom = true,
+                )
             showDialog(backgroundLocationData) {
                 permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             }

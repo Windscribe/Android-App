@@ -4,7 +4,6 @@ import android.os.ParcelFileDescriptor
 import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
-import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.services.ping.EchoPacketBuilder
 import com.windscribe.vpn.state.DeviceStateManager
@@ -26,7 +25,7 @@ class TunnelHealthCheck(
     private val deviceStateManager: DeviceStateManager,
     private val workManager: WindScribeWorkManager,
     private val getService: () -> WireGuardWrapperService?,
-    private val disconnect: suspend (VPNState.Error?) -> Unit
+    private val disconnect: suspend (VPNState.Error?) -> Unit,
 ) {
     private val logger = LoggerFactory.getLogger("tunnel-health-check")
     private var lastHandshakeTimestamp: Long? = null
@@ -62,19 +61,21 @@ class TunnelHealthCheck(
             logger.error("Failed to parse WireGuard endpoint from profile: ${e.message}")
         }
 
-        handshakeReceivedJob = scope.launch {
-            wgLogger.handshakeReceivedEvent.collect {
-                lastHandshakeTimestamp = System.currentTimeMillis()
-                externalCheckFailureCount = 0
-                tunnelCheckFailureCount = 0
+        handshakeReceivedJob =
+            scope.launch {
+                wgLogger.handshakeReceivedEvent.collect {
+                    lastHandshakeTimestamp = System.currentTimeMillis()
+                    externalCheckFailureCount = 0
+                    tunnelCheckFailureCount = 0
+                }
             }
-        }
 
-        handshakeFailureJob = scope.launch {
-            wgLogger.handshakeFailureEvent.collect {
-                handleHandshakeFailure()
+        handshakeFailureJob =
+            scope.launch {
+                wgLogger.handshakeFailureEvent.collect {
+                    handleHandshakeFailure()
+                }
             }
-        }
     }
 
     fun stop() {
@@ -117,10 +118,14 @@ class TunnelHealthCheck(
             }
 
             tunnelCheckFailureCount++
-            logger.warn("Tunnel connectivity check FAILED (${tunnelCheckFailureCount}/${REQUIRED_CONSECUTIVE_FAILURES}): No traffic passing through tunnel")
+            logger.warn(
+                "Tunnel connectivity check FAILED ($tunnelCheckFailureCount/$REQUIRED_CONSECUTIVE_FAILURES): No traffic passing through tunnel",
+            )
 
             if (tunnelCheckFailureCount < REQUIRED_CONSECUTIVE_FAILURES) {
-                logger.info("Not triggering recovery yet - waiting for ${REQUIRED_CONSECUTIVE_FAILURES - tunnelCheckFailureCount} more consecutive failure(s)")
+                logger.info(
+                    "Not triggering recovery yet - waiting for ${REQUIRED_CONSECUTIVE_FAILURES - tunnelCheckFailureCount} more consecutive failure(s)",
+                )
                 return
             }
 
@@ -148,15 +153,13 @@ class TunnelHealthCheck(
 
             logger.error(
                 "TUNNEL HEALTH CHECK FAILED: " +
-                        "handshake_timeout=${timeSinceHandshake}ms, " +
-                        "device_online=true, " +
-                        "tunnel_connectivity=false, " +
-                        "external_connectivity=true. " +
-                        "Tunnel is broken - initiating recovery."
+                    "handshake_timeout=${timeSinceHandshake}ms, " +
+                    "device_online=true, " +
+                    "tunnel_connectivity=false, " +
+                    "external_connectivity=true. " +
+                    "Tunnel is broken - initiating recovery.",
             )
-
             recoverFromBrokenTunnel()
-
         } catch (e: Exception) {
             logger.error("Error during tunnel health check: ${e.message}", e)
         } finally {
@@ -164,7 +167,10 @@ class TunnelHealthCheck(
         }
     }
 
-    private suspend fun checkConnectivityWithRetry(bypassTunnel: Boolean, retries: Int = TUNNEL_CHECK_RETRIES): Boolean {
+    private suspend fun checkConnectivityWithRetry(
+        bypassTunnel: Boolean,
+        retries: Int = TUNNEL_CHECK_RETRIES,
+    ): Boolean {
         repeat(retries) { attempt ->
             if (attempt > 0) {
                 logger.debug("Retrying connectivity check (attempt ${attempt + 1}/$retries) after ${TUNNEL_CHECK_RETRY_DELAY_MS}ms delay")
@@ -212,10 +218,11 @@ class TunnelHealthCheck(
                 val echoBuilder = EchoPacketBuilder(EchoPacketBuilder.TYPE_ICMP_V4, "wg-health-check".toByteArray())
                 val packet = echoBuilder.build()
 
-                val pollFd = StructPollfd().apply {
-                    this.fd = fd
-                    this.events = OsConstants.POLLIN.toShort()
-                }
+                val pollFd =
+                    StructPollfd().apply {
+                        this.fd = fd
+                        this.events = OsConstants.POLLIN.toShort()
+                    }
 
                 val bytesSent = Os.sendto(fd, packet, 0, destination, 0)
                 if (bytesSent < 0) {
@@ -240,7 +247,6 @@ class TunnelHealthCheck(
                 }
 
                 false
-
             } catch (e: Exception) {
                 logger.debug("Connectivity check failed: ${e.message}")
                 false

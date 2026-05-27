@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.navigation.NavController
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -59,18 +58,22 @@ fun DebugScreen(viewModel: DebugViewModel? = null) {
                     listState.scrollToItem(debugLog.size - 1)
                 }
             }
-            LazyColumn(state = listState,  modifier = Modifier.combinedClickable(
-                onClick = {},
-                onLongClick = {
-                    exportLog(context)
-                }
-            )) {
+            LazyColumn(
+                state = listState,
+                modifier =
+                    Modifier.combinedClickable(
+                        onClick = {},
+                        onLongClick = {
+                            exportLog(context)
+                        },
+                    ),
+            ) {
                 items(debugLog.size) {
                     Text(
                         debugLog[it],
                         style = font12,
                         color = MaterialTheme.colorScheme.primaryTextColor,
-                        textAlign = TextAlign.Start
+                        textAlign = TextAlign.Start,
                     )
                 }
             }
@@ -82,16 +85,18 @@ fun DebugScreen(viewModel: DebugViewModel? = null) {
 private fun exportLog(context: Context) {
     val logFile = File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
     if (logFile.exists()) {
-        val fileUri: Uri = FileProvider.getUriForFile(
-            context,
-            "com.windscribe.vpn.provider",
-            logFile
-        )
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_STREAM, fileUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
+        val fileUri: Uri =
+            FileProvider.getUriForFile(
+                context,
+                "com.windscribe.vpn.provider",
+                logFile,
+            )
+        val shareIntent =
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_STREAM, fileUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
         val chooser = Intent.createChooser(shareIntent, "Export Log File")
         if (shareIntent.resolveActivity(context.packageManager) != null) {
             context.startActivity(chooser)

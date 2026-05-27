@@ -7,10 +7,10 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.bundledBackgrounds
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getSoundFile
-import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -20,13 +20,12 @@ import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
-import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.FlagIconResource
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
@@ -36,61 +35,83 @@ import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.RepositoryState
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.DatacenterStatus
 import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
-import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.File
 import javax.inject.Inject
 
-
 sealed class LocationInfoState {
-    data class Success(val locationInfo: LocationInfo) : LocationInfoState()
+    data class Success(
+        val locationInfo: LocationInfo,
+    ) : LocationInfoState()
+
     object Unavailable : LocationInfoState()
 }
 
 sealed class ToastMessage {
-    data class Localized(@StringRes val message: Int) : ToastMessage()
-    data class Raw(val message: String) : ToastMessage()
+    data class Localized(
+        @StringRes val message: Int,
+    ) : ToastMessage()
+
+    data class Raw(
+        val message: String,
+    ) : ToastMessage()
+
     object None : ToastMessage()
 }
 
 sealed class LocationBackground {
     open val resource: Int = R.drawable.dummy_flag
 
-    data class Flag(@DrawableRes override val resource: Int) : LocationBackground()
-    data class Wallpaper(@DrawableRes override val resource: Int) : LocationBackground()
-    data class Custom(val file: File) : LocationBackground()
+    data class Flag(
+        @DrawableRes override val resource: Int,
+    ) : LocationBackground()
+
+    data class Wallpaper(
+        @DrawableRes override val resource: Int,
+    ) : LocationBackground()
+
+    data class Custom(
+        val file: File,
+    ) : LocationBackground()
 }
 
 data class LocationInfo(
     val country: String,
     val nodeName: String,
     val nickName: String,
-    val locationBackground: LocationBackground
+    val locationBackground: LocationBackground,
 )
 
 sealed class NetworkInfoState {
     open val name: String? = null
 
-    data class Secured(override val name: String) : NetworkInfoState()
-    data class Unsecured(override val name: String) : NetworkInfoState()
+    data class Secured(
+        override val name: String,
+    ) : NetworkInfoState()
+
+    data class Unsecured(
+        override val name: String,
+    ) : NetworkInfoState()
+
     object Unknown : NetworkInfoState()
 }
 
@@ -100,18 +121,18 @@ sealed class ConnectionUIState {
 
     data class Connecting(
         override val protocolInfo: ProtocolInformation,
-        override val locationInfo: LocationInfoState
+        override val locationInfo: LocationInfoState,
     ) : ConnectionUIState()
 
     data class Connected(
         override val protocolInfo: ProtocolInformation,
         override val locationInfo: LocationInfoState,
-        val connectedUsingSplitRouting: Boolean = false
+        val connectedUsingSplitRouting: Boolean = false,
     ) : ConnectionUIState()
 
     data class Disconnected(
         override val protocolInfo: ProtocolInformation,
-        override val locationInfo: LocationInfoState
+        override val locationInfo: LocationInfoState,
     ) : ConnectionUIState()
 
     object Idle : ConnectionUIState() {
@@ -121,7 +142,6 @@ sealed class ConnectionUIState {
             get() = null
     }
 }
-
 
 abstract class ConnectionViewmodel : ViewModel() {
     abstract val connectionUIState: StateFlow<ConnectionUIState>
@@ -135,738 +155,788 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val aspectRatio: StateFlow<Int>
     abstract val goto: SharedFlow<HomeGoto>
     abstract val newFeedCount: StateFlow<Int>
+
     abstract fun onConnectButtonClick()
-    abstract fun onCityClick(city: Datacenter, isFav: Boolean = false)
+
+    abstract fun onCityClick(
+        city: Datacenter,
+        isFav: Boolean = false,
+    )
+
     abstract fun onStaticIpClick(staticRegion: StaticRegion)
+
     abstract fun onConfigClick(config: ConfigFile)
+
     abstract val toastMessage: StateFlow<ToastMessage>
     abstract val isSingleLineLocationName: StateFlow<Boolean>
     abstract val shouldPlayHapticFeedback: StateFlow<Boolean>
+
     abstract fun clearToast()
+
     abstract fun onProtocolChangeClick()
+
     abstract fun onGoToHandled()
+
     abstract fun setIsSingleLineLocationName(singleLine: Boolean)
+
     abstract fun onHapticFeedbackHandled()
+
     abstract fun onIpAnimationComplete()
 }
 
 @HiltViewModel
-class ConnectionViewmodelImpl @Inject constructor(
-    private val appScope: CoroutineScope,
-    private val vpnConnectionStateManager: VPNConnectionStateManager,
-    private val vpnController: WindVpnController,
-    private val ipRepository: IpRepository,
-    private val networkInfoManager: NetworkInfoManager,
-    private val locationRepository: LocationRepository,
-    private val localdb: LocalDbInterface,
-    private val preferences: PreferencesHelper,
-    private val autoConnectionManager: AutoConnectionManager,
-    private val userRepository: UserRepository,
-    private val serverListRepository: ServerListRepository,
-    private val decoyTrafficController: DecoyTrafficController,
-    private val resourceHelper: ResourceHelper,
-    private val notificationRepository: NotificationRepository
-) :
-    ConnectionViewmodel() {
-    private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
-    override val connectionUIState: StateFlow<ConnectionUIState> = _connectionUIState
+class ConnectionViewmodelImpl
+    @Inject
+    constructor(
+        private val appScope: CoroutineScope,
+        private val vpnConnectionStateManager: VPNConnectionStateManager,
+        private val vpnController: WindVpnController,
+        private val ipRepository: IpRepository,
+        private val networkInfoManager: NetworkInfoManager,
+        private val locationRepository: LocationRepository,
+        private val localdb: LocalDbInterface,
+        private val preferences: PreferencesHelper,
+        private val autoConnectionManager: AutoConnectionManager,
+        private val userRepository: UserRepository,
+        private val serverListRepository: ServerListRepository,
+        private val decoyTrafficController: DecoyTrafficController,
+        private val resourceHelper: ResourceHelper,
+        private val notificationRepository: NotificationRepository,
+    ) : ConnectionViewmodel() {
+        private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
+        override val connectionUIState: StateFlow<ConnectionUIState> = _connectionUIState
 
-    private val _ipState: MutableStateFlow<String> = MutableStateFlow("")
-    override val ipState: StateFlow<String> = _ipState
-    private val _shouldAnimateIp: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    override val shouldAnimateIp: StateFlow<Boolean> = _shouldAnimateIp
-    private var lastValidIp: String? = null
-    private val _networkInfoState: MutableStateFlow<NetworkInfoState> =
-        MutableStateFlow(NetworkInfoState.Unknown)
-    override val networkInfoState: StateFlow<NetworkInfoState> = _networkInfoState
-    private val _toastMessage = MutableStateFlow<ToastMessage>(ToastMessage.None)
-    override val toastMessage: StateFlow<ToastMessage> = _toastMessage
-    private val _bestLocation = MutableStateFlow<ServerListItem?>(null)
-    override val bestLocation: StateFlow<ServerListItem?> = _bestLocation
-    private val _isProtocolTweaksEnabled = MutableStateFlow(preferences.isProtocolTweaksEnabled)
-    override val isProtocolTweaksEnabled: StateFlow<Boolean> = _isProtocolTweaksEnabled
-    private val _isPreferredProtocolEnabled = MutableStateFlow(false)
-    override val isPreferredProtocolEnabled: StateFlow<Boolean> = _isPreferredProtocolEnabled
-    private val _isDecoyTrafficEnabled = MutableStateFlow(false)
-    override val isDecoyTrafficEnabled: StateFlow<Boolean> = _isDecoyTrafficEnabled
-    private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
-    override val goto: SharedFlow<HomeGoto> = _goto
-    private val _newFeedCount = MutableStateFlow(0)
-    override val newFeedCount: StateFlow<Int> = _newFeedCount
+        private val _ipState: MutableStateFlow<String> = MutableStateFlow("")
+        override val ipState: StateFlow<String> = _ipState
+        private val _shouldAnimateIp: MutableStateFlow<Boolean> = MutableStateFlow(false)
+        override val shouldAnimateIp: StateFlow<Boolean> = _shouldAnimateIp
+        private var lastValidIp: String? = null
+        private val _networkInfoState: MutableStateFlow<NetworkInfoState> =
+            MutableStateFlow(NetworkInfoState.Unknown)
+        override val networkInfoState: StateFlow<NetworkInfoState> = _networkInfoState
+        private val _toastMessage = MutableStateFlow<ToastMessage>(ToastMessage.None)
+        override val toastMessage: StateFlow<ToastMessage> = _toastMessage
+        private val _bestLocation = MutableStateFlow<ServerListItem?>(null)
+        override val bestLocation: StateFlow<ServerListItem?> = _bestLocation
+        private val _isProtocolTweaksEnabled = MutableStateFlow(preferences.isProtocolTweaksEnabled)
+        override val isProtocolTweaksEnabled: StateFlow<Boolean> = _isProtocolTweaksEnabled
+        private val _isPreferredProtocolEnabled = MutableStateFlow(false)
+        override val isPreferredProtocolEnabled: StateFlow<Boolean> = _isPreferredProtocolEnabled
+        private val _isDecoyTrafficEnabled = MutableStateFlow(false)
+        override val isDecoyTrafficEnabled: StateFlow<Boolean> = _isDecoyTrafficEnabled
+        private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
+        override val goto: SharedFlow<HomeGoto> = _goto
+        private val _newFeedCount = MutableStateFlow(0)
+        override val newFeedCount: StateFlow<Int> = _newFeedCount
 
-    private val lastLocationState: MutableStateFlow<LastSelectedLocation?> = MutableStateFlow(null)
-    private val _aspectRatio = MutableStateFlow(1)
-    override val aspectRatio: StateFlow<Int> = _aspectRatio
-    private val _isSingleLineLocationName = MutableStateFlow(true)
-    override val isSingleLineLocationName: StateFlow<Boolean> = _isSingleLineLocationName
-    private val _shouldPlayHapticFeedback = MutableStateFlow(false)
-    override val shouldPlayHapticFeedback: StateFlow<Boolean> = _shouldPlayHapticFeedback
-    private var mediaPlayer: MediaPlayer? = null
-    private val logger = LoggerFactory.getLogger("ConnectionViewmodel")
+        private val lastLocationState: MutableStateFlow<LastSelectedLocation?> = MutableStateFlow(null)
+        private val _aspectRatio = MutableStateFlow(1)
+        override val aspectRatio: StateFlow<Int> = _aspectRatio
+        private val _isSingleLineLocationName = MutableStateFlow(true)
+        override val isSingleLineLocationName: StateFlow<Boolean> = _isSingleLineLocationName
+        private val _shouldPlayHapticFeedback = MutableStateFlow(false)
+        override val shouldPlayHapticFeedback: StateFlow<Boolean> = _shouldPlayHapticFeedback
+        private var mediaPlayer: MediaPlayer? = null
+        private val logger = LoggerFactory.getLogger("ConnectionViewmodel")
 
-    private var lastCityClickTime = 0L
-    private var lastStaticIpClickTime = 0L
-    private var lastConfigClickTime = 0L
-    private val debounceMillis = 1500L
+        private var lastCityClickTime = 0L
+        private var lastStaticIpClickTime = 0L
+        private var lastConfigClickTime = 0L
+        private val debounceMillis = 1500L
 
-
-    init {
-        fetchLastLocation()
-        fetchIPState()
-        fetchNetworkState()
-        fetchBestLocation()
-        fetchUserPreferences()
-        observeNotificationCount()
-        handleConnectionSoundsState()
-        handleConnectionHapticFeedback()
-        observeDecoyTrafficChanges()
-    }
-
-    private fun observeNotificationCount() {
-        viewModelScope.launch(Dispatchers.IO) {
-            notificationRepository.unreadCount.collect { count ->
-                _newFeedCount.emit(count)
-            }
+        init {
+            fetchLastLocation()
+            fetchIPState()
+            fetchNetworkState()
+            fetchBestLocation()
+            fetchUserPreferences()
+            observeNotificationCount()
+            handleConnectionSoundsState()
+            handleConnectionHapticFeedback()
+            observeDecoyTrafficChanges()
         }
-    }
 
-    private fun fetchUserPreferences() {
-        viewModelScope.launch(Dispatchers.IO) {
-            preferences.protocolTweaksModeFlow.collectLatest { mode ->
-                // Update the boolean state based on the mode using the extension property
-                _isProtocolTweaksEnabled.value = preferences.isProtocolTweaksEnabled
-            }
-        }
-        // Also observe session changes for Auto mode API recommendations
-        viewModelScope.launch(Dispatchers.IO) {
-            userRepository.user.filterNotNull().collectLatest { user ->
-                _isProtocolTweaksEnabled.value = preferences.isProtocolTweaksEnabled
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            preferences.backgroundAspectRatioOptionFlow.collectLatest { ratio ->
-                _aspectRatio.value = ratio
-            }
-        }
-    }
-
-    private fun fetchLastLocation() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val location = Util.getLastSelectedLocation(appContext)
-            if (location != null) {
-                lastLocationState.emit(location)
-                fetchConnectionState()
-            } else {
-                try {
-                    val bestDatacenterAndLocation = locationRepository.getBestLocationAsync()
-                    saveLastLocation(bestDatacenterAndLocation)
-                    _bestLocation.emit(
-                        ServerListItem(
-                            bestDatacenterAndLocation.location!!.id,
-                            bestDatacenterAndLocation.location!!,
-                            listOf(bestDatacenterAndLocation.datacenter)
-                        )
-                    )
-                    fetchConnectionState()
-                } catch (_: Exception) {
-                    lastLocationState.value = null
-                    fetchConnectionState()
+        private fun observeNotificationCount() {
+            viewModelScope.launch(Dispatchers.IO) {
+                notificationRepository.unreadCount.collect { count ->
+                    _newFeedCount.emit(count)
                 }
             }
         }
-    }
 
-    private fun observeDecoyTrafficChanges() {
-        viewModelScope.launch(Dispatchers.IO) {
-            decoyTrafficController.state.collect {
-                _isDecoyTrafficEnabled.value = it
+        private fun fetchUserPreferences() {
+            viewModelScope.launch(Dispatchers.IO) {
+                preferences.protocolTweaksModeFlow.collectLatest { mode ->
+                    // Update the boolean state based on the mode using the extension property
+                    _isProtocolTweaksEnabled.value = preferences.isProtocolTweaksEnabled
+                }
+            }
+            // Also observe session changes for Auto mode API recommendations
+            viewModelScope.launch(Dispatchers.IO) {
+                userRepository.user.filterNotNull().collectLatest { user ->
+                    _isProtocolTweaksEnabled.value = preferences.isProtocolTweaksEnabled
+                }
+            }
+            viewModelScope.launch(Dispatchers.IO) {
+                preferences.backgroundAspectRatioOptionFlow.collectLatest { ratio ->
+                    _aspectRatio.value = ratio
+                }
             }
         }
-    }
 
-    private fun saveLastLocation(location: DatacenterAndLocation) {
-        val coordinatesArray = (location.datacenter.coordinates ?: "").split(",".toRegex()).toTypedArray()
-        val lastLocation = LastSelectedLocation(
-            location.datacenter.id,
-            location.datacenter.nodeName ?: "",
-            location.datacenter.nickName ?: "",
-            location.location?.countryCode,
-            coordinatesArray[0],
-            coordinatesArray[1]
-        )
-        Util.saveSelectedLocation(lastLocation)
-        locationRepository.setSelectedCity(lastLocation.cityId)
-        lastLocationState.value = lastLocation
-    }
-
-    private fun saveLastLocation(staticRegion: StaticRegion) {
-        val lastLocation = LastSelectedLocation(
-            staticRegion.id ?: 0,
-            staticRegion.cityName ?: "",
-            staticRegion.staticIp ?: "",
-            staticRegion.countryCode,
-            "",
-            ""
-        )
-        Util.saveSelectedLocation(lastLocation)
-        locationRepository.setSelectedCity(lastLocation.cityId)
-        lastLocationState.value = lastLocation
-    }
-
-    private fun saveLastLocation(config: ConfigFile) {
-        val lastLocation =
-            LastSelectedLocation(config.primaryKey, "Custom Config", config.name ?: "", "", "", "")
-        Util.saveSelectedLocation(lastLocation)
-        locationRepository.setSelectedCity(lastLocation.cityId)
-        lastLocationState.value = lastLocation
-    }
-
-    private fun fetchNetworkState() {
-        viewModelScope.launch(Dispatchers.IO) {
-            networkInfoManager.networkInfo.collect { networkInfo ->
-                if (networkInfo == null) {
-                    _isPreferredProtocolEnabled.value = false
-                    _networkInfoState.value = NetworkInfoState.Unknown
+        private fun fetchLastLocation() {
+            viewModelScope.launch(Dispatchers.IO) {
+                val location = Util.getLastSelectedLocation(appContext)
+                if (location != null) {
+                    lastLocationState.emit(location)
+                    fetchConnectionState()
                 } else {
-                    connectionUIState.value.protocolInfo?.let {
-                        setPreferredProtocolState(it)
-                    }
-                    if (networkInfo.isAutoSecureOn) {
-                        _networkInfoState.value = NetworkInfoState.Secured(networkInfo.networkName)
-                    } else {
-                        _networkInfoState.value =
-                            NetworkInfoState.Unsecured(networkInfo.networkName)
+                    try {
+                        val bestDatacenterAndLocation = locationRepository.getBestLocationAsync()
+                        saveLastLocation(bestDatacenterAndLocation)
+                        _bestLocation.emit(
+                            ServerListItem(
+                                bestDatacenterAndLocation.location!!.id,
+                                bestDatacenterAndLocation.location!!,
+                                listOf(bestDatacenterAndLocation.datacenter),
+                            ),
+                        )
+                        fetchConnectionState()
+                    } catch (_: Exception) {
+                        lastLocationState.value = null
+                        fetchConnectionState()
                     }
                 }
             }
         }
-    }
 
-    private fun fetchIPState() {
-        viewModelScope.launch(Dispatchers.IO) {
-            ipRepository.state.collect { state ->
-                when (state) {
-                    is RepositoryState.Error -> {
-                        _ipState.emit("--.--.--.--")
-                        _shouldAnimateIp.emit(false)
-                    }
+        private fun observeDecoyTrafficChanges() {
+            viewModelScope.launch(Dispatchers.IO) {
+                decoyTrafficController.state.collect {
+                    _isDecoyTrafficEnabled.value = it
+                }
+            }
+        }
 
-                    is RepositoryState.Success -> {
-                        val newIp = state.data
-                        val isValid = !newIp.contains("--")
-                        val shouldAnimate = isValid && lastValidIp != null && lastValidIp != newIp
-                        _shouldAnimateIp.emit(shouldAnimate)
-                        _ipState.emit(newIp)
-                        if (isValid) {
-                            lastValidIp = newIp
+        private fun saveLastLocation(location: DatacenterAndLocation) {
+            val coordinatesArray = (location.datacenter.coordinates ?: "").split(",".toRegex()).toTypedArray()
+            val lastLocation =
+                LastSelectedLocation(
+                    location.datacenter.id,
+                    location.datacenter.nodeName ?: "",
+                    location.datacenter.nickName ?: "",
+                    location.location?.countryCode,
+                    coordinatesArray[0],
+                    coordinatesArray[1],
+                )
+            Util.saveSelectedLocation(lastLocation)
+            locationRepository.setSelectedCity(lastLocation.cityId)
+            lastLocationState.value = lastLocation
+        }
+
+        private fun saveLastLocation(staticRegion: StaticRegion) {
+            val lastLocation =
+                LastSelectedLocation(
+                    staticRegion.id ?: 0,
+                    staticRegion.cityName ?: "",
+                    staticRegion.staticIp ?: "",
+                    staticRegion.countryCode,
+                    "",
+                    "",
+                )
+            Util.saveSelectedLocation(lastLocation)
+            locationRepository.setSelectedCity(lastLocation.cityId)
+            lastLocationState.value = lastLocation
+        }
+
+        private fun saveLastLocation(config: ConfigFile) {
+            val lastLocation =
+                LastSelectedLocation(config.primaryKey, "Custom Config", config.name ?: "", "", "", "")
+            Util.saveSelectedLocation(lastLocation)
+            locationRepository.setSelectedCity(lastLocation.cityId)
+            lastLocationState.value = lastLocation
+        }
+
+        private fun fetchNetworkState() {
+            viewModelScope.launch(Dispatchers.IO) {
+                networkInfoManager.networkInfo.collect { networkInfo ->
+                    if (networkInfo == null) {
+                        _isPreferredProtocolEnabled.value = false
+                        _networkInfoState.value = NetworkInfoState.Unknown
+                    } else {
+                        connectionUIState.value.protocolInfo?.let {
+                            setPreferredProtocolState(it)
+                        }
+                        if (networkInfo.isAutoSecureOn) {
+                            _networkInfoState.value = NetworkInfoState.Secured(networkInfo.networkName)
+                        } else {
+                            _networkInfoState.value =
+                                NetworkInfoState.Unsecured(networkInfo.networkName)
                         }
                     }
-                    else -> {}
                 }
             }
         }
-        ipRepository.update()
-    }
 
-    private fun fetchConnectionState() {
-        viewModelScope.launch(Dispatchers.IO) {
-            combine(
-                vpnConnectionStateManager.state,
-                autoConnectionManager.connectedProtocol,
-                autoConnectionManager.nextInLineProtocol,
-                serverListRepository.customRegions,
-                serverListRepository.customCities
-            ) { state, connectedProtocol, nextInLineProtocol, _, _ ->
-                val protocolInfo = when (state.status) {
-                    VPNState.Status.Connected, VPNState.Status.Connecting -> connectedProtocol
-                    else -> nextInLineProtocol
-                } ?: Util.getAppSupportedProtocolList().first()
-                val locationInfo = buildLocationInfo()
-                setPreferredProtocolState(protocolInfo)
-                when (state.status) {
-                    VPNState.Status.Connected -> ConnectionUIState.Connected(
-                        protocolInfo,
-                        locationInfo,
-                        preferences.lastConnectedUsingSplit
-                    )
+        private fun fetchIPState() {
+            viewModelScope.launch(Dispatchers.IO) {
+                ipRepository.state.collect { state ->
+                    when (state) {
+                        is RepositoryState.Error -> {
+                            _ipState.emit("--.--.--.--")
+                            _shouldAnimateIp.emit(false)
+                        }
 
-                    VPNState.Status.Connecting -> ConnectionUIState.Connecting(
-                        protocolInfo,
-                        locationInfo
-                    )
+                        is RepositoryState.Success -> {
+                            val newIp = state.data
+                            val isValid = !newIp.contains("--")
+                            val shouldAnimate = isValid && lastValidIp != null && lastValidIp != newIp
+                            _shouldAnimateIp.emit(shouldAnimate)
+                            _ipState.emit(newIp)
+                            if (isValid) {
+                                lastValidIp = newIp
+                            }
+                        }
 
-                    VPNState.Status.Disconnected -> {
-                        handleError(state)
-                        ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                        else -> {}
                     }
-
-                    else -> ConnectionUIState.Disconnected(protocolInfo, locationInfo)
                 }
-            }.collectLatest { uiState ->
-                _connectionUIState.value = uiState
             }
+            ipRepository.update()
         }
-    }
 
-    private fun handleError(state: VPNState) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (state.error?.showError == true && state.error?.message != null) {
-                _toastMessage.emit(ToastMessage.Raw(state.error!!.message))
-            }
-        }
-    }
+        private fun fetchConnectionState() {
+            viewModelScope.launch(Dispatchers.IO) {
+                combine(
+                    vpnConnectionStateManager.state,
+                    autoConnectionManager.connectedProtocol,
+                    autoConnectionManager.nextInLineProtocol,
+                    serverListRepository.customRegions,
+                    serverListRepository.customCities,
+                ) { state, connectedProtocol, nextInLineProtocol, _, _ ->
+                    val protocolInfo =
+                        when (state.status) {
+                            VPNState.Status.Connected, VPNState.Status.Connecting -> connectedProtocol
+                            else -> nextInLineProtocol
+                        } ?: Util.getAppSupportedProtocolList().first()
+                    val locationInfo = buildLocationInfo()
+                    setPreferredProtocolState(protocolInfo)
+                    when (state.status) {
+                        VPNState.Status.Connected -> {
+                            ConnectionUIState.Connected(
+                                protocolInfo,
+                                locationInfo,
+                                preferences.lastConnectedUsingSplit,
+                            )
+                        }
 
-    private fun setPreferredProtocolState(protocolInfo: ProtocolInformation) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val networkInfo = networkInfoManager.networkInfo.value
-            _isPreferredProtocolEnabled.value =
-                networkInfo?.isPreferredOn == true && networkInfo.protocol == protocolInfo.protocol && networkInfo.port == protocolInfo.port
-        }
-    }
+                        VPNState.Status.Connecting -> {
+                            ConnectionUIState.Connecting(
+                                protocolInfo,
+                                locationInfo,
+                            )
+                        }
 
-    private fun handleConnectionSoundsState() {
-        viewModelScope.launch(Dispatchers.IO) {
-            vpnConnectionStateManager.state.collectLatest {
-                if (it.status == VPNState.Status.Connecting && preferences.connectedBundleSoundOption == 3) {
-                    playSoundFromRaw(com.windscribe.vpn.R.raw.fart_deluxe_loop, loop = true)
-                    return@collectLatest
-                }
-                if (it.status == VPNState.Status.Connected || it.status == VPNState.Status.Disconnected) {
-                    val isConnected = vpnConnectionStateManager.isVPNConnected()
-                    val option = if (isConnected) {
-                        preferences.whenConnectedSoundOption
-                    } else {
-                        preferences.whenDisconnectedSoundOption
+                        VPNState.Status.Disconnected -> {
+                            handleError(state)
+                            ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                        }
+
+                        else -> {
+                            ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                        }
                     }
-                    if (option == 1) {
+                }.collectLatest { uiState ->
+                    _connectionUIState.value = uiState
+                }
+            }
+        }
+
+        private fun handleError(state: VPNState) {
+            viewModelScope.launch(Dispatchers.IO) {
+                if (state.error?.showError == true && state.error?.message != null) {
+                    _toastMessage.emit(ToastMessage.Raw(state.error!!.message))
+                }
+            }
+        }
+
+        private fun setPreferredProtocolState(protocolInfo: ProtocolInformation) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val networkInfo = networkInfoManager.networkInfo.value
+                _isPreferredProtocolEnabled.value =
+                    networkInfo?.isPreferredOn == true &&
+                    networkInfo.protocol == protocolInfo.protocol &&
+                    networkInfo.port == protocolInfo.port
+            }
+        }
+
+        private fun handleConnectionSoundsState() {
+            viewModelScope.launch(Dispatchers.IO) {
+                vpnConnectionStateManager.state.collectLatest {
+                    if (it.status == VPNState.Status.Connecting && preferences.connectedBundleSoundOption == 3) {
+                        playSoundFromRaw(com.windscribe.vpn.R.raw.fart_deluxe_loop, loop = true)
                         return@collectLatest
                     }
-                    if (option == 2) {
-                        val index =
-                            if (isConnected) preferences.connectedBundleSoundOption else preferences.disconnectedBundleSoundOption
-                        val bundledSoundToPlay =
-                            LookAndFeelHelper.getBundleSoundResource(isConnected, index)
-                        bundledSoundToPlay?.let { sound ->
-                            playSoundFromRaw(sound)
-                        }
-                    }
-                    if (option == 3) {
-                        val fileName = if (isConnected) {
-                            preferences.customConnectedSound
-                        } else {
-                            preferences.customDisconnectedSound
-                        }
-                        if (fileName.isNullOrEmpty()) {
+                    if (it.status == VPNState.Status.Connected || it.status == VPNState.Status.Disconnected) {
+                        val isConnected = vpnConnectionStateManager.isVPNConnected()
+                        val option =
+                            if (isConnected) {
+                                preferences.whenConnectedSoundOption
+                            } else {
+                                preferences.whenDisconnectedSoundOption
+                            }
+                        if (option == 1) {
                             return@collectLatest
                         }
-                        val inputFile = getSoundFile(appContext, isConnected, fileName)
-                        if (inputFile.exists()) {
-                            playSoundFromFile(inputFile.path)
+                        if (option == 2) {
+                            val index =
+                                if (isConnected) preferences.connectedBundleSoundOption else preferences.disconnectedBundleSoundOption
+                            val bundledSoundToPlay =
+                                LookAndFeelHelper.getBundleSoundResource(isConnected, index)
+                            bundledSoundToPlay?.let { sound ->
+                                playSoundFromRaw(sound)
+                            }
+                        }
+                        if (option == 3) {
+                            val fileName =
+                                if (isConnected) {
+                                    preferences.customConnectedSound
+                                } else {
+                                    preferences.customDisconnectedSound
+                                }
+                            if (fileName.isNullOrEmpty()) {
+                                return@collectLatest
+                            }
+                            val inputFile = getSoundFile(appContext, isConnected, fileName)
+                            if (inputFile.exists()) {
+                                playSoundFromFile(inputFile.path)
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    private fun playSoundFromFile(filePath: String, loop: Boolean = false) {
-        try {
-            mediaPlayer?.release() // release old one if exists
-            mediaPlayer = MediaPlayer().apply {
-                isLooping = loop
-                setDataSource(filePath)
-                setOnPreparedListener { it.start() }
-                setOnCompletionListener {
-                    it.release()
-                    mediaPlayer = null
-                }
-                prepareAsync()
+        private fun playSoundFromFile(
+            filePath: String,
+            loop: Boolean = false,
+        ) {
+            try {
+                mediaPlayer?.release() // release old one if exists
+                mediaPlayer =
+                    MediaPlayer().apply {
+                        isLooping = loop
+                        setDataSource(filePath)
+                        setOnPreparedListener { it.start() }
+                        setOnCompletionListener {
+                            it.release()
+                            mediaPlayer = null
+                        }
+                        prepareAsync()
+                    }
+            } catch (e: Exception) {
+                logger.error("Error playing sound file at: $filePath", e)
+                mediaPlayer?.release()
+                mediaPlayer = null
             }
-        } catch (e: Exception) {
-            logger.error("Error playing sound file at: $filePath", e)
-            mediaPlayer?.release()
-            mediaPlayer = null
         }
-    }
 
-    private fun playSoundFromRaw(@RawRes resId: Int, loop: Boolean = false) {
-        val fileDescriptor = appContext.resources.openRawResourceFd(resId) ?: return
-        try {
-            mediaPlayer?.release()
-            mediaPlayer = MediaPlayer().apply {
-                isLooping = loop
-                setDataSource(
-                    fileDescriptor.fileDescriptor,
-                    fileDescriptor.startOffset,
-                    fileDescriptor.length
-                )
-                fileDescriptor.close()
-                setOnPreparedListener { it.start() }
-                setOnCompletionListener {
-                    it.release()
-                    mediaPlayer = null
-                }
-                prepareAsync()
+        private fun playSoundFromRaw(
+            @RawRes resId: Int,
+            loop: Boolean = false,
+        ) {
+            val fileDescriptor = appContext.resources.openRawResourceFd(resId) ?: return
+            try {
+                mediaPlayer?.release()
+                mediaPlayer =
+                    MediaPlayer().apply {
+                        isLooping = loop
+                        setDataSource(
+                            fileDescriptor.fileDescriptor,
+                            fileDescriptor.startOffset,
+                            fileDescriptor.length,
+                        )
+                        fileDescriptor.close()
+                        setOnPreparedListener { it.start() }
+                        setOnCompletionListener {
+                            it.release()
+                            mediaPlayer = null
+                        }
+                        prepareAsync()
+                    }
+            } catch (e: Exception) {
+                logger.error("Error playing raw sound resource: $resId", e)
+                mediaPlayer?.release()
+                mediaPlayer = null
             }
-        } catch (e: Exception) {
-            logger.error("Error playing raw sound resource: $resId", e)
-            mediaPlayer?.release()
-            mediaPlayer = null
         }
-    }
 
-    private fun handleConnectionHapticFeedback() {
-        viewModelScope.launch(Dispatchers.IO) {
-            vpnConnectionStateManager.state.collectLatest { state ->
-                if (state.status == VPNState.Status.Connected || state.status == VPNState.Status.Disconnected) {
-                    if (preferences.isHapticFeedbackEnabled) {
-                        _shouldPlayHapticFeedback.emit(true)
+        private fun handleConnectionHapticFeedback() {
+            viewModelScope.launch(Dispatchers.IO) {
+                vpnConnectionStateManager.state.collectLatest { state ->
+                    if (state.status == VPNState.Status.Connected || state.status == VPNState.Status.Disconnected) {
+                        if (preferences.isHapticFeedbackEnabled) {
+                            _shouldPlayHapticFeedback.emit(true)
+                        }
                     }
                 }
             }
         }
-    }
 
-    private fun buildLocationInfo(): LocationInfoState {
-        var location = lastLocationState.value
-        if (location == null || location.cityId != locationRepository.selectedCity.value) {
-            location = Util.getLastSelectedLocation(appContext)
-            lastLocationState.value = location
-        }
-        if (location == null) return LocationInfoState.Unavailable
-        val cityId = location.cityId
-        val countryCode = location.countryCode.orEmpty()
-        return LocationInfoState.Success(
-            LocationInfo(
-                countryCode,
-                serverListRepository.getCustomCityName(cityId) ?: location.nodeName,
-                serverListRepository.getCustomCityNickName(cityId) ?: location.nickName,
-                getLocationBackground(countryCode)
+        private fun buildLocationInfo(): LocationInfoState {
+            var location = lastLocationState.value
+            if (location == null || location.cityId != locationRepository.selectedCity.value) {
+                location = Util.getLastSelectedLocation(appContext)
+                lastLocationState.value = location
+            }
+            if (location == null) return LocationInfoState.Unavailable
+            val cityId = location.cityId
+            val countryCode = location.countryCode.orEmpty()
+            return LocationInfoState.Success(
+                LocationInfo(
+                    countryCode,
+                    serverListRepository.getCustomCityName(cityId) ?: location.nodeName,
+                    serverListRepository.getCustomCityNickName(cityId) ?: location.nickName,
+                    getLocationBackground(countryCode),
+                ),
             )
-        )
-    }
-
-    private fun getLocationBackground(countryCode: String): LocationBackground {
-        val isConnected = vpnConnectionStateManager.isVPNConnected()
-        val option = if (isConnected) {
-            preferences.whenConnectedBackgroundOption
-        } else {
-            preferences.whenDisconnectedBackgroundOption
         }
-        return when (option) {
-            1 -> LocationBackground.Flag(FlagIconResource.getFlag(countryCode))
-            2 -> {
-                val index =
-                    if (isConnected) preferences.connectedBundleBackgroundOption else preferences.disconnectedBundleBackgroundOption
-                LocationBackground.Wallpaper(
-                    bundledBackgrounds[index] ?: com.windscribe.vpn.R.mipmap.square
-                )
-            }
 
-            3 -> LocationBackground.Flag(R.drawable.dummy_flag)
-            else -> {
-                val path = if (isConnected) {
-                    preferences.customConnectedBackground
+        private fun getLocationBackground(countryCode: String): LocationBackground {
+            val isConnected = vpnConnectionStateManager.isVPNConnected()
+            val option =
+                if (isConnected) {
+                    preferences.whenConnectedBackgroundOption
                 } else {
-                    preferences.customDisconnectedBackground
+                    preferences.whenDisconnectedBackgroundOption
                 }
-                val image = if (isConnected) {
-                    "connected_background.png"
-                } else {
-                    "disconnected_background.png"
+            return when (option) {
+                1 -> {
+                    LocationBackground.Flag(FlagIconResource.getFlag(countryCode))
                 }
-                if (path.isNullOrEmpty()) {
+
+                2 -> {
+                    val index =
+                        if (isConnected) preferences.connectedBundleBackgroundOption else preferences.disconnectedBundleBackgroundOption
+                    LocationBackground.Wallpaper(
+                        bundledBackgrounds[index] ?: com.windscribe.vpn.R.mipmap.square,
+                    )
+                }
+
+                3 -> {
                     LocationBackground.Flag(R.drawable.dummy_flag)
-                } else {
-                    LocationBackground.Custom(File(appContext.filesDir, image))
+                }
+
+                else -> {
+                    val path =
+                        if (isConnected) {
+                            preferences.customConnectedBackground
+                        } else {
+                            preferences.customDisconnectedBackground
+                        }
+                    val image =
+                        if (isConnected) {
+                            "connected_background.png"
+                        } else {
+                            "disconnected_background.png"
+                        }
+                    if (path.isNullOrEmpty()) {
+                        LocationBackground.Flag(R.drawable.dummy_flag)
+                    } else {
+                        LocationBackground.Custom(File(appContext.filesDir, image))
+                    }
                 }
             }
         }
-    }
 
-    override fun onConnectButtonClick() {
-        val currentState = connectionUIState.value
-        val selectedLocation = lastLocationState.value ?: return
-        if (currentState !is ConnectionUIState.Disconnected) {
-            preferences.globalUserConnectionPreference = false
-            vpnController.disconnectAsync()
-            return
-        }
-        val locationSource = WindUtilities.getSourceTypeBlocking()
-        appScope.launch {
-            when (locationSource) {
-                SelectedLocationType.CustomConfiguredProfile -> {
-                    try {
-                        val location = localdb.getConfigFileAsync(selectedLocation.cityId)
-                        onConfigClick(location)
-                    } catch (e: Exception) {
-                        showToast("Unable to find selected location in database. Update server list.")
-                    }
-                }
-
-                SelectedLocationType.StaticIp -> {
-                    val staticIp = localdb.getStaticRegionByIDAsync(selectedLocation.cityId)
-                    if (staticIp != null) {
-                        onStaticIpClick(staticIp)
-                    }
-                }
-
-                SelectedLocationType.CityLocation -> {
-                    try {
-                        val location = localdb.getDatacenterAndLocation(selectedLocation.cityId)
-                        if (location != null) {
-                            onCityClick(location.datacenter)
-                        } else {
+        override fun onConnectButtonClick() {
+            val currentState = connectionUIState.value
+            val selectedLocation = lastLocationState.value ?: return
+            if (currentState !is ConnectionUIState.Disconnected) {
+                preferences.globalUserConnectionPreference = false
+                vpnController.disconnectAsync()
+                return
+            }
+            val locationSource = WindUtilities.getSourceTypeBlocking()
+            appScope.launch {
+                when (locationSource) {
+                    SelectedLocationType.CustomConfiguredProfile -> {
+                        try {
+                            val location = localdb.getConfigFileAsync(selectedLocation.cityId)
+                            onConfigClick(location)
+                        } catch (e: Exception) {
                             showToast("Unable to find selected location in database. Update server list.")
                         }
-                    } catch (e: Exception) {
-                        showToast("Unable to find selected location in database. Update server list.")
+                    }
+
+                    SelectedLocationType.StaticIp -> {
+                        val staticIp = localdb.getStaticRegionByIDAsync(selectedLocation.cityId)
+                        if (staticIp != null) {
+                            onStaticIpClick(staticIp)
+                        }
+                    }
+
+                    SelectedLocationType.CityLocation -> {
+                        try {
+                            val location = localdb.getDatacenterAndLocation(selectedLocation.cityId)
+                            if (location != null) {
+                                onCityClick(location.datacenter)
+                            } else {
+                                showToast("Unable to find selected location in database. Update server list.")
+                            }
+                        } catch (e: Exception) {
+                            showToast("Unable to find selected location in database. Update server list.")
+                        }
                     }
                 }
             }
         }
-    }
 
-    override fun onCityClick(city: Datacenter, isFav: Boolean) {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastCityClickTime < debounceMillis) {
-            logger.debug("Ignoring city click, debounce time not elapsed")
-            return
-        }
-        lastCityClickTime = currentTime
-
-        viewModelScope.launch(Dispatchers.IO) {
-            val datacenterAndLocation = localdb.getDatacenterAndLocation(city.id)
-            if (datacenterAndLocation == null) {
-                showToast("Unable to find selected location in database. Update server list.")
-                return@launch
+        override fun onCityClick(
+            city: Datacenter,
+            isFav: Boolean,
+        ) {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastCityClickTime < debounceMillis) {
+                logger.debug("Ignoring city click, debounce time not elapsed")
+                return
             }
-            try {
-                // Check datacenter status
-                val serverCount = localdb.getServersByDatacenter(city.id).size
-                val isPro = userRepository.user.value?.isPro ?: false
-                val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro)
-                when (status) {
-                    DatacenterStatus.UnderMaintenance -> {
+            lastCityClickTime = currentTime
+
+            viewModelScope.launch(Dispatchers.IO) {
+                val datacenterAndLocation = localdb.getDatacenterAndLocation(city.id)
+                if (datacenterAndLocation == null) {
+                    showToast("Unable to find selected location in database. Update server list.")
+                    return@launch
+                }
+                try {
+                    // Check datacenter status
+                    val serverCount = localdb.getServersByDatacenter(city.id).size
+                    val isPro = userRepository.user.value?.isPro ?: false
+                    val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro)
+                    when (status) {
+                        DatacenterStatus.UnderMaintenance -> {
+                            _goto.emit(HomeGoto.LocationMaintenance)
+                            return@launch
+                        }
+
+                        DatacenterStatus.Pro -> {
+                            _goto.emit(HomeGoto.Upgrade)
+                            return@launch
+                        }
+
+                        else -> {}
+                    }
+
+                    // Check internet connectivity
+                    if (!WindUtilities.isOnline()) {
+                        logger.info("Error: no internet available to connect.")
+                        showToast(com.windscribe.vpn.R.string.no_internet)
+                        return@launch
+                    }
+
+                    // Check account status
+                    val user = userRepository.user.value
+                    if (user?.accountStatus == User.AccountStatus.Expired) {
+                        logger.info("Error: account status is expired and can not connect to this datacenter")
+                        val resetDate = user.nextResetDate() ?: ""
+                        _goto.emit(HomeGoto.Expired(resetDate))
+                        return@launch
+                    }
+                    if (user?.accountStatus == User.AccountStatus.Banned) {
+                        logger.info("Error: account status is banned and can not connect to this datacenter.")
+                        _goto.emit(HomeGoto.Banned)
+                        return@launch
+                    }
+
+                    // Verify pinned node exists (if favourite)
+                    if (isFav) {
+                        val favourite = localdb.getFavouritesAsync().firstOrNull { it.id == city.id }
+                        if (favourite?.pinnedIp != null && favourite.pinnedNodeIp != null) {
+                            val nodes = localdb.getServersByDatacenter(city.id)
+                            val nodeExists = nodes.any { WindUtilities.hostnamesMatch(it.hostname, favourite.pinnedNodeIp) }
+                            if (!nodeExists) {
+                                logger.warn("Pinned node IP ${favourite.pinnedNodeIp} not found in city ${city.id} nodes")
+                                val errorMessage = resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
+                                val errorDescription = resourceHelper.getString(com.windscribe.vpn.R.string.check_status_description)
+                                _goto.emit(HomeGoto.IpActionError(errorMessage, errorDescription))
+                                return@launch
+                            }
+                        }
+                    }
+
+                    // All checks passed - connect
+                    preferences.globalUserConnectionPreference = true
+                    preferences.isConnectingToStaticIp = false
+                    preferences.isConnectingToConfigured = false
+                    saveLastLocation(datacenterAndLocation)
+                    logger.debug("Attempting to connect")
+                    appScope.launch {
+                        autoConnectionManager.connectInForeground()
+                    }
+                } catch (_: Exception) {
+                    showToast("Unable to find selected location in database. Update server list.")
+                }
+            }
+        }
+
+        override fun onStaticIpClick(staticRegion: StaticRegion) {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastStaticIpClickTime < debounceMillis) {
+                logger.debug("Ignoring static IP click, debounce time not elapsed")
+                return
+            }
+            lastStaticIpClickTime = currentTime
+
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    // Check static IP availability
+                    val status = staticRegion.status ?: 1
+                    if (status == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE || status == 0) {
+                        logger.info("Error: Static IP is temporarily unavailable.")
+                        showToast("Location temporary unavailable.")
                         _goto.emit(HomeGoto.LocationMaintenance)
                         return@launch
                     }
-                    DatacenterStatus.Pro -> {
-                        _goto.emit(HomeGoto.Upgrade)
+
+                    // Check internet connectivity
+                    if (!WindUtilities.isOnline()) {
+                        logger.info("Error: no internet available.")
+                        showToast(com.windscribe.vpn.R.string.no_internet)
                         return@launch
                     }
-                    else -> {}
-                }
 
-                // Check internet connectivity
-                if (!WindUtilities.isOnline()) {
-                    logger.info("Error: no internet available to connect.")
-                    showToast(com.windscribe.vpn.R.string.no_internet)
-                    return@launch
-                }
-
-                // Check account status
-                val user = userRepository.user.value
-                if (user?.accountStatus == User.AccountStatus.Expired) {
-                    logger.info("Error: account status is expired and can not connect to this datacenter")
-                    val resetDate = user.nextResetDate() ?: ""
-                    _goto.emit(HomeGoto.Expired(resetDate))
-                    return@launch
-                }
-                if (user?.accountStatus == User.AccountStatus.Banned) {
-                    logger.info("Error: account status is banned and can not connect to this datacenter.")
-                    _goto.emit(HomeGoto.Banned)
-                    return@launch
-                }
-
-                // Verify pinned node exists (if favourite)
-                if (isFav) {
-                    val favourite = localdb.getFavouritesAsync().firstOrNull { it.id == city.id }
-                    if (favourite?.pinnedIp != null && favourite.pinnedNodeIp != null) {
-                        val nodes = localdb.getServersByDatacenter(city.id)
-                        val nodeExists = nodes.any { WindUtilities.hostnamesMatch(it.hostname, favourite.pinnedNodeIp) }
-                        if (!nodeExists) {
-                            logger.warn("Pinned node IP ${favourite.pinnedNodeIp} not found in city ${city.id} nodes")
-                            val errorMessage = resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
-                            val errorDescription = resourceHelper.getString(com.windscribe.vpn.R.string.check_status_description)
-                            _goto.emit(HomeGoto.IpActionError(errorMessage, errorDescription))
-                            return@launch
-                        }
+                    // Check account status (banned only)
+                    val user = userRepository.user.value
+                    if (user?.accountStatus == User.AccountStatus.Banned) {
+                        logger.info("Error: account status is banned.")
+                        _goto.emit(HomeGoto.Banned)
+                        return@launch
                     }
-                }
 
-                // All checks passed - connect
-                preferences.globalUserConnectionPreference = true
-                preferences.isConnectingToStaticIp = false
-                preferences.isConnectingToConfigured = false
-                saveLastLocation(datacenterAndLocation)
-                logger.debug("Attempting to connect")
-                appScope.launch {
-                    autoConnectionManager.connectInForeground()
+                    // All checks passed - connect
+                    preferences.globalUserConnectionPreference = true
+                    preferences.isConnectingToStaticIp = true
+                    preferences.isConnectingToConfigured = false
+                    saveLastLocation(staticRegion)
+                    logger.debug("Attempting to connect..")
+                    appScope.launch {
+                        autoConnectionManager.connectInForeground()
+                    }
+                } catch (e: Exception) {
+                    showToast("Unable to find selected location in database. Update server list.")
                 }
-
-            } catch (_: Exception) {
-                showToast("Unable to find selected location in database. Update server list.")
             }
         }
-    }
 
-    override fun onStaticIpClick(staticRegion: StaticRegion) {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastStaticIpClickTime < debounceMillis) {
-            logger.debug("Ignoring static IP click, debounce time not elapsed")
-            return
-        }
-        lastStaticIpClickTime = currentTime
-
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                // Check static IP availability
-                val status = staticRegion.status ?: 1
-                if (status == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE || status == 0) {
-                    logger.info("Error: Static IP is temporarily unavailable.")
-                    showToast("Location temporary unavailable.")
-                    _goto.emit(HomeGoto.LocationMaintenance)
-                    return@launch
-                }
-
-                // Check internet connectivity
-                if (!WindUtilities.isOnline()) {
-                    logger.info("Error: no internet available.")
-                    showToast(com.windscribe.vpn.R.string.no_internet)
-                    return@launch
-                }
-
-                // Check account status (banned only)
-                val user = userRepository.user.value
-                if (user?.accountStatus == User.AccountStatus.Banned) {
-                    logger.info("Error: account status is banned.")
-                    _goto.emit(HomeGoto.Banned)
-                    return@launch
-                }
-
-                // All checks passed - connect
-                preferences.globalUserConnectionPreference = true
-                preferences.isConnectingToStaticIp = true
-                preferences.isConnectingToConfigured = false
-                saveLastLocation(staticRegion)
-                logger.debug("Attempting to connect..")
-                appScope.launch {
-                    autoConnectionManager.connectInForeground()
-                }
-
-            } catch (e: Exception) {
-                showToast("Unable to find selected location in database. Update server list.")
+        override fun onConfigClick(config: ConfigFile) {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastConfigClickTime < debounceMillis) {
+                logger.debug("Ignoring config click, debounce time not elapsed")
+                return
             }
-        }
-    }
+            lastConfigClickTime = currentTime
 
-    override fun onConfigClick(config: ConfigFile) {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastConfigClickTime < debounceMillis) {
-            logger.debug("Ignoring config click, debounce time not elapsed")
-            return
-        }
-        lastConfigClickTime = currentTime
-
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                // Check internet connectivity
-                if (!WindUtilities.isOnline()) {
-                    logger.info("Error: no internet available.")
-                    showToast(com.windscribe.vpn.R.string.no_internet)
-                    return@launch
-                }
-
-                // Setup config connection
-                locationRepository.setSelectedCity(config.primaryKey)
-                saveLastLocation(config)
-                preferences.globalUserConnectionPreference = true
-                preferences.isConnectingToStaticIp = false
-                preferences.isConnectingToConfigured = true
-                val type = WindUtilities.getConfigType(config.content ?: "")
-                if (type == WindUtilities.ConfigType.OpenVPN && (config.username.isNullOrEmpty() || config.password.isNullOrEmpty())) {
-                    _goto.emit(HomeGoto.EditCustomConfig(config.primaryKey, true))
-                    return@launch
-                } else {
-                    vpnController.connectAsync()
-                }
-            } catch (e: Exception) {
-                showToast("Unable to find selected location in database. Update server list.")
-            }
-        }
-    }
-
-    override fun onProtocolChangeClick() {
-        if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
-            showToast(com.windscribe.vpn.R.string.protocol_change_is_not_available_for_custom_config)
-        } else {
-            appScope.launch {
-                preferences.globalUserConnectionPreference = true
-                autoConnectionManager.changeProtocolInForeground()
-            }
-        }
-    }
-
-    private fun showToast(message: String) {
-        viewModelScope.launch {
-            _toastMessage.emit(ToastMessage.Raw(message))
-        }
-    }
-
-    private fun showToast(@StringRes message: Int) {
-        viewModelScope.launch {
-            _toastMessage.emit(ToastMessage.Localized(message))
-        }
-    }
-
-    override fun clearToast() {
-        _toastMessage.value = ToastMessage.None
-    }
-
-    private fun fetchBestLocation() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val bestDatacenterAndLocation = locationRepository.getBestLocationAsync()
+            viewModelScope.launch(Dispatchers.IO) {
                 try {
-                    _bestLocation.emit(
-                        ServerListItem(
-                            bestDatacenterAndLocation.location!!.id,
-                            bestDatacenterAndLocation.location!!,
-                            listOf(bestDatacenterAndLocation.datacenter)
+                    // Check internet connectivity
+                    if (!WindUtilities.isOnline()) {
+                        logger.info("Error: no internet available.")
+                        showToast(com.windscribe.vpn.R.string.no_internet)
+                        return@launch
+                    }
+
+                    // Setup config connection
+                    locationRepository.setSelectedCity(config.primaryKey)
+                    saveLastLocation(config)
+                    preferences.globalUserConnectionPreference = true
+                    preferences.isConnectingToStaticIp = false
+                    preferences.isConnectingToConfigured = true
+                    val type = WindUtilities.getConfigType(config.content ?: "")
+                    if (type == WindUtilities.ConfigType.OpenVPN && (config.username.isNullOrEmpty() || config.password.isNullOrEmpty())) {
+                        _goto.emit(HomeGoto.EditCustomConfig(config.primaryKey, true))
+                        return@launch
+                    } else {
+                        vpnController.connectAsync()
+                    }
+                } catch (e: Exception) {
+                    showToast("Unable to find selected location in database. Update server list.")
+                }
+            }
+        }
+
+        override fun onProtocolChangeClick() {
+            if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
+                showToast(com.windscribe.vpn.R.string.protocol_change_is_not_available_for_custom_config)
+            } else {
+                appScope.launch {
+                    preferences.globalUserConnectionPreference = true
+                    autoConnectionManager.changeProtocolInForeground()
+                }
+            }
+        }
+
+        private fun showToast(message: String) {
+            viewModelScope.launch {
+                _toastMessage.emit(ToastMessage.Raw(message))
+            }
+        }
+
+        private fun showToast(
+            @StringRes message: Int,
+        ) {
+            viewModelScope.launch {
+                _toastMessage.emit(ToastMessage.Localized(message))
+            }
+        }
+
+        override fun clearToast() {
+            _toastMessage.value = ToastMessage.None
+        }
+
+        private fun fetchBestLocation() {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val bestDatacenterAndLocation = locationRepository.getBestLocationAsync()
+                    try {
+                        _bestLocation.emit(
+                            ServerListItem(
+                                bestDatacenterAndLocation.location!!.id,
+                                bestDatacenterAndLocation.location!!,
+                                listOf(bestDatacenterAndLocation.datacenter),
+                            ),
                         )
-                    )
-                } catch (ignored: Exception) {
+                    } catch (ignored: Exception) {
+                        _bestLocation.emit(null)
+                    }
+                } catch (_: Exception) {
                     _bestLocation.emit(null)
                 }
-            } catch (_: Exception) {
-                _bestLocation.emit(null)
+            }
+        }
+
+        override fun onGoToHandled() {
+            viewModelScope.launch {
+                _goto.emit(HomeGoto.None)
+                _toastMessage.emit(ToastMessage.None)
+            }
+        }
+
+        override fun setIsSingleLineLocationName(singleLine: Boolean) {
+            viewModelScope.launch {
+                _isSingleLineLocationName.emit(singleLine)
+            }
+        }
+
+        override fun onHapticFeedbackHandled() {
+            viewModelScope.launch {
+                _shouldPlayHapticFeedback.emit(false)
+            }
+        }
+
+        override fun onIpAnimationComplete() {
+            viewModelScope.launch {
+                _shouldAnimateIp.emit(false)
             }
         }
     }
-
-    override fun onGoToHandled() {
-        viewModelScope.launch {
-            _goto.emit(HomeGoto.None)
-            _toastMessage.emit(ToastMessage.None)
-        }
-    }
-
-    override fun setIsSingleLineLocationName(singleLine: Boolean) {
-        viewModelScope.launch {
-            _isSingleLineLocationName.emit(singleLine)
-        }
-    }
-
-    override fun onHapticFeedbackHandled() {
-        viewModelScope.launch {
-            _shouldPlayHapticFeedback.emit(false)
-        }
-    }
-
-    override fun onIpAnimationComplete() {
-        viewModelScope.launch {
-            _shouldAnimateIp.emit(false)
-        }
-    }
-}

@@ -33,7 +33,6 @@ import dagger.hilt.android.scopes.ActivityScoped
 @Module
 @InstallIn(ActivityComponent::class)
 abstract class TvActivityModule {
-
     @Binds
     @ActivityScoped
     abstract fun bindConfirmEmailPresenter(impl: ConfirmEmailPresenterImp): ConfirmEmailPresenter
@@ -78,14 +77,10 @@ abstract class TvActivityModule {
         @Provides
         @ActivityScoped
         @JvmStatic
-        fun provideCustomDialog(activity: Activity): CustomDialog {
-            return CustomDialog(activity)
-        }
+        fun provideCustomDialog(activity: Activity): CustomDialog = CustomDialog(activity)
 
         @Provides
         @JvmStatic
-        fun provideArgbEvaluator(): ArgbEvaluator {
-            return ArgbEvaluator()
-        }
+        fun provideArgbEvaluator(): ArgbEvaluator = ArgbEvaluator()
     }
 }

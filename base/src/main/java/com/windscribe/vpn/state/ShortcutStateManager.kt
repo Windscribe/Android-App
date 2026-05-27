@@ -5,7 +5,6 @@ import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
 import dagger.Lazy
@@ -19,10 +18,11 @@ class ShortcutStateManager(
     private var autoConnectionManager: AutoConnectionManager,
     private var networkInfoManager: NetworkInfoManager,
     private val preferencesHelper: PreferencesHelper,
-    private val windVpnController: WindVpnController
+    private val windVpnController: WindVpnController,
 ) {
     private var logger = LoggerFactory.getLogger("shortcut")
     private var initilized = false
+
     fun connect() {
         if (initilized) {
             preferencesHelper.globalUserConnectionPreference = true
@@ -46,24 +46,25 @@ class ShortcutStateManager(
         val userRepository = userRepository.get()
         scope.launch {
             logger.debug("Loading user info.")
-            kotlin.runCatching {
-                getUserSession()
-            }.onSuccess {
-                userRepository.reload(it) { user ->
-                    if (user.accountStatus == User.AccountStatus.Okay) {
-                        logger.debug("Loading network info.")
-                        networkInfoManager.reload()
-                        logger.debug("Loading connection info.")
-                        autoConnectionManager.reset()
-                        initilized = true
-                        callback()
-                    } else {
-                        logger.debug("Account status is ${user.accountStatus}.")
+            kotlin
+                .runCatching {
+                    getUserSession()
+                }.onSuccess {
+                    userRepository.reload(it) { user ->
+                        if (user.accountStatus == User.AccountStatus.Okay) {
+                            logger.debug("Loading network info.")
+                            networkInfoManager.reload()
+                            logger.debug("Loading connection info.")
+                            autoConnectionManager.reset()
+                            initilized = true
+                            callback()
+                        } else {
+                            logger.debug("Account status is ${user.accountStatus}.")
+                        }
                     }
+                }.onFailure {
+                    logger.debug("Unable to load user info.")
                 }
-            }.onFailure {
-                logger.debug("Unable to load user info.")
-            }
         }
     }
 }

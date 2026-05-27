@@ -3,12 +3,10 @@ package com.windscribe.vpn.di
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.windscribe.vpn.BuildConfig.DEV
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.ApiCallManager
@@ -29,11 +27,8 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.wireguard.WgLogger
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.backend.wireguard.WireguardContextWrapper
-import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDatabaseImpl
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -48,7 +43,7 @@ import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.AdvanceParameterRepositoryImpl
-import com.windscribe.vpn.repository.BridgeApiRepository
+import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepositoryImpl
@@ -56,20 +51,19 @@ import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
-import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
+import com.windscribe.vpn.serverlist.dao.ConfigFileDao
 import com.windscribe.vpn.serverlist.dao.DatacenterAndLocationDao
 import com.windscribe.vpn.serverlist.dao.DatacenterDao
-import com.windscribe.vpn.serverlist.dao.ConfigFileDao
 import com.windscribe.vpn.serverlist.dao.FavouriteDao
-import com.windscribe.vpn.serverlist.dao.PingTimeDao
 import com.windscribe.vpn.serverlist.dao.LocationAndDatacentersDao
 import com.windscribe.vpn.serverlist.dao.LocationDao
+import com.windscribe.vpn.serverlist.dao.PingTimeDao
 import com.windscribe.vpn.serverlist.dao.ServerDao
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao
 import com.windscribe.vpn.services.review.WindscribeReviewManagerImpl
@@ -82,23 +76,22 @@ import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
-import com.wireguard.android.backend.GoBackend
 import com.windscribe.vpn.wsnet.WSNetWrapper
+import com.wireguard.android.backend.GoBackend
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.slf4j.LoggerFactory
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
+
 @Module
 @InstallIn(SingletonComponent::class)
 open class BaseApplicationModule {
@@ -111,37 +104,28 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideAlarmManager(app: Windscribe): AlarmManager {
-        return app.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    }
+    fun provideAlarmManager(app: Windscribe): AlarmManager = app.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     @Provides
     @Singleton
-    fun provideDatacenterAndLocationDao(windscribeDatabase: WindscribeDatabase): DatacenterAndLocationDao {
-        return windscribeDatabase.datacenterAndLocationDao()
-    }
+    fun provideDatacenterAndLocationDao(windscribeDatabase: WindscribeDatabase): DatacenterAndLocationDao =
+        windscribeDatabase.datacenterAndLocationDao()
 
     @Provides
     @Singleton
-    fun provideDatacenterDao(windscribeDatabase: WindscribeDatabase): DatacenterDao {
-        return windscribeDatabase.cityDao()
-    }
+    fun provideDatacenterDao(windscribeDatabase: WindscribeDatabase): DatacenterDao = windscribeDatabase.cityDao()
 
     @Provides
     @Singleton
-    fun provideConfigFileDao(windscribeDatabase: WindscribeDatabase): ConfigFileDao {
-        return windscribeDatabase.configFileDao()
-    }
+    fun provideConfigFileDao(windscribeDatabase: WindscribeDatabase): ConfigFileDao = windscribeDatabase.configFileDao()
 
     @Provides
     @Singleton
     fun provideConnectionDataUpdater(
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
-        autoConnectionManager: Lazy<AutoConnectionManager>
-    ): ConnectionDataRepository {
-        return ConnectionDataRepository(preferencesHelper, apiCallManager, autoConnectionManager)
-    }
+        autoConnectionManager: Lazy<AutoConnectionManager>,
+    ): ConnectionDataRepository = ConnectionDataRepository(preferencesHelper, apiCallManager, autoConnectionManager)
 
     @Provides
     @Singleton
@@ -150,41 +134,42 @@ open class BaseApplicationModule {
         localDbInterface: LocalDbInterface,
         vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
         pinger: com.windscribe.vpn.services.ping.Pinger,
-        deviceStateManager: DeviceStateManager
-    ): LatencyRepository {
-        return LatencyRepository(
+        deviceStateManager: DeviceStateManager,
+    ): LatencyRepository =
+        LatencyRepository(
             preferencesHelper,
             localDbInterface,
             vpnConnectionStateManager,
             pinger,
-            deviceStateManager.isOnline
+            deviceStateManager.isOnline,
         )
-    }
 
     @Provides
     @Singleton
     fun provideFavouriteRepository(
-        scope: CoroutineScope, localDbInterface: LocalDbInterface
-    ): FavouriteRepository {
-        return FavouriteRepository(scope, localDbInterface)
-    }
+        scope: CoroutineScope,
+        localDbInterface: LocalDbInterface,
+    ): FavouriteRepository = FavouriteRepository(scope, localDbInterface)
 
     @Provides
     @Singleton
-    fun provideCoroutineScope(): CoroutineScope {
-        return Windscribe.applicationScope
-    }
+    fun provideCoroutineScope(): CoroutineScope = Windscribe.applicationScope
 
     @Provides
     @Singleton
-    fun provideDatabase(app: Windscribe): WindscribeDatabase {
-        return Room.databaseBuilder(app, WindscribeDatabase::class.java, "wind_db")
-            .fallbackToDestructiveMigration().addCallback(object : RoomDatabase.Callback() {
-                override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
-                    logger.debug("No migration found for old database. Reconstructing from scratch.")
-                    super.onDestructiveMigration(db)
-                }
-            }).addMigrations(Migrations.migration_26_27).addMigrations(Migrations.migration_27_28)
+    fun provideDatabase(app: Windscribe): WindscribeDatabase =
+        Room
+            .databaseBuilder(app, WindscribeDatabase::class.java, "wind_db")
+            .fallbackToDestructiveMigration()
+            .addCallback(
+                object : RoomDatabase.Callback() {
+                    override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+                        logger.debug("No migration found for old database. Reconstructing from scratch.")
+                        super.onDestructiveMigration(db)
+                    }
+                },
+            ).addMigrations(Migrations.migration_26_27)
+            .addMigrations(Migrations.migration_27_28)
             .addMigrations(Migrations.migration_29_31)
             .addMigrations(Migrations.migration_33_34)
             .addMigrations(Migrations.migration_34_35)
@@ -196,34 +181,27 @@ open class BaseApplicationModule {
             .addMigrations(Migrations.migration_40_41)
             .build()
 
-    }
+    @Provides
+    @Singleton
+    fun provideDeviceStateManager(
+        scope: CoroutineScope,
+        wsNetWrapper: WSNetWrapper,
+    ): DeviceStateManager = DeviceStateManager(scope, wsNetWrapper)
 
     @Provides
     @Singleton
-    fun provideDeviceStateManager(scope: CoroutineScope, wsNetWrapper: WSNetWrapper): DeviceStateManager {
-        return DeviceStateManager(scope, wsNetWrapper)
-    }
+    fun provideFavouriteDao(windscribeDatabase: WindscribeDatabase): FavouriteDao = windscribeDatabase.favouriteDao()
 
     @Provides
     @Singleton
-    fun provideFavouriteDao(windscribeDatabase: WindscribeDatabase): FavouriteDao {
-        return windscribeDatabase.favouriteDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideGoBackend(app: Windscribe): GoBackend {
-        return GoBackend(WireguardContextWrapper(app.applicationContext))
-    }
+    fun provideGoBackend(app: Windscribe): GoBackend = GoBackend(WireguardContextWrapper(app.applicationContext))
 
     @Provides
     @Singleton
     fun provideCtrldManager(
         coroutineScope: CoroutineScope,
-        preferencesHelper: PreferencesHelper
-    ): ProxyDNSManager {
-        return ProxyDNSManager(coroutineScope, preferencesHelper)
-    }
+        preferencesHelper: PreferencesHelper,
+    ): ProxyDNSManager = ProxyDNSManager(coroutineScope, preferencesHelper)
 
     @Provides
     @Singleton
@@ -242,9 +220,9 @@ open class BaseApplicationModule {
         networkInfoDao: NetworkInfoDao,
         serverStatusDao: ServerStatusDao,
         windNotificationDao: WindNotificationDao,
-        unblockWgDao: UnblockWgDao
-    ): LocalDbInterface {
-        return LocalDatabaseImpl(
+        unblockWgDao: UnblockWgDao,
+    ): LocalDbInterface =
+        LocalDatabaseImpl(
             userStatusDao,
             popupNotificationDao,
             locationDao,
@@ -259,29 +237,28 @@ open class BaseApplicationModule {
             networkInfoDao,
             serverStatusDao,
             windNotificationDao,
-            unblockWgDao
+            unblockWgDao,
         )
-    }
 
     @Provides
     @Singleton
-    fun provideNetworkInfoDao(windscribeDatabase: WindscribeDatabase): NetworkInfoDao {
-        return windscribeDatabase.networkInfoDao()
-    }
+    fun provideNetworkInfoDao(windscribeDatabase: WindscribeDatabase): NetworkInfoDao = windscribeDatabase.networkInfoDao()
 
     @Provides
     @Singleton
-    fun provideNotificationBuilder(@Named("ApplicationContext") appContext: Context): NotificationCompat.Builder {
-        return NotificationCompat.Builder(
-            appContext, NotificationConstants.NOTIFICATION_CHANNEL_ID
+    fun provideNotificationBuilder(
+        @Named("ApplicationContext") appContext: Context,
+    ): NotificationCompat.Builder =
+        NotificationCompat.Builder(
+            appContext,
+            NotificationConstants.NOTIFICATION_CHANNEL_ID,
         )
-    }
 
     @Provides
     @Singleton
-    fun provideNotificationManager(@Named("ApplicationContext") appContext: Context): NotificationManager {
-        return appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    }
+    fun provideNotificationManager(
+        @Named("ApplicationContext") appContext: Context,
+    ): NotificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     @Provides
     @Singleton
@@ -289,66 +266,52 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
-        localDbInterface: LocalDbInterface
-    ): NotificationRepository {
-        return NotificationRepository(scope, preferencesHelper, apiCallManager, localDbInterface)
-    }
+        localDbInterface: LocalDbInterface,
+    ): NotificationRepository = NotificationRepository(scope, preferencesHelper, apiCallManager, localDbInterface)
 
     @Provides
     @Singleton
-    fun providePingTimeDao(windscribeDatabase: WindscribeDatabase): PingTimeDao {
-        return windscribeDatabase.pingTimeDao()
-    }
+    fun providePingTimeDao(windscribeDatabase: WindscribeDatabase): PingTimeDao = windscribeDatabase.pingTimeDao()
 
     @Provides
     @Singleton
-    fun providePopupNotificationDao(windscribeDatabase: WindscribeDatabase): PopupNotificationDao {
-        return windscribeDatabase.popupNotificationDao()
-    }
+    fun providePopupNotificationDao(windscribeDatabase: WindscribeDatabase): PopupNotificationDao =
+        windscribeDatabase.popupNotificationDao()
 
     @Provides
     @Singleton
-    fun provideUnblockWgDao(windscribeDatabase: WindscribeDatabase): UnblockWgDao {
-        return windscribeDatabase.unblockWgDao()
-    }
+    fun provideUnblockWgDao(windscribeDatabase: WindscribeDatabase): UnblockWgDao = windscribeDatabase.unblockWgDao()
 
     @Provides
     @Singleton
-    fun provideDataStore(app: Windscribe): androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> {
-        return app.windscribeDataStore
-    }
+    fun provideDataStore(app: Windscribe): androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> =
+        app.windscribeDataStore
 
     @Provides
     @Singleton
     fun providePreferenceHelperInterface(
         dataStore: androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences>,
         securePreferences: SecurePreferences,
-        scope: CoroutineScope
-    ): PreferencesHelper {
-        return com.windscribe.vpn.apppreference.DataStorePreferenceHelper(
+        scope: CoroutineScope,
+    ): PreferencesHelper =
+        com.windscribe.vpn.apppreference.DataStorePreferenceHelper(
             dataStore,
             securePreferences,
-            scope
+            scope,
         )
-    }
 
     @Provides
     @Singleton
-    fun provideLocationAndDatacentersDao(windscribeDatabase: WindscribeDatabase): LocationAndDatacentersDao {
-        return windscribeDatabase.locationAndDatacentersDao()
-    }
+    fun provideLocationAndDatacentersDao(windscribeDatabase: WindscribeDatabase): LocationAndDatacentersDao =
+        windscribeDatabase.locationAndDatacentersDao()
 
     @Provides
     @Singleton
-    fun provideLocationDao(windscribeDatabase: WindscribeDatabase): LocationDao {
-        return windscribeDatabase.locationDao()
-    }
+    fun provideLocationDao(windscribeDatabase: WindscribeDatabase): LocationDao = windscribeDatabase.locationDao()
 
     @Provides
     @Singleton
-    fun provideServerDao(windscribeDatabase: WindscribeDatabase): ServerDao {
-        return windscribeDatabase.serverDao()
-    }
+    fun provideServerDao(windscribeDatabase: WindscribeDatabase): ServerDao = windscribeDatabase.serverDao()
 
     @Provides
     @Singleton
@@ -357,22 +320,21 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
         userRepository: Lazy<UserRepository>,
-        pinger: com.windscribe.vpn.services.ping.Pinger
-    ): LocationRepository {
-        return LocationRepository(
+        pinger: com.windscribe.vpn.services.ping.Pinger,
+    ): LocationRepository =
+        LocationRepository(
             scope,
             preferencesHelper,
             localDbInterface,
             userRepository,
-            pinger
+            pinger,
         )
-    }
 
     @Provides
     @Singleton
-    fun providePinger(): com.windscribe.vpn.services.ping.Pinger {
-        return com.windscribe.vpn.services.ping.IcmpPinger()
-    }
+    fun providePinger(): com.windscribe.vpn.services.ping.Pinger =
+        com.windscribe.vpn.services.ping
+            .IcmpPinger()
 
     @Provides
     @Singleton
@@ -382,23 +344,20 @@ open class BaseApplicationModule {
         localDbInterface: LocalDbInterface,
         userRepository: Lazy<UserRepository>,
         preferencesHelper: PreferencesHelper,
-        favouriteRepository: FavouriteRepository
-    ): ServerListRepository {
-        return ServerListRepository(
+        favouriteRepository: FavouriteRepository,
+    ): ServerListRepository =
+        ServerListRepository(
             scope,
             apiCallManager,
             localDbInterface,
             userRepository,
             preferencesHelper,
-            favouriteRepository
+            favouriteRepository,
         )
-    }
 
     @Provides
     @Singleton
-    fun provideServerStatusDao(windscribeDatabase: WindscribeDatabase): ServerStatusDao {
-        return windscribeDatabase.serverStatusDao()
-    }
+    fun provideServerStatusDao(windscribeDatabase: WindscribeDatabase): ServerStatusDao = windscribeDatabase.serverStatusDao()
 
     @Provides
     @Singleton
@@ -406,18 +365,18 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
-        localDbInterface: LocalDbInterface
-    ): StaticIpRepository {
-        return StaticIpRepository(
-            scope, preferencesHelper, apiCallManager, localDbInterface
+        localDbInterface: LocalDbInterface,
+    ): StaticIpRepository =
+        StaticIpRepository(
+            scope,
+            preferencesHelper,
+            apiCallManager,
+            localDbInterface,
         )
-    }
 
     @Provides
     @Singleton
-    fun provideStaticRegionDao(windscribeDatabase: WindscribeDatabase): StaticRegionDao {
-        return windscribeDatabase.staticRegionDao()
-    }
+    fun provideStaticRegionDao(windscribeDatabase: WindscribeDatabase): StaticRegionDao = windscribeDatabase.staticRegionDao()
 
     @Provides
     @Singleton
@@ -425,12 +384,14 @@ open class BaseApplicationModule {
         coroutineScope: CoroutineScope,
         vpnConnectionStateManager: VPNConnectionStateManager,
         preferencesHelper: PreferencesHelper,
-        deviceStateManager: DeviceStateManager
-    ): TrafficCounter {
-        return TrafficCounter(
-            coroutineScope, vpnConnectionStateManager, preferencesHelper, deviceStateManager
+        deviceStateManager: DeviceStateManager,
+    ): TrafficCounter =
+        TrafficCounter(
+            coroutineScope,
+            vpnConnectionStateManager,
+            preferencesHelper,
+            deviceStateManager,
         )
-    }
 
     @Provides
     @Singleton
@@ -446,9 +407,9 @@ open class BaseApplicationModule {
         serverListRepository: ServerListRepository,
         staticIpRepository: StaticIpRepository,
         googleSignInManager: GoogleSignInManager,
-        unblockWgParamsRepository: UnblockWgParamsRepository
-    ): UserRepository {
-        return UserRepository(
+        unblockWgParamsRepository: UnblockWgParamsRepository,
+    ): UserRepository =
+        UserRepository(
             scope,
             vpnController,
             autoConnectionManager,
@@ -460,21 +421,19 @@ open class BaseApplicationModule {
             serverListRepository,
             staticIpRepository,
             googleSignInManager,
-            unblockWgParamsRepository
+            unblockWgParamsRepository,
         )
-    }
 
     @Provides
     @Singleton
-    fun provideWgConfigRepository(apiManager: IApiCallManager, preferencesHelper: PreferencesHelper): WgConfigRepository {
-        return WgConfigRepository(apiManager, preferencesHelper)
-    }
+    fun provideWgConfigRepository(
+        apiManager: IApiCallManager,
+        preferencesHelper: PreferencesHelper,
+    ): WgConfigRepository = WgConfigRepository(apiManager, preferencesHelper)
 
     @Provides
     @Singleton
-    fun provideUserStatusDao(windscribeDatabase: WindscribeDatabase): UserStatusDao {
-        return windscribeDatabase.userStatusDao()
-    }
+    fun provideUserStatusDao(windscribeDatabase: WindscribeDatabase): UserStatusDao = windscribeDatabase.userStatusDao()
 
     @Provides
     @Singleton
@@ -483,16 +442,15 @@ open class BaseApplicationModule {
         wgConfigRepository: WgConfigRepository,
         proxyTunnelManager: ProxyTunnelManager,
         proxyDNSManager: ProxyDNSManager,
-        unblockWgParamsRepository: UnblockWgParamsRepository
-    ): VPNProfileCreator {
-        return VPNProfileCreator(
+        unblockWgParamsRepository: UnblockWgParamsRepository,
+    ): VPNProfileCreator =
+        VPNProfileCreator(
             preferencesHelper,
             wgConfigRepository,
             proxyTunnelManager,
             proxyDNSManager,
-            unblockWgParamsRepository
+            unblockWgParamsRepository,
         )
-    }
 
     @Provides
     @Singleton
@@ -501,12 +459,15 @@ open class BaseApplicationModule {
         preferenceHelper: PreferencesHelper,
         openVPNBackend: OpenVPNBackend,
         iKev2VpnBackend: IKev2VpnBackend,
-        wireguardBackend: WireguardBackend
-    ): VpnBackendHolder {
-        return VpnBackendHolder(
-            coroutineScope, preferenceHelper, iKev2VpnBackend, wireguardBackend, openVPNBackend
+        wireguardBackend: WireguardBackend,
+    ): VpnBackendHolder =
+        VpnBackendHolder(
+            coroutineScope,
+            preferenceHelper,
+            iKev2VpnBackend,
+            wireguardBackend,
+            openVPNBackend,
         )
-    }
 
     @Provides
     @Singleton
@@ -517,33 +478,28 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         trafficCounter: TrafficCounter,
         serverListRepository: ServerListRepository,
-        preferencesHelper: PreferencesHelper
-    ): WindNotificationBuilder {
-        return WindNotificationBuilder(
+        preferencesHelper: PreferencesHelper,
+    ): WindNotificationBuilder =
+        WindNotificationBuilder(
             notificationManager,
             notificationBuilder,
             vpnConnectionStateManager,
             trafficCounter,
             scope,
             serverListRepository,
-            preferencesHelper
+            preferencesHelper,
         )
-    }
 
     @Provides
     @Singleton
-    fun provideWindNotificationDao(windscribeDatabase: WindscribeDatabase): WindNotificationDao {
-        return windscribeDatabase.windNotificationDao()
-    }
+    fun provideWindNotificationDao(windscribeDatabase: WindscribeDatabase): WindNotificationDao = windscribeDatabase.windNotificationDao()
 
     @Provides
     @Singleton
     fun providesApiCallManagerInterface(
         wsNetWrapper: WSNetWrapper,
-        preferencesHelper: PreferencesHelper
-    ): IApiCallManager {
-        return ApiCallManager(wsNetWrapper, preferencesHelper)
-    }
+        preferencesHelper: PreferencesHelper,
+    ): IApiCallManager = ApiCallManager(wsNetWrapper, preferencesHelper)
 
     @Provides
     @Singleton
@@ -552,16 +508,15 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
-        deviceStateManager: DeviceStateManager
-    ): IpRepository {
-        return IpRepository(
+        deviceStateManager: DeviceStateManager,
+    ): IpRepository =
+        IpRepository(
             scope,
             preferencesHelper,
             apiCallManager,
             vpnConnectionStateManager,
-            deviceStateManager.isOnline
+            deviceStateManager.isOnline,
         )
-    }
 
     @Provides
     @Singleton
@@ -571,29 +526,24 @@ open class BaseApplicationModule {
         vpnConnectionStateManager: VPNConnectionStateManager,
         proxyDNSManager: ProxyDNSManager,
         wsNetWrapper: WSNetWrapper,
-        deviceStateManager: DeviceStateManager
-    ): AppLifeCycleObserver {
-        return AppLifeCycleObserver(
+        deviceStateManager: DeviceStateManager,
+    ): AppLifeCycleObserver =
+        AppLifeCycleObserver(
             workManager,
             networkInfoManager,
             vpnConnectionStateManager,
             proxyDNSManager,
             wsNetWrapper,
-            deviceStateManager
+            deviceStateManager,
         )
-    }
 
     @Provides
     @Singleton
     @Named("ApplicationContext")
-    fun providesApplicationContext(app: Windscribe): Context {
-        return app
-    }
+    fun providesApplicationContext(app: Windscribe): Context = app
 
     @Provides
-    fun providesLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor()
-    }
+    fun providesLoggingInterceptor(): HttpLoggingInterceptor = HttpLoggingInterceptor()
 
     @Provides
     @Singleton
@@ -601,12 +551,14 @@ open class BaseApplicationModule {
         app: Windscribe,
         coroutineScope: CoroutineScope,
         vpnConnectionStateManager: VPNConnectionStateManager,
-        preferencesHelper: PreferencesHelper
-    ): MockLocationManager {
-        return MockLocationManager(
-            app, coroutineScope, vpnConnectionStateManager, preferencesHelper
+        preferencesHelper: PreferencesHelper,
+    ): MockLocationManager =
+        MockLocationManager(
+            app,
+            coroutineScope,
+            vpnConnectionStateManager,
+            preferencesHelper,
         )
-    }
 
     @Provides
     @Singleton
@@ -618,9 +570,9 @@ open class BaseApplicationModule {
         localDbInterface: LocalDbInterface,
         connectionDataRepository: ConnectionDataRepository,
         apiManager: IApiCallManager,
-        preferencesHelper: PreferencesHelper
-    ): AutoConnectionManager {
-        return AutoConnectionManager(
+        preferencesHelper: PreferencesHelper,
+    ): AutoConnectionManager =
+        AutoConnectionManager(
             scope,
             vpnConnectionStateManager,
             vpnController,
@@ -628,19 +580,16 @@ open class BaseApplicationModule {
             connectionDataRepository,
             localDbInterface,
             apiManager,
-            preferencesHelper
+            preferencesHelper,
         )
-    }
 
     @Provides
     @Singleton
     fun providesNetworkInfoManager(
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
-        deviceStateManager: DeviceStateManager
-    ): NetworkInfoManager {
-        return NetworkInfoManager(preferencesHelper, localDbInterface, deviceStateManager)
-    }
+        deviceStateManager: DeviceStateManager,
+    ): NetworkInfoManager = NetworkInfoManager(preferencesHelper, localDbInterface, deviceStateManager)
 
     @Provides
     fun providesOkHttpBuilder(): OkHttpClient.Builder {
@@ -650,7 +599,7 @@ open class BaseApplicationModule {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(
             NetworkKeyConstants.NETWORK_REQUEST_CONNECTION_TIMEOUT,
-            TimeUnit.SECONDS
+            TimeUnit.SECONDS,
         )
         builder.readTimeout(5, TimeUnit.SECONDS)
         builder.writeTimeout(5, TimeUnit.SECONDS)
@@ -660,19 +609,18 @@ open class BaseApplicationModule {
         return builder
     }
 
-    private fun getHttpLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
-            override fun log(message: String) {
-                logger.info(message)
-            }
-        })
-    }
+    private fun getHttpLoggingInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor(
+            object : HttpLoggingInterceptor.Logger {
+                override fun log(message: String) {
+                    logger.info(message)
+                }
+            },
+        )
 
     @Provides
     @Singleton
-    fun providesSecurePreference(app: Windscribe): SecurePreferences {
-        return SecurePreferences(app)
-    }
+    fun providesSecurePreference(app: Windscribe): SecurePreferences = SecurePreferences(app)
 
     @Provides
     @Singleton
@@ -681,12 +629,15 @@ open class BaseApplicationModule {
         autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
         userRepository: Lazy<UserRepository>,
-        wsNetWrapper: WSNetWrapper
-    ): VPNConnectionStateManager {
-        return VPNConnectionStateManager(
-            scope, autoConnectionManager, preferencesHelper, userRepository, wsNetWrapper
+        wsNetWrapper: WSNetWrapper,
+    ): VPNConnectionStateManager =
+        VPNConnectionStateManager(
+            scope,
+            autoConnectionManager,
+            preferencesHelper,
+            userRepository,
+            wsNetWrapper,
         )
-    }
 
     @Provides
     @Singleton
@@ -697,12 +648,17 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         checkUpdateRepository: CheckUpdateRepository,
         wsNetWrapper: WSNetWrapper,
-        deviceStateManager: DeviceStateManager
-    ): WindScribeWorkManager {
-        return WindScribeWorkManager(
-            app, scope, vpnConnectionStateManager, preferencesHelper, checkUpdateRepository, wsNetWrapper, deviceStateManager
+        deviceStateManager: DeviceStateManager,
+    ): WindScribeWorkManager =
+        WindScribeWorkManager(
+            app,
+            scope,
+            vpnConnectionStateManager,
+            preferencesHelper,
+            checkUpdateRepository,
+            wsNetWrapper,
+            deviceStateManager,
         )
-    }
 
     @Provides
     @Singleton
@@ -710,20 +666,21 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         apiCallManager: IApiCallManager,
         preferencesHelper: PreferencesHelper,
-        vpnConnectionStateManager: VPNConnectionStateManager
-    ): DecoyTrafficController {
-        return DecoyTrafficController(
-            scope, apiCallManager, preferencesHelper, vpnConnectionStateManager
+        vpnConnectionStateManager: VPNConnectionStateManager,
+    ): DecoyTrafficController =
+        DecoyTrafficController(
+            scope,
+            apiCallManager,
+            preferencesHelper,
+            vpnConnectionStateManager,
         )
-    }
 
     @Provides
     @Singleton
     fun providesWsTunnelManager(
-        scope: CoroutineScope, openVPNBackend: OpenVPNBackend
-    ): ProxyTunnelManager {
-        return ProxyTunnelManager(scope, openVPNBackend)
-    }
+        scope: CoroutineScope,
+        openVPNBackend: OpenVPNBackend,
+    ): ProxyTunnelManager = ProxyTunnelManager(scope, openVPNBackend)
 
     @Provides
     @Singleton
@@ -733,39 +690,33 @@ open class BaseApplicationModule {
         networkInfoManager: NetworkInfoManager,
         autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
-        vpnController: WindVpnController
-    ): ShortcutStateManager {
-        return ShortcutStateManager(
+        vpnController: WindVpnController,
+    ): ShortcutStateManager =
+        ShortcutStateManager(
             scope,
             userRepository,
             autoConnectionManager,
             networkInfoManager,
             preferencesHelper,
-            vpnController
+            vpnController,
         )
-    }
 
     @Provides
     @Singleton
-    fun providesEmergencyConnectRepository(wsNetWrapper: WSNetWrapper): EmergencyConnectRepository {
-        return EmergencyConnectRepositoryImpl(wsNetWrapper)
-    }
+    fun providesEmergencyConnectRepository(wsNetWrapper: WSNetWrapper): EmergencyConnectRepository =
+        EmergencyConnectRepositoryImpl(wsNetWrapper)
 
     @Provides
     @Singleton
     fun providesAdvanceParameterRepository(
         scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
-        wsNetWrapper: WSNetWrapper
-    ): AdvanceParameterRepository {
-        return AdvanceParameterRepositoryImpl(scope, preferencesHelper, wsNetWrapper)
-    }
+        wsNetWrapper: WSNetWrapper,
+    ): AdvanceParameterRepository = AdvanceParameterRepositoryImpl(scope, preferencesHelper, wsNetWrapper)
 
     @Provides
     @Singleton
-    fun providesWSNetWrapper(): WSNetWrapper {
-        return WSNetWrapper()
-    }
+    fun providesWSNetWrapper(): WSNetWrapper = WSNetWrapper()
 
     @Provides
     @Singleton
@@ -775,17 +726,16 @@ open class BaseApplicationModule {
         vpnConnectionStateManager: VPNConnectionStateManager,
         locationRepository: LocationRepository,
         localDbInterface: LocalDbInterface,
-        serverListRepository: ServerListRepository
-    ): DynamicShortcutManager {
-        return DynamicShortcutManager(
+        serverListRepository: ServerListRepository,
+    ): DynamicShortcutManager =
+        DynamicShortcutManager(
             app,
             scope,
             vpnConnectionStateManager,
             locationRepository,
             localDbInterface,
-            serverListRepository
+            serverListRepository,
         )
-    }
 
     @Provides
     @Singleton
@@ -793,32 +743,28 @@ open class BaseApplicationModule {
         app: Windscribe,
         scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
-        userRepository: UserRepository
-    ): WindscribeReviewManager {
-        return WindscribeReviewManagerImpl(scope, app, preferencesHelper, userRepository)
-    }
+        userRepository: UserRepository,
+    ): WindscribeReviewManager = WindscribeReviewManagerImpl(scope, app, preferencesHelper, userRepository)
 
     @Provides
     @Singleton
-    fun provideWgLogger(): WgLogger {
-        return WgLogger()
-    }
+    fun provideWgLogger(): WgLogger = WgLogger()
 
     @Provides
     @Singleton
     fun providePortMapRepository(
         apiCallManager: IApiCallManager,
-        preferencesHelper: PreferencesHelper
-    ): com.windscribe.vpn.repository.PortMapRepository {
-        return com.windscribe.vpn.repository.PortMapRepository(apiCallManager, preferencesHelper)
-    }
+        preferencesHelper: PreferencesHelper,
+    ): com.windscribe.vpn.repository.PortMapRepository =
+        com.windscribe.vpn.repository
+            .PortMapRepository(apiCallManager, preferencesHelper)
 
     @Provides
     @Singleton
     fun provideLogRepository(
         preferencesHelper: PreferencesHelper,
-        apiCallManager: IApiCallManager
-    ): com.windscribe.vpn.repository.LogRepository {
-        return com.windscribe.vpn.repository.LogRepository(preferencesHelper, apiCallManager)
-    }
+        apiCallManager: IApiCallManager,
+    ): com.windscribe.vpn.repository.LogRepository =
+        com.windscribe.vpn.repository
+            .LogRepository(preferencesHelper, apiCallManager)
 }

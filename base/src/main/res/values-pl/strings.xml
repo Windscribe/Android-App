@@ -471,7 +471,7 @@ ostatnio wybrana lokalizacja.</string>
     <string name="failed_to_update_robert_rules">Nie udało się zaktualizować zasad Roberta.</string>
     <string name="successfully_updated_robert_rules">Pomyślnie zaktualizowano zasady Roberta.</string>
     <string name="share_app">Udostępnij aplikację</string>
-    <string name="share_app_description">"%s zaprasza do przyłączenia się do Windscribe. Podaj swoją nazwę użytkownika podczas rejestracji, a oboje otrzymacie 1 GB darmowych danych dodanych do swoich kont. Jeśli przejdziesz na zawodowstwo, oni też przejdą na zawodowstwo!\n%s"</string>
+    <string name="share_app_description">"%1$s zaprasza do przyłączenia się do Windscribe. Podaj swoją nazwę użytkownika podczas rejestracji, a oboje otrzymacie 1 GB darmowych danych dodanych do swoich kont. Jeśli przejdziesz na zawodowstwo, oni też przejdą na zawodowstwo!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Zezwalaj cały czas\" Wymagany dostęp do lokalizacji!</string>
     <string name="enable_location_access">Włącz dostęp do lokalizacji</string>
     <string name="location_permission_required">Wymagane uprawnienia do lokalizacji</string>

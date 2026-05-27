@@ -474,7 +474,7 @@
     <string name="failed_to_update_robert_rules">Robert নিয়মাবলী আপডেট করা ব্যর্থ হয়েছে।</string>
     <string name="successfully_updated_robert_rules">Robert নিয়মাবলী সফলভাবে আপডেট হয়েছে।</string>
     <string name="share_app">অ্যাপ শেয়ার করুন</string>
-    <string name="share_app_description">"%s আপনাকে Windscribe-এ যোগদানের জন্য আমন্ত্রণ জানাচ্ছেন। সাইন আপে তাদের ব্যবহারকারীর নাম প্রদান করুন এবং আপনি উভয়েই আপনাদের অ্যাকাউন্টে ১GB ফ্রি ডেটা পাবেন। আপনি যদি প্রো হন, তারা নিশ্চিত প্রো হবেন!\n%s"</string>
+    <string name="share_app_description">"%1$s আপনাকে Windscribe-এ যোগদানের জন্য আমন্ত্রণ জানাচ্ছেন। সাইন আপে তাদের ব্যবহারকারীর নাম প্রদান করুন এবং আপনি উভয়েই আপনাদের অ্যাকাউন্টে ১GB ফ্রি ডেটা পাবেন। আপনি যদি প্রো হন, তারা নিশ্চিত প্রো হবেন!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">“সব সময় অনুমতি দিন” লোকেশন অ্যাক্সেস প্রয়োজন!</string>
     <string name="enable_location_access">লোকেশন অ্যাক্সেস সক্রিয় করুন</string>
     <string name="location_permission_required">লোকেশন  অনুমতি প্রয়োজন</string>

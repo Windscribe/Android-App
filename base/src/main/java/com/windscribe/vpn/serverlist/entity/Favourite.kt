@@ -12,7 +12,6 @@ import androidx.room.PrimaryKey
 @Keep
 @Entity
 class Favourite {
-
     @PrimaryKey
     @ColumnInfo(name = "favourite_id")
     var id: Int = 0

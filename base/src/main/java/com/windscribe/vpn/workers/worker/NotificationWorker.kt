@@ -14,16 +14,17 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
-class NotificationWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted workerParams: WorkerParameters,
-    private val notificationRepository: NotificationRepository,
-    private val userRepository: UserRepository
-) : CoroutineWorker(context, workerParams) {
-
-    override suspend fun doWork(): Result {
-        if (!userRepository.loggedIn()) return Result.failure()
-        notificationRepository.update()
-        return Result.success()
+class NotificationWorker
+    @AssistedInject
+    constructor(
+        @Assisted context: Context,
+        @Assisted workerParams: WorkerParameters,
+        private val notificationRepository: NotificationRepository,
+        private val userRepository: UserRepository,
+    ) : CoroutineWorker(context, workerParams) {
+        override suspend fun doWork(): Result {
+            if (!userRepository.loggedIn()) return Result.failure()
+            notificationRepository.update()
+            return Result.success()
+        }
     }
-}

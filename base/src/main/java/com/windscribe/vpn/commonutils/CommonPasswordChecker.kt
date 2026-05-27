@@ -2,7 +2,8 @@ package com.windscribe.vpn.commonutils
 
 class CommonPasswordChecker {
     companion object {
-        private val commonPasswords = listOf(
+        private val commonPasswords =
+            listOf(
                 "12345",
                 "123456",
                 "123456789",
@@ -600,11 +601,9 @@ class CommonPasswordChecker {
                 "peanut",
                 "11223344",
                 "thomas",
-                "angel1"
-        )
+                "angel1",
+            )
 
-        fun isAMatch(password: String): Boolean {
-            return commonPasswords.contains(password.lowercase())
-        }
+        fun isAMatch(password: String): Boolean = commonPasswords.contains(password.lowercase())
     }
 }

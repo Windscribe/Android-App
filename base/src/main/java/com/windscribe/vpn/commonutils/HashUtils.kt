@@ -1,11 +1,9 @@
 package com.windscribe.vpn.commonutils
 
-import java.io.File
 import java.io.InputStream
 import java.security.MessageDigest
 
 object HashUtils {
-
     /**
      * Generate SHA256 hash from InputStream (truncated to 128 bits)
      * @param inputStream The input stream to hash

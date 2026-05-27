@@ -17,12 +17,11 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class DisconnectService : IntentService("DisconnectService") {
-
     @Inject
     lateinit var controller: WindVpnController
 
     @Inject
-    lateinit var  preferencesHelper: PreferencesHelper
+    lateinit var preferencesHelper: PreferencesHelper
 
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager

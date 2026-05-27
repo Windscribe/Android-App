@@ -29,7 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -42,37 +41,34 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
+import com.windscribe.mobile.ui.common.AppProgressBar
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font18
-import com.windscribe.mobile.ui.common.AppProgressBar
-import com.windscribe.mobile.ui.helper.MultiDevicePreview
-import com.windscribe.mobile.ui.helper.PreviewWithNav
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun AppStartScreen(
     windowSizeClass: WindowSizeClass? = currentWindowAdaptiveInfo().windowSizeClass,
-    viewModel: AppStartViewModel? = null
+    viewModel: AppStartViewModel? = null,
 ) {
     val navController = LocalNavController.current
- //   val bundle = navController.currentBackStackEntry?.savedStateHandle?.get<Bundle>("result")
+    //   val bundle = navController.currentBackStackEntry?.savedStateHandle?.get<Bundle>("result")
 //    bundle?.let {
 //        val data = it.getSerializable("data") as? WebViewResult
 //        if (data != null) {
@@ -124,25 +120,30 @@ fun AppStartScreen(
 }
 
 @Composable
-fun CompactLayout(isConnected: Boolean, viewModel: AppStartViewModel?) {
+fun CompactLayout(
+    isConnected: Boolean,
+    viewModel: AppStartViewModel?,
+) {
     Box(
-        modifier = Modifier
-            .padding(0.dp)
-            .fillMaxSize()
-            .background(AppColors.deepBlue)
+        modifier =
+            Modifier
+                .padding(0.dp)
+                .fillMaxSize()
+                .background(AppColors.deepBlue),
     ) {
         Image(
             painter = painterResource(R.drawable.welcome_background),
             contentDescription = "Welcome Image",
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillWidth
+            contentScale = ContentScale.FillWidth,
         )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth(1.0f)
-                .padding(32.dp)
-                .statusBarsPadding()
+            modifier =
+                Modifier
+                    .fillMaxWidth(1.0f)
+                    .padding(32.dp)
+                    .statusBarsPadding(),
         ) {
             Logo()
             Spacer(modifier = Modifier.weight(1f))
@@ -154,28 +155,33 @@ fun CompactLayout(isConnected: Boolean, viewModel: AppStartViewModel?) {
 }
 
 @Composable
-fun ExpandedLayout(isConnected: Boolean, viewModel: AppStartViewModel?) {
+fun ExpandedLayout(
+    isConnected: Boolean,
+    viewModel: AppStartViewModel?,
+) {
     Box(
-        modifier = Modifier
-            .padding(0.dp)
-            .fillMaxSize()
-            .background(AppColors.deepBlue)
+        modifier =
+            Modifier
+                .padding(0.dp)
+                .fillMaxSize()
+                .background(AppColors.deepBlue),
     ) {
         Image(
             painter = painterResource(R.drawable.welcome_background),
             contentDescription = "Welcome Image",
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillWidth
+            contentScale = ContentScale.FillWidth,
         )
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Logo()
                 Spacer(modifier = Modifier.weight(1f))
@@ -184,7 +190,7 @@ fun ExpandedLayout(isConnected: Boolean, viewModel: AppStartViewModel?) {
             }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Spacer(modifier = Modifier.weight(1f))
                 ActionSection(isConnected, viewModel)
@@ -203,17 +209,19 @@ fun isTabletInLandscapeMode(): Boolean {
 
 @Composable
 fun Logo() {
-    val topPadding = if (isTabletInLandscapeMode()) {
-        144.dp
-    } else {
-        32.dp
-    }
+    val topPadding =
+        if (isTabletInLandscapeMode()) {
+            144.dp
+        } else {
+            32.dp
+        }
     Image(
         painter = painterResource(R.drawable.badge_logo),
         contentDescription = "Badge Logo",
-        modifier = Modifier
-            .padding(top = topPadding)
-            .size(54.dp)
+        modifier =
+            Modifier
+                .padding(top = topPadding)
+                .size(54.dp),
     )
 }
 
@@ -221,17 +229,18 @@ fun Logo() {
 private fun GoogleButton(viewModel: AppStartViewModel?) {
     val interactionSource = remember { MutableInteractionSource() }
     val signInIntent = viewModel?.signInIntent
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        Log.i("AppStartViewModel", "result: ${result.data}")
-        viewModel?.onSignIntentResult(result.data)
-    }
+    val launcher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+        ) { result ->
+            Log.i("AppStartViewModel", "result: ${result.data}")
+            viewModel?.onSignIntentResult(result.data)
+        }
     val activity = LocalContext.current as? AppStartActivity
     Button(
         onClick = {
             if (com.windscribe.mobile.BuildConfig.FLAVOR == "google") {
-                if (signInIntent == null){
+                if (signInIntent == null) {
                     Toast.makeText(activity, "Google Signin not available.", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
@@ -244,12 +253,13 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
         Modifier
             .height(48.dp)
             .fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.white,
-            disabledContainerColor = AppColors.white,
-            disabledContentColor = AppColors.black,
-            contentColor = AppColors.black
-        ),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = AppColors.white,
+                disabledContainerColor = AppColors.white,
+                disabledContentColor = AppColors.black,
+                contentColor = AppColors.black,
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {
@@ -257,7 +267,7 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
             Image(
                 painter = painterResource(R.drawable.google_logo),
                 contentDescription = "Google Logo",
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(
@@ -266,7 +276,6 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
                 color = AppColors.black,
             )
         }
-
     }
 }
 
@@ -284,19 +293,20 @@ private fun LoginButton() {
             .height(48.dp)
             .fillMaxWidth()
             .border(1.dp, AppColors.white.copy(alpha = 0.30f), RoundedCornerShape(24.dp)),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
-            disabledContentColor = AppColors.white,
-            contentColor = AppColors.white
-        ),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                disabledContentColor = AppColors.white,
+                contentColor = AppColors.white,
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {
         Text(
             text = stringResource(com.windscribe.vpn.R.string.login),
             style = font18.copy(fontWeight = FontWeight.Medium),
-            color = AppColors.white
+            color = AppColors.white,
         )
     }
 }
@@ -309,13 +319,14 @@ fun EmergencyConnectButton(isConnected: Boolean) {
         text = if (isConnected) "Emergency Connect On" else "Can’t Connect?",
         style = font18.copy(fontWeight = FontWeight.Medium),
         color = if (isConnected) Color(0xFF61FF8A) else Color(0xFF838D9B),
-        modifier = Modifier.clickable {
-            if (com.windscribe.mobile.BuildConfig.FLAVOR == "google") {
-                navController.navigate(Screen.EmergencyConnect.route)
-            } else {
-                Toast.makeText(context, "Emergency Connect not available in F-Droid version", Toast.LENGTH_SHORT).show()
-            }
-        }
+        modifier =
+            Modifier.clickable {
+                if (com.windscribe.mobile.BuildConfig.FLAVOR == "google") {
+                    navController.navigate(Screen.EmergencyConnect.route)
+                } else {
+                    Toast.makeText(context, "Emergency Connect not available in F-Droid version", Toast.LENGTH_SHORT).show()
+                }
+            },
     )
 }
 
@@ -326,21 +337,26 @@ private fun SignupButton() {
         text = stringResource(com.windscribe.vpn.R.string.text_sign_up),
         style = font16.copy(fontWeight = FontWeight.Medium),
         color = Color(0xFF838D9B),
-        modifier = Modifier.clickable {
-            navController.navigate(Screen.Signup.route)
-        }
+        modifier =
+            Modifier.clickable {
+                navController.navigate(Screen.Signup.route)
+            },
     )
 }
 
 @Composable
-fun ActionSection(isConnected: Boolean, viewModel: AppStartViewModel?) {
+fun ActionSection(
+    isConnected: Boolean,
+    viewModel: AppStartViewModel?,
+) {
     Column(
-        modifier = Modifier
-            .widthIn(min = 325.dp, max = 373.dp)
-            .statusBarsPadding()
-            .navigationBarsPadding(),
+        modifier =
+            Modifier
+                .widthIn(min = 325.dp, max = 373.dp)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(22.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         GoogleButton(viewModel)
         LoginButton()
@@ -352,6 +368,7 @@ fun ActionSection(isConnected: Boolean, viewModel: AppStartViewModel?) {
         }
     }
 }
+
 @Composable
 @MultiDevicePreview
 fun StartScreenPreview() {

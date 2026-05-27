@@ -15,8 +15,10 @@ import com.windscribe.vpn.billing.PurchaseState
 import kotlinx.coroutines.CoroutineScope
 
 interface UpgradePresenter {
-
-    fun bind(view: UpgradeView, scope: CoroutineScope)
+    fun bind(
+        view: UpgradeView,
+        scope: CoroutineScope,
+    )
 
     fun checkBillingProcessStatus()
 
@@ -28,7 +30,10 @@ interface UpgradePresenter {
 
     fun onBillingSetupSuccessful()
 
-    fun onConsumeFailed(responseCode: Int, purchase: Purchase)
+    fun onConsumeFailed(
+        responseCode: Int,
+        purchase: Purchase,
+    )
 
     fun onContinuePlanClick(selectedSku: Product)
 
@@ -46,9 +51,15 @@ interface UpgradePresenter {
 
     fun onPurchaseResponseFailure(requestStatus: PurchaseResponse.RequestStatus)
 
-    fun onPurchaseUpdated(responseCode: Int, purchases: List<Purchase>?)
+    fun onPurchaseUpdated(
+        responseCode: Int,
+        purchases: List<Purchase>?,
+    )
 
-    fun onSkuDetailsReceived(responseCode: Int, productDetails: List<ProductDetails>)
+    fun onSkuDetailsReceived(
+        responseCode: Int,
+        productDetails: List<ProductDetails>,
+    )
 
     fun restorePurchase()
 

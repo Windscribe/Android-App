@@ -20,27 +20,27 @@ fun PreviewWithNav(content: @Composable () -> Unit) {
     showBackground = true,
     showSystemUi = true,
     uiMode = Configuration.UI_MODE_NIGHT_NO,
-    locale = "ko"
+    locale = "ko",
 )
 @Preview(
     name = "Dark Mode",
     showBackground = true,
     showSystemUi = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
-    locale = "en"
+    locale = "en",
 )
 @Preview(
     name = "Tablet Dark",
     showBackground = true,
     showSystemUi = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1280dp,height=800dp,dpi=240"
+    device = "spec:width=1280dp,height=800dp,dpi=240",
 )
 @Preview(
     name = "Large Font",
     showBackground = true,
     showSystemUi = true,
     fontScale = 2.0f,
-    locale = "ru"
+    locale = "ru",
 )
 annotation class MultiDevicePreview

@@ -50,7 +50,7 @@ fun HashedLoginForm(
     onHashValueChange: (String) -> Unit = {},
     onUploadClick: () -> Unit = {},
     on2FAChange: (String) -> Unit = {},
-    on2FAInfoClick: () -> Unit = {}
+    on2FAInfoClick: () -> Unit = {},
 ) {
     var hashText by remember { mutableStateOf("") }
     var twoFA by remember { mutableStateOf("") }
@@ -69,7 +69,7 @@ fun HashedLoginForm(
             text = stringResource(com.windscribe.vpn.R.string.account_hash),
             style = font16.copy(fontWeight = FontWeight.Medium),
             color = if (isError) AppColors.red else AppColors.white,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.padding(start = 8.dp),
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -83,14 +83,14 @@ fun HashedLoginForm(
             placeholder = stringResource(com.windscribe.vpn.R.string.enter_account_hash_or_upload),
             isError = isError,
             onUploadClick = onUploadClick,
-            imeAction = ImeAction.Next
+            imeAction = ImeAction.Next,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // 2FA - Expandable Section
         ExpandableSection(
-            text = stringResource(com.windscribe.vpn.R.string.add_two_fa)
+            text = stringResource(com.windscribe.vpn.R.string.add_two_fa),
         ) {
             Spacer(modifier = Modifier.height(8.dp))
             StyledTextFieldWithActions(
@@ -104,7 +104,7 @@ fun HashedLoginForm(
                 showInfoButton = true,
                 onInfoClick = on2FAInfoClick,
                 keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
+                imeAction = ImeAction.Done,
             )
         }
     }
@@ -113,50 +113,53 @@ fun HashedLoginForm(
 @Composable
 private fun ExpandableSection(
     text: String,
-    content: @Composable () -> Unit = {}
+    content: @Composable () -> Unit = {},
 ) {
     val expanded = remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val rotation by animateFloatAsState(
         if (expanded.value) 180f else 0f,
-        label = "expandIconRotation"
+        label = "expandIconRotation",
     )
 
     Column {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(end = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = text,
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = AppColors.white
+                color = AppColors.white,
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 OptionalBadge()
                 Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = ripple(bounded = false, color = Color.White),
-                            onClick = { expanded.value = !expanded.value }
-                        ),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = ripple(bounded = false, color = Color.White),
+                                onClick = { expanded.value = !expanded.value },
+                            ),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_expand),
                         contentDescription = null,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .rotate(rotation),
-                        colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
+                        modifier =
+                            Modifier
+                                .size(24.dp)
+                                .rotate(rotation),
+                        colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f)),
                     )
                 }
             }
@@ -170,17 +173,17 @@ private fun ExpandableSection(
 @Composable
 private fun OptionalBadge() {
     Box(
-        modifier = Modifier
-            .background(
-                color = AppColors.white.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(100.dp)
-            )
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+        modifier =
+            Modifier
+                .background(
+                    color = AppColors.white.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(100.dp),
+                ).padding(horizontal = 8.dp, vertical = 2.dp),
     ) {
         Text(
             text = stringResource(com.windscribe.vpn.R.string.optional),
             style = font12.copy(fontWeight = FontWeight.Medium),
-            color = AppColors.white.copy(alpha = 0.6f)
+            color = AppColors.white.copy(alpha = 0.6f),
         )
     }
 }

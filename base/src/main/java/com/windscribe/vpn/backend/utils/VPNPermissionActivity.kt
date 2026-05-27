@@ -5,20 +5,16 @@
 package com.windscribe.vpn.backend.utils
 
 import android.Manifest
-import android.app.Activity.RESULT_CANCELED
-import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
-import androidx.activity.ComponentActivity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import com.windscribe.vpn.R.layout
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.alert.showAlertDialog
 import com.windscribe.vpn.alert.showErrorDialog
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VpnBackendHolder
@@ -32,12 +28,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class VPNPermissionActivity : ComponentActivity() {
-
     private var cmFixed = false
     private val logger = LoggerFactory.getLogger("vpn")
 
@@ -76,10 +71,10 @@ class VPNPermissionActivity : ComponentActivity() {
         setContentView(layout.activity_launch)
         if (intent.hasExtra("protocolInformation")) {
             protocolInformation =
-                    intent.getSerializableExtra("protocolInformation") as ProtocolInformation
+                intent.getSerializableExtra("protocolInformation") as ProtocolInformation
             connectionId = intent.getSerializableExtra("connectionId") as UUID
             askForPermission()
-        }  else {
+        } else {
             finish()
             val action = intent.getStringExtra(QUICK_CONNECT_ACTION_KEY)
             when (action) {
@@ -87,6 +82,7 @@ class VPNPermissionActivity : ComponentActivity() {
                     appContext.preference.globalUserConnectionPreference = true
                     vpnController.connectAsync()
                 }
+
                 DynamicShortcutManager.RECENT_CONNECT_ACTION -> {
                     val connectId = intent.getIntExtra(DynamicShortcutManager.RECENT_CONNECT_ID, -1)
                     locationRepository.setSelectedCity(connectId)
@@ -94,6 +90,7 @@ class VPNPermissionActivity : ComponentActivity() {
                     appContext.preference.globalUserConnectionPreference = true
                     vpnController.connectAsync()
                 }
+
                 else -> {
                     appContext.preference.globalUserConnectionPreference = false
                     vpnController.disconnectAsync()
@@ -102,17 +99,19 @@ class VPNPermissionActivity : ComponentActivity() {
         }
     }
 
-    private fun setupLocationTypeInt(){
+    private fun setupLocationTypeInt() {
         val locationTypeInt = intent.getIntExtra(DynamicShortcutManager.RECENT_LOCATION_TYPE_INT, 0)
-        when(locationTypeInt) {
+        when (locationTypeInt) {
             1 -> {
                 appContext.preference.isConnectingToStaticIp = true
                 appContext.preference.isConnectingToConfigured = false
             }
+
             2 -> {
                 appContext.preference.isConnectingToStaticIp = false
                 appContext.preference.isConnectingToConfigured = true
             }
+
             else -> {
                 appContext.preference.isConnectingToStaticIp = false
                 appContext.preference.isConnectingToConfigured = false
@@ -136,10 +135,12 @@ class VPNPermissionActivity : ComponentActivity() {
             }
         } else if (resultCode == RESULT_CANCELED) {
             logger.info("User denied VPN permission.")
-            showErrorDialog(this,
+            showErrorDialog(
+                this,
                 "Windscribe requires VPN permission to configure VPN. " +
-                        "Sometimes you may see this error if another VPN app is configured as 'Always on VPN'. " +
-                        "Please turn off 'Always on' in all profiles.") {
+                    "Sometimes you may see this error if another VPN app is configured as 'Always on VPN'. " +
+                    "Please turn off 'Always on' in all profiles.",
+            ) {
                 scope.launch {
                     try {
                         vpnController.disconnectAsync()
@@ -153,22 +154,22 @@ class VPNPermissionActivity : ComponentActivity() {
         }
     }
 
-    private fun isNotificationsEnabled(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    private fun isNotificationsEnabled(): Boolean =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             (checkCallingPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
         } else {
             true
         }
-    }
 
     private fun askForPermission() {
-        val intent: Intent? = try {
-            VpnService.prepare(this)
-        } catch (e: Exception) {
-            logger.info(e.toString())
-            scope.launch { vpnController.disconnectAsync() }
-            return
-        }
+        val intent: Intent? =
+            try {
+                VpnService.prepare(this)
+            } catch (e: Exception) {
+                logger.info(e.toString())
+                scope.launch { vpnController.disconnectAsync() }
+                return
+            }
         fixDevTun()
         if (intent != null) {
             try {

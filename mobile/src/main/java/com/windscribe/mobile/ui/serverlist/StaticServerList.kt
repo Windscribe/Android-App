@@ -29,9 +29,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,80 +51,80 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StaticIPServerList(
     viewModel: ServerViewModel,
-    connectionViewModel: ConnectionViewmodel
+    connectionViewModel: ConnectionViewmodel,
 ) {
     val state by viewModel.staticListState.collectAsState()
     val activity = LocalContext.current as AppStartActivity
     val isRefreshing by viewModel.refreshState.collectAsState()
     Box(modifier = Modifier.testTag("server_list_static").fillMaxSize()) {
-    when (state) {
-        is ListState.Loading -> {
-            ProgressIndicator()
-        }
-
-        is ListState.Error -> {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Text(
-                    "Error loading static IP list.",
-                    style = font16,
-                    color = MaterialTheme.colorScheme.serverListSecondaryColor
-                )
+        when (state) {
+            is ListState.Loading -> {
+                ProgressIndicator()
             }
-        }
 
-        is ListState.Success -> {
-            val list = (state as ListState.Success).data
-            val lazyListState = rememberLazyListState()
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                if (list.isEmpty()) {
-                    AddButtonWithDetails(
-                        com.windscribe.vpn.R.string.add_static_ip,
-                        com.windscribe.vpn.R.string.no_static_ip,
-                        R.drawable.ic_location_static
-                    ) {
-                        activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
-                    }
-                } else {
-                    val deviceName = list.first().staticItem.deviceName ?: ""
-                    Column(Modifier.fillMaxSize()) {
-                        PullToRefreshBox(
-                            isRefreshing = isRefreshing,
-                            onRefresh = {
-                                viewModel.refresh(ServerListType.Static)
-                            },
-                            modifier = Modifier.weight(1f)
+            is ListState.Error -> {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        "Error loading static IP list.",
+                        style = font16,
+                        color = MaterialTheme.colorScheme.serverListSecondaryColor,
+                    )
+                }
+            }
+
+            is ListState.Success -> {
+                val list = (state as ListState.Success).data
+                val lazyListState = rememberLazyListState()
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize(),
+                ) {
+                    if (list.isEmpty()) {
+                        AddButtonWithDetails(
+                            com.windscribe.vpn.R.string.add_static_ip,
+                            com.windscribe.vpn.R.string.no_static_ip,
+                            R.drawable.ic_location_static,
                         ) {
-                            LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
-                                item {
-                                    Text(
-                                        text = stringResource(com.windscribe.vpn.R.string.static_ip),
-                                        style = font12,
-                                        color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.7f),
-                                        modifier = Modifier.padding(start = 8.dp, top = 16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                }
-                                items(list, key = { it.id }) { item ->
-                                    ListItemView(item, viewModel, connectionViewModel)
+                            activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
+                        }
+                    } else {
+                        val deviceName = list.first().staticItem.deviceName ?: ""
+                        Column(Modifier.fillMaxSize()) {
+                            PullToRefreshBox(
+                                isRefreshing = isRefreshing,
+                                onRefresh = {
+                                    viewModel.refresh(ServerListType.Static)
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
+                                    item {
+                                        Text(
+                                            text = stringResource(com.windscribe.vpn.R.string.static_ip),
+                                            style = font12,
+                                            color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.7f),
+                                            modifier = Modifier.padding(start = 8.dp, top = 16.dp),
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                    items(list, key = { it.id }) { item ->
+                                        ListItemView(item, viewModel, connectionViewModel)
+                                    }
                                 }
                             }
-                        }
-                        AddButton(com.windscribe.vpn.R.string.add_static_ip, deviceName) {
-                            activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
+                            AddButton(com.windscribe.vpn.R.string.add_static_ip, deviceName) {
+                                activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
+                            }
                         }
                     }
                 }
             }
         }
-    }
     } // Box server_list_static
 }
 
@@ -132,43 +132,45 @@ fun StaticIPServerList(
 private fun ListItemView(
     item: StaticListItem,
     viewModel: ServerViewModel,
-    connectionViewModel: ConnectionViewmodel
+    connectionViewModel: ConnectionViewmodel,
 ) {
     val latencyState by viewModel.latencyListState.collectAsState()
     val latency by rememberUpdatedState(
         if (latencyState is ListState.Success) {
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
-        } else -1
+        } else {
+            -1
+        },
     )
     val interactionSource = remember { MutableInteractionSource() }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .clickable(
-                interactionSource,
-                indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
-            ) {
-                connectionViewModel.onStaticIpClick(item.staticItem)
-            }
-            .padding(start = 8.dp, end = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clickable(
+                    interactionSource,
+                    indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor),
+                ) {
+                    connectionViewModel.onStaticIpClick(item.staticItem)
+                }.padding(start = 8.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (item.staticItem.status == 0) {
             Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
                 Image(
-                    painter = painterResource( R.drawable.ic_under_construction),
+                    painter = painterResource(R.drawable.ic_under_construction),
                     contentDescription = "Static IP icon.",
                     modifier = Modifier.size(16.dp),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor),
                 )
             }
         } else {
             Image(
-                painter = painterResource( R.drawable.ic_location_static),
+                painter = painterResource(R.drawable.ic_location_static),
                 contentDescription = "Static IP icon.",
                 modifier = Modifier.size(24.dp),
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor),
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
@@ -178,7 +180,7 @@ private fun ListItemView(
                 text = item.staticItem.staticIp ?: "",
                 style = font12.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.expandedServerItemTextColor,
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
             )
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -190,9 +192,11 @@ private fun ListItemView(
 private fun ProgressIndicator() {
     Box(modifier = Modifier.fillMaxSize()) {
         CircularProgressIndicator(
-            modifier = Modifier
-                .size(48.dp)
-                .align(Alignment.Center), color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.05f)
+            modifier =
+                Modifier
+                    .size(48.dp)
+                    .align(Alignment.Center),
+            color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.05f),
         )
     }
 }

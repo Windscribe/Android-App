@@ -26,14 +26,14 @@ import com.windscribe.vpn.billing.BillingFragmentCallback
 import com.windscribe.vpn.billing.GoogleProducts
 import com.windscribe.vpn.billing.WindscribeInAppProduct
 
-class PlansFragment : Fragment(), OnClickListener {
-
+class PlansFragment :
+    Fragment(),
+    OnClickListener {
     private var isEmailAdded = false
     private var isEmailConfirmed = false
     private var mBillingListener: BillingFragmentCallback? = null
     private var mWindscribeInAppProduct: WindscribeInAppProduct? = null
     private lateinit var binding: FragmentPlansBinding
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -46,14 +46,17 @@ class PlansFragment : Fragment(), OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentPlansBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         mWindscribeInAppProduct?.let {
             if (it.isPromo()) {
@@ -146,7 +149,7 @@ class PlansFragment : Fragment(), OnClickListener {
         container: Int,
         addToBackStack: Boolean,
         isEmailAdded: Boolean,
-        isEmailConfirmed: Boolean
+        isEmailConfirmed: Boolean,
     ) {
         // Check if activity is still valid before committing fragment transaction
         if (activity.isFinishing || activity.isDestroyed) {
@@ -159,9 +162,10 @@ class PlansFragment : Fragment(), OnClickListener {
         enterTransition = Slide(Gravity.BOTTOM)
 
         try {
-            val transaction = activity.supportFragmentManager
-                .beginTransaction()
-                .replace(container, this)
+            val transaction =
+                activity.supportFragmentManager
+                    .beginTransaction()
+                    .replace(container, this)
             if (addToBackStack) {
                 transaction.addToBackStack(this.javaClass.name)
             }
@@ -173,11 +177,8 @@ class PlansFragment : Fragment(), OnClickListener {
     }
 
     companion object {
-
         @JvmStatic
-        fun newInstance(): PlansFragment {
-            return PlansFragment()
-        }
+        fun newInstance(): PlansFragment = PlansFragment()
     }
 
     override fun onClick(v: View?) {

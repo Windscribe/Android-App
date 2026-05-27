@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,14 +54,12 @@ import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
-import androidx.compose.ui.platform.testTag
 import com.windscribe.vpn.R
 import com.windscribe.vpn.api.response.RobertFilter
 import com.windscribe.vpn.constants.FeatureExplainer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-
 
 @Composable
 fun RobertScreen(viewModel: RobertViewModel? = null) {
@@ -72,7 +71,7 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
     PreferenceBackground {
         Column(
             modifier = Modifier.testTag("robert_screen").padding(vertical = 16.dp, horizontal = 16.dp).navigationBarsPadding(),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
         ) {
             PreferencesNavBar(stringResource(R.string.robert)) {
                 navController.popBackStack()
@@ -85,7 +84,7 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         color = MaterialTheme.colorScheme.primaryTextColor,
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
                     )
                 }
 
@@ -93,7 +92,7 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
                     Text(
                         (state as RobertFilterState.Failure).error,
                         style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor
+                        color = MaterialTheme.colorScheme.primaryTextColor,
                     )
                 }
 
@@ -115,23 +114,24 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
 @Composable
 private fun RobertScreenDescription() {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.10f),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(top = 14.dp, bottom = 0.dp, start = 16.dp, end = 16.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.10f),
+                    shape = RoundedCornerShape(12.dp),
+                ).padding(top = 14.dp, bottom = 0.dp, start = 16.dp, end = 16.dp),
     ) {
         Icon(
             painter = painterResource(com.windscribe.mobile.R.drawable.robert),
             contentDescription = "Robert icon image.",
             tint = MaterialTheme.colorScheme.primaryTextColor,
-            modifier = Modifier.align(androidx.compose.ui.Alignment.TopEnd)
-                .offset(x = (15.0).dp, y = (-13).dp)
-                .clip(RoundedCornerShape(topEnd = 11.dp))
-
+            modifier =
+                Modifier
+                    .align(androidx.compose.ui.Alignment.TopEnd)
+                    .offset(x = (15.0).dp, y = (-13).dp)
+                    .clip(RoundedCornerShape(topEnd = 11.dp)),
         )
         DescriptionWithLearnMore(stringResource(R.string.robert_description), FeatureExplainer.ROBERT)
     }
@@ -168,57 +168,73 @@ private fun HandleGoto(viewModel: RobertViewModel?) {
 }
 
 @Composable
-private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?, modifier: Modifier = Modifier) {
-    var iconMap = mapOf(
-        Pair("malware", com.windscribe.mobile.R.drawable.ic_malware),
-        Pair("ads", com.windscribe.mobile.R.drawable.ic_ads),
-        Pair("social", com.windscribe.mobile.R.drawable.ic_social),
-        Pair("porn", com.windscribe.mobile.R.drawable.ic_porn),
-        Pair("gambling", com.windscribe.mobile.R.drawable.ic_gambling),
-        Pair("fakenews", com.windscribe.mobile.R.drawable.ic_fake_news),
-        Pair("competitors", com.windscribe.mobile.R.drawable.ic_other_vpn),
-        Pair("cryptominers", com.windscribe.mobile.R.drawable.ic_crypto)
-    )
+private fun Filters(
+    filters: List<RobertFilter>,
+    viewModel: RobertViewModel?,
+    modifier: Modifier = Modifier,
+) {
+    var iconMap =
+        mapOf(
+            Pair("malware", com.windscribe.mobile.R.drawable.ic_malware),
+            Pair("ads", com.windscribe.mobile.R.drawable.ic_ads),
+            Pair("social", com.windscribe.mobile.R.drawable.ic_social),
+            Pair("porn", com.windscribe.mobile.R.drawable.ic_porn),
+            Pair("gambling", com.windscribe.mobile.R.drawable.ic_gambling),
+            Pair("fakenews", com.windscribe.mobile.R.drawable.ic_fake_news),
+            Pair("competitors", com.windscribe.mobile.R.drawable.ic_other_vpn),
+            Pair("cryptominers", com.windscribe.mobile.R.drawable.ic_crypto),
+        )
     LazyColumn(modifier = modifier) {
         items(filters.size) { index ->
             Spacer(modifier = Modifier.height(8.dp))
             Row(
-                modifier = Modifier
-                    .testTag("robert_filter_${filters[index].id}")
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                        shape = RoundedCornerShape(size = 12.dp)
-                    )
-                    .padding(vertical = 14.dp, horizontal = 14.dp)
+                modifier =
+                    Modifier
+                        .testTag("robert_filter_${filters[index].id}")
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                            shape = RoundedCornerShape(size = 12.dp),
+                        ).padding(vertical = 14.dp, horizontal = 14.dp),
             ) {
                 Icon(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(4.dp),
-                    painter = painterResource(
-                        iconMap.getOrDefault(
-                            filters[index].id,
-                            com.windscribe.mobile.R.drawable.ic_preference_placeholder
-                        )
-                    ),
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .padding(4.dp),
+                    painter =
+                        painterResource(
+                            iconMap.getOrDefault(
+                                filters[index].id,
+                                com.windscribe.mobile.R.drawable.ic_preference_placeholder,
+                            ),
+                        ),
                     contentDescription = "",
-                    tint = MaterialTheme.colorScheme.primaryTextColor
+                    tint = MaterialTheme.colorScheme.primaryTextColor,
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     filters[index].title,
-                    style = font16.copy(
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primaryTextColor
-                    )
+                    style =
+                        font16.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primaryTextColor,
+                        ),
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     if (filters[index].status == 1) stringResource(R.string.blocking) else stringResource(R.string.allowing),
-                    style = font14.copy(
-                        fontWeight = FontWeight.Normal,
-                        color = if (filters[index].status == 1) AppColors.neonGreen else MaterialTheme.colorScheme.preferencesSubtitleColor
-                    )
+                    style =
+                        font14.copy(
+                            fontWeight = FontWeight.Normal,
+                            color =
+                                if (filters[index].status ==
+                                    1
+                                ) {
+                                    AppColors.neonGreen
+                                } else {
+                                    MaterialTheme.colorScheme.preferencesSubtitleColor
+                                },
+                        ),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 var isEnabled = filters[index].status == 1
@@ -226,23 +242,25 @@ private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?, mo
                     Image(
                         painter = painterResource(id = com.windscribe.mobile.R.drawable.ic_toggle_button_on),
                         contentDescription = null,
-                        modifier = Modifier
-                            .testTag("robert_toggle_on_${filters[index].id}")
-                            .clickable {
-                                isEnabled = !isEnabled
-                                viewModel?.onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
-                            }
+                        modifier =
+                            Modifier
+                                .testTag("robert_toggle_on_${filters[index].id}")
+                                .clickable {
+                                    isEnabled = !isEnabled
+                                    viewModel?.onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
+                                },
                     )
                 } else {
                     Image(
                         painter = painterResource(id = com.windscribe.mobile.R.drawable.ic_toggle_button_off),
                         contentDescription = null,
-                        modifier = Modifier
-                            .testTag("robert_toggle_off_${filters[index].id}")
-                            .clickable {
-                                isEnabled = !isEnabled
-                                viewModel?.onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
-                            }
+                        modifier =
+                            Modifier
+                                .testTag("robert_toggle_off_${filters[index].id}")
+                                .clickable {
+                                    isEnabled = !isEnabled
+                                    viewModel?.onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
+                                },
                     )
                 }
             }
@@ -253,24 +271,23 @@ private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?, mo
 @Composable
 private fun ManageCustomRule(viewModel: RobertViewModel? = null) {
     Row(
-        modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(size = 12.dp)
-            )
-            .hapticClickable {
-                viewModel?.onManageRulesClick()
-            }
-            .padding(vertical = 14.dp, horizontal = 14.dp)
-
+        modifier =
+            Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(size = 12.dp),
+                ).hapticClickable {
+                    viewModel?.onManageRulesClick()
+                }.padding(vertical = 14.dp, horizontal = 14.dp),
     ) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
             stringResource(R.string.manage_custom_rules),
-            style = font16.copy(
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primaryTextColor
-            )
+            style =
+                font16.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primaryTextColor,
+                ),
         )
         Spacer(modifier = Modifier.weight(1f))
     }
@@ -279,13 +296,14 @@ private fun ManageCustomRule(viewModel: RobertViewModel? = null) {
 @Composable
 private fun RobertScreenPreview(robertFilterState: RobertFilterState) {
     PreviewWithNav {
-        val viewModel = object : RobertViewModel() {
-            override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
-            override val robertFilterState: StateFlow<RobertFilterState> =
-                MutableStateFlow(robertFilterState)
-            override val goToState: SharedFlow<RobertGoToState> =
-                MutableStateFlow(RobertGoToState.None)
-        }
+        val viewModel =
+            object : RobertViewModel() {
+                override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
+                override val robertFilterState: StateFlow<RobertFilterState> =
+                    MutableStateFlow(robertFilterState)
+                override val goToState: SharedFlow<RobertGoToState> =
+                    MutableStateFlow(RobertGoToState.None)
+            }
         RobertScreen(viewModel)
     }
 }
@@ -305,19 +323,20 @@ private fun RobertScreenError() {
 @Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun RobertScreenSuccess() {
-    val list = listOf(
-        RobertFilter(
-            title = "Malware",
-            description = "Blocks all kinds of malware.",
-            id = "malware",
-            status = 1,
-        ),
-        RobertFilter(
-            title = "Social",
-            description = "Blocks facebook.",
-            id = "social",
-            status = 0,
+    val list =
+        listOf(
+            RobertFilter(
+                title = "Malware",
+                description = "Blocks all kinds of malware.",
+                id = "malware",
+                status = 1,
+            ),
+            RobertFilter(
+                title = "Social",
+                description = "Blocks facebook.",
+                id = "social",
+                status = 0,
+            ),
         )
-    )
     RobertScreenPreview(RobertFilterState.Success(list))
 }

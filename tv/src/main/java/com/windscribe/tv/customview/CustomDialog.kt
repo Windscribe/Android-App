@@ -11,7 +11,9 @@ import android.os.Bundle
 import android.view.Window
 import com.windscribe.tv.R
 
-class CustomDialog(context: Context) : Dialog(context) {
+class CustomDialog(
+    context: Context,
+) : Dialog(context) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)

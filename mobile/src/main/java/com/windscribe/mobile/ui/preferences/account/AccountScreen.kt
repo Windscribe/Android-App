@@ -81,7 +81,6 @@ import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-
 @Composable
 fun AccountScreen(viewModel: AccountViewModel? = null) {
     val navController = LocalNavController.current
@@ -89,7 +88,7 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
         ?: remember { mutableStateOf(false) }
     val isGhostAccount by viewModel?.isGhostAccount?.collectAsState() ?: remember {
         mutableStateOf(
-            false
+            false,
         )
     }
     val accountState by viewModel?.accountState?.collectAsState() ?: remember {
@@ -108,7 +107,7 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
             Column(
                 Modifier
                     .navigationBarsPadding()
-                    .verticalScroll(scrollState)
+                    .verticalScroll(scrollState),
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
                 AccountInfo(viewModel)
@@ -128,10 +127,11 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
                 Spacer(modifier = Modifier.height(14.dp))
                 Text(
                     stringResource(R.string.other),
-                    style = font12.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
-                    )
+                    style =
+                        font12.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                        ),
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 VoucherCode(viewModel)
@@ -151,13 +151,13 @@ private fun GhostAccountState() {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         Spacer(modifier = Modifier.weight(1.0f))
         NextButton(
             modifier = Modifier,
             text = stringResource(R.string.login),
-            enabled = true
+            enabled = true,
         ) {
             navController.navigate(Screen.Login.route)
         }
@@ -165,7 +165,7 @@ private fun GhostAccountState() {
         NextButton(
             modifier = Modifier,
             text = stringResource(R.string.account_set_up),
-            enabled = true
+            enabled = true,
         ) {
             navController.currentBackStackEntry?.savedStateHandle?.set("isAccountClaim", true)
             navController.navigate(Screen.Signup.route)
@@ -188,21 +188,23 @@ private fun HandleAlertState(viewModel: AccountViewModel?) {
         when (alertState) {
             is AlertState.Error -> {
                 val result = (alertState as AlertState.Error).message
-                val message = when (result) {
-                    is ToastMessage.Raw -> result.message
-                    is ToastMessage.Localized -> activity?.getString(result.message) ?: ""
-                    else -> ""
-                }
+                val message =
+                    when (result) {
+                        is ToastMessage.Raw -> result.message
+                        is ToastMessage.Localized -> activity?.getString(result.message) ?: ""
+                        else -> ""
+                    }
                 fullScreenDialogState = FullScreenDialogState.Error(message)
             }
 
             is AlertState.Success -> {
                 val result = (alertState as AlertState.Success).message
-                val message = when (result) {
-                    is ToastMessage.Raw -> result.message
-                    is ToastMessage.Localized -> activity?.getString(result.message) ?: ""
-                    else -> ""
-                }
+                val message =
+                    when (result) {
+                        is ToastMessage.Raw -> result.message
+                        is ToastMessage.Localized -> activity?.getString(result.message) ?: ""
+                        else -> ""
+                    }
                 fullScreenDialogState = FullScreenDialogState.Success(message)
             }
 
@@ -223,7 +225,7 @@ private fun HandleAlertState(viewModel: AccountViewModel?) {
         onDismiss = {
             fullScreenDialogState = FullScreenDialogState.None
             viewModel?.onDialogDismiss()
-        }
+        },
     )
 
     if (showVoucherDialog) {
@@ -249,7 +251,7 @@ private fun HandleAlertState(viewModel: AccountViewModel?) {
 private fun TextFieldDialog(
     onDismiss: () -> Unit,
     onSubmit: (String) -> Unit,
-    isLazyLogin: Boolean = false
+    isLazyLogin: Boolean = false,
 ) {
     val activity = LocalContext.current as? AppStartActivity
     val hapticFeedbackEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
@@ -267,63 +269,73 @@ private fun TextFieldDialog(
         Surface(
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.primaryTextColor,
-            tonalElevation = 8.dp
+            tonalElevation = 8.dp,
         ) {
             Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier =
+                    Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 TextField(
                     value = textFieldValue,
                     onValueChange = { input ->
                         if (isLazyLogin) {
-                            val clean = input.text
-                                .uppercase()
-                                .replace("-", "")
-                                .take(8)
+                            val clean =
+                                input.text
+                                    .uppercase()
+                                    .replace("-", "")
+                                    .take(8)
 
-                            val formatted = if (clean.length > 4)
-                                "${clean.substring(0, 4)}-${clean.substring(4)}"
-                            else clean
-                            textFieldValue = if (formatted != textFieldValue.text) {
-                                TextFieldValue(
-                                    text = formatted,
-                                    selection = TextRange(formatted.length)
-                                )
-                            } else {
-                                input
-                            }
+                            val formatted =
+                                if (clean.length > 4) {
+                                    "${clean.substring(0, 4)}-${clean.substring(4)}"
+                                } else {
+                                    clean
+                                }
+                            textFieldValue =
+                                if (formatted != textFieldValue.text) {
+                                    TextFieldValue(
+                                        text = formatted,
+                                        selection = TextRange(formatted.length),
+                                    )
+                                } else {
+                                    input
+                                }
                         } else {
                             textFieldValue = input
                         }
                     },
-                    colors = TextFieldDefaults.colors().copy(
-                        focusedContainerColor = MaterialTheme.colorScheme.primaryTextColor,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.primaryTextColor,
-                        disabledContainerColor = MaterialTheme.colorScheme.primaryTextColor,
-                        focusedTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                        unfocusedTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                        disabledTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                        cursorColor = MaterialTheme.colorScheme.backgroundColor,
-                    ),
+                    colors =
+                        TextFieldDefaults.colors().copy(
+                            focusedContainerColor = MaterialTheme.colorScheme.primaryTextColor,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.primaryTextColor,
+                            disabledContainerColor = MaterialTheme.colorScheme.primaryTextColor,
+                            focusedTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                            unfocusedTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                            disabledTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                            cursorColor = MaterialTheme.colorScheme.backgroundColor,
+                        ),
                     placeholder = {
                         Text(
                             stringResource(R.string.enter_code),
-                            style = font16.copy(
-                                color = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                                textAlign = TextAlign.Start
-                            )
+                            style =
+                                font16.copy(
+                                    color = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                                    textAlign = TextAlign.Start,
+                                ),
                         )
                     },
-                    textStyle = font16.copy(
-                        color = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                        textAlign = TextAlign.Start
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        capitalization = KeyboardCapitalization.Characters
-                    ),
+                    textStyle =
+                        font16.copy(
+                            color = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                            textAlign = TextAlign.Start,
+                        ),
+                    keyboardOptions =
+                        KeyboardOptions.Default.copy(
+                            capitalization = KeyboardCapitalization.Characters,
+                        ),
                     maxLines = 1,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -336,21 +348,23 @@ private fun TextFieldDialog(
                             }
                             onDismiss()
                         },
-                        colors = ButtonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.preferencesBackgroundColor.copy(
-                                alpha = 0.70f
+                        colors =
+                            ButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor =
+                                    MaterialTheme.colorScheme.preferencesBackgroundColor.copy(
+                                        alpha = 0.70f,
+                                    ),
+                                disabledContainerColor = Color.Transparent,
+                                disabledContentColor = Color.Transparent,
                             ),
-                            disabledContainerColor = Color.Transparent,
-                            disabledContentColor = Color.Transparent
-                        ),
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
                     ) {
                         Text(
                             stringResource(R.string.cancel),
                             style = font16,
                             color = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                            textAlign = TextAlign.Start
+                            textAlign = TextAlign.Start,
                         )
                     }
                     Button(
@@ -361,18 +375,19 @@ private fun TextFieldDialog(
                             onDismiss()
                             onSubmit(textFieldValue.text)
                         },
-                        colors = ButtonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                            disabledContainerColor = Color.Transparent,
-                            disabledContentColor = Color.Transparent
-                        ),
-                        modifier = Modifier.padding(end = 8.dp)
+                        colors =
+                            ButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                                disabledContainerColor = Color.Transparent,
+                                disabledContentColor = Color.Transparent,
+                            ),
+                        modifier = Modifier.padding(end = 8.dp),
                     ) {
                         Text(
                             stringResource(R.string.text_ok),
                             style = font16,
-                            textAlign = TextAlign.Start
+                            textAlign = TextAlign.Start,
                         )
                     }
                 }
@@ -397,63 +412,70 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
     Column {
         Text(
             stringResource(R.string.info),
-            style = font12.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.preferencesSubtitleColor
-            )
+            style =
+                font12.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                ),
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         // Username/Hash Row
         Row(
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                    shape = if (isHashedAccount) {
-                        RoundedCornerShape(12.dp)
-                    } else {
-                        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-                    }
-                )
-                .hapticClickable {
-                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                    val clip = android.content.ClipData.newPlainText(if (isHashedAccount) "Hash" else "Username", username)
-                    clipboard.setPrimaryClip(clip)
-                }
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                        shape =
+                            if (isHashedAccount) {
+                                RoundedCornerShape(12.dp)
+                            } else {
+                                RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                            },
+                    ).hapticClickable {
+                        val clipboard =
+                            context.getSystemService(
+                                android.content.Context.CLIPBOARD_SERVICE,
+                            ) as android.content.ClipboardManager
+                        val clip = android.content.ClipData.newPlainText(if (isHashedAccount) "Hash" else "Username", username)
+                        clipboard.setPrimaryClip(clip)
+                    }.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 if (isHashedAccount) stringResource(R.string.hash) else stringResource(R.string.username),
-                style = font16.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primaryTextColor
-                )
+                style =
+                    font16.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primaryTextColor,
+                    ),
             )
             Spacer(modifier = Modifier.weight(1f))
             if (isHashedAccount) {
                 // Display hash in two lines (34 chars total: 18 + 16)
-                val hashText = if (username.length > 18) {
-                    "${username.substring(0, 18)}\n${username.substring(18)}"
-                } else {
-                    username
-                }
+                val hashText =
+                    if (username.length > 18) {
+                        "${username.substring(0, 18)}\n${username.substring(18)}"
+                    } else {
+                        username
+                    }
                 Text(
                     hashText,
-                    style = font16.copy(
-                        color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                        textAlign = TextAlign.End,
-                        lineHeight = 22.sp
-                    ),
-                    maxLines = 2
+                    style =
+                        font16.copy(
+                            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                            textAlign = TextAlign.End,
+                            lineHeight = 22.sp,
+                        ),
+                    maxLines = 2,
                 )
             } else {
                 Text(
                     username,
                     style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -462,116 +484,124 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
             Spacer(modifier = Modifier.height(1.dp))
 
             // Email Section
-        Column(
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
-                )
-                .padding(14.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                modifier =
+                    Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                        ).padding(14.dp)
+                        .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    when (emailState) {
+                        is EmailState.NoEmail -> {
+                            Icon(
+                                painterResource(com.windscribe.mobile.R.drawable.ic_email_attention),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primaryTextColor,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+
+                        is EmailState.UnconfirmedEmail -> {
+                            Icon(
+                                painterResource(com.windscribe.mobile.R.drawable.ic_email_attention),
+                                contentDescription = null,
+                                tint = AppColors.yellow,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+
+                        else -> {
+                            Unit
+                        }
+                    }
+
+                    Text(
+                        stringResource(R.string.email),
+                        style =
+                            font16.copy(
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primaryTextColor,
+                            ),
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    ValueItem(
+                        when (emailState) {
+                            is EmailState.Email -> emailState.email
+                            is EmailState.UnconfirmedEmail -> emailState.email
+                            is EmailState.NoEmail -> stringResource(R.string.none)
+                        },
+                    )
+                }
+
                 when (emailState) {
                     is EmailState.NoEmail -> {
-                        Icon(
-                            painterResource(com.windscribe.mobile.R.drawable.ic_email_attention),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primaryTextColor
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            stringResource(R.string.get_10gb_data),
+                            style =
+                                font14.copy(
+                                    color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                                    fontWeight = FontWeight.Normal,
+                                    textAlign = TextAlign.Start,
+                                ),
+                            modifier =
+                                Modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                                        shape = RoundedCornerShape(6.dp),
+                                    ).padding(horizontal = 12.dp, vertical = 8.dp)
+                                    .fillMaxWidth(),
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
                     }
 
                     is EmailState.UnconfirmedEmail -> {
-                        Icon(
-                            painterResource(com.windscribe.mobile.R.drawable.ic_email_attention),
-                            contentDescription = null,
-                            tint = AppColors.yellow
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-
-                    else -> Unit
-                }
-
-                Text(
-                    stringResource(R.string.email),
-                    style = font16.copy(
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primaryTextColor
-                    )
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                ValueItem(
-                    when (emailState) {
-                        is EmailState.Email -> emailState.email
-                        is EmailState.UnconfirmedEmail -> emailState.email
-                        is EmailState.NoEmail -> stringResource(R.string.none)
-                    }
-                )
-            }
-
-            when (emailState) {
-                is EmailState.NoEmail -> {
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Text(
-                        stringResource(R.string.get_10gb_data),
-                        style = font14.copy(
-                            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                            fontWeight = FontWeight.Normal,
-                            textAlign = TextAlign.Start
-                        ),
-                        modifier = Modifier
-                            .background(
-                                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                                shape = RoundedCornerShape(6.dp)
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Row(
+                            modifier =
+                                Modifier
+                                    .background(AppColors.yellow, shape = RoundedCornerShape(6.dp))
+                                    .clickable {
+                                        navController.navigate(Screen.ConfirmEmail.route)
+                                    }.padding(horizontal = 12.dp, vertical = 8.dp)
+                                    .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                stringResource(R.string.confirm_your_email),
+                                style =
+                                    font14.copy(
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Medium,
+                                        textAlign = TextAlign.Start,
+                                    ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f),
                             )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            .fillMaxWidth()
-                    )
-                }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                stringResource(R.string.resend),
+                                style =
+                                    font16.copy(
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.SemiBold,
+                                    ),
+                                maxLines = 1,
+                            )
+                        }
+                    }
 
-                is EmailState.UnconfirmedEmail -> {
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Row(
-                        modifier = Modifier
-                            .background(AppColors.yellow, shape = RoundedCornerShape(6.dp))
-                            .clickable {
-                                navController.navigate(Screen.ConfirmEmail.route)
-                            }
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            stringResource(R.string.confirm_your_email),
-                            style = font14.copy(
-                                color = Color.Black,
-                                fontWeight = FontWeight.Medium,
-                                textAlign = TextAlign.Start
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            stringResource(R.string.resend),
-                            style = font16.copy(
-                                color = Color.Black,
-                                fontWeight = FontWeight.SemiBold
-                            ),
-                            maxLines = 1,
-                        )
+                    else -> {
+                        Unit
                     }
                 }
-
-                else -> Unit
             }
-        }
 
             if (emailState is EmailState.NoEmail) {
                 Spacer(modifier = Modifier.height(14.dp))
@@ -587,10 +617,11 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
 private fun RowScope.ValueItem(value: String) {
     Text(
         value,
-        style = font16.copy(
-            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-            textAlign = TextAlign.End
-        ),
+        style =
+            font16.copy(
+                color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                textAlign = TextAlign.End,
+            ),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier.weight(1f),
@@ -607,111 +638,142 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
         return
     }
     val type = (accountState as AccountState.Account).type
-    val plan = when (type) {
-        is AccountType.Pro, is AccountType.Unlimited -> stringResource(R.string.unlimited_data)
-        is AccountType.Free -> type.data
-        is AccountType.AlcCustom -> type.data
-    }
-    val planType = when (type) {
-        is AccountType.Pro -> stringResource(R.string.pro)
-        is AccountType.Unlimited -> stringResource(R.string.a_la_carte_unlimited_plan)
-        is AccountType.AlcCustom -> stringResource(R.string.custom)
-        is AccountType.Free -> stringResource(R.string.free)
-    }
-    val resetDateBackground = when (type) {
-        is AccountType.Pro, is AccountType.Unlimited -> RoundedCornerShape(
-            bottomStart = 12.dp,
-            bottomEnd = 12.dp
-        )
+    val plan =
+        when (type) {
+            is AccountType.Pro, is AccountType.Unlimited -> stringResource(R.string.unlimited_data)
+            is AccountType.Free -> type.data
+            is AccountType.AlcCustom -> type.data
+        }
+    val planType =
+        when (type) {
+            is AccountType.Pro -> stringResource(R.string.pro)
+            is AccountType.Unlimited -> stringResource(R.string.a_la_carte_unlimited_plan)
+            is AccountType.AlcCustom -> stringResource(R.string.custom)
+            is AccountType.Free -> stringResource(R.string.free)
+        }
+    val resetDateBackground =
+        when (type) {
+            is AccountType.Pro, is AccountType.Unlimited -> {
+                RoundedCornerShape(
+                    bottomStart = 12.dp,
+                    bottomEnd = 12.dp,
+                )
+            }
 
-        is AccountType.Free, is AccountType.AlcCustom -> RoundedCornerShape(0.dp)
-    }
+            is AccountType.Free, is AccountType.AlcCustom -> {
+                RoundedCornerShape(0.dp)
+            }
+        }
     val dateType = (accountState as AccountState.Account).dateType
     Column {
         Text(
             stringResource(R.string.plan),
-            style = font12.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.preferencesSubtitleColor
-            )
+            style =
+                font12.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                ),
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.primaryTextColor.copy(
-                        alpha = 0.05f
-                    ), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-                )
-                .padding(vertical = 14.dp, horizontal = 14.dp)
+            modifier =
+                Modifier
+                    .background(
+                        color =
+                            MaterialTheme.colorScheme.primaryTextColor.copy(
+                                alpha = 0.05f,
+                            ),
+                        shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+                    ).padding(vertical = 14.dp, horizontal = 14.dp),
         ) {
             Text(
                 plan,
-                style = font16.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primaryTextColor
-                )
+                style =
+                    font16.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primaryTextColor,
+                    ),
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 planType,
-                style = font16.copy(color = if (type is AccountType.Free || type is AccountType.AlcCustom) MaterialTheme.colorScheme.primaryTextColor else AppColors.cyberBlue)
+                style =
+                    font16.copy(
+                        color =
+                            if (type is AccountType.Free ||
+                                type is AccountType.AlcCustom
+                            ) {
+                                MaterialTheme.colorScheme.primaryTextColor
+                            } else {
+                                AppColors.cyberBlue
+                            },
+                    ),
             )
         }
         Spacer(modifier = Modifier.height(1.dp))
         Row(
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.primaryTextColor.copy(
-                        alpha = 0.05f
-                    ), shape = resetDateBackground
-                )
-                .padding(vertical = 14.dp, horizontal = 14.dp)
+            modifier =
+                Modifier
+                    .background(
+                        color =
+                            MaterialTheme.colorScheme.primaryTextColor.copy(
+                                alpha = 0.05f,
+                            ),
+                        shape = resetDateBackground,
+                    ).padding(vertical = 14.dp, horizontal = 14.dp),
         ) {
             Text(
-                if (dateType is DateType.Expiry) stringResource(R.string.expiry_date) else stringResource(
-                    R.string.reset_date
-                ),
-                style = font16.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primaryTextColor
-                )
+                if (dateType is DateType.Expiry) {
+                    stringResource(R.string.expiry_date)
+                } else {
+                    stringResource(
+                        R.string.reset_date,
+                    )
+                },
+                style =
+                    font16.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primaryTextColor,
+                    ),
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 dateType.date,
-                style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor)
+                style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
             )
         }
         if (type is AccountType.Free || type is AccountType.AlcCustom) {
             Spacer(modifier = Modifier.height(1.dp))
             Row(
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(
-                            alpha = 0.05f
-                        ), shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
-                    )
-                    .padding(vertical = 14.dp, horizontal = 14.dp)
+                modifier =
+                    Modifier
+                        .background(
+                            color =
+                                MaterialTheme.colorScheme.primaryTextColor.copy(
+                                    alpha = 0.05f,
+                                ),
+                            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                        ).padding(vertical = 14.dp, horizontal = 14.dp),
             ) {
                 Text(
                     stringResource(R.string.data_left_in_your_plan),
-                    style = font16.copy(
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primaryTextColor
-                    )
+                    style =
+                        font16.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primaryTextColor,
+                        ),
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     (accountState as AccountState.Account).dataLeft,
-                    style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor)
+                    style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
             ActionButton(
                 stringResource(R.string.upgrade_to_pro),
                 textColor = AppColors.cyberBlue,
-                backgroundColor = AppColors.cyberBlue.copy(alpha = 0.05f)
+                backgroundColor = AppColors.cyberBlue.copy(alpha = 0.05f),
             ) {
                 activity?.let { it.startActivity(UpgradeActivity.getStartIntent(it)) }
             }
@@ -719,34 +781,34 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
     }
 }
 
-
 @Composable
 private fun ActionButton(
     title: String,
     textColor: Color = MaterialTheme.colorScheme.primaryTextColor,
-    backgroundColor: Color = MaterialTheme.colorScheme.primaryTextColor.copy(
-        alpha = 0.05f
-    ),
-    onClick: () -> Unit
+    backgroundColor: Color =
+        MaterialTheme.colorScheme.primaryTextColor.copy(
+            alpha = 0.05f,
+        ),
+    onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .background(
-                color = backgroundColor,
-                shape = RoundedCornerShape(size = 12.dp)
-            )
-            .hapticClickable {
-                onClick()
-            }
-            .padding(vertical = 14.dp, horizontal = 14.dp)
+        modifier =
+            Modifier
+                .background(
+                    color = backgroundColor,
+                    shape = RoundedCornerShape(size = 12.dp),
+                ).hapticClickable {
+                    onClick()
+                }.padding(vertical = 14.dp, horizontal = 14.dp),
     ) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
             title,
-            style = font16.copy(
-                fontWeight = FontWeight.Medium,
-                color = textColor
-            )
+            style =
+                font16.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = textColor,
+                ),
         )
         Spacer(modifier = Modifier.weight(1f))
     }
@@ -755,31 +817,33 @@ private fun ActionButton(
 @Composable
 private fun VoucherCode(viewModel: AccountViewModel?) {
     Column(
-        modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(
-                    alpha = 0.05f
-                ), shape = RoundedCornerShape(size = 12.dp)
-            )
-            .hapticClickable {
-                viewModel?.onVoucherCodeClicked()
-            }
-            .padding(vertical = 14.dp, horizontal = 14.dp)
+        modifier =
+            Modifier
+                .background(
+                    color =
+                        MaterialTheme.colorScheme.primaryTextColor.copy(
+                            alpha = 0.05f,
+                        ),
+                    shape = RoundedCornerShape(size = 12.dp),
+                ).hapticClickable {
+                    viewModel?.onVoucherCodeClicked()
+                }.padding(vertical = 14.dp, horizontal = 14.dp),
     ) {
-        Row() {
+        Row {
             Text(
                 stringResource(R.string.voucher_code),
-                style = font16.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primaryTextColor
-                )
+                style =
+                    font16.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primaryTextColor,
+                    ),
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(com.windscribe.mobile.R.drawable.arrow_right),
                 contentDescription = "",
-                tint = MaterialTheme.colorScheme.primaryTextColor
+                tint = MaterialTheme.colorScheme.primaryTextColor,
             )
         }
         Spacer(modifier = Modifier.height(13.5.dp))
@@ -787,7 +851,7 @@ private fun VoucherCode(viewModel: AccountViewModel?) {
             text = stringResource(R.string.apply_voucher_code),
             style = font14.copy(fontWeight = FontWeight.Normal),
             color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
     }
 }
@@ -795,31 +859,33 @@ private fun VoucherCode(viewModel: AccountViewModel?) {
 @Composable
 private fun LazyLogin(viewModel: AccountViewModel?) {
     Column(
-        modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(
-                    alpha = 0.05f
-                ), shape = RoundedCornerShape(size = 12.dp)
-            )
-            .hapticClickable {
-                viewModel?.onLazyLoginClicked()
-            }
-            .padding(vertical = 14.dp, horizontal = 14.dp)
+        modifier =
+            Modifier
+                .background(
+                    color =
+                        MaterialTheme.colorScheme.primaryTextColor.copy(
+                            alpha = 0.05f,
+                        ),
+                    shape = RoundedCornerShape(size = 12.dp),
+                ).hapticClickable {
+                    viewModel?.onLazyLoginClicked()
+                }.padding(vertical = 14.dp, horizontal = 14.dp),
     ) {
         Row {
             Text(
                 stringResource(R.string.xpress_login),
-                style = font16.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primaryTextColor
-                )
+                style =
+                    font16.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primaryTextColor,
+                    ),
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(com.windscribe.mobile.R.drawable.arrow_right),
                 contentDescription = "",
-                tint = MaterialTheme.colorScheme.primaryTextColor
+                tint = MaterialTheme.colorScheme.primaryTextColor,
             )
         }
         Spacer(modifier = Modifier.height(13.5.dp))
@@ -827,7 +893,7 @@ private fun LazyLogin(viewModel: AccountViewModel?) {
             text = stringResource(R.string.lazy_login_description),
             style = font14.copy(fontWeight = FontWeight.Normal),
             color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
     }
 }
@@ -837,22 +903,32 @@ private fun HandleGoto(viewModel: AccountViewModel?) {
     val activity = LocalContext.current as? AppStartActivity
     val goto by viewModel?.goTo?.collectAsState(initial = AccountGoTo.None) ?: remember {
         mutableStateOf(
-            AccountGoTo.None
+            AccountGoTo.None,
         )
     }
     LaunchedEffect(goto) {
         when (goto) {
-            is AccountGoTo.ManageAccount -> activity?.openUrl((goto as AccountGoTo.ManageAccount).url)
-            is AccountGoTo.Error -> Toast.makeText(
-                activity,
-                (goto as AccountGoTo.Error).message,
-                Toast.LENGTH_SHORT
-            ).show()
-            is AccountGoTo.Upgrade -> activity?.let {
-                val startIntent = UpgradeActivity.getStartIntent(it)
-                startIntent.putExtra(PROMO_EXTRA, (goto as AccountGoTo.Upgrade).promoAction)
-                it.safeStartActivity(startIntent)
+            is AccountGoTo.ManageAccount -> {
+                activity?.openUrl((goto as AccountGoTo.ManageAccount).url)
             }
+
+            is AccountGoTo.Error -> {
+                Toast
+                    .makeText(
+                        activity,
+                        (goto as AccountGoTo.Error).message,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+            }
+
+            is AccountGoTo.Upgrade -> {
+                activity?.let {
+                    val startIntent = UpgradeActivity.getStartIntent(it)
+                    startIntent.putExtra(PROMO_EXTRA, (goto as AccountGoTo.Upgrade).promoAction)
+                    it.safeStartActivity(startIntent)
+                }
+            }
+
             else -> {}
         }
     }
@@ -861,13 +937,14 @@ private fun HandleGoto(viewModel: AccountViewModel?) {
 @Composable
 private fun AccountScreenPreview(accountState: AccountState) {
     PreviewWithNav {
-        val viewModel = object : AccountViewModel() {
-            override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
-            override val accountState: StateFlow<AccountState> = MutableStateFlow(accountState)
-            override val alertState: StateFlow<AlertState> = MutableStateFlow(AlertState.None)
-            override val isGhostAccount: StateFlow<Boolean> = MutableStateFlow(false)
-            override val isSsoLogin: StateFlow<Boolean> = MutableStateFlow(false)
-        }
+        val viewModel =
+            object : AccountViewModel() {
+                override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
+                override val accountState: StateFlow<AccountState> = MutableStateFlow(accountState)
+                override val alertState: StateFlow<AlertState> = MutableStateFlow(AlertState.None)
+                override val isGhostAccount: StateFlow<Boolean> = MutableStateFlow(false)
+                override val isSsoLogin: StateFlow<Boolean> = MutableStateFlow(false)
+            }
         AccountScreen(viewModel)
     }
 }
@@ -880,8 +957,8 @@ private fun AccountScreenProPreview() {
             AccountType.Pro,
             "CryptoBuddy",
             EmailState.UnconfirmedEmail("james.monroe@examplepetstore.comjames.monroe@examplepetstore.com"),
-            DateType.Expiry("2323-01-20")
-        )
+            DateType.Expiry("2323-01-20"),
+        ),
     )
 }
 
@@ -894,8 +971,8 @@ private fun AccountScreenFreePreview() {
             "CryptoBuddy",
             EmailState.NoEmail,
             DateType.Reset("2323-01-20"),
-            dataLeft = "10GB"
-        )
+            dataLeft = "10GB",
+        ),
     )
 }
 
@@ -907,8 +984,8 @@ private fun AccountScreenUnconfirmedPreview() {
             AccountType.Unlimited,
             "CryptoBuddy",
             EmailState.Email("james.monroe@examplepetstore.com"),
-            DateType.Expiry("2323-01-20")
-        )
+            DateType.Expiry("2323-01-20"),
+        ),
     )
 }
 
@@ -921,7 +998,7 @@ private fun AccountScreenAlc() {
             "CryptoBuddy",
             EmailState.NoEmail,
             DateType.Reset("2323-01-20"),
-            dataLeft = "20GB"
-        )
+            dataLeft = "20GB",
+        ),
     )
 }

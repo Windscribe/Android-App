@@ -17,19 +17,25 @@ import com.windscribe.tv.databinding.FragmentErrorPrimaryBinding
 class ErrorPrimaryFragment : Fragment() {
     private lateinit var binding: FragmentErrorPrimaryBinding
     private var error: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         error = arguments?.getString("error")
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentErrorPrimaryBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.error.text = error
         binding.close.requestFocus()
@@ -38,7 +44,12 @@ class ErrorPrimaryFragment : Fragment() {
         }
     }
 
-    fun add(error: String?, activity: AppCompatActivity, container: Int, addToBackStack: Boolean) {
+    fun add(
+        error: String?,
+        activity: AppCompatActivity,
+        container: Int,
+        addToBackStack: Boolean,
+    ) {
         // Check if activity is still alive before committing fragment
         if (activity.isDestroyed || activity.isFinishing) {
             return

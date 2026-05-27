@@ -11,7 +11,6 @@ import java.util.Objects
 
 @Keep
 class LocationAndDatacenters {
-
     @Relation(parentColumn = "region_id", entityColumn = "region_id", entity = Datacenter::class)
     var datacenters: List<Datacenter> = emptyList()
 
@@ -27,11 +26,11 @@ class LocationAndDatacenters {
     override fun equals(o: Any?): Boolean {
         if (this === o) return true
         if (o !is LocationAndDatacenters) return false
-        return latencyTotal == o.latencyTotal && datacenters == o.datacenters &&
-                location == o.location && isExpanded == o.isExpanded
+        return latencyTotal == o.latencyTotal &&
+            datacenters == o.datacenters &&
+            location == o.location &&
+            isExpanded == o.isExpanded
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(datacenters, latencyTotal, location, isExpanded)
-    }
+    override fun hashCode(): Int = Objects.hash(datacenters, latencyTotal, location, isExpanded)
 }

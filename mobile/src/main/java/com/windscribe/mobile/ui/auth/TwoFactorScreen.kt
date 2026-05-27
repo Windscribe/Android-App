@@ -47,19 +47,18 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 
 @Composable
-fun TwoFactorScreen(
-    viewModel: LoginViewModel? = null
-) {
+fun TwoFactorScreen(viewModel: LoginViewModel? = null) {
     val navController = LocalNavController.current
 
     AppBackground {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .padding(horizontal = 24.dp)
-                .imePadding(),
-            verticalArrangement = Arrangement.Top
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(horizontal = 24.dp)
+                    .imePadding(),
+            verticalArrangement = Arrangement.Top,
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -67,31 +66,32 @@ fun TwoFactorScreen(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                navController.popBackStack()
-                            },
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    navController.popBackStack()
+                                },
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back_arrow),
                             contentDescription = stringResource(com.windscribe.vpn.R.string.back),
                             tint = AppColors.white,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                     Text(
                         text = stringResource(com.windscribe.vpn.R.string.two_fa),
                         style = font16.copy(fontWeight = FontWeight.SemiBold),
-                        color = AppColors.white
+                        color = AppColors.white,
                     )
                 }
 
@@ -99,7 +99,7 @@ fun TwoFactorScreen(
                 AuthTabSelector(
                     selectedTab = AuthType.STANDARD,
                     onTabSelected = {},
-                    modifier = Modifier.alpha(0f)
+                    modifier = Modifier.alpha(0f),
                 )
             }
 
@@ -108,13 +108,14 @@ fun TwoFactorScreen(
             // Description text
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.two_fa_check_app_description),
-                style = font16.copy(
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = font16.fontSize * 1.5f,
-                    textAlign = TextAlign.Start
-                ),
+                style =
+                    font16.copy(
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = font16.fontSize * 1.5f,
+                        textAlign = TextAlign.Start,
+                    ),
                 color = AppColors.grayText,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -126,7 +127,7 @@ fun TwoFactorScreen(
                 onValueChange = {
                     twoFactorCode = it
                     viewModel?.onTwoFactorChanged(it)
-                }
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -142,22 +143,23 @@ fun TwoFactorScreen(
 @Composable
 private fun TwoFactorCodeField(
     isError: Boolean,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
 ) {
     var text by remember { mutableStateOf("") }
 
     Column {
         // Label
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp, start = 8.dp, end = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp, start = 8.dp, end = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.two_fa),
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = if (isError) AppColors.red else AppColors.white
+                color = if (isError) AppColors.red else AppColors.white,
             )
             if (isError) {
                 Icon(
@@ -179,59 +181,71 @@ private fun TwoFactorCodeField(
                 isError = isError,
                 singleLine = true,
                 shape = RoundedCornerShape(9.dp),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrectEnabled = false,
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Number
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        autoCorrectEnabled = false,
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Number,
+                    ),
                 placeholder = {
                     Text(
                         text = stringResource(com.windscribe.vpn.R.string.enter_two_fa_code),
                         style = font16.copy(fontWeight = FontWeight.Normal),
                         color = AppColors.grayText,
-                        textAlign = TextAlign.Start
+                        textAlign = TextAlign.Start,
                     )
                 },
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = if (isError) AppColors.red else AppColors.white,
-                    unfocusedTextColor = if (isError) AppColors.red else AppColors.white,
-                    disabledTextColor = if (isError) AppColors.red else AppColors.white,
-                    unfocusedContainerColor = AppColors.white.copy(0.05f),
-                    focusedContainerColor = AppColors.white.copy(0.05f),
-                    disabledContainerColor = AppColors.white.copy(0.05f),
-                    errorContainerColor = AppColors.white.copy(0.05f),
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                    cursorColor = AppColors.white,
-                    disabledIndicatorColor = Color.Transparent,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = AppColors.white,
-                        backgroundColor = AppColors.white.copy(alpha = 0.3f)
-                    )
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .then(
-                        if (isError) Modifier.border(
-                            width = 1.dp,
-                            color = AppColors.red,
-                            shape = RoundedCornerShape(9.dp)
-                        ) else Modifier
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedTextColor = if (isError) AppColors.red else AppColors.white,
+                        unfocusedTextColor = if (isError) AppColors.red else AppColors.white,
+                        disabledTextColor = if (isError) AppColors.red else AppColors.white,
+                        unfocusedContainerColor = AppColors.white.copy(0.05f),
+                        focusedContainerColor = AppColors.white.copy(0.05f),
+                        disabledContainerColor = AppColors.white.copy(0.05f),
+                        errorContainerColor = AppColors.white.copy(0.05f),
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = Color.Transparent,
+                        cursorColor = AppColors.white,
+                        disabledIndicatorColor = Color.Transparent,
+                        selectionColors =
+                            androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = AppColors.white,
+                                backgroundColor = AppColors.white.copy(alpha = 0.3f),
+                            ),
                     ),
-                textStyle = font16.copy(
-                    color = if (isError) AppColors.red else AppColors.white,
-                    textAlign = TextAlign.Start
-                ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .then(
+                            if (isError) {
+                                Modifier.border(
+                                    width = 1.dp,
+                                    color = AppColors.red,
+                                    shape = RoundedCornerShape(9.dp),
+                                )
+                            } else {
+                                Modifier
+                            },
+                        ),
+                textStyle =
+                    font16.copy(
+                        color = if (isError) AppColors.red else AppColors.white,
+                        textAlign = TextAlign.Start,
+                    ),
             )
         }
     }
 }
 
 @Composable
-private fun TwoFactorContinueButton(viewModel: LoginViewModel? = null, twoFactorCode: String) {
+private fun TwoFactorContinueButton(
+    viewModel: LoginViewModel? = null,
+    twoFactorCode: String,
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val isButtonEnabled = twoFactorCode.isNotEmpty()
 
@@ -242,8 +256,9 @@ private fun TwoFactorContinueButton(viewModel: LoginViewModel? = null, twoFactor
             keyboardController?.hide()
             viewModel?.loginButtonClick()
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding(),
     )
 }

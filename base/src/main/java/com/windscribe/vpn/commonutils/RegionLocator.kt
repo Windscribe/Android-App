@@ -10,7 +10,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 object RegionLocator {
-
     val logger: Logger = LoggerFactory.getLogger("util")
 
     fun matchesCountryCode(code: String): Boolean {
@@ -25,21 +24,27 @@ object RegionLocator {
             logger.debug("TimeZones: ${zones.contentToString()} | Default: $currentTimeZone")
             return zones.contains(currentTimeZone)
         }
-        val countryCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            appContext.resources.configuration.locales.get(0).language
-        } else {
-            appContext.resources.configuration.locale.language
-        }
+        val countryCode =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                appContext.resources.configuration.locales
+                    .get(0)
+                    .language
+            } else {
+                appContext.resources.configuration.locale.language
+            }
         logger.debug("Country code from locale: $countryCode")
         return countryCode == code
     }
 
     fun isCountry(code: String): Boolean {
-        val countryCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            appContext.resources.configuration.locales.get(0).language
-        } else {
-            appContext.resources.configuration.locale.language
-        }
+        val countryCode =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                appContext.resources.configuration.locales
+                    .get(0)
+                    .language
+            } else {
+                appContext.resources.configuration.locale.language
+            }
         return countryCode == code
     }
 }

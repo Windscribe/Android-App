@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class ClaimAccountResponse {
-
     @SerializedName("password_updated")
     @Expose
     val passwordUpdated = 0
@@ -26,11 +25,10 @@ class ClaimAccountResponse {
     val isSuccessful: Boolean
         get() = success == 1
 
-    override fun toString(): String {
-        return "ClaimAccountResponse{" +
-                "passwordUpdated=" + passwordUpdated +
-                ", usernameUpdated=" + usernameUpdated +
-                ", success=" + success +
-                '}'
-    }
+    override fun toString(): String =
+        "ClaimAccountResponse{" +
+            "passwordUpdated=" + passwordUpdated +
+            ", usernameUpdated=" + usernameUpdated +
+            ", success=" + success +
+            '}'
 }

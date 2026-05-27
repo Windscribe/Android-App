@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">Не удалось обновить правила Роберта.</string>
     <string name="successfully_updated_robert_rules">Успешно обновлены правила ROBERT.</string>
     <string name="share_app">Поделиться приложением</string>
-    <string name="share_app_description">"%s приглашает вас присоединиться к Windscribe. Укажите его/её имя пользователя при регистрации, и вы оба получите 1 ГБ дополнительного бесплатного трафика. Если вы оплатите про-доступ, у вашего друга он тоже появится!\n%s"</string>
+    <string name="share_app_description">"%1$s приглашает вас присоединиться к Windscribe. Укажите его/её имя пользователя при регистрации, и вы оба получите 1 ГБ дополнительного бесплатного трафика. Если вы оплатите про-доступ, у вашего друга он тоже появится!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">Требуется доступ к местоположению уровня «Разрешить всегда»!</string>
     <string name="enable_location_access">Включить доступ к местоположению</string>
     <string name="location_permission_required">Требуется разрешение на определение местоположения</string>

@@ -12,17 +12,20 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class UtilTest {
-
-    private fun server(id: Int, weight: Int): Server = Server(
-        id = id,
-        hostname = "host-$id",
-        ip = "10.0.0.$id",
-        ip2 = "10.0.0.$id",
-        ip3 = "10.0.0.$id",
-        datacenterId = 1,
-        weight = weight,
-        health = 100
-    )
+    private fun server(
+        id: Int,
+        weight: Int,
+    ): Server =
+        Server(
+            id = id,
+            hostname = "host-$id",
+            ip = "10.0.0.$id",
+            ip2 = "10.0.0.$id",
+            ip3 = "10.0.0.$id",
+            datacenterId = 1,
+            weight = weight,
+            health = 100,
+        )
 
     // ---------- getRandomNode ----------
 
@@ -61,10 +64,11 @@ class UtilTest {
     @Test
     fun `getRandomNode honours weight distribution`() {
         // Heavily-weighted node should dominate selections.
-        val nodes = listOf(
-            server(0, weight = 1),
-            server(1, weight = 99)
-        )
+        val nodes =
+            listOf(
+                server(0, weight = 1),
+                server(1, weight = 99),
+            )
 
         var heavyHits = 0
         val trials = 2000
@@ -142,12 +146,13 @@ class UtilTest {
 
     @Test
     fun `getHostNameFromOpenVPNConfig extracts hostname from remote line`() {
-        val config = """
+        val config =
+            """
             client
             dev tun
             remote us-east.windscribe.com 443 udp
             cipher AES-256-GCM
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals("us-east.windscribe.com", Util.getHostNameFromOpenVPNConfig(config))
     }
@@ -155,21 +160,23 @@ class UtilTest {
     @Test
     fun `getHostNameFromOpenVPNConfig returns null when no remote line has port and protocol`() {
         // Helper requires splits.size > 2 — a bare "remote host" line is skipped.
-        val config = """
+        val config =
+            """
             client
             remote single-token
-        """.trimIndent()
+            """.trimIndent()
 
         assertNull(Util.getHostNameFromOpenVPNConfig(config))
     }
 
     @Test
     fun `getHostNameFromOpenVPNConfig returns null when no remote line present`() {
-        val config = """
+        val config =
+            """
             client
             dev tun
             cipher AES-256-GCM
-        """.trimIndent()
+            """.trimIndent()
 
         assertNull(Util.getHostNameFromOpenVPNConfig(config))
     }
@@ -178,20 +185,21 @@ class UtilTest {
 
     @Test
     fun `buildProtocolInformation updates port and timeout on matching entry`() {
-        val list = listOf(
-            ProtocolInformation(
-                PreferencesKeyConstants.PROTO_UDP,
-                "443",
-                "udp",
-                ProtocolConnectionStatus.Disconnected
-            ),
-            ProtocolInformation(
-                PreferencesKeyConstants.PROTO_TCP,
-                "443",
-                "tcp",
-                ProtocolConnectionStatus.Disconnected
+        val list =
+            listOf(
+                ProtocolInformation(
+                    PreferencesKeyConstants.PROTO_UDP,
+                    "443",
+                    "udp",
+                    ProtocolConnectionStatus.Disconnected,
+                ),
+                ProtocolInformation(
+                    PreferencesKeyConstants.PROTO_TCP,
+                    "443",
+                    "tcp",
+                    ProtocolConnectionStatus.Disconnected,
+                ),
             )
-        )
 
         val result = Util.buildProtocolInformation(list, PreferencesKeyConstants.PROTO_TCP, "1194")
 

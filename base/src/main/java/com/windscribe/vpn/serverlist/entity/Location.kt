@@ -15,7 +15,6 @@ import com.google.gson.annotations.SerializedName
 @Keep
 @Entity(tableName = "Location", indices = [Index(value = ["region_id"], unique = true)])
 class Location {
-
     @SerializedName("groups")
     @Expose(serialize = false, deserialize = true)
     @Ignore
@@ -61,7 +60,7 @@ class Location {
         countryCode: String?,
         shortName: String?,
         sortOrder: Int,
-        continent: String?
+        continent: String?,
     ) {
         this.id = id
         this.name = name
@@ -80,14 +79,13 @@ class Location {
         return false
     }
 
-    override fun toString(): String {
-        return "Location{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", countryCode='" + countryCode + '\'' +
-                ", shortName='" + shortName + '\'' +
-                ", sortOrder=" + sortOrder +
-                ", continent='" + continent + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "Location{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", countryCode='" + countryCode + '\'' +
+            ", shortName='" + shortName + '\'' +
+            ", sortOrder=" + sortOrder +
+            ", continent='" + continent + '\'' +
+            '}'
 }

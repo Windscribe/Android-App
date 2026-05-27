@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class BestLocationResponse {
-
     @SerializedName("city_name")
     @Expose
     val cityName: String? = null
@@ -51,18 +50,17 @@ class BestLocationResponse {
     @Expose
     val shortName: String? = null
 
-    override fun toString(): String {
-        return "BestLocationResponse{" +
-                "countryCode='" + countryCode + '\'' +
-                ", shortName='" + shortName + '\'' +
-                ", locationName='" + locationName + '\'' +
-                ", cityName='" + cityName + '\'' +
-                ", dcId='" + dcId + '\'' +
-                ", serverId='" + serverId + '\'' +
-                ", hostname='" + hostname + '\'' +
-                ", ip='" + ip + '\'' +
-                ", ip2='" + ip2 + '\'' +
-                ", ip3='" + ip3 + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "BestLocationResponse{" +
+            "countryCode='" + countryCode + '\'' +
+            ", shortName='" + shortName + '\'' +
+            ", locationName='" + locationName + '\'' +
+            ", cityName='" + cityName + '\'' +
+            ", dcId='" + dcId + '\'' +
+            ", serverId='" + serverId + '\'' +
+            ", hostname='" + hostname + '\'' +
+            ", ip='" + ip + '\'' +
+            ", ip2='" + ip2 + '\'' +
+            ", ip3='" + ip3 + '\'' +
+            '}'
 }

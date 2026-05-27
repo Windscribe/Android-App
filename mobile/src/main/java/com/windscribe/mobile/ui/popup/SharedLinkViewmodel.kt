@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 abstract class SharedLinkViewmodel : ViewModel() {
     abstract fun exit()
@@ -19,29 +19,31 @@ abstract class SharedLinkViewmodel : ViewModel() {
 }
 
 @HiltViewModel
-class SharedLinkViewmodelImpl @Inject constructor(
-    private val userRepository: UserRepository
-) : SharedLinkViewmodel() {
-    private val _shouldExit = MutableStateFlow(false)
-    override val shouldExit = _shouldExit.asStateFlow()
-    private val _userName = MutableStateFlow("")
-    override val userName: StateFlow<String> = _userName
+class SharedLinkViewmodelImpl
+    @Inject
+    constructor(
+        private val userRepository: UserRepository,
+    ) : SharedLinkViewmodel() {
+        private val _shouldExit = MutableStateFlow(false)
+        override val shouldExit = _shouldExit.asStateFlow()
+        private val _userName = MutableStateFlow("")
+        override val userName: StateFlow<String> = _userName
 
-    init {
-        fetchUserState()
-    }
+        init {
+            fetchUserState()
+        }
 
-    private fun fetchUserState() {
-        viewModelScope.launch {
-            userRepository.user.filterNotNull().collect {
-                _userName.emit(it.userName)
+        private fun fetchUserState() {
+            viewModelScope.launch {
+                userRepository.user.filterNotNull().collect {
+                    _userName.emit(it.userName)
+                }
+            }
+        }
+
+        override fun exit() {
+            viewModelScope.launch {
+                _shouldExit.emit(true)
             }
         }
     }
-
-    override fun exit() {
-        viewModelScope.launch {
-            _shouldExit.emit(true)
-        }
-    }
-}

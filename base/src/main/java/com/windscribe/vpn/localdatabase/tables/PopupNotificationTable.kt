@@ -16,5 +16,5 @@ class PopupNotificationTable(
     @ColumnInfo(name = "user_name")
     var userName: String?,
     @ColumnInfo(name = "popup_status")
-    val popUpStatus: Int?
+    val popUpStatus: Int?,
 )

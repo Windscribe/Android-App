@@ -13,7 +13,6 @@ import com.google.gson.annotations.SerializedName
  */
 @Keep
 class UserLoginResponse {
-
     @SerializedName("alc")
     @Expose
     val alcList: List<String>? = null
@@ -80,21 +79,20 @@ class UserLoginResponse {
     val isInGhostMode: Boolean
         get() = userName == "na"
 
-    override fun toString(): String {
-        return "UserLoginResponse{" +
-                "session_auth_hash=[REDACTED]" +
-                ", username='" + userNameValue + '\'' +
-                ", user_id='" + userID + '\'' +
-                ", traffic_used='" + trafficUsed + '\'' +
-                ", traffic_max='" + trafficMax + '\'' +
-                ", status='" + userAccountStatus + '\'' +
-                ", email='" + userEmail + '\'' +
-                ", email_status='" + emailStatus + '\'' +
-                ", billing_plan_id='" + billingPlanID + '\'' +
-                ", is_premium='" + isPremium + '\'' +
-                ", reg_date='" + registrationDate + '\'' +
-                ", loc_rev='" + locationRevision + '\'' +
-                ", loc_hash='" + locationHash + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "UserLoginResponse{" +
+            "session_auth_hash=[REDACTED]" +
+            ", username='" + userNameValue + '\'' +
+            ", user_id='" + userID + '\'' +
+            ", traffic_used='" + trafficUsed + '\'' +
+            ", traffic_max='" + trafficMax + '\'' +
+            ", status='" + userAccountStatus + '\'' +
+            ", email='" + userEmail + '\'' +
+            ", email_status='" + emailStatus + '\'' +
+            ", billing_plan_id='" + billingPlanID + '\'' +
+            ", is_premium='" + isPremium + '\'' +
+            ", reg_date='" + registrationDate + '\'' +
+            ", loc_rev='" + locationRevision + '\'' +
+            ", loc_hash='" + locationHash + '\'' +
+            '}'
 }

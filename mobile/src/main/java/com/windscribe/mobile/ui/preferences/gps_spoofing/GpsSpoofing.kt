@@ -27,12 +27,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivityViewModel
 import com.windscribe.mobile.ui.common.NextButton
@@ -53,7 +53,7 @@ private enum class GpsStep {
     UnlockDevMode,
     AddToMockSettings,
     Success,
-    Error
+    Error,
 }
 
 @Composable
@@ -64,28 +64,32 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var existingApp by remember { mutableStateOf(false) }
     DisposableEffect(lifecycleOwner, currentStep) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Event.ON_RESUME && existingApp) {
-                existingApp = false
-                when (currentStep) {
-                    GpsStep.UnlockDevMode -> {
-                        if (isDevModeOn(context)) {
-                            currentStep = GpsStep.AddToMockSettings
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Event.ON_RESUME && existingApp) {
+                    existingApp = false
+                    when (currentStep) {
+                        GpsStep.UnlockDevMode -> {
+                            if (isDevModeOn(context)) {
+                                currentStep = GpsStep.AddToMockSettings
+                            }
+                        }
+
+                        GpsStep.AddToMockSettings -> {
+                            currentStep =
+                                if (isAppSelectedInMockLocationList(context)) {
+                                    GpsStep.Success
+                                } else {
+                                    GpsStep.Error
+                                }
+                        }
+
+                        else -> {
+                            Unit
                         }
                     }
-
-                    GpsStep.AddToMockSettings -> {
-                        currentStep = if (isAppSelectedInMockLocationList(context)) {
-                            GpsStep.Success
-                        } else {
-                            GpsStep.Error
-                        }
-                    }
-
-                    else -> Unit
                 }
             }
-        }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
@@ -99,7 +103,7 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                 description = com.windscribe.vpn.R.string.gps_spoofing_explain,
                 action = com.windscribe.vpn.R.string.let_s_do_it,
                 onAccept = { currentStep = GpsStep.UnlockDevMode },
-                onCancel = { navController.popBackStack() }
+                onCancel = { navController.popBackStack() },
             )
         }
 
@@ -118,13 +122,14 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                         if (intent.resolveActivity(context.packageManager) != null) {
                             context.startActivity(intent)
                         } else {
-                            Toast.makeText(context, "Settings App not found.", Toast.LENGTH_SHORT)
+                            Toast
+                                .makeText(context, "Settings App not found.", Toast.LENGTH_SHORT)
                                 .show()
                         }
                     }
                 },
                 action = if (isDevModeOn(context)) com.windscribe.vpn.R.string.next else com.windscribe.vpn.R.string.open_settings,
-                onCancel = { navController.popBackStack() }
+                onCancel = { navController.popBackStack() },
             )
         }
 
@@ -143,17 +148,25 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                         if (intent.resolveActivity(context.packageManager) != null) {
                             context.startActivity(intent)
                         } else {
-                            Toast.makeText(
-                                context,
-                                "Developer settings not found.",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
+                            Toast
+                                .makeText(
+                                    context,
+                                    "Developer settings not found.",
+                                    Toast.LENGTH_SHORT,
+                                ).show()
                         }
                     }
                 },
-                action = if (isAppSelectedInMockLocationList(context)) com.windscribe.vpn.R.string.next else com.windscribe.vpn.R.string.open_settings,
-                onCancel = { navController.popBackStack() }
+                action =
+                    if (isAppSelectedInMockLocationList(
+                            context,
+                        )
+                    ) {
+                        com.windscribe.vpn.R.string.next
+                    } else {
+                        com.windscribe.vpn.R.string.open_settings
+                    },
+                onCancel = { navController.popBackStack() },
             )
         }
 
@@ -171,7 +184,7 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                 },
                 onCancel = {
                     navController.popBackStack()
-                }
+                },
             )
         }
 
@@ -188,7 +201,7 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                 },
                 onCancel = {
                     navController.popBackStack()
-                }
+                },
             )
         }
     }
@@ -203,50 +216,63 @@ private fun Dialog(
     hideCancel: Boolean = false,
     backgroundColor: Color = Color.Transparent,
     onAccept: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     PreferenceBackground {
         Column(
-            modifier = Modifier
-                .width(400.dp)
-                .padding(horizontal = 32.dp)
-                .align(Alignment.Center),
+            modifier =
+                Modifier
+                    .width(400.dp)
+                    .padding(horizontal = 32.dp)
+                    .align(Alignment.Center),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
                 painter = painterResource(id = icon),
                 contentDescription = null,
-                colorFilter = if (backgroundColor == Color.Transparent) ColorFilter.tint(
-                    MaterialTheme.colorScheme.primaryTextColor
-                ) else null,
-                modifier = Modifier
-                    .background(color = backgroundColor, shape = CircleShape)
-                    .padding(24.dp)
+                colorFilter =
+                    if (backgroundColor == Color.Transparent) {
+                        ColorFilter.tint(
+                            MaterialTheme.colorScheme.primaryTextColor,
+                        )
+                    } else {
+                        null
+                    },
+                modifier =
+                    Modifier
+                        .background(color = backgroundColor, shape = CircleShape)
+                        .padding(24.dp),
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = stringResource(id = title),
                 style = font24,
                 color = MaterialTheme.colorScheme.primaryTextColor,
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .fillMaxWidth()
+                modifier =
+                    Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth(),
             )
             Text(
                 text = stringResource(id = description),
                 style = font16,
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier =
+                    Modifier
+                        .fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(16.dp))
             NextButton(
-                text = stringResource(action), enabled = true, onClick = {
+                text = stringResource(action),
+                enabled = true,
+                onClick = {
                     onAccept()
-                }, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 32.dp)
+                },
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 32.dp),
             )
             if (!hideCancel) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -256,7 +282,7 @@ private fun Dialog(
                     Text(
                         stringResource(id = com.windscribe.vpn.R.string.close),
                         style = font16,
-                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                     )
                 }
             }

@@ -15,6 +15,7 @@ import com.windscribe.tv.databinding.FragmentWelcomeBinding
 class WelcomeFragment : Fragment() {
     private lateinit var binding: FragmentWelcomeBinding
     private var fragmentCallback: FragmentCallback? = null
+
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
             fragmentCallback = activity as FragmentCallback?
@@ -25,13 +26,16 @@ class WelcomeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentWelcomeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.continueWithoutAccount.requestFocus()
         binding.login.setOnFocusChangeListener { v, hasFocus ->
@@ -53,14 +57,22 @@ class WelcomeFragment : Fragment() {
             return
         }
         binding.login.setTextColor(
-            if (binding.login.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
-                R.color.colorWhite50
-            )
+            if (binding.login.hasFocus()) {
+                requireActivity().resources.getColor(R.color.colorWhite)
+            } else {
+                requireActivity().resources.getColor(
+                    R.color.colorWhite50,
+                )
+            },
         )
         binding.continueWithoutAccount.setTextColor(
-            if (binding.continueWithoutAccount.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
-                R.color.colorWhite50
-            )
+            if (binding.continueWithoutAccount.hasFocus()) {
+                requireActivity().resources.getColor(R.color.colorWhite)
+            } else {
+                requireActivity().resources.getColor(
+                    R.color.colorWhite50,
+                )
+            },
         )
         if (binding.continueWithoutAccount.hasFocus()) {
             binding.buttonLabel.text = ""

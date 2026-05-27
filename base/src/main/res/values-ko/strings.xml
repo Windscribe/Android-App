@@ -485,7 +485,7 @@
     <string name="failed_to_update_robert_rules">Robert 규칙 업데이트에 실패했습니다.</string>
     <string name="successfully_updated_robert_rules">Robert 규칙이 성공적으로 업데이트되었습니다.</string>
     <string name="share_app">앱 공유</string>
-    <string name="share_app_description">"%s님이 Windscribe에 초대합니다. 가입 시 이 사용자 이름을 입력하면 두 분 모두 1GB의 무료 데이터가 추가됩니다. Pro로 업그레이드하면 초대한 분도 Pro가 됩니다!\n%s"</string>
+    <string name="share_app_description">"%1$s님이 Windscribe에 초대합니다. 가입 시 이 사용자 이름을 입력하면 두 분 모두 1GB의 무료 데이터가 추가됩니다. Pro로 업그레이드하면 초대한 분도 Pro가 됩니다!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"항상 허용\" 위치 접근이 필요합니다.</string>
     <string name="enable_location_access">위치 접근 활성화</string>
     <string name="location_permission_required">위치 권한이 필요합니다.</string>

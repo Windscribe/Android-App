@@ -21,6 +21,7 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorFragment
@@ -39,9 +40,8 @@ import com.windscribe.tv.welcome.fragment.WelcomeFragment
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import java.io.File
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -50,7 +50,6 @@ class WelcomeActivity :
     FragmentCallback,
     WelcomeView,
     FragmentManager.OnBackStackChangedListener {
-
     @Inject
     lateinit var presenter: WelcomePresenter
 
@@ -76,7 +75,7 @@ class WelcomeActivity :
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         if (requestCode == 201) {
             if (permissionGranted()) {
@@ -97,10 +96,12 @@ class WelcomeActivity :
 
     override fun goToSignUp() {
         val signUpFragment = SignUpFragment()
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        signUpFragment.enterTransition = Slide(direction)
-            .addTarget(R.id.login_sign_up_container)
+        val direction =
+            GravityCompat
+                .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
+        signUpFragment.enterTransition =
+            Slide(direction)
+                .addTarget(R.id.login_sign_up_container)
         replaceFragment(signUpFragment, true)
     }
 
@@ -123,26 +124,29 @@ class WelcomeActivity :
         imm.hideSoftInputFromWindow(
             window
                 .decorView.windowToken,
-            InputMethodManager.HIDE_NOT_ALWAYS
+            InputMethodManager.HIDE_NOT_ALWAYS,
         )
     }
 
     override fun launchShareIntent(file: File) {
-        val fileUri = FileProvider.getUriForFile(
-            this,
-            "com.windscribe.vpn.provider",
-            file
-        )
-        ShareCompat.IntentBuilder.from(this)
+        val fileUri =
+            FileProvider.getUriForFile(
+                this,
+                "com.windscribe.vpn.provider",
+                file,
+            )
+        ShareCompat.IntentBuilder
+            .from(this)
             .setType("*/*")
-            .setStream(fileUri).startChooser()
+            .setStream(fileUri)
+            .startChooser()
     }
 
     override fun onAccountClaimButtonClick(
         username: String,
         password: String,
         email: String?,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
     ) {
         presenter.startAccountClaim(username, password, email, ignoreEmptyEmail)
     }
@@ -165,19 +169,23 @@ class WelcomeActivity :
 
     override fun onGetStartedClick() {
         val signUpFragment = SignUpFragment()
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        signUpFragment.enterTransition = Slide(direction)
-            .addTarget(R.id.login_sign_up_container)
+        val direction =
+            GravityCompat
+                .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
+        signUpFragment.enterTransition =
+            Slide(direction)
+                .addTarget(R.id.login_sign_up_container)
         replaceFragment(signUpFragment, true)
     }
 
     override fun onForgotPasswordClick() {
         val forgotFragment = ForgotPasswordFragment()
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        forgotFragment.enterTransition = Slide(direction)
-            .addTarget(R.id.forgot_password_container)
+        val direction =
+            GravityCompat
+                .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
+        forgotFragment.enterTransition =
+            Slide(direction)
+                .addTarget(R.id.forgot_password_container)
         replaceFragment(forgotFragment, true)
     }
 
@@ -190,17 +198,19 @@ class WelcomeActivity :
         password: String,
         twoFa: String?,
         secureToken: String?,
-        captcha: String?
+        captcha: String?,
     ) {
         presenter.startLoginProcess(username, password, twoFa, secureToken, captcha)
     }
 
     override fun onLoginClick() {
         val loginFragment = LoginFragment()
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        loginFragment.enterTransition = Slide(direction)
-            .addTarget(R.id.login_sign_up_container)
+        val direction =
+            GravityCompat
+                .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
+        loginFragment.enterTransition =
+            Slide(direction)
+                .addTarget(R.id.login_sign_up_container)
         replaceFragment(loginFragment, true)
     }
 
@@ -210,7 +220,7 @@ class WelcomeActivity :
         email: String?,
         ignoreEmptyEmail: Boolean,
         secureToken: String?,
-        captcha: String?
+        captcha: String?,
     ) {
         presenter.startSignUpProcess(
             username,
@@ -218,7 +228,7 @@ class WelcomeActivity :
             email,
             ignoreEmptyEmail,
             secureToken,
-            captcha
+            captcha,
         )
     }
 
@@ -233,16 +243,20 @@ class WelcomeActivity :
         ProgressFragment.instance.add(this, R.id.progress_container, true)
     }
 
-    private fun replaceFragment(fragment: Fragment, addToBackStack: Boolean) {
+    private fun replaceFragment(
+        fragment: Fragment,
+        addToBackStack: Boolean,
+    ) {
         // Check if activity is still alive
         if (isDestroyed || isFinishing) {
             return
         }
 
-        val transaction = supportFragmentManager
-            .beginTransaction()
-            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-            .replace(R.id.fragment_container, fragment)
+        val transaction =
+            supportFragmentManager
+                .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.fragment_container, fragment)
         if (addToBackStack) {
             transaction.addToBackStack(fragment.javaClass.name)
         }
@@ -277,7 +291,10 @@ class WelcomeActivity :
         }
     }
 
-    override fun setTwoFaRequired(username: String, password: String) {
+    override fun setTwoFaRequired(
+        username: String,
+        password: String,
+    ) {
         val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (fragment is LoginFragment) {
             val twoFactorFragment = TwoFactorFragment()
@@ -311,9 +328,11 @@ class WelcomeActivity :
         }
 
         val noEmailAttentionFragment = NoEmailAttentionFragment()
-        noEmailAttentionFragment.enterTransition = Slide(Gravity.BOTTOM)
-            .addTarget(R.id.email_fragment_container)
-        supportFragmentManager.beginTransaction()
+        noEmailAttentionFragment.enterTransition =
+            Slide(Gravity.BOTTOM)
+                .addTarget(R.id.email_fragment_container)
+        supportFragmentManager
+            .beginTransaction()
             .add(R.id.fragment_container, noEmailAttentionFragment)
             .addToBackStack(noEmailAttentionFragment.javaClass.name)
             .commitAllowingStateLoss()
@@ -324,14 +343,14 @@ class WelcomeActivity :
     }
 
     override fun showEncryptionWarning() {
-        AlertDialog.Builder(this)
+        AlertDialog
+            .Builder(this)
             .setTitle(getString(com.windscribe.vpn.R.string.security_notice))
             .setMessage(getString(com.windscribe.vpn.R.string.encryption_unavailable_warning))
             .setPositiveButton(getString(com.windscribe.vpn.R.string.i_understand)) { dialog, _ ->
                 appContext.preference.hasAcknowledgedEncryptionWarning = true
                 dialog.dismiss()
-            }
-            .setCancelable(false)
+            }.setCancelable(false)
             .show()
     }
 
@@ -346,26 +365,31 @@ class WelcomeActivity :
 
     private fun addStartFragment() {
         val startFragmentName = intent.getStringExtra("startFragmentName")
-        val fragment: Fragment = if (startFragmentName != null && startFragmentName == "Login") {
-            LoginFragment()
-        } else if (startFragmentName != null && startFragmentName == "SignUp") {
-            SignUpFragment()
-        } else if (startFragmentName != null && startFragmentName == "AccountSetUp") {
-            SignUpFragment()
-        } else {
-            WelcomeFragment()
-        }
+        val fragment: Fragment =
+            if (startFragmentName != null && startFragmentName == "Login") {
+                LoginFragment()
+            } else if (startFragmentName != null && startFragmentName == "SignUp") {
+                SignUpFragment()
+            } else if (startFragmentName != null && startFragmentName == "AccountSetUp") {
+                SignUpFragment()
+            } else {
+                WelcomeFragment()
+            }
         val bundle = Bundle()
         bundle.putString("startFragmentName", startFragmentName)
         fragment.arguments = bundle
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
+        val direction =
+            GravityCompat
+                .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
         fragment.enterTransition =
             Slide(direction).addTarget(R.id.welcome_container)
         replaceFragment(fragment, false)
     }
 
-    override fun onAuthLoginClick(username: String, password: String) {
+    override fun onAuthLoginClick(
+        username: String,
+        password: String,
+    ) {
         presenter.onAuthLoginClick(username, password)
     }
 
@@ -375,7 +399,7 @@ class WelcomeActivity :
         secureToken: String,
         captchaArt: String,
         email: String?,
-        isSignup: Boolean
+        isSignup: Boolean,
     ) {
         // Check if activity is still alive before showing dialog
         if (isDestroyed || isFinishing) {
@@ -386,14 +410,15 @@ class WelcomeActivity :
         val existingDialog = supportFragmentManager.findFragmentByTag("CaptchaDialog") as? CaptchaFragment
         existingDialog?.dismissAllowingStateLoss()
 
-        val dialog = CaptchaFragment.newInstance(
-            username,
-            password,
-            secureToken,
-            captchaArt,
-            email,
-            isSignup
-        )
+        val dialog =
+            CaptchaFragment.newInstance(
+                username,
+                password,
+                secureToken,
+                captchaArt,
+                email,
+                isSignup,
+            )
 
         // Use showNow with state loss allowed to prevent crashes
         try {
@@ -403,28 +428,29 @@ class WelcomeActivity :
         }
     }
 
-    override fun onAuthSignUpClick(username: String, password: String, email: String?) {
+    override fun onAuthSignUpClick(
+        username: String,
+        password: String,
+        email: String?,
+    ) {
         presenter.onAuthSignUpClick(username, password, email)
     }
 
-    private fun permissionGranted(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    private fun permissionGranted(): Boolean =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             (
-                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            == PackageManager.PERMISSION_GRANTED
-                    )
+                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED
+            )
         } else {
             true
         }
-    }
 
     private fun registerFragmentChangeListener() {
         supportFragmentManager.addOnBackStackChangedListener(this)
     }
 
     companion object {
-        fun getStartIntent(context: Context?): Intent {
-            return Intent(context, WelcomeActivity::class.java)
-        }
+        fun getStartIntent(context: Context?): Intent = Intent(context, WelcomeActivity::class.java)
     }
 }

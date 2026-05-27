@@ -25,9 +25,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlin.math.abs
 
-
 @Composable
-fun HandleScrollHaptic(lazyListState: LazyListState, viewmodel: HomeViewmodel) {
+fun HandleScrollHaptic(
+    lazyListState: LazyListState,
+    viewmodel: HomeViewmodel,
+) {
     val haptic = LocalHapticFeedback.current
     val scrollThreshold = 100
     var lastOffset by remember { mutableIntStateOf(0) }
@@ -47,40 +49,39 @@ fun HandleScrollHaptic(lazyListState: LazyListState, viewmodel: HomeViewmodel) {
     }
 }
 
-fun Modifier.hapticClickableRipple(
-    onClick: () -> Unit
-): Modifier = composed {
-    val haptics = LocalHapticFeedback.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val activity = LocalContext.current as? AppStartActivity
-    val hapticEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    this.then(
-        Modifier.clickable(
-            interactionSource = interactionSource,
-            indication = ripple(bounded = false, color = Color.White),
-            enabled = true
-        ) {
-            if (hapticEnabled) {
-                haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
-            }
-            onClick()
-        }
-    )
-}
-
-fun Modifier.hapticClickable(
-    onClick: () -> Unit
-): Modifier = composed {
-    val haptics = LocalHapticFeedback.current
-    val activity = LocalContext.current as? AppStartActivity
-    val hapticEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    this.then(Modifier.clickable {
-        if (hapticEnabled) {
-            haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
-        }
-        onClick()
+fun Modifier.hapticClickableRipple(onClick: () -> Unit): Modifier =
+    composed {
+        val haptics = LocalHapticFeedback.current
+        val interactionSource = remember { MutableInteractionSource() }
+        val activity = LocalContext.current as? AppStartActivity
+        val hapticEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
+            ?: remember { mutableStateOf(false) }
+        this.then(
+            Modifier.clickable(
+                interactionSource = interactionSource,
+                indication = ripple(bounded = false, color = Color.White),
+                enabled = true,
+            ) {
+                if (hapticEnabled) {
+                    haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }
+                onClick()
+            },
+        )
     }
-    )
-}
+
+fun Modifier.hapticClickable(onClick: () -> Unit): Modifier =
+    composed {
+        val haptics = LocalHapticFeedback.current
+        val activity = LocalContext.current as? AppStartActivity
+        val hapticEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
+            ?: remember { mutableStateOf(false) }
+        this.then(
+            Modifier.clickable {
+                if (hapticEnabled) {
+                    haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }
+                onClick()
+            },
+        )
+    }

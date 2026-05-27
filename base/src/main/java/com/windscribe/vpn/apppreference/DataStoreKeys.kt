@@ -3,18 +3,16 @@
  */
 package com.windscribe.vpn.apppreference
 
-import androidx.datastore.preferences.core.*
-import com.windscribe.vpn.constants.BillingConstants
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import com.windscribe.vpn.constants.RateDialogConstants
-import com.windscribe.vpn.constants.VpnPreferenceConstants
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 
 /**
  * Type-safe DataStore preference keys.
  * Maps from legacy Tray string keys to strongly-typed DataStore keys.
  */
 object DataStoreKeys {
-
     // User & Session
     val USER_NAME = stringPreferencesKey(PreferencesKeyConstants.USER_NAME)
     val USER_STATUS = intPreferencesKey(PreferencesKeyConstants.USER_STATUS)
@@ -196,23 +194,25 @@ object DataStoreKeys {
     val IKEV2_CREDENTIALS = stringPreferencesKey(PreferencesKeyConstants.IKEV2_CREDENTIALS)
     val STATIC_IP_CREDENTIALS = stringPreferencesKey(PreferencesKeyConstants.STATIC_IP_CREDENTIAL)
 
-    val LAST_UPDATE_CHECK_TIMESTAMP = longPreferencesKey(PreferencesKeyConstants.LAST_UPDATE_CHECK_TIMESTAMP)
-    val LAST_UPDATE_PROMPT_TIMESTAMP = longPreferencesKey(PreferencesKeyConstants.LAST_UPDATE_PROMPT_TIMESTAMP)
-    val SELECTED_UNBLOCK_WG_PARAM = stringPreferencesKey(PreferencesKeyConstants.SELECTED_UNBLOCK_WG_PARAM)
+    val LAST_UPDATE_CHECK_TIMESTAMP =
+        longPreferencesKey(PreferencesKeyConstants.LAST_UPDATE_CHECK_TIMESTAMP)
+    val LAST_UPDATE_PROMPT_TIMESTAMP =
+        longPreferencesKey(PreferencesKeyConstants.LAST_UPDATE_PROMPT_TIMESTAMP)
+    val SELECTED_UNBLOCK_WG_PARAM =
+        stringPreferencesKey(PreferencesKeyConstants.SELECTED_UNBLOCK_WG_PARAM)
     val IPV6_MODE = stringPreferencesKey(PreferencesKeyConstants.IPV6_MODE)
     val EXTRA_TLS_PADDING = booleanPreferencesKey(PreferencesKeyConstants.EXTRA_TLS_PADDING)
 
     // Security
-    val ENCRYPTION_WARNING_ACKNOWLEDGED = booleanPreferencesKey(PreferencesKeyConstants.ENCRYPTION_WARNING_ACKNOWLEDGED)
+    val ENCRYPTION_WARNING_ACKNOWLEDGED =
+        booleanPreferencesKey(PreferencesKeyConstants.ENCRYPTION_WARNING_ACKNOWLEDGED)
 
     // OpenVPN Server Config (base64 encoded config)
     val OPEN_VPN_SERVER_CONFIG =
         stringPreferencesKey(PreferencesKeyConstants.OPEN_VPN_SERVER_CONFIG)
 
     // Dynamic keys (per-user, per-network, etc.)
-    fun previousAccountStatus(userName: String) =
-        intPreferencesKey("${userName}${PreferencesKeyConstants.PREVIOUS_ACCOUNT_STATUS}")
+    fun previousAccountStatus(userName: String) = intPreferencesKey("${userName}${PreferencesKeyConstants.PREVIOUS_ACCOUNT_STATUS}")
 
-    fun previousUserStatus(userName: String) =
-        intPreferencesKey("${userName}${PreferencesKeyConstants.PREVIOUS_USER_STATUS}")
+    fun previousUserStatus(userName: String) = intPreferencesKey("${userName}${PreferencesKeyConstants.PREVIOUS_USER_STATUS}")
 }

@@ -17,7 +17,6 @@ import java.util.Objects
 @Keep
 @Entity(tableName = "Datacenter")
 class Datacenter : Parcelable {
-
     @SerializedName("id")
     @Expose
     @ColumnInfo(name = "city_id")
@@ -103,7 +102,7 @@ class Datacenter : Parcelable {
         pubKey: String?,
         wgEndpoint: String?,
         ovpnX509: String?,
-        linkSpeed: Int
+        linkSpeed: Int,
     ) {
         this.region_id = region_id
         this.id = id
@@ -142,28 +141,47 @@ class Datacenter : Parcelable {
 
     constructor()
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     override fun equals(o: Any?): Boolean {
         if (this === o) return true
         if (o == null || javaClass != o.javaClass) return false
         val city = o as Datacenter
-        return id == city.id && primaryKey == city.primaryKey && region_id == city.region_id &&
-                linkSpeed == city.linkSpeed && p2p == city.p2p && pro == city.pro &&
-                status == city.status && coordinates == city.coordinates && iata == city.iata &&
-                nickName == city.nickName && nodeName == city.nodeName &&
-                ovpnX509 == city.ovpnX509 && pubKey == city.pubKey && tz == city.tz &&
-                wgEndpoint == city.wgEndpoint
+        return id == city.id &&
+            primaryKey == city.primaryKey &&
+            region_id == city.region_id &&
+            linkSpeed == city.linkSpeed &&
+            p2p == city.p2p &&
+            pro == city.pro &&
+            status == city.status &&
+            coordinates == city.coordinates &&
+            iata == city.iata &&
+            nickName == city.nickName &&
+            nodeName == city.nodeName &&
+            ovpnX509 == city.ovpnX509 &&
+            pubKey == city.pubKey &&
+            tz == city.tz &&
+            wgEndpoint == city.wgEndpoint
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(
-            id, primaryKey, region_id, coordinates, iata, linkSpeed, nickName, nodeName,
-            ovpnX509, p2p, pro, pubKey, status, tz, wgEndpoint
+    override fun hashCode(): Int =
+        Objects.hash(
+            id,
+            primaryKey,
+            region_id,
+            coordinates,
+            iata,
+            linkSpeed,
+            nickName,
+            nodeName,
+            ovpnX509,
+            p2p,
+            pro,
+            pubKey,
+            status,
+            tz,
+            wgEndpoint,
         )
-    }
 
     fun getRegionID(): Int = region_id
 
@@ -171,30 +189,30 @@ class Datacenter : Parcelable {
         this.region_id = regionID
     }
 
-    fun nodesAvailable(serverCount: Int): Boolean {
-        return serverCount > 0
-    }
+    fun nodesAvailable(serverCount: Int): Boolean = serverCount > 0
 
-    override fun toString(): String {
-        return "Datacenter{" +
-                "primaryKey=" + primaryKey +
-                ", region_id=" + region_id +
-                ", id=" + id +
-                ", nodeName='" + nodeName + '\'' +
-                ", nickName='" + nickName + '\'' +
-                ", coordinates='" + coordinates + '\'' +
-                ", tz='" + tz + '\'' +
-                ", iata='" + iata + '\'' +
-                ", status=" + status +
-                ", p2p=" + p2p +
-                ", pubKey='" + pubKey + '\'' +
-                ", wgEndpoint='" + wgEndpoint + '\'' +
-                ", ovpnX509='" + ovpnX509 + '\'' +
-                ", linkSpeed=" + linkSpeed +
-                '}'
-    }
+    override fun toString(): String =
+        "Datacenter{" +
+            "primaryKey=" + primaryKey +
+            ", region_id=" + region_id +
+            ", id=" + id +
+            ", nodeName='" + nodeName + '\'' +
+            ", nickName='" + nickName + '\'' +
+            ", coordinates='" + coordinates + '\'' +
+            ", tz='" + tz + '\'' +
+            ", iata='" + iata + '\'' +
+            ", status=" + status +
+            ", p2p=" + p2p +
+            ", pubKey='" + pubKey + '\'' +
+            ", wgEndpoint='" + wgEndpoint + '\'' +
+            ", ovpnX509='" + ovpnX509 + '\'' +
+            ", linkSpeed=" + linkSpeed +
+            '}'
 
-    override fun writeToParcel(dest: Parcel, flags: Int) {
+    override fun writeToParcel(
+        dest: Parcel,
+        flags: Int,
+    ) {
         dest.writeInt(region_id)
         dest.writeInt(id)
         dest.writeString(nodeName)
@@ -214,14 +232,11 @@ class Datacenter : Parcelable {
 
     companion object {
         @JvmField
-        val CREATOR: Parcelable.Creator<Datacenter> = object : Parcelable.Creator<Datacenter> {
-            override fun createFromParcel(parcel: Parcel): Datacenter {
-                return Datacenter(parcel)
-            }
+        val CREATOR: Parcelable.Creator<Datacenter> =
+            object : Parcelable.Creator<Datacenter> {
+                override fun createFromParcel(parcel: Parcel): Datacenter = Datacenter(parcel)
 
-            override fun newArray(size: Int): Array<Datacenter?> {
-                return arrayOfNulls(size)
+                override fun newArray(size: Int): Array<Datacenter?> = arrayOfNulls(size)
             }
-        }
     }
 }

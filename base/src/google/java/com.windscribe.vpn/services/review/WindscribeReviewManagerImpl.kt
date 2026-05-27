@@ -4,13 +4,12 @@ import android.content.Context
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.WindscribeReviewManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.Date
@@ -20,10 +19,11 @@ class WindscribeReviewManagerImpl(
     val scope: CoroutineScope,
     val context: Context,
     val preferencesHelper: PreferencesHelper,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
 ) : WindscribeReviewManager {
     private val reviewManager = ReviewManagerFactory.create(context)
     private val logger = LoggerFactory.getLogger("state")
+
     override fun handleAppReview() {
         scope.launch {
             userRepository.user.filterNotNull().collectLatest {
@@ -43,7 +43,6 @@ class WindscribeReviewManagerImpl(
                                         logger.debug("Review flow completed.")
                                     }
                                 }
-
                             } else {
                                 logger.error("Error requesting review flow", task.exception)
                             }

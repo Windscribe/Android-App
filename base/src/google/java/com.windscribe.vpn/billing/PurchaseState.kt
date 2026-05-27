@@ -5,5 +5,6 @@
 package com.windscribe.vpn.billing
 
 enum class PurchaseState {
-    IN_PROCESS, FINISHED
+    IN_PROCESS,
+    FINISHED,
 }

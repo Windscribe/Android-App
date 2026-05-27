@@ -12,26 +12,21 @@ data class CheckUpdateResponse(
     @SerializedName("update_needed_flag")
     @Expose
     val updateNeededFlag: Int = 0,
-
     @SerializedName("latest_version")
     @Expose
     val latestVersion: String? = null,
-
     @SerializedName("latest_build")
     @Expose
     val latestBuild: Int? = null,
-
     @SerializedName("supported")
     @Expose
     val supported: Int = 1,
-
     @SerializedName("update_url")
     @Expose
     val updateUrl: String? = null,
-
     @SerializedName("force_upgrade")
     @Expose
-    val forceUpgrade: Int = 0
+    val forceUpgrade: Int = 0,
 ) {
     val isUpdateAvailable: Boolean
         get() = updateNeededFlag == 1

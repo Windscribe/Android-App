@@ -50,7 +50,6 @@ android {
         debug {
             externalNativeBuild {
                 cmake {
-
                 }
             }
         }

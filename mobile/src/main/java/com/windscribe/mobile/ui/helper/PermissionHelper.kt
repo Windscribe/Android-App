@@ -5,7 +5,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.windscribe.mobile.ui.AppStartActivity
 
-class PermissionHelper(val activity: AppStartActivity) {
+class PermissionHelper(
+    val activity: AppStartActivity,
+) {
     var backgroundLocationPermissionLauncher: ActivityResultLauncher<String>
     var foregroundLocationPermissionLauncher: ActivityResultLauncher<String>
     var foregroundCallback: (granted: Boolean) -> Unit = { granted -> }
@@ -22,14 +24,11 @@ class PermissionHelper(val activity: AppStartActivity) {
             }
     }
 
-    fun isGranted(permission: String): Boolean {
-        return ActivityCompat.checkSelfPermission(
+    fun isGranted(permission: String): Boolean =
+        ActivityCompat.checkSelfPermission(
             activity,
-            permission
+            permission,
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-    }
 
-    fun shouldShowRationale(): Boolean {
-        return true
-    }
+    fun shouldShowRationale(): Boolean = true
 }

@@ -471,7 +471,7 @@ Lokasi terakhir yang dipilih.</string>
     <string name="failed_to_update_robert_rules">Gagal memperbarui aturan Robert.</string>
     <string name="successfully_updated_robert_rules">Berhasil memperbarui aturan Robert.</string>
     <string name="share_app">Bagikan Aplikasi</string>
-    <string name="share_app_description">"%s mengundang Anda untuk bergabung dengan Windscribe. Berikan nama pengguna mereka saat mendaftar dan Anda berdua akan mendapatkan 1gb data gratis yang ditambahkan ke akun Anda. Jika Anda menjadi pro, mereka juga akan menjadi pro!\n%s"</string>
+    <string name="share_app_description">"%1$s mengundang Anda untuk bergabung dengan Windscribe. Berikan nama pengguna mereka saat mendaftar dan Anda berdua akan mendapatkan 1gb data gratis yang ditambahkan ke akun Anda. Jika Anda menjadi pro, mereka juga akan menjadi pro!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Izinkan sepanjang waktu\" Diperlukan Akses Lokasi!</string>
     <string name="enable_location_access">Aktifkan Akses Lokasi</string>
     <string name="location_permission_required">Izin lokasi diperlukan</string>

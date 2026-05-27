@@ -44,16 +44,19 @@ fun NetworkDetailScreen(viewModel: NetworkDetailViewModel? = null) {
     val navController = LocalNavController.current
     val networkDetail by viewModel?.networkDetail?.collectAsState() ?: remember {
         mutableStateOf(
-            null
+            null,
         )
     }
     val isMyNetwork by viewModel?.isMyNetwork?.collectAsState()
         ?: remember { mutableStateOf(false) }
 
     PreferenceBackground {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 16.dp, horizontal = 16.dp)) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 16.dp, horizontal = 16.dp),
+        ) {
             PreferencesNavBar(stringResource(R.string.network_options)) {
                 navController.popBackStack()
             }
@@ -70,7 +73,7 @@ fun NetworkDetailScreen(viewModel: NetworkDetailViewModel? = null) {
                     networkDetail!!.isAutoSecureOn,
                     onSelect = {
                         viewModel?.onAutoSecureChanged()
-                    }
+                    },
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 PreferredProtocol(viewModel, networkDetail)
@@ -86,7 +89,7 @@ fun NetworkDetailScreen(viewModel: NetworkDetailViewModel? = null) {
 @Composable
 private fun PreferredProtocol(
     viewModel: NetworkDetailViewModel? = null,
-    networkInfo: NetworkInfo? = null
+    networkInfo: NetworkInfo? = null,
 ) {
     val protocols by viewModel?.protocols?.collectAsState()
         ?: remember { mutableStateOf(emptyList<DropDownStringItem>()) }
@@ -101,7 +104,8 @@ private fun PreferredProtocol(
             networkInfo?.protocol ?: "",
             onSelect = {
                 viewModel?.onProtocolSelected(it)
-            }, shape = RoundedCornerShape(0.dp)
+            },
+            shape = RoundedCornerShape(0.dp),
         )
         Spacer(modifier = Modifier.height(1.dp))
         CustomDropDown(
@@ -110,50 +114,56 @@ private fun PreferredProtocol(
             networkInfo?.port ?: "",
             onSelect = {
                 viewModel?.onPortSelected(it)
-            }, shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+            },
+            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
         )
     }
 }
 
 @Composable
-private fun Header(viewModel: NetworkDetailViewModel?, networkDetail: NetworkInfo?) {
+private fun Header(
+    viewModel: NetworkDetailViewModel?,
+    networkDetail: NetworkInfo?,
+) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-            )
-            .padding(16.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                ).padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painterResource(com.windscribe.mobile.R.drawable.ic_connection_mode_icon),
                 contentDescription = "",
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
             )
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
                 stringResource(R.string.preferred_protocol),
                 style = font16,
-                color = MaterialTheme.colorScheme.primaryTextColor
+                color = MaterialTheme.colorScheme.primaryTextColor,
             )
             Spacer(modifier = Modifier.weight(1f))
             if (networkDetail?.isPreferredOn == true) {
                 Image(
                     painter = painterResource(id = com.windscribe.mobile.R.drawable.ic_toggle_button_on),
                     contentDescription = null,
-                    modifier = Modifier.clickable {
-                        viewModel?.onPreferredChanged()
-                    }
+                    modifier =
+                        Modifier.clickable {
+                            viewModel?.onPreferredChanged()
+                        },
                 )
             } else {
                 Image(
                     painter = painterResource(id = com.windscribe.mobile.R.drawable.ic_toggle_button_off),
                     contentDescription = null,
-                    modifier = Modifier.clickable {
-                        viewModel?.onPreferredChanged()
-                    }
+                    modifier =
+                        Modifier.clickable {
+                            viewModel?.onPreferredChanged()
+                        },
                 )
             }
         }
@@ -166,25 +176,24 @@ private fun Header(viewModel: NetworkDetailViewModel?, networkDetail: NetworkInf
 private fun ForgetNetwork(viewModel: NetworkDetailViewModel? = null) {
     val navController = LocalNavController.current
     Row(
-        modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(size = 12.dp)
-            )
-            .clickable {
-                viewModel?.forgetNetwork()
-                navController.popBackStack()
-            }
-            .padding(vertical = 14.dp, horizontal = 14.dp)
-
+        modifier =
+            Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(size = 12.dp),
+                ).clickable {
+                    viewModel?.forgetNetwork()
+                    navController.popBackStack()
+                }.padding(vertical = 14.dp, horizontal = 14.dp),
     ) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
             stringResource(R.string.forget_network),
-            style = font16.copy(
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primaryTextColor
-            )
+            style =
+                font16.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primaryTextColor,
+                ),
         )
         Spacer(modifier = Modifier.weight(1f))
     }

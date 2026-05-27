@@ -24,7 +24,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class WireGuardWrapperService : GoBackend.VpnService() {
-
     @Inject
     lateinit var windNotificationBuilder: WindNotificationBuilder
 
@@ -54,18 +53,22 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            Connecting
+            Connecting,
         )
         wireguardBackend.serviceCreated(this)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         if (intent == null || intent.action == SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
             startForegroundSafely(
                 windNotificationBuilder,
                 NotificationConstants.SERVICE_NOTIFICATION_ID,
-                Connecting
+                Connecting,
             )
             shortcutStateManager.connect()
             stopSelf()
@@ -74,7 +77,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            Connecting
+            Connecting,
         )
         return if (preferencesHelper.globalUserConnectionPreference) {
             START_STICKY
@@ -100,11 +103,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         wireguardBackend.scope.launch { vpnController.disconnectAsync() }
     }
 
-    override fun getDnsDetails(): DNSDetails? {
-        return proxyDNSManager.dnsDetails
-    }
+    override fun getDnsDetails(): DNSDetails? = proxyDNSManager.dnsDetails
 
-    override fun getControlDPort(): Int {
-        return proxyDNSManager.getListenPort()
-    }
+    override fun getControlDPort(): Int = proxyDNSManager.getListenPort()
 }

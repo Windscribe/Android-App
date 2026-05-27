@@ -20,7 +20,13 @@ import com.windscribe.vpn.serverlist.entity.DatacenterStatus
 import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 
 @Composable
-fun DataCenterIcon(city: Datacenter, health: Int, showLocationLoad: Boolean = false, serverCount: Int, isPro: Boolean) {
+fun DataCenterIcon(
+    city: Datacenter,
+    health: Int,
+    showLocationLoad: Boolean = false,
+    serverCount: Int,
+    isPro: Boolean,
+) {
     val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro)
 
     when (status) {
@@ -31,7 +37,7 @@ fun DataCenterIcon(city: Datacenter, health: Int, showLocationLoad: Boolean = fa
                     painter = painterResource(R.drawable.ic_under_construction),
                     contentDescription = "Under Maintenance",
                     modifier = Modifier.size(15.dp),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor),
                 )
             }
         }
@@ -42,7 +48,7 @@ fun DataCenterIcon(city: Datacenter, health: Int, showLocationLoad: Boolean = fa
                 health = health,
                 flagRes = R.drawable.pro,
                 showLocationLoad = showLocationLoad,
-                modifier = Modifier
+                modifier = Modifier,
             )
         }
 
@@ -53,14 +59,14 @@ fun DataCenterIcon(city: Datacenter, health: Int, showLocationLoad: Boolean = fa
                     health = health,
                     flagRes = R.drawable.city_ten_gbps,
                     showLocationLoad = showLocationLoad,
-                    modifier = Modifier.width(15.dp).height(13.dp)
+                    modifier = Modifier.width(15.dp).height(13.dp),
                 )
             } else {
                 DataCenterSplitBorderCircle(
                     health = health,
                     flagRes = R.drawable.ic_dc,
                     showLocationLoad = showLocationLoad,
-                    modifier = Modifier.width(10.dp).height(14.dp)
+                    modifier = Modifier.width(10.dp).height(14.dp),
                 )
             }
         }

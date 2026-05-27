@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">فشل تحديث قواعد روبرت.</string>
     <string name="successfully_updated_robert_rules">تم تحديث قواعد روبرت بنجاح.</string>
     <string name="share_app">مشاركة التطبيق</string>
-    <string name="share_app_description">"٪s يدعوك للانضمام إلى Windscribe. أدخل اسم المستخدم الخاص بهم عند التسجيل وستحصل على 1 غيغابايت من البيانات المجانية المضافة إلى حساباتك. إذا أصبحت محترفا ، فسوف يصبحون محترفين أيضا!\n٪s "</string>
+    <string name="share_app_description">"%1$s يدعوك للانضمام إلى Windscribe. أدخل اسم المستخدم الخاص بهم عند التسجيل وستحصل على 1 غيغابايت من البيانات المجانية المضافة إلى حساباتك. إذا أصبحت محترفا ، فسوف يصبحون محترفين أيضا!\n%2$s "</string>
     <string name="allow_all_the_time_location_access_required">\"السماح طوال الوقت\" الوصول إلى الموقع مطلوب!</string>
     <string name="enable_location_access">تمكين الوصول إلى الموقع</string>
     <string name="location_permission_required">إذن الموقع مطلوب</string>

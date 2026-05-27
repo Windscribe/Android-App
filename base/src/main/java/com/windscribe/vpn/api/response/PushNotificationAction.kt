@@ -11,15 +11,13 @@ import java.io.Serializable
 
 @Keep
 data class PushNotificationAction(
-        @SerializedName("pcpid")
-        @Expose
-        val pcpID: String,
-
-        @SerializedName("promo_code")
-        @Expose
-        val promoCode: String,
-
-        @SerializedName("type")
-        @Expose
-        val type: String
+    @SerializedName("pcpid")
+    @Expose
+    val pcpID: String,
+    @SerializedName("promo_code")
+    @Expose
+    val promoCode: String,
+    @SerializedName("type")
+    @Expose
+    val type: String,
 ) : Serializable

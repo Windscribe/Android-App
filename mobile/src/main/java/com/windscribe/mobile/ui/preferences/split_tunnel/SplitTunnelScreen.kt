@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,7 +47,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -58,7 +56,6 @@ import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
@@ -76,10 +73,11 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel? = null) {
         ?: remember { mutableStateOf(false) }
     PreferenceBackground {
         Column(
-            modifier = Modifier
-                .testTag("split_tunnel_screen")
-                .padding(vertical = 16.dp, horizontal = 16.dp)
-                .navigationBarsPadding()
+            modifier =
+                Modifier
+                    .testTag("split_tunnel_screen")
+                    .padding(vertical = 16.dp, horizontal = 16.dp)
+                    .navigationBarsPadding(),
         ) {
             PreferencesNavBar(stringResource(R.string.split_tunneling)) {
                 navController.popBackStack()
@@ -103,34 +101,35 @@ private fun ShowSystemAppsToggle(viewModel: SplitTunnelViewModel? = null) {
     val showSystemApps by viewModel?.showSystemApps?.collectAsState()
         ?: remember { mutableStateOf(false) }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .clickable { viewModel?.onShowSystemAppsToggle() }
-            .padding(start = 16.dp, end = 0.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(8.dp),
+                ).clickable { viewModel?.onShowSystemAppsToggle() }
+                .padding(start = 16.dp, end = 0.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = stringResource(R.string.show_system_apps),
             color = MaterialTheme.colorScheme.primaryTextColor,
             style = font16.copy(fontWeight = FontWeight.Medium),
             textAlign = TextAlign.Start,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         Checkbox(
             showSystemApps,
             onCheckedChange = {
                 viewModel?.onShowSystemAppsToggle()
             },
-            colors = CheckboxDefaults.colors(
-                checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                checkedColor = MaterialTheme.colorScheme.primaryTextColor,
-                uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor
-            ),
+            colors =
+                CheckboxDefaults.colors(
+                    checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                    checkedColor = MaterialTheme.colorScheme.primaryTextColor,
+                    uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                ),
         )
     }
 }
@@ -139,49 +138,52 @@ private fun ShowSystemAppsToggle(viewModel: SplitTunnelViewModel? = null) {
 private fun Search(viewModel: SplitTunnelViewModel? = null) {
     val query by viewModel?.searchKeyword?.collectAsState() ?: remember { mutableStateOf("") }
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-            )
-            .padding(horizontal = 12.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+                ).padding(horizontal = 12.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) {
             Image(
                 painter = painterResource(com.windscribe.mobile.R.drawable.ic_location_search),
                 contentDescription = "Search",
-                modifier = Modifier.clickable {
-
-                },
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.70f))
+                modifier =
+                    Modifier.clickable {
+                    },
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.70f)),
             )
             TextField(
                 value = query,
                 onValueChange = {
                     viewModel?.onQueryTextChange(it)
                 },
-                modifier = Modifier
-                    .testTag("split_tunnel_search")
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier =
+                    Modifier
+                        .testTag("split_tunnel_search")
+                        .weight(1f)
+                        .fillMaxHeight(),
                 textStyle = font16.copy(textAlign = TextAlign.Start, color = MaterialTheme.colorScheme.primaryTextColor),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.primaryTextColor,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = MaterialTheme.colorScheme.primaryTextColor,
-                        backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f)
-                    )
-                ),
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                        selectionColors =
+                            androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                                backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f),
+                            ),
+                    ),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             )
         }
@@ -207,7 +209,7 @@ private fun Mode(viewModel: SplitTunnelViewModel?) {
             onSelect = {
                 viewModel?.onSplitTunnelSettingChanged()
             },
-            explainer = FeatureExplainer.SPLIT_TUNNELING
+            explainer = FeatureExplainer.SPLIT_TUNNELING,
         )
         Spacer(modifier = Modifier.height(1.dp))
         CustomDropDown(R.string.mode, modes, selectedKey, description = modeDescription) {
@@ -223,7 +225,7 @@ private fun AppsTitle() {
         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
         style = font16.copy(fontWeight = FontWeight.SemiBold),
         textAlign = TextAlign.Start,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 
@@ -234,37 +236,38 @@ private fun Apps(viewModel: SplitTunnelViewModel? = null) {
     val appIconCache = viewModel?.appIconCache
     LazyColumn {
         itemsIndexed(apps) { index, app ->
-            val shape = if (index == apps.lastIndex) {
-                RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
-            } else {
-                RoundedCornerShape(0.dp)
-            }
+            val shape =
+                if (index == apps.lastIndex) {
+                    RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+                } else {
+                    RoundedCornerShape(0.dp)
+                }
             Spacer(modifier = Modifier.height(1.dp))
             Row(
-                modifier = Modifier
-                    .testTag("app_row_${app.appName}")
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                        shape = shape
-                    )
-                    .padding(start = 14.dp)
-                    .clickable { viewModel?.onAppSelected(app) },
-                verticalAlignment = Alignment.CenterVertically
+                modifier =
+                    Modifier
+                        .testTag("app_row_${app.appName}")
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                            shape = shape,
+                        ).padding(start = 14.dp)
+                        .clickable { viewModel?.onAppSelected(app) },
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 val iconBitmap = appIconCache?.getIcon(app.packageName)
                 if (iconBitmap != null) {
                     Image(
                         painter = BitmapPainter(iconBitmap.asImageBitmap()),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     )
                 } else {
                     Image(
                         painter = painterResource(android.R.drawable.sym_def_app_icon),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
@@ -275,17 +278,20 @@ private fun Apps(viewModel: SplitTunnelViewModel? = null) {
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Checkbox(
-                    app.isChecked, onCheckedChange = {
+                    app.isChecked,
+                    onCheckedChange = {
                         viewModel?.onAppSelected(app)
-                    }, colors = CheckboxDefaults.colors(
-                        checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                        checkedColor = MaterialTheme.colorScheme.primaryTextColor,
-                        uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor
-                    ),
+                    },
+                    colors =
+                        CheckboxDefaults.colors(
+                            checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                            checkedColor = MaterialTheme.colorScheme.primaryTextColor,
+                            uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                        ),
                 )
             }
         }
@@ -305,34 +311,39 @@ private fun SplitTunnelScreenPreview() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun SplitTunnelScreenApps() {
     val apps = listOf<InstalledAppsData>().toMutableList()
-    val chrome = InstalledAppsData(
-        "Chrome",
-        "com.google.chrome"
-    )
+    val chrome =
+        InstalledAppsData(
+            "Chrome",
+            "com.google.chrome",
+        )
     chrome.isChecked = true
     apps.add(chrome)
-    val discord = InstalledAppsData(
-        "Discord",
-        "com.discord"
-    )
+    val discord =
+        InstalledAppsData(
+            "Discord",
+            "com.discord",
+        )
     apps.add(discord)
-    val telegram = InstalledAppsData(
-        "Telegram",
-        "org.telegram.messenger"
-    )
+    val telegram =
+        InstalledAppsData(
+            "Telegram",
+            "org.telegram.messenger",
+        )
     apps.add(telegram)
-    val viewmodel = object : SplitTunnelViewModel() {
-        override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
-        override val modes: List<DropDownStringItem> = listOf()
-        override val selectedModeKey: StateFlow<String> = MutableStateFlow("")
-        override val filteredApps: StateFlow<List<InstalledAppsData>> = MutableStateFlow(apps)
-        override val isSplitTunnelEnabled: StateFlow<Boolean> = MutableStateFlow(true)
-        override val searchKeyword: StateFlow<String> = MutableStateFlow("")
-        override val showSystemApps: StateFlow<Boolean> = MutableStateFlow(false)
-        override val appIconCache: com.windscribe.vpn.cache.AppIconCache = com.windscribe.vpn.cache.AppIconCache()
-    }
+    val viewmodel =
+        object : SplitTunnelViewModel() {
+            override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
+            override val modes: List<DropDownStringItem> = listOf()
+            override val selectedModeKey: StateFlow<String> = MutableStateFlow("")
+            override val filteredApps: StateFlow<List<InstalledAppsData>> = MutableStateFlow(apps)
+            override val isSplitTunnelEnabled: StateFlow<Boolean> = MutableStateFlow(true)
+            override val searchKeyword: StateFlow<String> = MutableStateFlow("")
+            override val showSystemApps: StateFlow<Boolean> = MutableStateFlow(false)
+            override val appIconCache: com.windscribe.vpn.cache.AppIconCache =
+                com.windscribe.vpn.cache
+                    .AppIconCache()
+        }
     PreviewWithNav {
         SplitTunnelScreen(viewmodel)
     }
 }
-

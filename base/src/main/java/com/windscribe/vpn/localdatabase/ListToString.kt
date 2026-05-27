@@ -7,9 +7,7 @@ import com.google.gson.reflect.TypeToken
 object ListToString {
     @TypeConverter
     @JvmStatic
-    fun fromStringList(value: List<String>?): String {
-        return Gson().toJson(value ?: emptyList<String>())
-    }
+    fun fromStringList(value: List<String>?): String = Gson().toJson(value ?: emptyList<String>())
 
     @TypeConverter
     @JvmStatic

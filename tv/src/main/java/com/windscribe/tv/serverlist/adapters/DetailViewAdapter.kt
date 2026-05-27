@@ -30,9 +30,11 @@ import com.windscribe.vpn.serverlist.entity.ServerListData
 class DetailViewAdapter(
     private val locationList: List<Datacenter>,
     serverListData: ServerListData,
-    listener: DetailListener
+    listener: DetailListener,
 ) : RecyclerView.Adapter<DetailViewHolder>() {
-    inner class DetailViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class DetailViewHolder(
+        itemView: View,
+    ) : RecyclerView.ViewHolder(itemView) {
         private val btnConnect: ConnectButtonView = itemView.findViewById(R.id.connect)
         private val btnFav: FavouriteButtonView = itemView.findViewById(R.id.fav)
         private val detailStar: ImageView = itemView.findViewById(R.id.pro_label)
@@ -40,6 +42,7 @@ class DetailViewAdapter(
         private val latencyView: TextView = itemView.findViewById(R.id.latency)
         private val nodeNameLabel: TextView = itemView.findViewById(R.id.nodeName)
         private val nodeNickNameLabel: TextView = itemView.findViewById(R.id.nodeNickName)
+
         fun bind(city: Datacenter) {
             nodeNameLabel.text = city.nodeName
             nodeNickNameLabel.text = city.nickName
@@ -67,17 +70,18 @@ class DetailViewAdapter(
             city.let { selectedCity ->
                 btnFav.setColorFilter(
                     ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
+                    PorterDuff.Mode.MULTIPLY,
                 )
                 btnConnect.setColorFilter(
                     ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
+                    PorterDuff.Mode.MULTIPLY,
                 )
                 btnConnect.setOnClickListener {
                     when (status) {
                         DatacenterStatus.UnderMaintenance -> {
                             listener.onDisabledClick()
                         }
+
                         DatacenterStatus.Pro, DatacenterStatus.Available -> {
                             // Pro locations go through onConnectClick → attemptConnection → upgrade logic
                             listener.onConnectClick(selectedCity)
@@ -87,7 +91,7 @@ class DetailViewAdapter(
                 btnFav.setOnClickListener {
                     listener.onFavouriteClick(
                         selectedCity,
-                        btnFav.getState()
+                        btnFav.getState(),
                     )
                 }
                 itemView.onFocusChangeListener =
@@ -97,11 +101,12 @@ class DetailViewAdapter(
                 btnConnect.onFocusChangeListener =
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                         selectedBackground(hasFocus)
-                        val text = when (status) {
-                            DatacenterStatus.Pro -> appContext.getString(com.windscribe.vpn.R.string.upgrade)
-                            DatacenterStatus.UnderMaintenance -> appContext.getString(com.windscribe.vpn.R.string.unavailable)
-                            DatacenterStatus.Available -> appContext.getString(com.windscribe.vpn.R.string.connect)
-                        }
+                        val text =
+                            when (status) {
+                                DatacenterStatus.Pro -> appContext.getString(com.windscribe.vpn.R.string.upgrade)
+                                DatacenterStatus.UnderMaintenance -> appContext.getString(com.windscribe.vpn.R.string.unavailable)
+                                DatacenterStatus.Available -> appContext.getString(com.windscribe.vpn.R.string.connect)
+                            }
                         setHighlightText(text, hasFocus)
                     }
                 btnFav.onFocusChangeListener =
@@ -114,7 +119,7 @@ class DetailViewAdapter(
                         } else {
                             setHighlightText(
                                 appContext.getString(com.windscribe.vpn.R.string.remove_it_from_favourites),
-                                hasFocus
+                                hasFocus,
                             )
                         }
                     }
@@ -132,16 +137,19 @@ class DetailViewAdapter(
             } else {
                 btnFav.setColorFilter(
                     ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
+                    PorterDuff.Mode.MULTIPLY,
                 )
                 btnConnect.setColorFilter(
                     ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
+                    PorterDuff.Mode.MULTIPLY,
                 )
             }
         }
 
-        private fun setHighlightText(text: String, hasFocus: Boolean) {
+        private fun setHighlightText(
+            text: String,
+            hasFocus: Boolean,
+        ) {
             if (hasFocus) {
                 highlightTextView.text = text
                 highlightTextView.visibility = View.VISIBLE
@@ -156,6 +164,7 @@ class DetailViewAdapter(
     private val favStates = SparseIntArray()
     private var isPremiumUser = false
     private val listener: DetailListener
+
     @SuppressLint("NotifyDataSetChanged")
     fun addFav(nodes: List<ServerNodeListOverLoaded>) {
         favStates.clear()
@@ -167,24 +176,31 @@ class DetailViewAdapter(
         }
     }
 
-    override fun getItemCount(): Int {
-        return locationList.size
-    }
+    override fun getItemCount(): Int = locationList.size
 
-    override fun getItemId(position: Int): Long {
-        return if (locationList.isNotEmpty()) {
+    override fun getItemId(position: Int): Long =
+        if (locationList.isNotEmpty()) {
             locationList[position].id.toLong()
-        } else position.toLong()
-    }
+        } else {
+            position.toLong()
+        }
 
-    override fun onBindViewHolder(detailViewHolder: DetailViewHolder, i: Int) {
+    override fun onBindViewHolder(
+        detailViewHolder: DetailViewHolder,
+        i: Int,
+    ) {
         val city = locationList[i]
         detailViewHolder.bind(city)
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): DetailViewHolder {
-        val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.detail_item_view, viewGroup, false)
+    override fun onCreateViewHolder(
+        viewGroup: ViewGroup,
+        i: Int,
+    ): DetailViewHolder {
+        val view =
+            LayoutInflater
+                .from(viewGroup.context)
+                .inflate(R.layout.detail_item_view, viewGroup, false)
         return DetailViewHolder(view)
     }
 
@@ -222,7 +238,10 @@ class DetailViewAdapter(
         return false
     }
 
-    private fun setFav(btnFav: FavouriteButtonView, id: Int) {
+    private fun setFav(
+        btnFav: FavouriteButtonView,
+        id: Int,
+    ) {
         btnFav.setState(if (isFavourite(id)) 2 else 1)
     }
 

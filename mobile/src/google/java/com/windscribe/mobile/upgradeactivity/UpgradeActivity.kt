@@ -50,8 +50,9 @@ import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class UpgradeActivity : BaseActivity(), UpgradeView {
-
+class UpgradeActivity :
+    BaseActivity(),
+    UpgradeView {
     private val logger = LoggerFactory.getLogger(TAG)
 
     @Inject
@@ -81,7 +82,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
             finish()
             return
         }
-        setContentLayout(false)
+        coldLoad.set(true)
         addClickListeners()
         deactivatePlans()
         setTermAndPolicyText()
@@ -194,7 +195,11 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
         binding.subscribe.isEnabled = false
     }
 
-    private fun setYearlyPlan(yearlySku: String, monthlySku: String?, isPromo: Boolean) {
+    private fun setYearlyPlan(
+        yearlySku: String,
+        monthlySku: String?,
+        isPromo: Boolean,
+    ) {
         val currentPlans = plans ?: return
         val yearlyPrice = currentPlans.getPrice(yearlySku)
         binding.yearlyPlanPrice.text = yearlyPrice
@@ -218,7 +223,14 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
                     val currency = exchangeRateWithCurrency.first
                     val originalPriceSpan = SpannableString("$currency $formattedPrice")
                     originalPriceSpan.setSpan(StrikethroughSpan(), 0, originalPriceSpan.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    binding.yearlyBilled.text = TextUtils.concat(originalPriceSpan, " ", yearlyPrice, " ", getString(com.windscribe.vpn.R.string.charged_every_12_months))
+                    binding.yearlyBilled.text =
+                        TextUtils.concat(
+                            originalPriceSpan,
+                            " ",
+                            yearlyPrice,
+                            " ",
+                            getString(com.windscribe.vpn.R.string.charged_every_12_months),
+                        )
                 } catch (ignored: NumberFormatException) {
                 }
             }
@@ -241,7 +253,10 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
         return null
     }
 
-    private fun setMonthlyPlan(sku: String, isPromo: Boolean) {
+    private fun setMonthlyPlan(
+        sku: String,
+        isPromo: Boolean,
+    ) {
         val currentPlans = plans ?: return
         val monthlyPrice = currentPlans.getPrice(sku)
         binding.monthlyPlanPrice.text = monthlyPrice
@@ -264,7 +279,14 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
                     val currency = exchangeRateWithCurrency.first
                     val originalPriceSpan = SpannableString("$currency $formattedPrice")
                     originalPriceSpan.setSpan(StrikethroughSpan(), 0, originalPriceSpan.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    binding.monthlyBilled.text = TextUtils.concat(originalPriceSpan, " ", monthlyPrice, " ", getString(com.windscribe.vpn.R.string.charged_every_month))
+                    binding.monthlyBilled.text =
+                        TextUtils.concat(
+                            originalPriceSpan,
+                            " ",
+                            monthlyPrice,
+                            " ",
+                            getString(com.windscribe.vpn.R.string.charged_every_month),
+                        )
                 } catch (ignored: NumberFormatException) {
                 }
             }
@@ -273,7 +295,10 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
         }
     }
 
-    private fun setMonthlyBilledAmount(yearlySku: String, monthlySku: String?) {
+    private fun setMonthlyBilledAmount(
+        yearlySku: String,
+        monthlySku: String?,
+    ) {
         val currentPlans = plans ?: return
         val yearlyPriceWithCurrency = UiUtil.getPriceWithCurrency(currentPlans.getPrice(yearlySku))
         if (yearlyPriceWithCurrency != null) {
@@ -305,37 +330,45 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
             ForegroundColorSpan(Color.WHITE),
             spanStart,
             fullText.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
-        val termsSpan = object : ClickableSpan() {
-            override fun onClick(textView: View) {
-                openURLInBrowser(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_TERMS))
-            }
+        val termsSpan =
+            object : ClickableSpan() {
+                override fun onClick(textView: View) {
+                    openURLInBrowser(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_TERMS))
+                }
 
-            override fun updateDrawState(textPaint: TextPaint) {
-                textPaint.color = textPaint.linkColor
-                textPaint.isUnderlineText = true
+                override fun updateDrawState(textPaint: TextPaint) {
+                    textPaint.color = textPaint.linkColor
+                    textPaint.isUnderlineText = true
+                }
             }
-        }
 
         // Clickable span for Policy
-        val policySpan = object : ClickableSpan() {
-            override fun onClick(textView: View) {
-                openURLInBrowser(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_PRIVACY))
-            }
+        val policySpan =
+            object : ClickableSpan() {
+                override fun onClick(textView: View) {
+                    openURLInBrowser(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_PRIVACY))
+                }
 
-            override fun updateDrawState(textPaint: TextPaint) {
-                textPaint.color = textPaint.linkColor
-                textPaint.isUnderlineText = true
+                override fun updateDrawState(textPaint: TextPaint) {
+                    textPaint.color = textPaint.linkColor
+                    textPaint.isUnderlineText = true
+                }
             }
-        }
         val andIndex = fullText.indexOf("&")
         if (andIndex != -1) {
             spannable.setSpan(
-                termsSpan, spanStart, andIndex - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                termsSpan,
+                spanStart,
+                andIndex - 1,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
             )
             spannable.setSpan(
-                policySpan, andIndex + 1, fullText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                policySpan,
+                andIndex + 1,
+                fullText.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
             )
             binding.terms.movementMethod = LinkMovementMethod.getInstance()
             binding.terms.setText(spannable, TextView.BufferType.SPANNABLE)
@@ -373,9 +406,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
         ProgressDialog.hide(this)
     }
 
-    override fun isBillingProcessFinished(): Boolean {
-        return billingProcessFinished
-    }
+    override fun isBillingProcessFinished(): Boolean = billingProcessFinished
 
     override fun openUrlInBrowser(url: String) {
         upgradingFromWebsite = true
@@ -456,9 +487,14 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
         Toast.makeText(this, toastText, Toast.LENGTH_SHORT).show()
     }
 
-    override fun startPurchaseFlow(productDetailsParams: List<BillingFlowParams.ProductDetailsParams>, accountID: String?) {
-        val builder = BillingFlowParams.newBuilder()
-            .setProductDetailsParamsList(productDetailsParams)
+    override fun startPurchaseFlow(
+        productDetailsParams: List<BillingFlowParams.ProductDetailsParams>,
+        accountID: String?,
+    ) {
+        val builder =
+            BillingFlowParams
+                .newBuilder()
+                .setProductDetailsParamsList(productDetailsParams)
         val obfuscatedId = accountID ?: appContext.preference.deviceUuid
         if (!obfuscatedId.isNullOrEmpty()) {
             builder.setObfuscatedAccountId(obfuscatedId)
@@ -541,18 +577,19 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
         googleBillingManager.querySkuDetailEvent.collectOnStart { customSkuDetails ->
             presenter.onSkuDetailsReceived(
                 customSkuDetails.billingResult.responseCode,
-                customSkuDetails.productDetails
+                customSkuDetails.productDetails,
             )
         }
     }
 
     private fun setBillingType() {
         val installerPackageName = packageManager.getInstallerPackageName(packageName)
-        billingTypeValue = if (installerPackageName != null && installerPackageName.startsWith("com.amazon")) {
-            BillingType.Amazon
-        } else {
-            BillingType.Google
-        }
+        billingTypeValue =
+            if (installerPackageName != null && installerPackageName.startsWith("com.amazon")) {
+                BillingType.Amazon
+            } else {
+                BillingType.Google
+            }
     }
 
     override fun goToSuccessfulUpgrade(isGhostAccount: Boolean) {
@@ -562,16 +599,17 @@ class UpgradeActivity : BaseActivity(), UpgradeView {
         finish()
     }
 
-    enum class BillingType(val value: String) {
-        Google("android"), Amazon("amazon")
+    enum class BillingType(
+        val value: String,
+    ) {
+        Google("android"),
+        Amazon("amazon"),
     }
 
     companion object {
         private const val TAG = "billing"
 
         @JvmStatic
-        fun getStartIntent(context: Context): Intent {
-            return Intent(context, UpgradeActivity::class.java)
-        }
+        fun getStartIntent(context: Context): Intent = Intent(context, UpgradeActivity::class.java)
     }
 }

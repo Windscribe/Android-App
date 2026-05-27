@@ -10,23 +10,23 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class OpenVpnTunnel {
-
     enum class State {
         DOWN,
         CONNECTING,
         CONNECTED,
-        DISCONNECTING
+        DISCONNECTING,
     }
 
     data class ErrorState(
         val errorType: VPNState.ErrorType,
         val message: String,
-        val vpnStatus: VPNState.Status? = null
+        val vpnStatus: VPNState.Status? = null,
     )
 
-    private val internalStateFlow = MutableSharedFlow<State>(replay = 1, extraBufferCapacity = 5).apply {
-        tryEmit(State.DOWN)
-    }
+    private val internalStateFlow =
+        MutableSharedFlow<State>(replay = 1, extraBufferCapacity = 5).apply {
+            tryEmit(State.DOWN)
+        }
     val stateFlow: Flow<State> = internalStateFlow
 
     private val internalErrorFlow = MutableSharedFlow<ErrorState>(replay = 0, extraBufferCapacity = 5)
@@ -40,19 +40,30 @@ class OpenVpnTunnel {
         internalStateFlow.tryEmit(newState)
     }
 
-    fun onError(errorType: VPNState.ErrorType, message: String, vpnStatus: VPNState.Status? = null) {
+    fun onError(
+        errorType: VPNState.ErrorType,
+        message: String,
+        vpnStatus: VPNState.Status? = null,
+    ) {
         internalErrorFlow.tryEmit(ErrorState(errorType, message, vpnStatus))
     }
 
-    fun onConnectionStatusChange(status: ConnectionStatus): State? {
-        return when (status) {
+    fun onConnectionStatusChange(status: ConnectionStatus): State? =
+        when (status) {
             ConnectionStatus.LEVEL_START,
             ConnectionStatus.LEVEL_CONNECTING_NO_SERVER_REPLY_YET,
-            ConnectionStatus.LEVEL_CONNECTING_SERVER_REPLIED -> State.CONNECTING
+            ConnectionStatus.LEVEL_CONNECTING_SERVER_REPLIED,
+            -> {
+                State.CONNECTING
+            }
 
-            ConnectionStatus.LEVEL_CONNECTED -> State.CONNECTED
+            ConnectionStatus.LEVEL_CONNECTED -> {
+                State.CONNECTED
+            }
 
-            ConnectionStatus.LEVEL_NOTCONNECTED -> State.DOWN
+            ConnectionStatus.LEVEL_NOTCONNECTED -> {
+                State.DOWN
+            }
 
             ConnectionStatus.LEVEL_AUTH_FAILED -> {
                 onError(VPNState.ErrorType.AuthenticationError, "Authentication failed.")
@@ -69,7 +80,8 @@ class OpenVpnTunnel {
                 null
             }
 
-            else -> null
+            else -> {
+                null
+            }
         }
-    }
 }

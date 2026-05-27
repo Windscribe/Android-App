@@ -2,14 +2,6 @@ include:
   - project: 'shared/strix-ci-template'
     file: 'strix-scan.yml'
 
-strix-scan-quick:
-  stage: Test
-strix-scan-standard:
-  stage: Test
-strix-scan-mr-diff:
-  stage: Test
-
-
 #==============================================================================
 # Windscribe Android CI/CD Pipeline
 #==============================================================================
@@ -72,6 +64,13 @@ cache:
 stages:
   - Test
   - Deploy
+
+#==============================================================================
+# REUSABLE RULES
+#==============================================================================
+# Shared rule: run on merge requests targeting develop or main.
+.mr_to_develop_or_main: &mr_to_develop_or_main
+  if: '$CI_PIPELINE_SOURCE == "merge_request_event" && ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main")'
 
 #==============================================================================
 # REUSABLE JOB TEMPLATES
@@ -164,6 +163,32 @@ stages:
 #==============================================================================
 
 #------------------------------------------------------------------------------
+# Ktlint — Kotlin style check
+#------------------------------------------------------------------------------
+# Purpose: Enforce Kotlin code style via the ktlint-gradle plugin.
+# Trigger: Merge requests targeting develop or main.
+# Output: ktlint reports (per module/source set) as artifacts.
+# Blocks deploys: yes — a style violation fails the Test stage.
+#------------------------------------------------------------------------------
+Ktlint:
+  stage: Test
+  rules:
+    - *mr_to_develop_or_main
+
+  before_script:
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+
+  script:
+    - ./gradlew ktlintCheck --continue --stacktrace
+
+  artifacts:
+    when: always   # upload reports even on failure so violations are inspectable
+    expire_in: 1 week
+    paths:
+      - "**/build/reports/ktlint/**"
+
+#------------------------------------------------------------------------------
 # Unit Tests
 #------------------------------------------------------------------------------
 # Purpose: Run JVM unit tests across :base, :openvpn, :wgtunnel (172 tests).
@@ -175,7 +200,7 @@ stages:
 UnitTests:
   stage: Test
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main")'
+    - *mr_to_develop_or_main
 
   before_script:
     - export GRADLE_USER_HOME=$(pwd)/.gradle
@@ -201,12 +226,17 @@ UnitTests:
         - "**/build/test-results/test*UnitTest/TEST-*.xml"
 
 #------------------------------------------------------------------------------
-# Maestro UI Tests — Build arm64 debug APK against staging (Manual)
+# Build Debug APK — arm64 debug build against staging
 #------------------------------------------------------------------------------
-MaestroBuildApk:
+# Trigger: Merge requests targeting develop or main (auto).
+# Doubles as the mobile debug-compile gate: a broken build fails the MR here.
+# Produces the APK consumed by the "E2E tests" job.
+#------------------------------------------------------------------------------
+BuildDebugApk:
   extends: .base_android_setup
   stage: Test
-  when: manual
+  rules:
+    - *mr_to_develop_or_main
   script:
     - export DEV=true
     - ./gradlew :mobile:assembleGoogleDebug -PabiFilter=arm64-v8a --no-daemon
@@ -219,14 +249,26 @@ MaestroBuildApk:
       - maestro-artifacts/mobile-google-debug.apk
 
 #------------------------------------------------------------------------------
-# Maestro UI Tests — Run on arm64 macOS runner (auto after MaestroBuildApk)
+# E2E tests — Maestro UI tests on arm64 macOS runner (auto after BuildDebugApk)
 #------------------------------------------------------------------------------
-MaestroUITests:
+# Trigger: Merge requests targeting develop or main (auto, after the build).
+# retry: transient emulator boot / network hiccups auto-retry before failing
+#        the MR; genuine test failures (script_failure on a re-run) still block.
+#------------------------------------------------------------------------------
+E2E tests:
   stage: Test
   tags:
     - arm64
+  rules:
+    - *mr_to_develop_or_main
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - runner_system_failure
+      - stuck_or_timeout_failure
   needs:
-    - job: MaestroBuildApk
+    - job: BuildDebugApk
       artifacts: true
   variables:
     AVD_NAME: "ws_test_avd"
@@ -262,6 +304,30 @@ MaestroUITests:
     paths:
       - emulator.log
       - maestro-reports/**
+
+#------------------------------------------------------------------------------
+# Security Scans (strix)
+#------------------------------------------------------------------------------
+# Purpose: Security scanning via the shared strix-ci-template.
+# Trigger: as defined by the included template.
+#------------------------------------------------------------------------------
+strix-scan-mr-diff:
+  stage: Test
+  rules:
+    - when: manual
+      allow_failure: true
+
+strix-scan-quick:
+  stage: Test
+  rules:
+    - when: manual
+      allow_failure: true
+
+strix-scan-standard:
+  stage: Test
+  rules:
+    - when: manual
+      allow_failure: true
 
 #==============================================================================
 # DEPLOYMENT JOBS

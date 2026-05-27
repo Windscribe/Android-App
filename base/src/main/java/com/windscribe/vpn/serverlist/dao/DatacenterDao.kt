@@ -12,7 +12,6 @@ import com.windscribe.vpn.serverlist.entity.Datacenter
 
 @Dao
 abstract class DatacenterDao {
-
     @Insert(onConflict = REPLACE)
     abstract suspend fun addAll(cities: List<Datacenter>)
 

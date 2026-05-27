@@ -11,18 +11,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @HiltWorker
-class LatencyWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted parameters: WorkerParameters,
-    private val latencyRepository: LatencyRepository
-) : CoroutineWorker(context, parameters) {
-
-    override suspend fun doWork(): Result {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                latencyRepository.updateAllServerLatencies()
+class LatencyWorker
+    @AssistedInject
+    constructor(
+        @Assisted context: Context,
+        @Assisted parameters: WorkerParameters,
+        private val latencyRepository: LatencyRepository,
+    ) : CoroutineWorker(context, parameters) {
+        override suspend fun doWork(): Result {
+            return withContext(Dispatchers.IO) {
+                runCatching {
+                    latencyRepository.updateAllServerLatencies()
+                }
+                return@withContext Result.success()
             }
-            return@withContext Result.success()
         }
     }
-}

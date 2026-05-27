@@ -24,9 +24,8 @@ class PinIpRecovery(
     private val wsNetWrapper: WSNetWrapper,
     private val preferencesHelper: PreferencesHelper,
     private val deviceStateManager: DeviceStateManager,
-    private val getPinnedIpForSelectedCity: suspend () -> Pair<String, String>?
+    private val getPinnedIpForSelectedCity: suspend () -> Pair<String, String>?,
 ) {
-
     private val vpnLogger = LoggerFactory.getLogger("pin-ip-recovery")
     private var handshakeRecoveryJob: Job? = null
     private var lastHandshakeTimestamp: Long? = null
@@ -48,32 +47,33 @@ class PinIpRecovery(
     }
 
     private fun startHandshakeRecoveryListener() {
-        handshakeRecoveryJob = scope.launch {
-            wgLogger.handshakeReceivedEvent.collect {
-                // Only check if we have a pinned IP available for recovery
-                // User might pin IP during an active connection
-                if (getPinnedIpForSelectedCity.invoke() == null) {
-                    lastHandshakeTimestamp = System.currentTimeMillis()
-                    return@collect
-                }
-
-                val currentTime = System.currentTimeMillis()
-                val previousTimestamp = lastHandshakeTimestamp
-
-                if (previousTimestamp != null) {
-                    val timeSinceLastHandshake = currentTime - previousTimestamp
-                    if (timeSinceLastHandshake > HANDSHAKE_TIMEOUT_MS) {
-                        vpnLogger.warn("Handshake delayed: ${timeSinceLastHandshake / 1000}s since last handshake (> 3 minutes)")
-                        vpnLogger.info("Tunnel was unhealthy, attempting IP pinning recovery")
-                        waitForNetworkAndPinIp()
+        handshakeRecoveryJob =
+            scope.launch {
+                wgLogger.handshakeReceivedEvent.collect {
+                    // Only check if we have a pinned IP available for recovery
+                    // User might pin IP during an active connection
+                    if (getPinnedIpForSelectedCity.invoke() == null) {
+                        lastHandshakeTimestamp = System.currentTimeMillis()
+                        return@collect
                     }
-                } else {
-                    vpnLogger.debug("First handshake received")
-                }
 
-                lastHandshakeTimestamp = currentTime
+                    val currentTime = System.currentTimeMillis()
+                    val previousTimestamp = lastHandshakeTimestamp
+
+                    if (previousTimestamp != null) {
+                        val timeSinceLastHandshake = currentTime - previousTimestamp
+                        if (timeSinceLastHandshake > HANDSHAKE_TIMEOUT_MS) {
+                            vpnLogger.warn("Handshake delayed: ${timeSinceLastHandshake / 1000}s since last handshake (> 3 minutes)")
+                            vpnLogger.info("Tunnel was unhealthy, attempting IP pinning recovery")
+                            waitForNetworkAndPinIp()
+                        }
+                    } else {
+                        vpnLogger.debug("First handshake received")
+                    }
+
+                    lastHandshakeTimestamp = currentTime
+                }
             }
-        }
     }
 
     private suspend fun waitForNetworkAndPinIp() {
@@ -84,7 +84,8 @@ class PinIpRecovery(
 
         try {
             vpnLogger.debug("Waiting for network before IP pinning...")
-            withTimeout(5_000) { // 5 seconds timeout
+            withTimeout(5_000) {
+                // 5 seconds timeout
                 deviceStateManager.isOnline.collect { isOnline ->
                     if (isOnline) {
                         pinIpForRecovery()
@@ -136,14 +137,16 @@ class PinIpRecovery(
             }
 
             // Call pin IP API
-            val pinResult = Ext.result<Any> {
-                apiManager.pinIp(pinnedIp)
-            }
+            val pinResult =
+                Ext.result<Any> {
+                    apiManager.pinIp(pinnedIp)
+                }
 
             when (pinResult) {
                 is CallResult.Success -> {
                     vpnLogger.info("Successfully pinned IP $pinnedIp to server $selectedIp for recovery")
                 }
+
                 is CallResult.Error -> {
                     vpnLogger.error("Failed to pin IP for recovery: ${pinResult.errorMessage}")
                 }

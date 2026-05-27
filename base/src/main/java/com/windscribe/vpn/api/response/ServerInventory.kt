@@ -16,28 +16,24 @@ import com.google.gson.annotations.SerializedName
 data class ServerInventory(
     @SerializedName("action")
     @Expose
-    val action: String,  // "delta" or "hold"
-
+    val action: String, // "delta" or "hold"
     @SerializedName("enabled")
     @Expose
     val enabled: List<ServerData>?,
-
     @SerializedName("disabled")
     @Expose
     val disabled: List<DisabledServer>?,
-
     @SerializedName("revision")
     @Expose
     val revision: Long,
-
     @SerializedName("amneziawg_config_id")
     @Expose
-    var amneziaWgConfigId: String? = null
+    var amneziaWgConfigId: String? = null,
 )
 
 @Keep
 data class DisabledServer(
     @SerializedName("id")
     @Expose
-    val id: Int
+    val id: Int,
 )

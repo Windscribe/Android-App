@@ -28,10 +28,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,7 +40,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.common.StyledTextField
 import com.windscribe.mobile.ui.common.StyledTextFieldWithActions
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
@@ -57,7 +56,7 @@ fun StandardLoginForm(
     onUsernameChange: (String) -> Unit = {},
     onPasswordChange: (String) -> Unit = {},
     on2FAChange: (String) -> Unit = {},
-    on2FAInfoClick: () -> Unit = {}
+    on2FAInfoClick: () -> Unit = {},
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -84,41 +83,44 @@ fun StandardLoginForm(
             },
             placeholder = stringResource(com.windscribe.vpn.R.string.enter_username),
             isError = isUsernameError,
-            imeAction = ImeAction.Next
+            imeAction = ImeAction.Next,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Password Label with Forgot Password Link
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(end = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.password),
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = if (isPasswordError) AppColors.red else AppColors.white
+                color = if (isPasswordError) AppColors.red else AppColors.white,
             )
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.forgot_password),
-                style = font14.copy(
-                    fontWeight = FontWeight.Medium,
-                    textDecoration = TextDecoration.Underline,
-                    lineHeight = font14.fontSize * 1.5f
-                ),
+                style =
+                    font14.copy(
+                        fontWeight = FontWeight.Medium,
+                        textDecoration = TextDecoration.Underline,
+                        lineHeight = font14.fontSize * 1.5f,
+                    ),
                 color = AppColors.grayText,
-                modifier = Modifier.clickable {
-                    val url = NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_FORGOT_PASSWORD)
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    if (intent.resolveActivity(context.packageManager) != null) {
-                        context.startActivity(intent)
-                    } else {
-                        Toast.makeText(context, "No browser found", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                modifier =
+                    Modifier.clickable {
+                        val url = NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_FORGOT_PASSWORD)
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                        } else {
+                            Toast.makeText(context, "No browser found", Toast.LENGTH_SHORT).show()
+                        }
+                    },
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -137,14 +139,14 @@ fun StandardLoginForm(
             passwordVisible = passwordVisible,
             onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
             keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Next
+            imeAction = ImeAction.Next,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // 2FA - Expandable Section
         ExpandableSection(
-            text = stringResource(com.windscribe.vpn.R.string.add_two_fa)
+            text = stringResource(com.windscribe.vpn.R.string.add_two_fa),
         ) {
             Spacer(modifier = Modifier.height(8.dp))
             StyledTextFieldWithActions(
@@ -158,7 +160,7 @@ fun StandardLoginForm(
                 showInfoButton = true,
                 onInfoClick = on2FAInfoClick,
                 keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
+                imeAction = ImeAction.Done,
             )
         }
     }
@@ -167,50 +169,53 @@ fun StandardLoginForm(
 @Composable
 private fun ExpandableSection(
     text: String,
-    content: @Composable () -> Unit = {}
+    content: @Composable () -> Unit = {},
 ) {
     val expanded = remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val rotation by animateFloatAsState(
         if (expanded.value) 180f else 0f,
-        label = "expandIconRotation"
+        label = "expandIconRotation",
     )
 
     Column {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(end = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = text,
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = AppColors.white
+                color = AppColors.white,
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 OptionalBadge()
                 Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = ripple(bounded = false, color = Color.White),
-                            onClick = { expanded.value = !expanded.value }
-                        ),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = ripple(bounded = false, color = Color.White),
+                                onClick = { expanded.value = !expanded.value },
+                            ),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_expand),
                         contentDescription = null,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .rotate(rotation),
-                        colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
+                        modifier =
+                            Modifier
+                                .size(24.dp)
+                                .rotate(rotation),
+                        colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f)),
                     )
                 }
             }
@@ -224,17 +229,17 @@ private fun ExpandableSection(
 @Composable
 private fun OptionalBadge() {
     Box(
-        modifier = Modifier
-            .background(
-                color = AppColors.white.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(100.dp)
-            )
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+        modifier =
+            Modifier
+                .background(
+                    color = AppColors.white.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(100.dp),
+                ).padding(horizontal = 8.dp, vertical = 2.dp),
     ) {
         Text(
             text = stringResource(com.windscribe.vpn.R.string.optional),
             style = font12.copy(fontWeight = FontWeight.Medium),
-            color = AppColors.white.copy(alpha = 0.6f)
+            color = AppColors.white.copy(alpha = 0.6f),
         )
     }
 }

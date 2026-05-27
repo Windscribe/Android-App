@@ -1,5 +1,10 @@
 package com.windscribe.vpn.autoconnection
 
 enum class FragmentType {
-    ConnectionFailure, ConnectionChange, AllProtocolFailed, SetupAsPreferredProtocol, DebugLogSent, ManualModeFailed
+    ConnectionFailure,
+    ConnectionChange,
+    AllProtocolFailed,
+    SetupAsPreferredProtocol,
+    DebugLogSent,
+    ManualModeFailed,
 }

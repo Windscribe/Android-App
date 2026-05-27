@@ -9,12 +9,13 @@ import android.os.Build.VERSION_CODES
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
-import com.windscribe.vpn.R
 import com.windscribe.vpn.R.drawable
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
-import com.windscribe.vpn.backend.VPNState.Status.*
+import com.windscribe.vpn.backend.VPNState.Status.Connected
+import com.windscribe.vpn.backend.VPNState.Status.Connecting
+import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -29,7 +30,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 @RequiresApi(api = VERSION_CODES.N)
 class VpnTileService : TileService() {
-
     @Inject
     lateinit var vpnController: WindVpnController
 
@@ -66,14 +66,15 @@ class VpnTileService : TileService() {
 
     override fun onStartListening() {
         shortcutStateManager.load {
-            job = scope.launch {
-                vpnConnectionStateManager.state.collectLatest {
-                    if (it.status == Disconnected && appContext.preference.isReconnecting) {
-                        return@collectLatest
+            job =
+                scope.launch {
+                    vpnConnectionStateManager.state.collectLatest {
+                        if (it.status == Disconnected && appContext.preference.isReconnecting) {
+                            return@collectLatest
+                        }
+                        resetState(it.status)
                     }
-                    resetState(it.status)
                 }
-            }
         }
     }
 
@@ -103,7 +104,10 @@ class VpnTileService : TileService() {
         }
     }
 
-    private fun setTileState(icon: Int, tileState: Int) {
+    private fun setTileState(
+        icon: Int,
+        tileState: Int,
+    ) {
         try {
             qsTile?.icon = Icon.createWithResource(this, icon)
             qsTile?.state = tileState
@@ -112,7 +116,5 @@ class VpnTileService : TileService() {
         }
     }
 
-    private fun getIcon(isConnecting: Boolean = false): Int {
-        return if (isConnecting) drawable.ic_tile_connecting else drawable.ic_tile_connect
-    }
+    private fun getIcon(isConnecting: Boolean = false): Int = if (isConnecting) drawable.ic_tile_connecting else drawable.ic_tile_connect
 }

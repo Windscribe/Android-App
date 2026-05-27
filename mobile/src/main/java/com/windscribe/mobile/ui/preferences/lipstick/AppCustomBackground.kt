@@ -61,21 +61,26 @@ fun AppCustomBackground(viewmodel: LipstickViewmodel? = null) {
 
 @Composable
 private fun Header() {
-    Column(modifier = Modifier.fillMaxWidth().background(
-        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-    ).padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically,) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                ).padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painterResource(R.drawable.ic_switch),
                 contentDescription = "",
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
             )
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
                 stringResource(com.windscribe.vpn.R.string.app_background),
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.primaryTextColor
+                color = MaterialTheme.colorScheme.primaryTextColor,
             )
         }
         Spacer(modifier = Modifier.padding(8.dp))
@@ -95,7 +100,7 @@ private fun AspectRationSection(viewmodel: LipstickViewmodel?) {
         onDropdownClick = { expanded.value = !expanded.value },
         dropdownItems = LookAndFeelHelper.getAspectRatioOptions(),
         onItemSelected = { viewmodel?.onAspectRatioItemSelected(it) },
-        shape = RoundedCornerShape(0.dp)
+        shape = RoundedCornerShape(0.dp),
     )
 }
 
@@ -108,9 +113,10 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
     val expandedMain = remember { mutableStateOf(false) }
     val expandedBundled = remember { mutableStateOf(false) }
 
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? -> uri?.let { viewmodel?.loadDisconnectedCustomBackground(context, it) } }
+    val filePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+        ) { uri: Uri? -> uri?.let { viewmodel?.loadDisconnectedCustomBackground(context, it) } }
     DropdownSection(
         title = stringResource(com.windscribe.vpn.R.string.when_disconnected),
         displayValue = stringResource(item?.value?.title ?: com.windscribe.vpn.R.string.flags),
@@ -119,33 +125,35 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
         dropdownItems = LookAndFeelHelper.getBackgroundOptions(),
         onItemSelected = { viewmodel?.onWhenDisconnectedBackgroundItemSelected(it) },
         extraContent = {
-            val title = bundledItem?.value?.label?.ifBlank {
-                stringResource(bundledItem.value.title)
-            }
+            val title =
+                bundledItem?.value?.label?.ifBlank {
+                    stringResource(bundledItem.value.title)
+                }
             if (item?.value?.id == 2) {
                 Row(
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .clickable { expandedBundled.value = !expandedBundled.value },
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .padding(top = 4.dp)
+                            .clickable { expandedBundled.value = !expandedBundled.value },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         title ?: "",
                         style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cm_icon),
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = MaterialTheme.colorScheme.primaryTextColor
+                        tint = MaterialTheme.colorScheme.primaryTextColor,
                     )
                 }
                 if (expandedBundled.value) {
                     DropDownItems(
                         expanded = expandedBundled,
-                        items = LookAndFeelHelper.getBundledBackgroundOptions()
+                        items = LookAndFeelHelper.getBundledBackgroundOptions(),
                     ) {
                         viewmodel.onDisconnectedBundledBackgroundItemSelected(it)
                         expandedBundled.value = false
@@ -155,27 +163,28 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
 
             if (item?.value?.id == 4) {
                 Row(
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .clickable { filePickerLauncher.launch(arrayOf("*/*")) },
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .padding(top = 4.dp)
+                            .clickable { filePickerLauncher.launch(arrayOf("*/*")) },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         customItem?.value ?: "No selection",
                         style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_forward_arrow_white),
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = MaterialTheme.colorScheme.primaryTextColor
+                        tint = MaterialTheme.colorScheme.primaryTextColor,
                     )
                 }
             }
         },
-        shape = RoundedCornerShape(0.dp)
+        shape = RoundedCornerShape(0.dp),
     )
 }
 
@@ -188,9 +197,10 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
     val expandedMain = remember { mutableStateOf(false) }
     val expandedBundled = remember { mutableStateOf(false) }
 
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? -> uri?.let { viewmodel?.loadConnectedCustomBackground(context, it) } }
+    val filePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+        ) { uri: Uri? -> uri?.let { viewmodel?.loadConnectedCustomBackground(context, it) } }
     DropdownSection(
         title = stringResource(com.windscribe.vpn.R.string.when_connected),
         displayValue = stringResource(item?.value?.title ?: com.windscribe.vpn.R.string.flags),
@@ -200,33 +210,35 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
         onItemSelected = { viewmodel?.onWhenConnectedBackgroundItemSelected(it) },
         shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
         extraContent = {
-            val title = bundledItem?.value?.label?.ifBlank {
-                stringResource(bundledItem.value.title)
-            }
+            val title =
+                bundledItem?.value?.label?.ifBlank {
+                    stringResource(bundledItem.value.title)
+                }
             if (item?.value?.id == 2) {
                 Row(
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .clickable { expandedBundled.value = !expandedBundled.value },
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .padding(top = 4.dp)
+                            .clickable { expandedBundled.value = !expandedBundled.value },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         title ?: "",
                         style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cm_icon),
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = MaterialTheme.colorScheme.primaryTextColor
+                        tint = MaterialTheme.colorScheme.primaryTextColor,
                     )
                 }
                 if (expandedBundled.value) {
                     DropDownItems(
                         expanded = expandedBundled,
-                        items = LookAndFeelHelper.getBundledBackgroundOptions()
+                        items = LookAndFeelHelper.getBundledBackgroundOptions(),
                     ) {
                         viewmodel.onConnectedBundledBackgroundItemSelected(it)
                         expandedBundled.value = false
@@ -236,26 +248,27 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
 
             if (item?.value?.id == 4) {
                 Row(
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .clickable { filePickerLauncher.launch(arrayOf("*/*")) },
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .padding(top = 4.dp)
+                            .clickable { filePickerLauncher.launch(arrayOf("*/*")) },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         customItem?.value ?: "No selection",
                         style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_forward_arrow_white),
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = MaterialTheme.colorScheme.primaryTextColor
+                        tint = MaterialTheme.colorScheme.primaryTextColor,
                     )
                 }
             }
-        }
+        },
     )
 }
 
@@ -269,19 +282,20 @@ private fun DropdownSection(
     onItemSelected: (DropDownItem) -> Unit,
     modifier: Modifier = Modifier,
     shape: RoundedCornerShape = RoundedCornerShape(0.dp),
-    extraContent: (@Composable () -> Unit)? = null
+    extraContent: (@Composable () -> Unit)? = null,
 ) {
     Box(
         Modifier.background(
             MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-            shape = shape
-        )
+            shape = shape,
+        ),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
-                .padding(16.dp)
-                .fillMaxWidth()
+            modifier =
+                modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
         ) {
             Column {
                 Text(title, style = font16.copy(fontWeight = FontWeight.Medium), color = MaterialTheme.colorScheme.primaryTextColor)
@@ -290,32 +304,36 @@ private fun DropdownSection(
             Spacer(modifier = Modifier.weight(1f))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .height(24.dp)
-                    .clickable {
-                        onDropdownClick()
-                    }) {
+                modifier =
+                    Modifier
+                        .height(24.dp)
+                        .clickable {
+                            onDropdownClick()
+                        },
+            ) {
                 Text(
                     displayValue,
                     style = font16,
-                    color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.ic_cm_icon),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(16.dp),
-                    tint = MaterialTheme.colorScheme.primaryTextColor
+                    modifier =
+                        Modifier
+                            .size(16.dp),
+                    tint = MaterialTheme.colorScheme.primaryTextColor,
                 )
             }
         }
 
         if (isDropdownExpanded.value) {
             Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 8.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 8.dp),
             ) {
                 DropDownItems(
                     expanded = isDropdownExpanded,
@@ -323,7 +341,7 @@ private fun DropdownSection(
                     onItemClick = {
                         onItemSelected(it)
                         isDropdownExpanded.value = false
-                    }
+                    },
                 )
             }
         }
@@ -334,17 +352,18 @@ private fun DropdownSection(
 private fun DropDownItems(
     expanded: MutableState<Boolean>,
     items: List<DropDownItem>,
-    onItemClick: (DropDownItem) -> Unit
+    onItemClick: (DropDownItem) -> Unit,
 ) {
     DropdownMenu(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = false },
-        modifier = Modifier.background(MaterialTheme.colorScheme.primaryTextColor)
+        modifier = Modifier.background(MaterialTheme.colorScheme.primaryTextColor),
     ) {
         items.forEach {
-            val title = it.label.ifBlank {
-                stringResource(it.title)
-            }
+            val title =
+                it.label.ifBlank {
+                    stringResource(it.title)
+                }
             DropdownMenuItem(onClick = {
                 onItemClick(it)
             }, text = {
@@ -353,7 +372,7 @@ private fun DropDownItems(
                     color = MaterialTheme.colorScheme.backgroundColor,
                     style = font16,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             })
         }
