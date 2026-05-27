@@ -20,74 +20,94 @@ import javax.inject.Inject
 enum class EmergencyConnectUIState {
     Connecting,
     Connected,
-    Disconnected
+    Disconnected,
 }
+
 @HiltViewModel
-class EmergencyConnectViewModal @Inject constructor(
-    private val scope: CoroutineScope,
-    private val windVpnController: WindVpnController,
-    private val vpnConnectionStateManager: VPNConnectionStateManager
-) : ViewModel() {
-    private val logger = LoggerFactory.getLogger("emergency_connect")
-    private var _uiState = MutableStateFlow(EmergencyConnectUIState.Disconnected)
-    val uiState: StateFlow<EmergencyConnectUIState> = _uiState
-    private var _connectionProgressText = MutableStateFlow("Resolving e-connect domain..")
-    val connectionProgressText: StateFlow<String> = _connectionProgressText
-    private var connectingJob: Job? = null
-    val error = MutableSharedFlow<String>(replay = 0)
+class EmergencyConnectViewModal
+    @Inject
+    constructor(
+        private val scope: CoroutineScope,
+        private val windVpnController: WindVpnController,
+        private val vpnConnectionStateManager: VPNConnectionStateManager,
+    ) : ViewModel() {
+        private val logger = LoggerFactory.getLogger("emergency_connect")
+        private var _uiState = MutableStateFlow(EmergencyConnectUIState.Disconnected)
+        val uiState: StateFlow<EmergencyConnectUIState> = _uiState
+        private var _connectionProgressText = MutableStateFlow("Resolving e-connect domain..")
+        val connectionProgressText: StateFlow<String> = _connectionProgressText
+        private var connectingJob: Job? = null
+        val error = MutableSharedFlow<String>(replay = 0)
 
-    init {
-        observeConnectionState()
-    }
+        init {
+            observeConnectionState()
+        }
 
-    private fun observeConnectionState() {
-        viewModelScope.launch {
-            vpnConnectionStateManager.state.collectLatest {
-                when (it.status) {
-                    VPNState.Status.Connecting -> _uiState.emit(EmergencyConnectUIState.Connecting)
-                    VPNState.Status.Connected -> _uiState.emit(EmergencyConnectUIState.Connected)
-                    VPNState.Status.Disconnected -> _uiState.emit(EmergencyConnectUIState.Disconnected)
-                    VPNState.Status.Disconnecting -> _uiState.emit(EmergencyConnectUIState.Disconnected)
-                    VPNState.Status.RequiresUserInput -> _uiState.emit(EmergencyConnectUIState.Disconnected)
-                    else -> {}
+        private fun observeConnectionState() {
+            viewModelScope.launch {
+                vpnConnectionStateManager.state.collectLatest {
+                    when (it.status) {
+                        VPNState.Status.Connecting -> {
+                            _uiState.emit(EmergencyConnectUIState.Connecting)
+                        }
+
+                        VPNState.Status.Connected -> {
+                            _uiState.emit(EmergencyConnectUIState.Connected)
+                        }
+
+                        VPNState.Status.Disconnected -> {
+                            _uiState.emit(EmergencyConnectUIState.Disconnected)
+                        }
+
+                        VPNState.Status.Disconnecting -> {
+                            _uiState.emit(EmergencyConnectUIState.Disconnected)
+                        }
+
+                        VPNState.Status.RequiresUserInput -> {
+                            _uiState.emit(EmergencyConnectUIState.Disconnected)
+                        }
+
+                        else -> {}
+                    }
                 }
             }
         }
-    }
 
-    fun connectButtonClick() {
-        logger.info("User clicked connect button with current state: ${uiState.value}")
-        if (uiState.value == EmergencyConnectUIState.Connected || uiState.value == EmergencyConnectUIState.Connecting) {
-            disconnect()
-        } else {
-            connect()
+        fun connectButtonClick() {
+            logger.info("User clicked connect button with current state: ${uiState.value}")
+            if (uiState.value == EmergencyConnectUIState.Connected || uiState.value == EmergencyConnectUIState.Connecting) {
+                disconnect()
+            } else {
+                connect()
+            }
         }
-    }
 
-    fun disconnect() {
-        scope.launch {
+        fun disconnect() {
+            scope.launch {
+                connectingJob?.cancel()
+                windVpnController.disconnectAsync()
+            }
+        }
+
+        private fun connect() {
             connectingJob?.cancel()
-            windVpnController.disconnectAsync()
-        }
-    }
-
-    private fun connect() {
-        connectingJob?.cancel()
-        connectingJob = scope.launch {
-            _uiState.emit(EmergencyConnectUIState.Connecting)
-            windVpnController.connectUsingEmergencyProfile { progress ->
-                _connectionProgressText.value = progress
-            }.onSuccess {
-                logger.info("Successfully connected to emergency server.")
-            }.onFailure {
-                if (it is CancellationException) {
-                    logger.debug("Emergency connect cancelled.")
-                    return@onFailure
+            connectingJob =
+                scope.launch {
+                    _uiState.emit(EmergencyConnectUIState.Connecting)
+                    windVpnController
+                        .connectUsingEmergencyProfile { progress ->
+                            _connectionProgressText.value = progress
+                        }.onSuccess {
+                            logger.info("Successfully connected to emergency server.")
+                        }.onFailure {
+                            if (it is CancellationException) {
+                                logger.debug("Emergency connect cancelled.")
+                                return@onFailure
+                            }
+                            logger.error("Failure to connect using emergency vpn profiles: $it")
+                            _uiState.emit(EmergencyConnectUIState.Disconnected)
+                            error.emit(it.message ?: "Failed to connect using emergency vpn profile.")
+                        }
                 }
-                logger.error("Failure to connect using emergency vpn profiles: $it")
-                _uiState.emit(EmergencyConnectUIState.Disconnected)
-                error.emit(it.message ?: "Failed to connect using emergency vpn profile.")
-            }
         }
     }
-}

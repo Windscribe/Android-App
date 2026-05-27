@@ -4,12 +4,13 @@
 
 package com.windscribe.vpn.billing
 
-class AmazonPurchase(val receiptId: String, val userId: String) {
-
-    override fun toString(): String {
-        return "AmazonPurchase{" +
-                "receiptId='" + receiptId + '\'' +
-                ", userId='" + userId + '\'' +
-                '}'
-    }
+class AmazonPurchase(
+    val receiptId: String,
+    val userId: String,
+) {
+    override fun toString(): String =
+        "AmazonPurchase{" +
+            "receiptId='" + receiptId + '\'' +
+            ", userId='" + userId + '\'' +
+            '}'
 }

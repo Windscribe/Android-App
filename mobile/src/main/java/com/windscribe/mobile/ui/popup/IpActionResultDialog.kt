@@ -23,7 +23,7 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 @Composable
 fun IpActionResultDialog(
     message: String,
-    description: String
+    description: String,
 ) {
     val navController = LocalNavController.current
     val activity = navController.context as? AppStartActivity
@@ -42,7 +42,7 @@ fun IpActionResultDialog(
         Spacer(Modifier.height(16.dp))
         PopupSecondaryActionButton(
             modifier = Modifier,
-            stringResource(com.windscribe.vpn.R.string.back)
+            stringResource(com.windscribe.vpn.R.string.back),
         ) {
             navController.popBackStack()
         }

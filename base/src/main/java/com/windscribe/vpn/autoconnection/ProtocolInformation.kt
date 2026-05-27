@@ -8,10 +8,7 @@ data class ProtocolInformation(
     val description: String,
     var type: ProtocolConnectionStatus,
     var autoConnectTimeLeft: Int = 10,
-    val error: String = "failed"
+    val error: String = "failed",
 ) : Serializable {
-    override fun toString(): String {
-        return "$protocol:$port:${type.name}"
-    }
+    override fun toString(): String = "$protocol:$port:${type.name}"
 }
-

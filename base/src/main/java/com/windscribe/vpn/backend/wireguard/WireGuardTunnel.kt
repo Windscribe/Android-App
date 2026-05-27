@@ -10,16 +10,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class WireGuardTunnel internal constructor(
-        private var name: String,
-        config: Config?,
-        state: Tunnel.State
+    private var name: String,
+    config: Config?,
+    state: Tunnel.State,
 ) : Tunnel {
-
     override fun getName() = name
 
-    private val internalStateFlow = MutableSharedFlow<Tunnel.State>(replay = 1, extraBufferCapacity = 5).apply {
-        tryEmit(Tunnel.State.DOWN)
-    }
+    private val internalStateFlow =
+        MutableSharedFlow<Tunnel.State>(replay = 1, extraBufferCapacity = 5).apply {
+            tryEmit(Tunnel.State.DOWN)
+        }
     val stateFlow: Flow<Tunnel.State> = internalStateFlow
 
     var state = state

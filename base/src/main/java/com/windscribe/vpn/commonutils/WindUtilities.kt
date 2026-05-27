@@ -22,39 +22,40 @@ import kotlin.math.min
 import kotlin.math.pow
 
 object WindUtilities {
-
     enum class ConfigType {
-        OpenVPN, WIRE_GUARD
+        OpenVPN,
+        WIRE_GUARD,
     }
 
-    suspend fun deleteProfile(context: Context): Boolean = withContext(Dispatchers.IO) {
-        val file = File(context.filesDir, "wd.vp")
-        if (file.exists()) {
-            file.delete()
-        } else {
-            false
-        }
-    }
-
-    suspend fun deleteProfileCompletely(context: Context): Unit = withContext(Dispatchers.IO) {
-        val profileFile = File(context.filesDir, Util.VPN_PROFILE_NAME)
-        if (profileFile.exists()) {
-            profileFile.delete()
+    suspend fun deleteProfile(context: Context): Boolean =
+        withContext(Dispatchers.IO) {
+            val file = File(context.filesDir, "wd.vp")
+            if (file.exists()) {
+                file.delete()
+            } else {
+                false
+            }
         }
 
-        val locationFile = File(context.filesDir, Util.LAST_SELECTED_LOCATION)
-        if (locationFile.exists()) {
-            locationFile.delete()
-        }
-    }
+    suspend fun deleteProfileCompletely(context: Context): Unit =
+        withContext(Dispatchers.IO) {
+            val profileFile = File(context.filesDir, Util.VPN_PROFILE_NAME)
+            if (profileFile.exists()) {
+                profileFile.delete()
+            }
 
-    fun getConfigType(content: String): ConfigType {
-        return if (content.contains("[Peer]") && content.contains("[Interface]")) {
+            val locationFile = File(context.filesDir, Util.LAST_SELECTED_LOCATION)
+            if (locationFile.exists()) {
+                locationFile.delete()
+            }
+        }
+
+    fun getConfigType(content: String): ConfigType =
+        if (content.contains("[Peer]") && content.contains("[Interface]")) {
             ConfigType.WIRE_GUARD
         } else {
             ConfigType.OpenVPN
         }
-    }
 
     fun getSourceTypeBlocking(): SelectedLocationType {
         val isConnectingToStatic = appContext.preference.isConnectingToStaticIp
@@ -73,25 +74,28 @@ object WindUtilities {
         return connectivityManager?.activeNetworkInfo
     }
 
-    fun getVersionCode(): String {
-        return try {
-            val info = appContext.packageManager
-                .getPackageInfo(appContext.packageName, 0)
+    fun getVersionCode(): String =
+        try {
+            val info =
+                appContext.packageManager
+                    .getPackageInfo(appContext.packageName, 0)
             info.versionCode.toString()
         } catch (_: PackageManager.NameNotFoundException) {
             ""
         }
-    }
 
-    fun getVersionName(): String {
-        return try {
+    fun getVersionName(): String =
+        try {
             appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName ?: ""
         } catch (_: PackageManager.NameNotFoundException) {
             ""
         }
-    }
 
-    fun humanReadableByteCount(bytes: Long, speed: Boolean, res: Resources): String {
+    fun humanReadableByteCount(
+        bytes: Long,
+        speed: Boolean,
+        res: Resources,
+    ): String {
         val adjustedBytes = if (speed) bytes * 8 else bytes
         val unit = if (speed) 1000 else 1024
 
@@ -144,7 +148,10 @@ object WindUtilities {
      * @param hostname2 Second hostname (can be FQDN or prefix)
      * @return True if the hostname prefixes match
      */
-    fun hostnamesMatch(hostname1: String?, hostname2: String?): Boolean {
+    fun hostnamesMatch(
+        hostname1: String?,
+        hostname2: String?,
+    ): Boolean {
         if (hostname1 == null || hostname2 == null) return false
         return getHostnamePrefix(hostname1) == getHostnamePrefix(hostname2)
     }

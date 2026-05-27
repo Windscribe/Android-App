@@ -15,7 +15,10 @@ import androidx.fragment.app.FragmentContainerView
 import com.windscribe.mobile.ui.AppStartActivity
 
 @Composable
-fun FragmentView(fragment: Fragment, activity: AppStartActivity) {
+fun FragmentView(
+    fragment: Fragment,
+    activity: AppStartActivity,
+) {
     val fragmentId = remember { View.generateViewId() }
 
     AndroidView(
@@ -24,14 +27,15 @@ fun FragmentView(fragment: Fragment, activity: AppStartActivity) {
 
             val fm = activity.supportFragmentManager
             if (fm.findFragmentById(fragmentId) == null) {
-                fm.beginTransaction()
+                fm
+                    .beginTransaction()
                     .replace(fragmentId, fragment)
                     .commit()
             }
 
             container
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     )
 }
 

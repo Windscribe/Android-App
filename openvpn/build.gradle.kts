@@ -8,7 +8,7 @@ plugins {
     id("com.android.library")
     id("checkstyle")
     kotlin("android")
-   // kotlin("android.extensions")
+    // kotlin("android.extensions")
 }
 
 kotlin {
@@ -29,6 +29,15 @@ android {
             cmake {
                 // arguments = listOf("-DANDROID_TOOLCHAIN=clang",
                 //        "-DANDROID_STL=c++_static")
+                // Silence warnings from vendored OpenSSL C sources we don't own.
+                val vendorCFlags =
+                    listOf(
+                        "-Wno-constant-conversion",
+                        "-Wno-fortify-source",
+                        "-Wno-atomic-alignment",
+                    )
+                cFlags += vendorCFlags
+                cppFlags += vendorCFlags
             }
         }
     }
@@ -105,7 +114,7 @@ android {
             setDimension("implementation")
             buildConfigField("boolean", "openvpn3", "true")
         }
-        */
+         */
         create("skeleton") {
             dimension = "implementation"
             buildConfigField("boolean", "openvpn3", "false")
@@ -124,10 +133,11 @@ android {
         abi {
             isEnable = true
             reset()
-            val requested = (project.findProperty("abiFilter") as String?)
-                ?.split(",")
-                ?.map { it.trim() }
-                ?.filter { it.isNotEmpty() }
+            val requested =
+                (project.findProperty("abiFilter") as String?)
+                    ?.split(",")
+                    ?.map { it.trim() }
+                    ?.filter { it.isNotEmpty() }
             include(*(requested ?: listOf("x86", "x86_64", "armeabi-v7a", "arm64-v8a")).toTypedArray())
             isUniversalApk = true
         }
@@ -135,28 +145,49 @@ android {
     namespace = "de.blinkt.openvpn"
 }
 
+// Vendored module: AIDL-generated Stub/Proxy overrides don't carry @Deprecated
+// even when the interface method does. Silence that dep-ann lint noise from
+// generated code we don't own.
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:-dep-ann")
+}
+
 var swigcmd = "swig"
 // Workaround for Mac OS X since it otherwise does not find swig and I cannot get
 // the Exec task to respect the PATH environment :(
-if (File("/usr/local/bin/swig").exists())
+if (File("/usr/local/bin/swig").exists()) {
     swigcmd = "/usr/local/bin/swig"
+}
 
-fun registerGenTask(variantName: String, variantDirName: String): File {
+fun registerGenTask(
+    variantName: String,
+    variantDirName: String,
+): File {
     val baseDir = File(buildDir, "generated/source/ovpn3swig/$variantDirName")
     val genDir = File(baseDir, "net/openvpn/ovpn3")
 
     tasks.register<Exec>("generateOpenVPN3Swig$variantName") {
-
         doFirst {
             mkdir(genDir)
         }
         commandLine(
             listOf(
-                swigcmd, "-outdir", genDir, "-outcurrentdir", "-c++", "-java", "-package", "net.openvpn.ovpn3",
-                "-Isrc/main/cpp/openvpn3/client", "-Isrc/main/cpp/openvpn3/",
-                "-o", "$genDir/ovpncli_wrap.cxx", "-oh", "$genDir/ovpncli_wrap.h",
-                "src/main/cpp/openvpn3/javacli/ovpncli.i"
-            )
+                swigcmd,
+                "-outdir",
+                genDir,
+                "-outcurrentdir",
+                "-c++",
+                "-java",
+                "-package",
+                "net.openvpn.ovpn3",
+                "-Isrc/main/cpp/openvpn3/client",
+                "-Isrc/main/cpp/openvpn3/",
+                "-o",
+                "$genDir/ovpncli_wrap.cxx",
+                "-oh",
+                "$genDir/ovpncli_wrap.h",
+                "src/main/cpp/openvpn3/javacli/ovpncli.i",
+            ),
         )
     }
     return baseDir

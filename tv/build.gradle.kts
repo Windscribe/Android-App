@@ -68,24 +68,25 @@ android {
     }
     packagingOptions {
         jniLibs {
-            excludes += setOf(
-                "lib/arm64-v8a/libwg-quick.so",
-                "lib/armeabi-v7a/libwg-quick.so",
-                "lib/x86/libwg-quick.so",
-                "lib/x86_64/libwg-quick.so"
-            )
+            excludes +=
+                setOf(
+                    "lib/arm64-v8a/libwg-quick.so",
+                    "lib/armeabi-v7a/libwg-quick.so",
+                    "lib/x86/libwg-quick.so",
+                    "lib/x86_64/libwg-quick.so",
+                )
             useLegacyPackaging = true
         }
     }
 }
 
 dependencies {
-    //Android
+    // Android
     implementation("androidx.appcompat:appcompat:${libs.versions.appcompat.get()}")
     implementation("com.google.android.material:material:${libs.versions.material.get()}")
     implementation("androidx.leanback:leanback:${libs.versions.leanback.get()}")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-    //Core
+    // Core
     implementation(project(":base"))
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${libs.versions.archLifecycle.get()}")
     // Hilt
@@ -93,7 +94,7 @@ dependencies {
     ksp("com.google.dagger:hilt-compiler:${libs.versions.hilt.get()}")
     implementation("androidx.hilt:hilt-work:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
-    //Glide (runtime only — no @GlideModule, compiler not needed)
+    // Glide (runtime only — no @GlideModule, compiler not needed)
     implementation("com.github.bumptech.glide:glide:${libs.versions.glide.get()}")
 
     // Baseline Profile for startup optimization

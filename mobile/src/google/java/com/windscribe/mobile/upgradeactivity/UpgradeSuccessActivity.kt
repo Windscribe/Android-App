@@ -4,14 +4,14 @@ import android.os.Bundle
 import com.windscribe.mobile.databinding.ActivityUpgradeSuccessBinding
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
-class UpgradeSuccessActivity: BaseActivity() {
-
+class UpgradeSuccessActivity : BaseActivity() {
     private lateinit var binding: ActivityUpgradeSuccessBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUpgradeSuccessBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setContentLayout(false)
+        coldLoad.set(true)
         addClickListeners()
     }
 

@@ -38,7 +38,6 @@ import org.junit.Test
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class AmazonBillingManagerTest {
-
     private lateinit var app: Application
     private lateinit var manager: AmazonBillingManager
 
@@ -80,120 +79,138 @@ class AmazonBillingManagerTest {
     }
 
     @Test
-    fun `onProductDataResponse SUCCESSFUL emits products on success flow`() = runTest {
-        val products = mapOf("sku" to mockk<Product>())
-        val collected = firstEmission(manager.onProductsResponseSuccess)
-        val response = mockk<ProductDataResponse> {
-            every { requestStatus } returns ProductDataResponse.RequestStatus.SUCCESSFUL
-            every { productData } returns products
+    fun `onProductDataResponse SUCCESSFUL emits products on success flow`() =
+        runTest {
+            val products = mapOf("sku" to mockk<Product>())
+            val collected = firstEmission(manager.onProductsResponseSuccess)
+            val response =
+                mockk<ProductDataResponse> {
+                    every { requestStatus } returns ProductDataResponse.RequestStatus.SUCCESSFUL
+                    every { productData } returns products
+                }
+
+            manager.onProductDataResponse(response)
+
+            assertEquals(1, collected.size)
+            assertEquals(products, collected[0])
         }
 
-        manager.onProductDataResponse(response)
-
-        assertEquals(1, collected.size)
-        assertEquals(products, collected[0])
-    }
-
     @Test
-    fun `onProductDataResponse FAILED emits status on failure flow`() = runTest {
-        val collected = firstEmission(manager.onProductsResponseFailure)
-        val response = mockk<ProductDataResponse> {
-            every { requestStatus } returns ProductDataResponse.RequestStatus.FAILED
+    fun `onProductDataResponse FAILED emits status on failure flow`() =
+        runTest {
+            val collected = firstEmission(manager.onProductsResponseFailure)
+            val response =
+                mockk<ProductDataResponse> {
+                    every { requestStatus } returns ProductDataResponse.RequestStatus.FAILED
+                }
+
+            manager.onProductDataResponse(response)
+
+            assertEquals(1, collected.size)
+            assertEquals(ProductDataResponse.RequestStatus.FAILED, collected[0])
         }
 
-        manager.onProductDataResponse(response)
-
-        assertEquals(1, collected.size)
-        assertEquals(ProductDataResponse.RequestStatus.FAILED, collected[0])
-    }
-
     @Test
-    fun `onPurchaseResponse SUCCESSFUL emits response on success flow`() = runTest {
-        val collected = firstEmission(manager.onPurchaseResponseSuccess)
-        val response = mockk<PurchaseResponse> {
-            every { requestStatus } returns PurchaseResponse.RequestStatus.SUCCESSFUL
+    fun `onPurchaseResponse SUCCESSFUL emits response on success flow`() =
+        runTest {
+            val collected = firstEmission(manager.onPurchaseResponseSuccess)
+            val response =
+                mockk<PurchaseResponse> {
+                    every { requestStatus } returns PurchaseResponse.RequestStatus.SUCCESSFUL
+                }
+
+            manager.onPurchaseResponse(response)
+
+            assertEquals(1, collected.size)
+            assertEquals(response, collected[0])
         }
 
-        manager.onPurchaseResponse(response)
-
-        assertEquals(1, collected.size)
-        assertEquals(response, collected[0])
-    }
-
     @Test
-    fun `onPurchaseResponse FAILED emits status on failure flow`() = runTest {
-        val collected = firstEmission(manager.onPurchaseResponseFailure)
-        val response = mockk<PurchaseResponse> {
-            every { requestStatus } returns PurchaseResponse.RequestStatus.FAILED
+    fun `onPurchaseResponse FAILED emits status on failure flow`() =
+        runTest {
+            val collected = firstEmission(manager.onPurchaseResponseFailure)
+            val response =
+                mockk<PurchaseResponse> {
+                    every { requestStatus } returns PurchaseResponse.RequestStatus.FAILED
+                }
+
+            manager.onPurchaseResponse(response)
+
+            assertEquals(1, collected.size)
+            assertEquals(PurchaseResponse.RequestStatus.FAILED, collected[0])
         }
 
-        manager.onPurchaseResponse(response)
+    @Test
+    fun `onPurchaseUpdatesResponse with active receipt and no more emits history success`() =
+        runTest {
+            val collected = firstEmission(manager.onAmazonPurchaseHistorySuccess)
+            val response =
+                updatesResponse(
+                    status = PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL,
+                    hasMore = false,
+                    receipts = listOf(receipt(canceled = false, id = "r1")),
+                    userId = "u1",
+                )
 
-        assertEquals(1, collected.size)
-        assertEquals(PurchaseResponse.RequestStatus.FAILED, collected[0])
-    }
+            manager.onPurchaseUpdatesResponse(response)
+
+            assertEquals(1, collected.size)
+            assertEquals(1, collected[0].size)
+            assertEquals("r1", collected[0][0].receiptId)
+            assertEquals("u1", collected[0][0].userId)
+        }
 
     @Test
-    fun `onPurchaseUpdatesResponse with active receipt and no more emits history success`() = runTest {
-        val collected = firstEmission(manager.onAmazonPurchaseHistorySuccess)
-        val response = updatesResponse(
-            status = PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL,
-            hasMore = false,
-            receipts = listOf(receipt(canceled = false, id = "r1")),
-            userId = "u1"
-        )
+    fun `onPurchaseUpdatesResponse cancelled-only receipts emits history error`() =
+        runTest {
+            val collected = firstEmission(manager.onAmazonPurchaseHistoryError)
+            val response =
+                updatesResponse(
+                    status = PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL,
+                    hasMore = false,
+                    receipts = listOf(receipt(canceled = true, id = "r1")),
+                    userId = "u1",
+                )
 
-        manager.onPurchaseUpdatesResponse(response)
+            manager.onPurchaseUpdatesResponse(response)
 
-        assertEquals(1, collected.size)
-        assertEquals(1, collected[0].size)
-        assertEquals("r1", collected[0][0].receiptId)
-        assertEquals("u1", collected[0][0].userId)
-    }
-
-    @Test
-    fun `onPurchaseUpdatesResponse cancelled-only receipts emits history error`() = runTest {
-        val collected = firstEmission(manager.onAmazonPurchaseHistoryError)
-        val response = updatesResponse(
-            status = PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL,
-            hasMore = false,
-            receipts = listOf(receipt(canceled = true, id = "r1")),
-            userId = "u1"
-        )
-
-        manager.onPurchaseUpdatesResponse(response)
-
-        assertEquals(1, collected.size)
-        assertTrue(collected[0].contains("No existing purchase"))
-    }
+            assertEquals(1, collected.size)
+            assertTrue(collected[0].contains("No existing purchase"))
+        }
 
     @Test
-    fun `onPurchaseUpdatesResponse FAILED emits history error`() = runTest {
-        val collected = firstEmission(manager.onAmazonPurchaseHistoryError)
-        val response = updatesResponse(
-            status = PurchaseUpdatesResponse.RequestStatus.FAILED,
-            hasMore = false,
-            receipts = emptyList(),
-            userId = "u1"
-        )
+    fun `onPurchaseUpdatesResponse FAILED emits history error`() =
+        runTest {
+            val collected = firstEmission(manager.onAmazonPurchaseHistoryError)
+            val response =
+                updatesResponse(
+                    status = PurchaseUpdatesResponse.RequestStatus.FAILED,
+                    hasMore = false,
+                    receipts = emptyList(),
+                    userId = "u1",
+                )
 
-        manager.onPurchaseUpdatesResponse(response)
+            manager.onPurchaseUpdatesResponse(response)
 
-        assertEquals(1, collected.size)
-        assertTrue(collected[0].contains("No existing purchase"))
-    }
+            assertEquals(1, collected.size)
+            assertTrue(collected[0].contains("No existing purchase"))
+        }
 
-    private fun receipt(canceled: Boolean, id: String): Receipt = mockk(relaxed = true) {
-        every { isCanceled } returns canceled
-        every { receiptId } returns id
-        every { toJSON() } returns mockk(relaxed = true)
-    }
+    private fun receipt(
+        canceled: Boolean,
+        id: String,
+    ): Receipt =
+        mockk(relaxed = true) {
+            every { isCanceled } returns canceled
+            every { receiptId } returns id
+            every { toJSON() } returns mockk(relaxed = true)
+        }
 
     private fun updatesResponse(
         status: PurchaseUpdatesResponse.RequestStatus,
         hasMore: Boolean,
         receipts: List<Receipt>,
-        userId: String
+        userId: String,
     ): PurchaseUpdatesResponse {
         val user = mockk<UserData>()
         every { user.userId } returns userId

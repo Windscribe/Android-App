@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class ApiErrorResponse {
-
     @SerializedName("errorCode")
     @Expose
     var errorCode: Int? = null
@@ -27,12 +26,11 @@ class ApiErrorResponse {
     @Expose
     val logStatus: String? = null
 
-    override fun toString(): String {
-        return "ErrorResponse{" +
-                "errorCode=" + errorCode +
-                ", errorMessage='" + errorMessage + '\'' +
-                ", errorDescription='" + errorDescription + '\'' +
-                ", logStatus='" + logStatus + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "ErrorResponse{" +
+            "errorCode=" + errorCode +
+            ", errorMessage='" + errorMessage + '\'' +
+            ", errorDescription='" + errorDescription + '\'' +
+            ", logStatus='" + logStatus + '\'' +
+            '}'
 }

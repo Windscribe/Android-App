@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class GenericSuccess {
-
     @SerializedName("success")
     @Expose
     private val success = 0

@@ -24,9 +24,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,7 +35,6 @@ import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
-import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
@@ -44,9 +43,11 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 
-
 @Composable
-fun MainMenuScreen(viewModel: MainMenuViewModel? = null, homeViewModel: HomeViewmodel? = null) {
+fun MainMenuScreen(
+    viewModel: MainMenuViewModel? = null,
+    homeViewModel: HomeViewmodel? = null,
+) {
     val navController = LocalNavController.current
     val showProgress by viewModel?.showProgress?.collectAsState() ?: remember { mutableStateOf(false) }
     PreferenceBackground {
@@ -59,28 +60,28 @@ fun MainMenuScreen(viewModel: MainMenuViewModel? = null, homeViewModel: HomeView
                 R.string.general,
                 com.windscribe.mobile.R.drawable.ic_preferences_icon,
                 Screen.General.route,
-                homeViewModel
+                homeViewModel,
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.my_account,
                 com.windscribe.mobile.R.drawable.ic_myaccount_icon,
                 Screen.Account.route,
-                homeViewModel
+                homeViewModel,
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.connection,
                 com.windscribe.mobile.R.drawable.ic_connection_icon,
                 Screen.Connection.route,
-                homeViewModel
+                homeViewModel,
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.robert,
                 com.windscribe.mobile.R.drawable.ic_robert,
                 Screen.Robert.route,
-                homeViewModel
+                homeViewModel,
             )
             if (viewModel?.showReferData == true) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -88,7 +89,7 @@ fun MainMenuScreen(viewModel: MainMenuViewModel? = null, homeViewModel: HomeView
                     R.string.refer_for_data,
                     com.windscribe.mobile.R.drawable.ic_favourite,
                     Screen.ShareLink.route,
-                    homeViewModel
+                    homeViewModel,
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -96,21 +97,21 @@ fun MainMenuScreen(viewModel: MainMenuViewModel? = null, homeViewModel: HomeView
                 R.string.look_and_feel,
                 com.windscribe.mobile.R.drawable.ic_feel,
                 Screen.LookAndFeel.route,
-                homeViewModel
+                homeViewModel,
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.help_me,
                 com.windscribe.mobile.R.drawable.ic_helpme_icon,
                 Screen.HelpMe.route,
-                homeViewModel
+                homeViewModel,
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.about_us,
                 com.windscribe.mobile.R.drawable.ic_about,
                 Screen.About.route,
-                homeViewModel
+                homeViewModel,
             )
             Spacer(modifier = Modifier.height(16.dp))
             LogoutItem(viewModel)
@@ -124,7 +125,7 @@ private fun MainMenuItem(
     @StringRes title: Int,
     @DrawableRes icon: Int,
     nextRoute: String,
-    viewModel: HomeViewmodel?
+    viewModel: HomeViewmodel?,
 ) {
     val navController = LocalNavController.current
     val hapticFeedback = LocalHapticFeedback.current
@@ -136,43 +137,45 @@ private fun MainMenuItem(
             .height(44.dp)
             .background(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(size = 12.dp)
-            )
-            .clickable {
+                shape = RoundedCornerShape(size = 12.dp),
+            ).clickable {
                 if (hapticFeedbackEnabled) {
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                 }
                 navController.navigate(nextRoute)
-            }
-            .padding(start = 14.dp, end = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+            }.padding(start = 14.dp, end = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
-            modifier = Modifier
-                .size(24.dp)
-                .padding(4.dp),
+            modifier =
+                Modifier
+                    .size(24.dp)
+                    .padding(4.dp),
             painter = painterResource(icon),
             contentDescription = "",
-            tint = MaterialTheme.colorScheme.primaryTextColor
+            tint = MaterialTheme.colorScheme.primaryTextColor,
         )
         Text(
             stringResource(title),
             modifier = Modifier.padding(start = 16.dp),
             style = font16,
-            color = MaterialTheme.colorScheme.primaryTextColor
+            color = MaterialTheme.colorScheme.primaryTextColor,
         )
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             modifier = Modifier.size(16.dp),
             painter = painterResource(com.windscribe.mobile.R.drawable.arrow_right),
             contentDescription = "",
-            tint = MaterialTheme.colorScheme.primaryTextColor
+            tint = MaterialTheme.colorScheme.primaryTextColor,
         )
     }
 }
 
 @Composable
-private fun LogoutItem(viewModel: MainMenuViewModel?, homeViewmodel: HomeViewmodel? = null) {
+private fun LogoutItem(
+    viewModel: MainMenuViewModel?,
+    homeViewmodel: HomeViewmodel? = null,
+) {
     val hapticFeedback = LocalHapticFeedback.current
     val hapticFeedbackEnabled by homeViewmodel?.hapticFeedbackEnabled?.collectAsState() ?: remember { mutableStateOf(false) }
     Row(
@@ -182,29 +185,29 @@ private fun LogoutItem(viewModel: MainMenuViewModel?, homeViewmodel: HomeViewmod
             .testTag("logout_button")
             .background(
                 color = AppColors.yellow.copy(0.05f),
-                shape = RoundedCornerShape(size = 12.dp)
-            )
-            .clickable {
+                shape = RoundedCornerShape(size = 12.dp),
+            ).clickable {
                 if (hapticFeedbackEnabled) {
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                 }
                 viewModel?.logout()
             }.padding(start = 14.dp, end = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         Icon(
-            modifier = Modifier
-                .size(24.dp),
+            modifier =
+                Modifier
+                    .size(24.dp),
             painter = painterResource(com.windscribe.mobile.R.drawable.ic_sign_out),
             contentDescription = "",
-            tint = AppColors.yellow
+            tint = AppColors.yellow,
         )
         Text(
             stringResource(R.string.logout),
             modifier = Modifier.padding(start = 16.dp),
             style = font16.copy(fontWeight = FontWeight.Medium),
-            color = AppColors.yellow
+            color = AppColors.yellow,
         )
     }
 }

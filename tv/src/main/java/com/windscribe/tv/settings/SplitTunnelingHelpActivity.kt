@@ -19,8 +19,6 @@ class SplitTunnelingHelpActivity : AppCompatActivity() {
 
     companion object {
         @JvmStatic
-        fun getStartIntent(context: Context): Intent {
-            return Intent(context, SplitTunnelingHelpActivity::class.java)
-        }
+        fun getStartIntent(context: Context): Intent = Intent(context, SplitTunnelingHelpActivity::class.java)
     }
 }

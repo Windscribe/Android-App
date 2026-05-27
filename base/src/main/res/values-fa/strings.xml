@@ -467,7 +467,7 @@
     <string name="failed_to_update_robert_rules">نتوانست قوانین رابرت را به روز کند.</string>
     <string name="successfully_updated_robert_rules">با موفقیت قوانین رابرت را به روز کرد.</string>
     <string name="share_app">اشتراک گذاری برنامه</string>
-    <string name="share_app_description">"٪s از شما دعوت میکند تا به Windscribe بپیوندید. نام کاربری خود را در ثبت نام ارائه دهید و هر دو 1 گیگابایت داده رایگان به حساب های خود اضافه خواهید کرد. اگر شما حرفه ای شوید، انها نیز حرفه ای خواهند شد!"</string>
+    <string name="share_app_description">"%1$s از شما دعوت میکند تا به Windscribe بپیوندید. نام کاربری خود را در ثبت نام ارائه دهید و هر دو 1 گیگابایت داده رایگان به حساب های خود اضافه خواهید کرد. اگر شما حرفه ای شوید، انها نیز حرفه ای خواهند شد!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"اجازه می دهد تمام وقت\" دسترسی به مکان مورد نیاز!</string>
     <string name="enable_location_access">فعالسازی دسترسی به مکان</string>
     <string name="location_permission_required">مجوز مکان مورد نیاز است</string>

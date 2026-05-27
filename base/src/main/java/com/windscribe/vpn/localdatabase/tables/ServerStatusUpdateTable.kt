@@ -14,5 +14,5 @@ class ServerStatusUpdateTable(
     @ColumnInfo(name = "user_name")
     var userName: String,
     @ColumnInfo(name = "server_status")
-    val serverStatus: Int?
+    val serverStatus: Int?,
 )

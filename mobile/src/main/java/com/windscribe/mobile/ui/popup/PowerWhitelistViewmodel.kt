@@ -4,47 +4,52 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 abstract class PowerWhitelistViewmodel : ViewModel() {
     abstract fun onLaterClicked()
+
     abstract fun onNeverAskAgainClicked()
+
     abstract fun onPermissionResult(granted: Boolean)
+
     abstract val shouldExit: StateFlow<Boolean>
 }
 
 @HiltViewModel
-class PowerWhitelistViewmodelImpl @Inject constructor(
-    private val preferenceHelper: PreferencesHelper
-) : PowerWhitelistViewmodel() {
-    private val _shouldExit = MutableStateFlow(false)
-    override val shouldExit = _shouldExit.asStateFlow()
-    private val logger = LoggerFactory.getLogger("basic")
+class PowerWhitelistViewmodelImpl
+    @Inject
+    constructor(
+        private val preferenceHelper: PreferencesHelper,
+    ) : PowerWhitelistViewmodel() {
+        private val _shouldExit = MutableStateFlow(false)
+        override val shouldExit = _shouldExit.asStateFlow()
+        private val logger = LoggerFactory.getLogger("basic")
 
-    override fun onPermissionResult(granted: Boolean) {
-        viewModelScope.launch {
-            logger.info("PowerWhitelist permission result: $granted")
-            _shouldExit.emit(true)
+        override fun onPermissionResult(granted: Boolean) {
+            viewModelScope.launch {
+                logger.info("PowerWhitelist permission result: $granted")
+                _shouldExit.emit(true)
+            }
+        }
+
+        override fun onLaterClicked() {
+            viewModelScope.launch {
+                val count = preferenceHelper.powerWhiteListDialogCount
+                preferenceHelper.powerWhiteListDialogCount = count + 1
+                _shouldExit.emit(true)
+            }
+        }
+
+        override fun onNeverAskAgainClicked() {
+            viewModelScope.launch {
+                preferenceHelper.powerWhiteListDialogCount = 3
+                _shouldExit.emit(true)
+            }
         }
     }
-
-    override fun onLaterClicked() {
-        viewModelScope.launch {
-            val count = preferenceHelper.powerWhiteListDialogCount
-            preferenceHelper.powerWhiteListDialogCount = count + 1
-            _shouldExit.emit(true)
-        }
-    }
-
-    override fun onNeverAskAgainClicked() {
-        viewModelScope.launch {
-            preferenceHelper.powerWhiteListDialogCount = 3
-            _shouldExit.emit(true)
-        }
-    }
-}

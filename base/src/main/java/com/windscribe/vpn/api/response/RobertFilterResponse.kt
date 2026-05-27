@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName
 data class RobertFilterResponse(
     @SerializedName("filters")
     @Expose
-    val filters: List<RobertFilter>
+    val filters: List<RobertFilter>,
 )
 
 @Keep
@@ -24,5 +24,5 @@ data class RobertFilter(
     val id: String,
     @SerializedName("status")
     @Expose
-    var status: Int
+    var status: Int,
 )

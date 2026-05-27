@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class UpgradeActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Toast.makeText(this, getString(com.windscribe.vpn.R.string.billing_unavailable), Toast.LENGTH_SHORT).show()
@@ -20,8 +19,6 @@ class UpgradeActivity : AppCompatActivity() {
 
     companion object {
         @JvmStatic
-        fun getStartIntent(context: Context): Intent {
-            return Intent(context, UpgradeActivity::class.java)
-        }
+        fun getStartIntent(context: Context): Intent = Intent(context, UpgradeActivity::class.java)
     }
 }

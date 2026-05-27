@@ -11,25 +11,26 @@ import dagger.assisted.AssistedInject
 import org.slf4j.LoggerFactory
 
 @HiltWorker
-class CredentialsWorker @AssistedInject constructor(
-    @Assisted appContext: Context,
-    @Assisted params: WorkerParameters,
-    private val connectionDataRepository: ConnectionDataRepository,
-    private val userRepository: UserRepository
-) : CoroutineWorker(appContext, params) {
-    private val logger = LoggerFactory.getLogger("worker")
+class CredentialsWorker
+    @AssistedInject
+    constructor(
+        @Assisted appContext: Context,
+        @Assisted params: WorkerParameters,
+        private val connectionDataRepository: ConnectionDataRepository,
+        private val userRepository: UserRepository,
+    ) : CoroutineWorker(appContext, params) {
+        private val logger = LoggerFactory.getLogger("worker")
 
-    override suspend fun doWork(): Result {
-        return if (userRepository.loggedIn() && userRepository.accountStatusOkay()) {
-            try {
-                connectionDataRepository.update()
-                logger.debug("Successful updated credentials data.")
-                Result.success()
-            } catch (_: Exception) {
+        override suspend fun doWork(): Result =
+            if (userRepository.loggedIn() && userRepository.accountStatusOkay()) {
+                try {
+                    connectionDataRepository.update()
+                    logger.debug("Successful updated credentials data.")
+                    Result.success()
+                } catch (_: Exception) {
+                    Result.failure()
+                }
+            } else {
                 Result.failure()
             }
-        } else {
-            Result.failure()
-        }
     }
-}

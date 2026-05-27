@@ -19,7 +19,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -42,12 +41,13 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
     val navController = LocalNavController.current
     PreferenceBackground {
         Column(
-            modifier = Modifier
-                .width(400.dp)
-                .padding(horizontal = 32.dp)
-                .align(Alignment.Center),
+            modifier =
+                Modifier
+                    .width(400.dp)
+                    .padding(horizontal = 32.dp)
+                    .align(Alignment.Center),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_garrydecoy),
@@ -57,56 +57,63 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
                 text = stringResource(id = com.windscribe.vpn.R.string.decoy_traffic_mode),
                 style = font24,
                 color = MaterialTheme.colorScheme.primaryTextColor,
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .fillMaxWidth()
+                modifier =
+                    Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth(),
             )
             Text(
                 text = stringResource(id = com.windscribe.vpn.R.string.decoy_traffic_warning),
                 style = font16,
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier =
+                    Modifier
+                        .fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(16.dp))
             Box(modifier = Modifier.fillMaxWidth()) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(16.dp)
-                        .align(Alignment.TopCenter)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                                shape = RoundedCornerShape(12.dp),
+                            ).padding(16.dp)
+                            .align(Alignment.TopCenter),
                 ) {
                     Text(
                         text = stringResource(com.windscribe.vpn.R.string.decoy_caution_description),
                         style = font12,
                         color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
                 Text(
                     text = stringResource(com.windscribe.vpn.R.string.caution),
                     style = font12,
                     color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .background(MaterialTheme.colorScheme.preferencesBackgroundColor) // match parent background to "cut" border
-                        .padding(horizontal = 8.dp)
-                        .offset(y = (-8).dp)
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopCenter)
+                            .background(MaterialTheme.colorScheme.preferencesBackgroundColor) // match parent background to "cut" border
+                            .padding(horizontal = 8.dp)
+                            .offset(y = (-8).dp),
                 )
             }
             NextButton(
-                text = stringResource(com.windscribe.vpn.R.string.i_understand), enabled = true, onClick = {
+                text = stringResource(com.windscribe.vpn.R.string.i_understand),
+                enabled = true,
+                onClick = {
                     viewmodel?.protocolInformation
                     viewmodel?.enableDecoyTraffic()
                     navController.popBackStack()
-                }, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 32.dp)
+                },
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 32.dp),
             )
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(onClick = {
@@ -115,7 +122,7 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
                 Text(
                     stringResource(id = com.windscribe.vpn.R.string.cancel),
                     style = font16,
-                    color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 )
             }
         }

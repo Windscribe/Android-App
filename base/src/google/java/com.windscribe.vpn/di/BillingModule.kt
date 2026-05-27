@@ -14,13 +14,9 @@ import javax.inject.Singleton
 class BillingModule {
     @Provides
     @Singleton
-    fun provideAmazonBillingManager(app: Windscribe): AmazonBillingManager {
-        return AmazonBillingManager(app)
-    }
+    fun provideAmazonBillingManager(app: Windscribe): AmazonBillingManager = AmazonBillingManager(app)
 
     @Provides
     @Singleton
-    fun provideGoogleBillingManager(app: Windscribe): GoogleBillingManager {
-        return GoogleBillingManager(app)
-    }
+    fun provideGoogleBillingManager(app: Windscribe): GoogleBillingManager = GoogleBillingManager(app)
 }

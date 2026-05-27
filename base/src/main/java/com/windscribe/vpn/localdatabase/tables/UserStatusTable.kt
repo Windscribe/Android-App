@@ -16,12 +16,11 @@ class UserStatusTable(
     @ColumnInfo(name = "is_premium")
     val isPremium: Int?,
     @ColumnInfo(name = "account_status")
-    val accountStatus: Int?
+    val accountStatus: Int?,
 ) {
-    override fun toString(): String {
-        return "UserStatusTable{" +
-                ", isPremium=" + isPremium +
-                ", accountStatus=" + accountStatus +
-                '}'
-    }
+    override fun toString(): String =
+        "UserStatusTable{" +
+            ", isPremium=" + isPremium +
+            ", accountStatus=" + accountStatus +
+            '}'
 }

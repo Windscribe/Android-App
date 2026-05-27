@@ -18,9 +18,9 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,72 +62,79 @@ fun StyledTextField(
     placeholder: String = "",
     isError: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
-    imeAction: ImeAction = ImeAction.Done
+    imeAction: ImeAction = ImeAction.Done,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     // Define colors based on state
-    val borderColor = when {
-        isError -> Color(0xFFFF7F7F) // Red border for error state
-        isFocused -> AppColors.white // White border for active/focused state
-        else -> AppColors.white.copy(alpha = 0.1f) // Gray border for default state
-    }
+    val borderColor =
+        when {
+            isError -> Color(0xFFFF7F7F)
+
+            // Red border for error state
+            isFocused -> AppColors.white
+
+            // White border for active/focused state
+            else -> AppColors.white.copy(alpha = 0.1f) // Gray border for default state
+        }
 
     val textColor = if (isError) Color(0xFFFF7F7F) else AppColors.white
     val placeholderColor = if (isError) Color(0xFFFF7F7F) else Color(0xFF898F9D)
 
-    val customTextSelectionColors = TextSelectionColors(
-        handleColor = AppColors.white,
-        backgroundColor = AppColors.white.copy(alpha = 0.3f)
-    )
+    val customTextSelectionColors =
+        TextSelectionColors(
+            handleColor = AppColors.white,
+            backgroundColor = AppColors.white.copy(alpha = 0.3f),
+        )
 
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
-            textStyle = font16.copy(
-                color = textColor,
-                textAlign = TextAlign.Start,
-                lineHeight = 20.sp
-            ),
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.None,
-                autoCorrectEnabled = false,
-                imeAction = imeAction,
-                keyboardType = keyboardType
-            ),
+            textStyle =
+                font16.copy(
+                    color = textColor,
+                    textAlign = TextAlign.Start,
+                    lineHeight = 20.sp,
+                ),
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false,
+                    imeAction = imeAction,
+                    keyboardType = keyboardType,
+                ),
             cursorBrush = SolidColor(AppColors.white),
             interactionSource = interactionSource,
-            modifier = modifier
-                .fillMaxWidth()
-                .background(
-                    color = AppColors.white.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(9.dp)
-                )
-                .border(
-                    width = 1.dp,
-                    color = borderColor,
-                    shape = RoundedCornerShape(9.dp)
-                )
-                .padding(horizontal = 16.dp, vertical = 0.dp)
-                .height(48.dp),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = AppColors.white.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(9.dp),
+                    ).border(
+                        width = 1.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(9.dp),
+                    ).padding(horizontal = 16.dp, vertical = 0.dp)
+                    .height(48.dp),
             decorationBox = { innerTextField ->
                 Box(
-                    contentAlignment = Alignment.CenterStart
+                    contentAlignment = Alignment.CenterStart,
                 ) {
                     if (value.isEmpty()) {
                         Text(
                             text = placeholder,
                             style = font16,
                             color = placeholderColor,
-                            textAlign = TextAlign.Start
+                            textAlign = TextAlign.Start,
                         )
                     }
                     innerTextField()
                 }
-            }
+            },
         )
     }
 }
@@ -140,22 +147,23 @@ fun StyledTextFieldPreview() {
     var errorText by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.deepBlue)
-            .padding(16.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(AppColors.deepBlue)
+                .padding(16.dp),
     ) {
         // Default state
         Text(
             text = "Default State",
             style = font16,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         StyledTextField(
             value = defaultText,
             onValueChange = { defaultText = it },
-            placeholder = "Enter username"
+            placeholder = "Enter username",
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -165,12 +173,12 @@ fun StyledTextFieldPreview() {
             text = "Active State (click to focus)",
             style = font16,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         StyledTextField(
             value = activeText,
             onValueChange = { activeText = it },
-            placeholder = "Enter usernameygggg"
+            placeholder = "Enter usernameygggg",
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -180,13 +188,13 @@ fun StyledTextFieldPreview() {
             text = "Error State",
             style = font16,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         StyledTextField(
             value = errorText,
             onValueChange = { errorText = it },
             placeholder = "Enter 2FA",
-            isError = true
+            isError = true,
         )
     }
 }

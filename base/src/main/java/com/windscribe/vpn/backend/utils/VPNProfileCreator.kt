@@ -8,7 +8,6 @@ import android.content.Context
 import android.net.DhcpInfo
 import android.net.wifi.WifiManager
 import android.util.Base64
-import android.util.Log
 import com.google.gson.Gson
 import com.windscribe.common.DNSDetails
 import com.windscribe.common.DnsType
@@ -16,6 +15,8 @@ import com.windscribe.common.getDNSDetails
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_CUSTOM
 import com.windscribe.vpn.apppreference.isProtocolTweaksEnabled
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ProxyDNSManager
@@ -29,12 +30,8 @@ import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager.Companion.PROXY_TUN
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
-import com.windscribe.vpn.constants.AmneziaPreset
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
-import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOUND
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_CUSTOM
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.model.OpenVPNConnectionInfo
@@ -59,268 +56,321 @@ import java.io.BufferedReader
 import java.io.Reader
 import java.io.StringReader
 import java.math.BigInteger
-import java.net.DatagramSocket
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.nio.ByteOrder
-import java.util.*
+import java.util.SortedSet
+import java.util.TreeSet
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class VPNProfileCreator @Inject constructor(
+class VPNProfileCreator
+    @Inject
+    constructor(
         private val preferencesHelper: PreferencesHelper,
         private val wgConfigRepository: WgConfigRepository,
         private val proxyTunnelManager: ProxyTunnelManager,
         private val proxyDNSManager: ProxyDNSManager,
-        private val unblockWgParamsRepository: UnblockWgParamsRepository
-) {
+        private val unblockWgParamsRepository: UnblockWgParamsRepository,
+    ) {
+        private val logger = LoggerFactory.getLogger("vpn")
+        var wgForceInit = AtomicBoolean(false)
 
-    private val logger = LoggerFactory.getLogger("vpn")
-    var wgForceInit = AtomicBoolean(false)
-
-    /**
-     * Finds an available port starting from minPort (default 1100)
-     * @return Available port number
-     */
-    private fun findAvailablePort(minPort: Int = 1100): Int {
-        var port = minPort
-        while (port < 65535) {
-            try {
-                ServerSocket(port).use { socket ->
-                    socket.reuseAddress = true
-                    logger.debug("Found available port: $port")
-                    return port
+        /**
+         * Finds an available port starting from minPort (default 1100)
+         * @return Available port number
+         */
+        private fun findAvailablePort(minPort: Int = 1100): Int {
+            var port = minPort
+            while (port < 65535) {
+                try {
+                    ServerSocket(port).use { socket ->
+                        socket.reuseAddress = true
+                        logger.debug("Found available port: $port")
+                        return port
+                    }
+                } catch (e: Exception) {
+                    port++
                 }
-            } catch (e: Exception) {
-                port++
             }
+            logger.warn("Could not find available port, using default: $PROXY_TUNNEL_PORT")
+            return PROXY_TUNNEL_PORT
         }
-        logger.warn("Could not find available port, using default: $PROXY_TUNNEL_PORT")
-        return PROXY_TUNNEL_PORT
-    }
 
-    private val publicIpV4Array = arrayOf(
-            "0.0.0.0/5", "8.0.0.0/7", "11.0.0.0/8", "12.0.0.0/6",
-            "16.0.0.0/4", "32.0.0.0/3",
-            "64.0.0.0/2", "128.0.0.0/3", "160.0.0.0/5", "168.0.0.0/6", "172.0.0.0/12",
-            "172.32.0.0/11", "172.64.0.0/10", "172.128.0.0/9", "173.0.0.0/8", "174.0.0.0/7",
-            "176.0.0.0/4", "192.0.0.0/9", "192.128.0.0/11", "192.160.0.0/13", "192.169.0.0/16",
-            "192.170.0.0/15", "192.172.0.0/14", "192.176.0.0/12", "192.192.0.0/10",
-            "193.0.0.0/8", "194.0.0.0/7", "196.0.0.0/6", "200.0.0.0/5", "208.0.0.0/4", "::0/0", "10.255.255.0/24"
-    )
+        private val publicIpV4Array =
+            arrayOf(
+                "0.0.0.0/5",
+                "8.0.0.0/7",
+                "11.0.0.0/8",
+                "12.0.0.0/6",
+                "16.0.0.0/4",
+                "32.0.0.0/3",
+                "64.0.0.0/2",
+                "128.0.0.0/3",
+                "160.0.0.0/5",
+                "168.0.0.0/6",
+                "172.0.0.0/12",
+                "172.32.0.0/11",
+                "172.64.0.0/10",
+                "172.128.0.0/9",
+                "173.0.0.0/8",
+                "174.0.0.0/7",
+                "176.0.0.0/4",
+                "192.0.0.0/9",
+                "192.128.0.0/11",
+                "192.160.0.0/13",
+                "192.169.0.0/16",
+                "192.170.0.0/15",
+                "192.172.0.0/14",
+                "192.176.0.0/12",
+                "192.192.0.0/10",
+                "193.0.0.0/8",
+                "194.0.0.0/7",
+                "196.0.0.0/6",
+                "200.0.0.0/5",
+                "208.0.0.0/4",
+                "::0/0",
+                "10.255.255.0/24",
+            )
 
-    fun createIkEV2Profile(
+        fun createIkEV2Profile(
             location: LastSelectedLocation,
             vpnParameters: VPNParameters,
-            config: ProtocolInformation
-    ): String {
-        logger.info("creating IKEv2 Profile.")
-        // Vpn profile
-        val profile = VpnProfile()
-        profile.id = 1
-        profile.uuid = UUID.randomUUID()
-        profile.name = vpnParameters.hostName
-        //Changing it to use altered ip instead of hostname.
-        //profile.gateway = vpnParameters.hostName
-        profile.gateway = vpnParameters.ikev2Ip
-        profile.espProposal = "aes256gcm16-sha256-ecp384"
-        profile.ikeProposal = "aes256gcm16-sha256-ecp384"
-        profile.remoteId = vpnParameters.hostName
-        profile.vpnType = VpnType.fromIdentifier("ikev2-eap")
-        if (preferencesHelper.isKeepAliveModeAuto) {
-            profile.natKeepAlive = 20
-        } else {
-            profile.natKeepAlive = Integer.valueOf(preferencesHelper.keepAlive)
-        }
-        preferencesHelper.selectedProtocol = config.protocol
-        preferencesHelper.selectedPort = config.port
-        preferencesHelper.selectedIp = vpnParameters.hostName
-
-        // Mtu
-        if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
-            profile.mtu = preferencesHelper.packetSize
-        } else {
-            profile.mtu = 1300
-        }
-        val dnsDetails = setCustomDNS()
-        if (dnsDetails?.type == DnsType.Plain){
-            profile.dnsServers = dnsDetails.ip
-        } else {
-            profile.dnsDetails = dnsDetails
-        }
-        // Split tunnel
-        setSplitMode(profile)
-        // Lan bypass
-        if (preferencesHelper.lanByPass) {
-            val subNetBuilder = StringBuilder()
-            subNetBuilder.append("255.255.255.255/32 ")
-            subNetBuilder.append("224.0.0.0/24 ")
-            val manager = appContext.applicationContext
-                    .getSystemService(Context.WIFI_SERVICE) as WifiManager
-            val wifInfo = manager.dhcpInfo
-            val gatewayAddress = gatewayAddressAsString(wifInfo)
-            val mask = subnetMask
-            if (gatewayAddress != null && mask != null) {
-                logger.info("Mask range:$mask")
-                logger.info("Gateway address:$gatewayAddress")
-                val range = "$gatewayAddress/$mask"
-                subNetBuilder.append(range)
+            config: ProtocolInformation,
+        ): String {
+            logger.info("creating IKEv2 Profile.")
+            // Vpn profile
+            val profile = VpnProfile()
+            profile.id = 1
+            profile.uuid = UUID.randomUUID()
+            profile.name = vpnParameters.hostName
+            // Changing it to use altered ip instead of hostname.
+            // profile.gateway = vpnParameters.hostName
+            profile.gateway = vpnParameters.ikev2Ip
+            profile.espProposal = "aes256gcm16-sha256-ecp384"
+            profile.ikeProposal = "aes256gcm16-sha256-ecp384"
+            profile.remoteId = vpnParameters.hostName
+            profile.vpnType = VpnType.fromIdentifier("ikev2-eap")
+            if (preferencesHelper.isKeepAliveModeAuto) {
+                profile.natKeepAlive = 20
             } else {
-                logger.info("Failed to set lan by pass for gateway ip")
+                profile.natKeepAlive = Integer.valueOf(preferencesHelper.keepAlive)
             }
-            val includedIps = modifyAllowedIps("0.0.0.0/0", "").replace(",", "")
-            logger.info("Included Ip: $includedIps")
-            profile.includedSubnets = includedIps
+            preferencesHelper.selectedProtocol = config.protocol
+            preferencesHelper.selectedPort = config.port
+            preferencesHelper.selectedIp = vpnParameters.hostName
+
+            // Mtu
+            if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
+                profile.mtu = preferencesHelper.packetSize
+            } else {
+                profile.mtu = 1300
+            }
+            val dnsDetails = setCustomDNS()
+            if (dnsDetails?.type == DnsType.Plain) {
+                profile.dnsServers = dnsDetails.ip
+            } else {
+                profile.dnsDetails = dnsDetails
+            }
+            // Split tunnel
+            setSplitMode(profile)
+            // Lan bypass
+            if (preferencesHelper.lanByPass) {
+                val subNetBuilder = StringBuilder()
+                subNetBuilder.append("255.255.255.255/32 ")
+                subNetBuilder.append("224.0.0.0/24 ")
+                val manager =
+                    appContext.applicationContext
+                        .getSystemService(Context.WIFI_SERVICE) as WifiManager
+                val wifInfo = manager.dhcpInfo
+                val gatewayAddress = gatewayAddressAsString(wifInfo)
+                val mask = subnetMask
+                if (gatewayAddress != null && mask != null) {
+                    logger.info("Mask range:$mask")
+                    logger.info("Gateway address:$gatewayAddress")
+                    val range = "$gatewayAddress/$mask"
+                    subNetBuilder.append(range)
+                } else {
+                    logger.info("Failed to set lan by pass for gateway ip")
+                }
+                val includedIps = modifyAllowedIps("0.0.0.0/0", "").replace(",", "")
+                logger.info("Included Ip: $includedIps")
+                profile.includedSubnets = includedIps
+            }
+
+            val apps: SortedSet<String> = TreeSet(preferencesHelper.installedApps)
+            profile.setSelectedApps(apps)
+            val credentials = getIkev2Credentials()
+            profile.username = credentials.first
+            profile.password = credentials.second
+            saveSelectedLocation(location)
+            saveProfile(profile)
+            return "$location"
         }
 
-        val apps: SortedSet<String> = TreeSet(preferencesHelper.installedApps)
-        profile.setSelectedApps(apps)
-        val credentials = getIkev2Credentials()
-        profile.username = credentials.first
-        profile.password = credentials.second
-        saveSelectedLocation(location)
-        saveProfile(profile)
-        return "$location"
-    }
-
-    fun createOpenVpnProfile(
+        fun createOpenVpnProfile(
             lastSelectedLocation: LastSelectedLocation,
             vpnParameters: VPNParameters,
-            protocolInformation: ProtocolInformation
-    ): String {
-        logger.info("Creating open vpn profile.")
-        // Create a new profile
-        val profile = de.blinkt.openvpn.VpnProfile("Windscribe")
-        profile.mUsePull = true
-        profile.mUseTLSAuth = false
-        profile.mCaFilename = "[inline]"
-        profile.mAuthenticationType = de.blinkt.openvpn.VpnProfile.TYPE_USERPASS
-        profile.mUseUdp = false
+            protocolInformation: ProtocolInformation,
+        ): String {
+            logger.info("Creating open vpn profile.")
+            // Create a new profile
+            val profile = de.blinkt.openvpn.VpnProfile("Windscribe")
+            profile.mUsePull = true
+            profile.mUseTLSAuth = false
+            profile.mCaFilename = "[inline]"
+            profile.mAuthenticationType = de.blinkt.openvpn.VpnProfile.TYPE_USERPASS
+            profile.mUseUdp = false
 
-        // Lan by pass
-        profile.mAllowLocalLAN = preferencesHelper.lanByPass
+            // Lan by pass
+            profile.mAllowLocalLAN = preferencesHelper.lanByPass
 
-        // Split Routing
-        if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.EXCLUSIVE_MODE)) {
-            preferencesHelper.lastConnectedUsingSplit = true
-            profile.mAllowedAppsVpnAreDisallowed = true
-        } else if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE)) {
-            preferencesHelper.lastConnectedUsingSplit = true
-            profile.mAllowedAppsVpnAreDisallowed = false
-        } else {
-            preferencesHelper.lastConnectedUsingSplit = false
-            if (profile.mAllowedAppsVpn != null) {
-                profile.mAllowedAppsVpn.clear()
-            }
-            profile.mAllowedAppsVpnAreDisallowed = true
-        }
-        val dnsDetails = setCustomDNS()
-        if (dnsDetails?.type == DnsType.Plain){
-            profile.mOverrideDNS = true
-            profile.mDNS1 = dnsDetails.ip
-        } else {
-            profile.dnsDetails = dnsDetails
-        }
-
-        // MTU
-        if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
-            profile.mTunMtu = preferencesHelper.packetSize
-        }
-
-        var port: String? = null
-        var protocol: String? = null
-        var serverConfig: String? = null
-        var proxyIp: String? = null
-        var ip: String? = null
-        var dynamicPort: Int? = null
-        try {
-            if (PreferencesKeyConstants.PROTO_STEALTH == protocolInformation.protocol) {
-                dynamicPort = findAvailablePort()
-                serverConfig = preferencesHelper.openVpnServerConfig
-                protocol = PROXY_TUNNEL_PROTOCOL
-                ip = PROXY_TUNNEL_ADDRESS
-                proxyIp = vpnParameters.stealthIp
-                port = dynamicPort.toString()
-                //Old stunnel port
-                // port = "1194"
-            }
-            if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolInformation.protocol) {
-                dynamicPort = findAvailablePort()
-                serverConfig = preferencesHelper.openVpnServerConfig
-                port = dynamicPort.toString()
-                protocol = PROXY_TUNNEL_PROTOCOL
-                ip = PROXY_TUNNEL_ADDRESS
-                proxyIp = vpnParameters.ikev2Ip
-            }
-            if (PreferencesKeyConstants.PROTO_TCP == protocolInformation.protocol) {
-                ip = vpnParameters.tcpIp
-                protocol = "tcp"
-                serverConfig = preferencesHelper.openVpnServerConfig
-                // Append additional anti-censorship options
-                if (preferencesHelper.isProtocolTweaksEnabled && serverConfig != null) {
-                    serverConfig = String(org.spongycastle.util.encoders.Base64.decode(serverConfig))
-                    serverConfig += "\nudp-stuffing"
-                    serverConfig += "\ntcp-split-reset"
-                    serverConfig = String(org.spongycastle.util.encoders.Base64.encode(serverConfig.toByteArray()))
+            // Split Routing
+            if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.EXCLUSIVE_MODE)) {
+                preferencesHelper.lastConnectedUsingSplit = true
+                profile.mAllowedAppsVpnAreDisallowed = true
+            } else if (preferencesHelper.splitTunnelToggle &&
+                (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE)
+            ) {
+                preferencesHelper.lastConnectedUsingSplit = true
+                profile.mAllowedAppsVpnAreDisallowed = false
+            } else {
+                preferencesHelper.lastConnectedUsingSplit = false
+                if (profile.mAllowedAppsVpn != null) {
+                    profile.mAllowedAppsVpn.clear()
                 }
-                port = protocolInformation.port
-                proxyIp = null
+                profile.mAllowedAppsVpnAreDisallowed = true
             }
-            if (PreferencesKeyConstants.PROTO_UDP == protocolInformation.protocol) {
-                ip = vpnParameters.udpIp
-                protocol = "udp"
-                serverConfig = preferencesHelper.openVpnServerConfig
-                // Append additional anti-censorship options
-                if (preferencesHelper.isProtocolTweaksEnabled && serverConfig != null) {
-                    serverConfig = String(org.spongycastle.util.encoders.Base64.decode(serverConfig))
-                    serverConfig += "\nudp-stuffing"
-                    serverConfig += "\ntcp-split-reset"
-                    serverConfig = String(org.spongycastle.util.encoders.Base64.encode(serverConfig.toByteArray()))
+            val dnsDetails = setCustomDNS()
+            if (dnsDetails?.type == DnsType.Plain) {
+                profile.mOverrideDNS = true
+                profile.mDNS1 = dnsDetails.ip
+            } else {
+                profile.dnsDetails = dnsDetails
+            }
+
+            // MTU
+            if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
+                profile.mTunMtu = preferencesHelper.packetSize
+            }
+
+            var port: String? = null
+            var protocol: String? = null
+            var serverConfig: String? = null
+            var proxyIp: String? = null
+            var ip: String? = null
+            var dynamicPort: Int? = null
+            try {
+                if (PreferencesKeyConstants.PROTO_STEALTH == protocolInformation.protocol) {
+                    dynamicPort = findAvailablePort()
+                    serverConfig = preferencesHelper.openVpnServerConfig
+                    protocol = PROXY_TUNNEL_PROTOCOL
+                    ip = PROXY_TUNNEL_ADDRESS
+                    proxyIp = vpnParameters.stealthIp
+                    port = dynamicPort.toString()
+                    // Old stunnel port
+                    // port = "1194"
                 }
-                port = protocolInformation.port
-                proxyIp = null
-            }
-            if (serverConfig != null) {
-                profile.writeConfigFile(
+                if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolInformation.protocol) {
+                    dynamicPort = findAvailablePort()
+                    serverConfig = preferencesHelper.openVpnServerConfig
+                    port = dynamicPort.toString()
+                    protocol = PROXY_TUNNEL_PROTOCOL
+                    ip = PROXY_TUNNEL_ADDRESS
+                    proxyIp = vpnParameters.ikev2Ip
+                }
+                if (PreferencesKeyConstants.PROTO_TCP == protocolInformation.protocol) {
+                    ip = vpnParameters.tcpIp
+                    protocol = "tcp"
+                    serverConfig = preferencesHelper.openVpnServerConfig
+                    // Append additional anti-censorship options
+                    if (preferencesHelper.isProtocolTweaksEnabled && serverConfig != null) {
+                        serverConfig =
+                            String(
+                                org.spongycastle.util.encoders.Base64
+                                    .decode(serverConfig),
+                            )
+                        serverConfig += "\nudp-stuffing"
+                        serverConfig += "\ntcp-split-reset"
+                        serverConfig =
+                            String(
+                                org.spongycastle.util.encoders.Base64
+                                    .encode(serverConfig.toByteArray()),
+                            )
+                    }
+                    port = protocolInformation.port
+                    proxyIp = null
+                }
+                if (PreferencesKeyConstants.PROTO_UDP == protocolInformation.protocol) {
+                    ip = vpnParameters.udpIp
+                    protocol = "udp"
+                    serverConfig = preferencesHelper.openVpnServerConfig
+                    // Append additional anti-censorship options
+                    if (preferencesHelper.isProtocolTweaksEnabled && serverConfig != null) {
+                        serverConfig =
+                            String(
+                                org.spongycastle.util.encoders.Base64
+                                    .decode(serverConfig),
+                            )
+                        serverConfig += "\nudp-stuffing"
+                        serverConfig += "\ntcp-split-reset"
+                        serverConfig =
+                            String(
+                                org.spongycastle.util.encoders.Base64
+                                    .encode(serverConfig.toByteArray()),
+                            )
+                    }
+                    port = protocolInformation.port
+                    proxyIp = null
+                }
+                if (serverConfig != null) {
+                    profile.writeConfigFile(
                         appContext,
                         serverConfig,
                         ip,
                         protocol,
                         port,
                         proxyIp,
-                        vpnParameters.ovpnX509
-                )
-            } else {
-                throw InvalidVPNConfigException(CallResult.Error(ERROR_VALID_CONFIG_NOT_FOUND, "OpenVPN Server config not found."))
+                        vpnParameters.ovpnX509,
+                    )
+                } else {
+                    throw InvalidVPNConfigException(
+                        CallResult.Error(
+                            ERROR_VALID_CONFIG_NOT_FOUND,
+                            "OpenVPN Server config not found.",
+                        ),
+                    )
+                }
+            } catch (e: Exception) {
+                logger.debug(e.toString())
             }
-        } catch (e: Exception) {
-            logger.debug(e.toString())
-        }
-        val credentials = addOpenVpnCredentials()
-        profile.mUsername = credentials.first
-        profile.mPassword = credentials.second
+            val credentials = addOpenVpnCredentials()
+            profile.mUsername = credentials.first
+            profile.mPassword = credentials.second
 
-        if (preferencesHelper.splitTunnelToggle) {
-            profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps)
-        }
-        if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_STEALTH) {
-            if (proxyTunnelManager.running) {
-                proxyTunnelManager.stopProxyTunnel()
+            if (preferencesHelper.splitTunnelToggle) {
+                profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps)
             }
-            preferencesHelper.selectedPort = protocolInformation.port
-            if (proxyIp != null && dynamicPort != null) {
-                proxyTunnelManager.startProxyTunnel(
+            if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_STEALTH) {
+                if (proxyTunnelManager.running) {
+                    proxyTunnelManager.stopProxyTunnel()
+                }
+                preferencesHelper.selectedPort = protocolInformation.port
+                if (proxyIp != null && dynamicPort != null) {
+                    proxyTunnelManager.startProxyTunnel(
                         proxyIp,
                         protocolInformation.port,
                         dynamicPort,
-                        false
-                )
-            }
-            // Old stunnel setup
+                        false,
+                    )
+                }
+                // Old stunnel setup
+
             /*if (WindStunnelUtility.isStunnelRunning) {
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
@@ -329,619 +379,686 @@ class VPNProfileCreator @Inject constructor(
                 WindUtilities.writeStunnelConfig(appContext, proxyIp, protocolInformation.port)
                 WindStunnelUtility.startLocalTun()
             }*/
-        } else if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
-            if (proxyTunnelManager.running) {
-                proxyTunnelManager.stopProxyTunnel()
+            } else if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
+                if (proxyTunnelManager.running) {
+                    proxyTunnelManager.stopProxyTunnel()
+                }
+                preferencesHelper.selectedPort = protocolInformation.port
+                if (proxyIp != null && dynamicPort != null) {
+                    proxyTunnelManager.startProxyTunnel(
+                        proxyIp,
+                        protocolInformation.port,
+                        dynamicPort,
+                        true,
+                    )
+                }
             }
-            preferencesHelper.selectedPort = protocolInformation.port
-            if (proxyIp != null && dynamicPort != null) {
-                proxyTunnelManager.startProxyTunnel(proxyIp, protocolInformation.port, dynamicPort, true)
-            }
+            preferencesHelper.selectedIp = vpnParameters.hostName
+            saveSelectedLocation(lastSelectedLocation)
+            saveProfile(profile)
+            return "$lastSelectedLocation"
         }
-        preferencesHelper.selectedIp = vpnParameters.hostName
-        saveSelectedLocation(lastSelectedLocation)
-        saveProfile(profile)
-        return "$lastSelectedLocation"
-    }
 
-    fun createVpnProfileFromConfig(configFile: ConfigFile): Pair<String, ProtocolInformation> {
-        val content = configFile.content ?: ""
-        return if (WindUtilities.getConfigType(content) == WIRE_GUARD) {
-            Pair(
+        fun createVpnProfileFromConfig(configFile: ConfigFile): Pair<String, ProtocolInformation> {
+            val content = configFile.content ?: ""
+            return if (WindUtilities.getConfigType(content) == WIRE_GUARD) {
+                Pair(
                     createVpnProfileFromWireGuardConfig(configFile),
-                    Util.getProtocolInformationFromWireguardConfig(content)
-            )
-        } else {
-            Pair(
+                    Util.getProtocolInformationFromWireguardConfig(content),
+                )
+            } else {
+                Pair(
                     createVpnProfileFromOpenVpnConfig(configFile),
-                    Util.getProtocolInformationFromOpenVPNConfig(content)
+                    Util.getProtocolInformationFromOpenVPNConfig(content),
+                )
+            }
+        }
+
+        private fun createVpnProfileFromOpenVpnConfig(configFile: ConfigFile): String {
+            val configParser = ConfigParser()
+            val reader = StringReader(configFile.content)
+            try {
+                configParser.parseConfig(reader)
+            } catch (e: Exception) {
+                throw e
+            }
+            logger.info("Writing config file options to profile.")
+            val profile = configParser.convertProfile()
+            profile.mUsername = configFile.username
+            profile.mPassword = configFile.password
+            logger.info("Adding application settings to profile.")
+            // Lan by pass
+            profile.mAllowLocalLAN = preferencesHelper.lanByPass
+
+            // Split Routing
+            if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.EXCLUSIVE_MODE)) {
+                preferencesHelper.lastConnectedUsingSplit = true
+                profile.mAllowedAppsVpnAreDisallowed = true
+            } else if (preferencesHelper.splitTunnelToggle &&
+                (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE)
+            ) {
+                preferencesHelper.lastConnectedUsingSplit = true
+                profile.mAllowedAppsVpnAreDisallowed = false
+            } else {
+                preferencesHelper.lastConnectedUsingSplit = false
+                if (profile.mAllowedAppsVpn != null) {
+                    profile.mAllowedAppsVpn.clear()
+                }
+                profile.mAllowedAppsVpnAreDisallowed = true
+            }
+
+            val dnsDetails = setCustomDNS()
+            if (dnsDetails?.type == DnsType.Plain) {
+                profile.mOverrideDNS = true
+                profile.mDNS1 = dnsDetails.ip
+            } else {
+                profile.dnsDetails = dnsDetails
+            }
+
+            // MTU
+            if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
+                profile.mTunMtu = preferencesHelper.packetSize
+            }
+            logger.info("Adding location meta data to profile.")
+            val lastSelectedLocation =
+                LastSelectedLocation(configFile.primaryKey, nickName = configFile.name ?: "")
+            saveSelectedLocation(lastSelectedLocation)
+            profile.writeConfigFile(appContext)
+            if (preferencesHelper.splitTunnelToggle) {
+                profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps)
+            }
+            saveProfile(profile)
+            return "Custom Config: ${profile.mServerName} ${profile.mServerPort}"
+        }
+
+        private fun setCustomDNS(): DNSDetails? {
+            val dnsDetails =
+                getDNSDetails(
+                    appContext,
+                    preferencesHelper.dnsMode == DNS_MODE_CUSTOM,
+                    preferencesHelper.dnsAddress,
+                )
+            dnsDetails.exceptionOrNull()?.let { throwable ->
+                throw InvalidVPNConfigException(
+                    CallResult.Error(
+                        ERROR_INVALID_DNS_ADDRESS,
+                        throwable.message.toString(),
+                    ),
+                )
+            }
+            return dnsDetails.getOrNull()?.let { details ->
+                val detailsWithPort =
+                    if (details.type == DnsType.Proxy) {
+                        details.copy(controlDPort = proxyDNSManager.getListenPort())
+                    } else {
+                        details
+                    }
+                proxyDNSManager.dnsDetails = detailsWithPort
+                return detailsWithPort
+            }
+        }
+
+        private fun createVpnProfileFromWireGuardConfig(configFile: ConfigFile): String {
+            val mPreferencesHelper = appContext.preference
+            val interFaceBuilder = Builder()
+            if (preferencesHelper.splitTunnelToggle) {
+                preferencesHelper.lastConnectedUsingSplit = true
+                if (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE) {
+                    interFaceBuilder.includeApplications(preferencesHelper.installedApps)
+                } else {
+                    interFaceBuilder.excludeApplications(preferencesHelper.installedApps)
+                }
+            } else {
+                preferencesHelper.lastConnectedUsingSplit = false
+            }
+
+            val reader: Reader = StringReader(configFile.content)
+            val bufferedReader = BufferedReader(reader)
+            val config: Config =
+                try {
+                    bufferedReader.use {
+                        Config.parse(bufferedReader)
+                    }
+                } catch (e: Exception) {
+                    logger.error("Full WireGuard config parse exception: ${e.javaClass.simpleName}: ${e.message}")
+                    logger.error("Stack trace: ${e.stackTrace.joinToString("\n")}")
+                    logger.error("Config content: ${configFile.content}")
+                    throw e
+                }
+            interFaceBuilder.parsePrivateKey(
+                config
+                    .getInterface()
+                    .keyPair.privateKey
+                    .toBase64(),
             )
-        }
-    }
-
-    private fun createVpnProfileFromOpenVpnConfig(configFile: ConfigFile): String {
-        val configParser = ConfigParser()
-        val reader = StringReader(configFile.content)
-        try {
-            configParser.parseConfig(reader)
-        } catch (e: Exception) {
-            throw e
-        }
-        logger.info("Writing config file options to profile.")
-        val profile = configParser.convertProfile()
-        profile.mUsername = configFile.username
-        profile.mPassword = configFile.password
-        logger.info("Adding application settings to profile.")
-        // Lan by pass
-        profile.mAllowLocalLAN = preferencesHelper.lanByPass
-
-        // Split Routing
-        if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.EXCLUSIVE_MODE)) {
-            preferencesHelper.lastConnectedUsingSplit = true
-            profile.mAllowedAppsVpnAreDisallowed = true
-        } else if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE)) {
-            preferencesHelper.lastConnectedUsingSplit = true
-            profile.mAllowedAppsVpnAreDisallowed = false
-        } else {
-            preferencesHelper.lastConnectedUsingSplit = false
-            if (profile.mAllowedAppsVpn != null) {
-                profile.mAllowedAppsVpn.clear()
+            interFaceBuilder.addAddresses(config.getInterface().addresses)
+            if (!mPreferencesHelper.isPackageSizeModeAuto) {
+                interFaceBuilder.setMtu(mPreferencesHelper.packetSize)
             }
-            profile.mAllowedAppsVpnAreDisallowed = true
-        }
-
-        val dnsDetails = setCustomDNS()
-        if (dnsDetails?.type == DnsType.Plain){
-            profile.mOverrideDNS = true
-            profile.mDNS1 = dnsDetails.ip
-        } else {
-            profile.dnsDetails = dnsDetails
-        }
-
-        // MTU
-        if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
-            profile.mTunMtu = preferencesHelper.packetSize
-        }
-        logger.info("Adding location meta data to profile.")
-        val lastSelectedLocation =
-                LastSelectedLocation(configFile.primaryKey, nickName = configFile.name ?: "")
-        saveSelectedLocation(lastSelectedLocation)
-        profile.writeConfigFile(appContext)
-        if (preferencesHelper.splitTunnelToggle){
-            profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps)
-        }
-        saveProfile(profile)
-        return "Custom Config: ${profile.mServerName} ${profile.mServerPort}"
-    }
-
-    private fun setCustomDNS(): DNSDetails? {
-        val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
-        dnsDetails.exceptionOrNull()?.let { throwable ->
-            throw InvalidVPNConfigException(CallResult.Error(ERROR_INVALID_DNS_ADDRESS,
-                throwable.message.toString()
-            ))
-        }
-        return dnsDetails.getOrNull()?.let { details ->
-            val detailsWithPort = if (details.type == DnsType.Proxy) {
-                details.copy(controlDPort = proxyDNSManager.getListenPort())
+            val dnsDetails = setCustomDNS()
+            if (dnsDetails?.type == DnsType.Plain) {
+                interFaceBuilder.parseDnsServers(dnsDetails.ip)
             } else {
-                details
+                interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
             }
-            proxyDNSManager.dnsDetails = detailsWithPort
-            return detailsWithPort
-        }
-    }
-
-    private fun createVpnProfileFromWireGuardConfig(configFile: ConfigFile): String {
-        val mPreferencesHelper = appContext.preference
-        val interFaceBuilder = Builder()
-        if (preferencesHelper.splitTunnelToggle) {
-            preferencesHelper.lastConnectedUsingSplit = true
-            if (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE) {
-                interFaceBuilder.includeApplications(preferencesHelper.installedApps)
-            } else {
-                interFaceBuilder.excludeApplications(preferencesHelper.installedApps)
-            }
-        } else {
-            preferencesHelper.lastConnectedUsingSplit = false
-        }
-
-        val reader: Reader = StringReader(configFile.content)
-        val bufferedReader = BufferedReader(reader)
-        val config: Config = try {
-            bufferedReader.use {
-                Config.parse(bufferedReader)
-            }
-        } catch (e: Exception) {
-            logger.error("Full WireGuard config parse exception: ${e.javaClass.simpleName}: ${e.message}")
-            logger.error("Stack trace: ${e.stackTrace.joinToString("\n")}")
-            logger.error("Config content: ${configFile.content}")
-            throw e
-        }
-        interFaceBuilder.parsePrivateKey(config.getInterface().keyPair.privateKey.toBase64())
-        interFaceBuilder.addAddresses(config.getInterface().addresses)
-        if (!mPreferencesHelper.isPackageSizeModeAuto) {
-            interFaceBuilder.setMtu(mPreferencesHelper.packetSize)
-        }
-        val dnsDetails = setCustomDNS()
-        if (dnsDetails?.type == DnsType.Plain) {
-            interFaceBuilder.parseDnsServers(dnsDetails.ip)
-        } else {
-            interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
-        }
-        val configWithSettings = try {
-            val modifiedPeers = createModifiedPeersForLanBypass(config.peers)
-            Config.Builder()
-                .addPeers(modifiedPeers)
-                .setInterface(interFaceBuilder.build())
-                .build()
-        } catch (e: Exception) {
-            logger.error("Exception creating config with LAN bypass: ${e.javaClass.simpleName}: ${e.message}")
-            throw e
-        }
-        val lastSelectedLocation =
+            val configWithSettings =
+                try {
+                    val modifiedPeers = createModifiedPeersForLanBypass(config.peers)
+                    Config
+                        .Builder()
+                        .addPeers(modifiedPeers)
+                        .setInterface(interFaceBuilder.build())
+                        .build()
+                } catch (e: Exception) {
+                    logger.error("Exception creating config with LAN bypass: ${e.javaClass.simpleName}: ${e.message}")
+                    throw e
+                }
+            val lastSelectedLocation =
                 LastSelectedLocation(configFile.primaryKey, nickName = configFile.name ?: "")
-        saveSelectedLocation(lastSelectedLocation)
-        if (preferencesHelper.isProtocolTweaksEnabled) {
-            saveProfile(WireGuardVpnProfile(config.toWgQuickString()))
-            return "Custom Config: ${config.toWgQuickString()}"
-        } else {
-            saveProfile(WireGuardVpnProfile(configWithSettings.toWgQuickString()))
-            return "Custom Config: ${configWithSettings.toWgQuickString()}"
+            saveSelectedLocation(lastSelectedLocation)
+            if (preferencesHelper.isProtocolTweaksEnabled) {
+                saveProfile(WireGuardVpnProfile(config.toWgQuickString()))
+                return "Custom Config: ${config.toWgQuickString()}"
+            } else {
+                saveProfile(WireGuardVpnProfile(configWithSettings.toWgQuickString()))
+                return "Custom Config: ${configWithSettings.toWgQuickString()}"
+            }
         }
-    }
 
-    suspend fun createVpnProfileFromWireGuardProfile(
+        suspend fun createVpnProfileFromWireGuardProfile(
             lastSelectedLocation: LastSelectedLocation,
             vpnParameters: VPNParameters,
-            config: ProtocolInformation
-    ): String {
-        val builder = Config.Builder()
-        when (val remoteParamsResponse = wgConfigRepository.getWgParams(vpnParameters.hostName, vpnParameters.publicKey, wgForceInit.getAndSet(false), supportsV6 = vpnParameters.supportsV6)) {
-            is CallResult.Success<WgRemoteParams> -> {
-                val anInterface = createWireGuardInterface(remoteParamsResponse.data)
-                builder.setInterface(anInterface)
-                val peer = createWireGuardPeer(remoteParamsResponse.data, vpnParameters.stealthIp, config.port)
-                builder.addPeer(peer)
+            config: ProtocolInformation,
+        ): String {
+            val builder = Config.Builder()
+            when (
+                val remoteParamsResponse =
+                    wgConfigRepository.getWgParams(
+                        vpnParameters.hostName,
+                        vpnParameters.publicKey,
+                        wgForceInit.getAndSet(false),
+                        supportsV6 = vpnParameters.supportsV6,
+                    )
+            ) {
+                is CallResult.Success<WgRemoteParams> -> {
+                    val anInterface = createWireGuardInterface(remoteParamsResponse.data)
+                    builder.setInterface(anInterface)
+                    val peer =
+                        createWireGuardPeer(
+                            remoteParamsResponse.data,
+                            vpnParameters.stealthIp,
+                            config.port,
+                        )
+                    builder.addPeer(peer)
 
-                val content = builder.build().toWgQuickString()
-                val profileLines = content.split(System.lineSeparator().toRegex()).toTypedArray()
-                val stringBuilder = StringBuilder()
-                for (logLine in profileLines) {
-                    if (!logLine.startsWith("PrivateKey") && !logLine.startsWith("PreSharedKey") && !logLine.startsWith(
-                                    "PublicKey"
+                    val content = builder.build().toWgQuickString()
+                    val profileLines = content.split(System.lineSeparator().toRegex()).toTypedArray()
+                    val stringBuilder = StringBuilder()
+                    for (logLine in profileLines) {
+                        if (!logLine.startsWith("PrivateKey") &&
+                            !logLine.startsWith("PreSharedKey") &&
+                            !logLine.startsWith(
+                                "PublicKey",
                             )
-                    ) {
-                        stringBuilder.append(logLine).append(" ")
+                        ) {
+                            stringBuilder.append(logLine).append(" ")
+                        }
                     }
+                    preferencesHelper.selectedIp = vpnParameters.hostName
+                    logger.debug(stringBuilder.toString())
+                    saveSelectedLocation(lastSelectedLocation)
+                    saveProfile(WireGuardVpnProfile(content))
+                    return "$lastSelectedLocation"
                 }
-                preferencesHelper.selectedIp = vpnParameters.hostName
-                logger.debug(stringBuilder.toString())
-                saveSelectedLocation(lastSelectedLocation)
-                saveProfile(WireGuardVpnProfile(content))
-                return "$lastSelectedLocation"
-            }
 
-            is CallResult.Error -> {
-                throw InvalidVPNConfigException(remoteParamsResponse)
-            }
+                is CallResult.Error -> {
+                    throw InvalidVPNConfigException(remoteParamsResponse)
+                }
 
-            else -> {
-                throw WindScribeException("Unexpected Error creating Wg profile")
+                else -> {
+                    throw WindScribeException("Unexpected Error creating Wg profile")
+                }
             }
         }
-    }
 
-    private fun createWireGuardInterface(wgRemoteParams: WgRemoteParams): Interface {
-        val mPreferencesHelper = appContext.preference
-        val builder = Builder()
-        builder.parsePrivateKey(wgRemoteParams.privateKey)
-        builder.parseAddresses(wgRemoteParams.address)
-        val dnsDetails = setCustomDNS()
-        if (dnsDetails?.type == DnsType.Plain) {
-            builder.parseDnsServers(dnsDetails.ip)
-        } else {
-            builder.parseDnsServers(wgRemoteParams.dns)
-        }
-        if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
-            builder.setMtu(preferencesHelper.packetSize)
-        }
-        if (preferencesHelper.isDecoyTrafficOn) {
-            builder.setMtu(100)
-        }
-        if (preferencesHelper.splitTunnelToggle) {
-            preferencesHelper.lastConnectedUsingSplit = true
-            if (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE) {
-                builder.includeApplications(preferencesHelper.installedApps)
+        private fun createWireGuardInterface(wgRemoteParams: WgRemoteParams): Interface {
+            val mPreferencesHelper = appContext.preference
+            val builder = Builder()
+            builder.parsePrivateKey(wgRemoteParams.privateKey)
+            builder.parseAddresses(wgRemoteParams.address)
+            val dnsDetails = setCustomDNS()
+            if (dnsDetails?.type == DnsType.Plain) {
+                builder.parseDnsServers(dnsDetails.ip)
             } else {
-                builder.excludeApplications(preferencesHelper.installedApps)
+                builder.parseDnsServers(wgRemoteParams.dns)
             }
-        } else {
-            preferencesHelper.lastConnectedUsingSplit = false
-        }
-        return if (mPreferencesHelper.isProtocolTweaksEnabled) {
-            applyUnblockWgParams(builder).build()
-        } else {
-            builder.build()
-        }
-    }
-
-    private fun applyUnblockWgParams(builder: Builder): Builder {
-        val preset = unblockWgParamsRepository.getSelectedUnblockWgParam()
-        if (preset != null) {
-            logger.info("Applying WG unblock preset: ${preset.title}")
-            if (preset.jc != 0) {
-                builder.setJunkPacketCount(preset.jc)
+            if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
+                builder.setMtu(preferencesHelper.packetSize)
             }
-            if (preset.jMin != 0) {
-                builder.setJunkPacketMinSize(preset.jMin)
+            if (preferencesHelper.isDecoyTrafficOn) {
+                builder.setMtu(100)
             }
-            if (preset.jMax != 0) {
-                builder.setJunkPacketMaxSize(preset.jMax)
+            if (preferencesHelper.splitTunnelToggle) {
+                preferencesHelper.lastConnectedUsingSplit = true
+                if (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE) {
+                    builder.includeApplications(preferencesHelper.installedApps)
+                } else {
+                    builder.excludeApplications(preferencesHelper.installedApps)
+                }
+            } else {
+                preferencesHelper.lastConnectedUsingSplit = false
             }
-            if (preset.s1 != 0) {
-                builder.setInitPacketJunkSize(preset.s1)
-            }
-            if (preset.s2 != 0) {
-                builder.setResponsePacketJunkSize(preset.s2)
-            }
-            if (preset.s3 != 0) {
-                builder.setCookieReplyPacketJunkSize(preset.s3)
-            }
-            if (preset.s4 != 0) {
-                builder.setTransportPacketJunkSize(preset.s4)
-            }
-            if (preset.h1.isNotEmpty()) {
-                builder.setInitPacketMagicHeader(preset.h1)
-            }
-            if (preset.h2.isNotEmpty()) {
-                builder.setResponsePacketMagicHeader(preset.h2)
-            }
-            if (preset.h3.isNotEmpty()) {
-                builder.setUnderloadPacketMagicHeader(preset.h3)
-            }
-            if (preset.h4.isNotEmpty()) {
-                builder.setTransportPacketMagicHeader(preset.h4)
-            }
-            if (preset.i1.isNotEmpty()) {
-                builder.setSpecialJunkI1(preset.i1)
-            }
-            if (preset.i2.isNotEmpty()) {
-                builder.setSpecialJunkI2(preset.i2)
-            }
-            if (preset.i3.isNotEmpty()) {
-                builder.setSpecialJunkI3(preset.i3)
-            }
-            if (preset.i4.isNotEmpty()) {
-                builder.setSpecialJunkI4(preset.i4)
-            }
-            if (preset.i5.isNotEmpty()) {
-                builder.setSpecialJunkI5(preset.i5)
+            return if (mPreferencesHelper.isProtocolTweaksEnabled) {
+                applyUnblockWgParams(builder).build()
+            } else {
+                builder.build()
             }
         }
-        return builder
-    }
 
-    private fun createWireGuardPeer(wgRemoteParams: WgRemoteParams, endpoint: String, port: String): Peer {
-        val builder = Peer.Builder()
-        builder.parsePublicKey(wgRemoteParams.serverPublicKey)
-        val lanByPass = preferencesHelper.lanByPass
-        val modifiedAllowedIps = modifyAllowedIps(
-                wgRemoteParams.allowedIPs,
-                wgRemoteParams.dns
-        )
-        builder.parseAllowedIPs(
-                if (lanByPass) modifiedAllowedIps else wgRemoteParams.allowedIPs
-        )
-        val sb = endpoint +
-                ":" +
-                port
-        builder.parseEndpoint(sb)
-        builder.setPersistentKeepalive(25)
-        builder.parsePreSharedKey(wgRemoteParams.preSharedKey)
-        return builder.build()
-    }
+        private fun applyUnblockWgParams(builder: Builder): Builder {
+            val preset = unblockWgParamsRepository.getSelectedUnblockWgParam()
+            if (preset != null) {
+                logger.info("Applying WG unblock preset: ${preset.title}")
+                if (preset.jc != 0) {
+                    builder.setJunkPacketCount(preset.jc)
+                }
+                if (preset.jMin != 0) {
+                    builder.setJunkPacketMinSize(preset.jMin)
+                }
+                if (preset.jMax != 0) {
+                    builder.setJunkPacketMaxSize(preset.jMax)
+                }
+                if (preset.s1 != 0) {
+                    builder.setInitPacketJunkSize(preset.s1)
+                }
+                if (preset.s2 != 0) {
+                    builder.setResponsePacketJunkSize(preset.s2)
+                }
+                if (preset.s3 != 0) {
+                    builder.setCookieReplyPacketJunkSize(preset.s3)
+                }
+                if (preset.s4 != 0) {
+                    builder.setTransportPacketJunkSize(preset.s4)
+                }
+                if (preset.h1.isNotEmpty()) {
+                    builder.setInitPacketMagicHeader(preset.h1)
+                }
+                if (preset.h2.isNotEmpty()) {
+                    builder.setResponsePacketMagicHeader(preset.h2)
+                }
+                if (preset.h3.isNotEmpty()) {
+                    builder.setUnderloadPacketMagicHeader(preset.h3)
+                }
+                if (preset.h4.isNotEmpty()) {
+                    builder.setTransportPacketMagicHeader(preset.h4)
+                }
+                if (preset.i1.isNotEmpty()) {
+                    builder.setSpecialJunkI1(preset.i1)
+                }
+                if (preset.i2.isNotEmpty()) {
+                    builder.setSpecialJunkI2(preset.i2)
+                }
+                if (preset.i3.isNotEmpty()) {
+                    builder.setSpecialJunkI3(preset.i3)
+                }
+                if (preset.i4.isNotEmpty()) {
+                    builder.setSpecialJunkI4(preset.i4)
+                }
+                if (preset.i5.isNotEmpty()) {
+                    builder.setSpecialJunkI5(preset.i5)
+                }
+            }
+            return builder
+        }
 
-    private fun createModifiedPeersForLanBypass(originalPeers: List<Peer>): List<Peer> {
-        return if (preferencesHelper.lanByPass) {
-            originalPeers.mapIndexed { index, peer ->
-                try {
-                    val builder = Peer.Builder()
-                    builder.parsePublicKey(peer.publicKey.toBase64())
-                    
-                    // Handle endpoint safely - extract value from Optional
-                    val endpointStr = try {
-                        if (peer.endpoint != null && peer.endpoint.isPresent) {
-                            val endpoint = peer.endpoint.orElse(null)
-                            if (endpoint != null) {
-                                "${endpoint.host}:${endpoint.port}"
+        private fun createWireGuardPeer(
+            wgRemoteParams: WgRemoteParams,
+            endpoint: String,
+            port: String,
+        ): Peer {
+            val builder = Peer.Builder()
+            builder.parsePublicKey(wgRemoteParams.serverPublicKey)
+            val lanByPass = preferencesHelper.lanByPass
+            val modifiedAllowedIps =
+                modifyAllowedIps(
+                    wgRemoteParams.allowedIPs,
+                    wgRemoteParams.dns,
+                )
+            builder.parseAllowedIPs(
+                if (lanByPass) modifiedAllowedIps else wgRemoteParams.allowedIPs,
+            )
+            val sb =
+                endpoint +
+                    ":" +
+                    port
+            builder.parseEndpoint(sb)
+            builder.setPersistentKeepalive(25)
+            builder.parsePreSharedKey(wgRemoteParams.preSharedKey)
+            return builder.build()
+        }
+
+        private fun createModifiedPeersForLanBypass(originalPeers: List<Peer>): List<Peer> =
+            if (preferencesHelper.lanByPass) {
+                originalPeers.mapIndexed { index, peer ->
+                    try {
+                        val builder = Peer.Builder()
+                        builder.parsePublicKey(peer.publicKey.toBase64())
+
+                        // Handle endpoint safely - extract value from Optional
+                        val endpointStr =
+                            try {
+                                if (peer.endpoint != null && peer.endpoint.isPresent) {
+                                    val endpoint = peer.endpoint.orElse(null)
+                                    if (endpoint != null) {
+                                        "${endpoint.host}:${endpoint.port}"
+                                    } else {
+                                        ""
+                                    }
+                                } else {
+                                    ""
+                                }
+                            } catch (e: Exception) {
+                                ""
+                            }
+                        if (endpointStr.isNotEmpty()) {
+                            builder.parseEndpoint(endpointStr)
+                        }
+
+                        // Handle persistent keepalive - check if present first
+                        val keepalive =
+                            try {
+                                if (peer.persistentKeepalive != null && peer.persistentKeepalive.isPresent) {
+                                    peer.persistentKeepalive.orElse(0)
+                                } else {
+                                    0
+                                }
+                            } catch (e: Exception) {
+                                0
+                            }
+                        builder.setPersistentKeepalive(keepalive)
+
+                        // Format allowedIPs properly - separate IPv4 and IPv6
+                        val allowedIpsString = peer.allowedIps.joinToString(", ")
+                        val dnsRoutes = ""
+
+                        // Split IPv4 and IPv6, only modify IPv4 part
+                        val ipParts = allowedIpsString.split(",").map { it.trim() }
+                        val ipv4Parts = ipParts.filter { !it.contains(":") }
+                        val ipv6Parts = ipParts.filter { it.contains(":") }
+
+                        // Only modify IPv4 part for LAN bypass - use IPv4-only function
+                        val modifiedIpv4 =
+                            if (ipv4Parts.isNotEmpty()) {
+                                modifyAllowedIpsIPv4Only(ipv4Parts.joinToString(", "), dnsRoutes)
                             } else {
                                 ""
                             }
-                        } else {
-                            ""
+
+                        // Combine modified IPv4 with original IPv6 - clean up trailing commas
+                        val finalAllowedIps =
+                            if (modifiedIpv4.isNotEmpty() && ipv6Parts.isNotEmpty()) {
+                                "${modifiedIpv4.trim(' ', ',')}, ${ipv6Parts.joinToString(", ")}"
+                            } else if (modifiedIpv4.isNotEmpty()) {
+                                modifiedIpv4.trim(' ', ',')
+                            } else if (ipv6Parts.isNotEmpty()) {
+                                ipv6Parts.joinToString(", ")
+                            } else {
+                                allowedIpsString
+                            }
+
+                        builder.parseAllowedIPs(finalAllowedIps)
+
+                        // Handle pre-shared key if present - safely check Optional
+                        try {
+                            if (peer.preSharedKey != null && peer.preSharedKey.isPresent) {
+                                val key = peer.preSharedKey.orElse(null)
+                                if (key != null) {
+                                    builder.parsePreSharedKey(key.toBase64())
+                                }
+                            }
+                        } catch (e: Exception) {
+                            // No pre-shared key present, which is valid
                         }
+
+                        builder.build()
                     } catch (e: Exception) {
-                        ""
+                        logger.error("Exception building peer $index: ${e.javaClass.simpleName}: ${e.message}")
+                        throw e
                     }
-                    if (endpointStr.isNotEmpty()) {
-                        builder.parseEndpoint(endpointStr)
+                }
+            } else {
+                originalPeers
+            }
+
+        private fun getIkev2Credentials(): Pair<String, String> {
+            val serverCredentials = getServerCredentials(true)
+            val mUsername: String
+            val mPassword: String
+            if (preferencesHelper.isConnectingToStaticIp) {
+                mUsername = serverCredentials.userNameEncoded ?: ""
+                mPassword = serverCredentials.passwordEncoded ?: ""
+            } else {
+                mUsername =
+                    String(
+                        Base64
+                            .decode(serverCredentials.userNameEncoded, Base64.DEFAULT),
+                    )
+                mPassword =
+                    String(
+                        Base64
+                            .decode(serverCredentials.passwordEncoded, Base64.DEFAULT),
+                    )
+            }
+            return Pair(mUsername, mPassword)
+        }
+
+        private fun addOpenVpnCredentials(): Pair<String, String> {
+            val credentials = getServerCredentials(false)
+            val username: String
+            val password: String
+            if (preferencesHelper.isConnectingToStaticIp) {
+                username = credentials.userNameEncoded ?: ""
+                password = credentials.passwordEncoded ?: ""
+            } else {
+                username = String(Base64.decode(credentials.userNameEncoded, Base64.DEFAULT))
+                password = String(Base64.decode(credentials.passwordEncoded, Base64.DEFAULT))
+            }
+            return Pair(username, password)
+        }
+
+        private fun gatewayAddressAsString(wifiInfo: DhcpInfo): String? {
+            return try {
+                val ipAddress: Int =
+                    if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+                        Integer.reverseBytes(wifiInfo.gateway)
+                    } else {
+                        wifiInfo.gateway
                     }
-                    
-                    // Handle persistent keepalive - check if present first
-                    val keepalive = try {
-                        if (peer.persistentKeepalive != null && peer.persistentKeepalive.isPresent) {
-                            peer.persistentKeepalive.orElse(0)
-                        } else {
-                            0
+                var ipByteArray = BigInteger.valueOf(ipAddress.toLong()).toByteArray()
+                logger.info("Gateway address :$ipAddress")
+                if (ipByteArray.size > 16) {
+                    logger.info("Fixing illegal length")
+                    val bytes2 = ByteArray(16)
+                    System.arraycopy(ipByteArray, 1, bytes2, 0, bytes2.size)
+                    ipByteArray = bytes2
+                }
+                if (isPrivateIPAddress(ipByteArray)) {
+                    return InetAddress.getByAddress(ipByteArray).hostAddress
+                } else {
+                    logger.info(
+                        "Non Rfc-1918 local address found: ${
+                            InetAddress.getByAddress(
+                                ipByteArray,
+                            ).hostAddress
+                        }",
+                    )
+                    return null
+                }
+            } catch (e: Exception) {
+                logger.info("Failed to get Gateway address: $e")
+                null
+            }
+        }
+
+        private fun isPrivateIPAddress(ipBytes: ByteArray): Boolean =
+            when {
+                ipBytes[0] == 10.toByte() -> true
+                ipBytes[0] == 172.toByte() && ipBytes[1] in 16..31 -> true
+                ipBytes[0] == 192.toByte() && ipBytes[1] == 168.toByte() -> true
+                ipBytes[0] == 169.toByte() && ipBytes[1] == 254.toByte() -> true
+                else -> false
+            }
+
+        private fun getServerCredentials(ikEV2: Boolean): ServerCredentialsResponse =
+            when {
+                preferencesHelper.isConnectingToStaticIp -> {
+                    preferencesHelper.staticIpCredentials
+                }
+
+                ikEV2 -> {
+                    preferencesHelper.ikev2Credentials
+                }
+
+                else -> {
+                    preferencesHelper.openVpnCredentials
+                }
+            }
+                ?: throw InvalidVPNConfigException(
+                    CallResult.Error(
+                        ERROR_VALID_CONFIG_NOT_FOUND,
+                        "valid server credential not found.",
+                    ),
+                )
+
+        private val subnetMask: String?
+            get() {
+                try {
+                    val interfaces = NetworkInterface.getNetworkInterfaces()
+                    while (interfaces.hasMoreElements()) {
+                        val networkInterface = interfaces.nextElement()
+                        if (networkInterface.isLoopback) {
+                            continue
                         }
-                    } catch (e: Exception) {
-                        0
-                    }
-                    builder.setPersistentKeepalive(keepalive)
-                    
-                    // Format allowedIPs properly - separate IPv4 and IPv6
-                    val allowedIpsString = peer.allowedIps.joinToString(", ")
-                    val dnsRoutes = ""
-                    
-                    // Split IPv4 and IPv6, only modify IPv4 part
-                    val ipParts = allowedIpsString.split(",").map { it.trim() }
-                    val ipv4Parts = ipParts.filter { !it.contains(":") }
-                    val ipv6Parts = ipParts.filter { it.contains(":") }
-                    
-                    // Only modify IPv4 part for LAN bypass - use IPv4-only function
-                    val modifiedIpv4 = if (ipv4Parts.isNotEmpty()) {
-                        modifyAllowedIpsIPv4Only(ipv4Parts.joinToString(", "), dnsRoutes)
-                    } else {
-                        ""
-                    }
-                    
-                    // Combine modified IPv4 with original IPv6 - clean up trailing commas
-                    val finalAllowedIps = if (modifiedIpv4.isNotEmpty() && ipv6Parts.isNotEmpty()) {
-                        "${modifiedIpv4.trim(' ', ',')}, ${ipv6Parts.joinToString(", ")}"
-                    } else if (modifiedIpv4.isNotEmpty()) {
-                        modifiedIpv4.trim(' ', ',')
-                    } else if (ipv6Parts.isNotEmpty()) {
-                        ipv6Parts.joinToString(", ")
-                    } else {
-                        allowedIpsString
-                    }
-                    
-                    builder.parseAllowedIPs(finalAllowedIps)
-                    
-                    // Handle pre-shared key if present - safely check Optional
-                    try {
-                        if (peer.preSharedKey != null && peer.preSharedKey.isPresent) {
-                            val key = peer.preSharedKey.orElse(null)
-                            if (key != null) {
-                                builder.parsePreSharedKey(key.toBase64())
+                        logger.info(
+                            "Interface Name:" + networkInterface.displayName + "  Addresses: " +
+                                networkInterface
+                                    .interfaceAddresses
+                                    .toString(),
+                        )
+                        for (interfaceAddress in networkInterface.interfaceAddresses) {
+                            val broadcast = interfaceAddress.broadcast
+                            if (broadcast is Inet4Address) {
+                                logger.info("chosen address: $interfaceAddress")
+                                return interfaceAddress.networkPrefixLength.toString()
                             }
                         }
-                    } catch (e: Exception) {
-                        // No pre-shared key present, which is valid
                     }
-                    
-                    builder.build()
-                } catch (e: Exception) {
-                    logger.error("Exception building peer $index: ${e.javaClass.simpleName}: ${e.message}")
-                    throw e
+                } catch (ex: Exception) {
+                    logger.info("Failed to get Subnet mask: $ex")
+                    return null
                 }
-            }
-        } else {
-            originalPeers
-        }
-    }
-
-    private fun getIkev2Credentials(): Pair<String, String> {
-        val serverCredentials = getServerCredentials(true)
-        val mUsername: String
-        val mPassword: String
-        if (preferencesHelper.isConnectingToStaticIp) {
-            mUsername = serverCredentials.userNameEncoded ?: ""
-            mPassword = serverCredentials.passwordEncoded ?: ""
-        } else {
-            mUsername = String(
-                    Base64
-                            .decode(serverCredentials.userNameEncoded, Base64.DEFAULT)
-            )
-            mPassword = String(
-                    Base64
-                            .decode(serverCredentials.passwordEncoded, Base64.DEFAULT)
-            )
-        }
-        return Pair(mUsername, mPassword)
-    }
-
-    private fun addOpenVpnCredentials(): Pair<String, String> {
-        val credentials = getServerCredentials(false)
-        val username: String
-        val password: String
-        if (preferencesHelper.isConnectingToStaticIp) {
-            username = credentials.userNameEncoded ?: ""
-            password = credentials.passwordEncoded ?: ""
-        } else {
-            username = String(Base64.decode(credentials.userNameEncoded, Base64.DEFAULT))
-            password = String(Base64.decode(credentials.passwordEncoded, Base64.DEFAULT))
-        }
-        return Pair(username, password)
-    }
-
-    private fun gatewayAddressAsString(wifiInfo: DhcpInfo): String? {
-        return try {
-            val ipAddress: Int = if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-                Integer.reverseBytes(wifiInfo.gateway)
-            } else {
-                wifiInfo.gateway
-            }
-            var ipByteArray = BigInteger.valueOf(ipAddress.toLong()).toByteArray()
-            logger.info("Gateway address :$ipAddress")
-            if (ipByteArray.size > 16) {
-                logger.info("Fixing illegal length")
-                val bytes2 = ByteArray(16)
-                System.arraycopy(ipByteArray, 1, bytes2, 0, bytes2.size)
-                ipByteArray = bytes2
-            }
-            if (isPrivateIPAddress(ipByteArray)) {
-                return InetAddress.getByAddress(ipByteArray).hostAddress
-            } else {
-                logger.info("Non Rfc-1918 local address found: ${InetAddress.getByAddress(ipByteArray).hostAddress}")
+                logger.info("No interface found...")
                 return null
             }
-        } catch (e: Exception) {
-            logger.info("Failed to get Gateway address: $e")
-            null
-        }
-    }
 
-    private fun isPrivateIPAddress(ipBytes: ByteArray): Boolean {
-        return when {
-            ipBytes[0] == 10.toByte() -> true
-            ipBytes[0] == 172.toByte() && ipBytes[1] in 16..31 -> true
-            ipBytes[0] == 192.toByte() && ipBytes[1] == 168.toByte() -> true
-            ipBytes[0] == 169.toByte() && ipBytes[1] == 254.toByte() -> true
-            else -> false
-        }
-    }
+        private fun getUserCredentials(jsonString: String?): ServerCredentialsResponse =
+            Gson().fromJson(jsonString, ServerCredentialsResponse::class.java)
 
-    private fun getServerCredentials(
-            ikEV2: Boolean
-    ): ServerCredentialsResponse {
-        return when {
-            preferencesHelper.isConnectingToStaticIp -> {
-                preferencesHelper.staticIpCredentials
+        private fun modifyAllowedIps(
+            allowedIps: String,
+            dnsRoutes: String,
+        ): String {
+            val ipv4PublicNetworks = HashSet(listOf(*publicIpV4Array))
+            val ipv4Wildcard = "0.0.0.0/0"
+            val allNetworks = HashSet(listOf(ipv4Wildcard))
+            val input: Collection<String> = HashSet(listOf(*Attribute.split(allowedIps)))
+            val outputSize = input.size - allNetworks.size + ipv4PublicNetworks.size
+            val output: MutableCollection<String?> = LinkedHashSet(outputSize)
+            var replaced = false
+            for (network in input) {
+                if (allNetworks.contains(network)) {
+                    if (!replaced) {
+                        for (replacement in ipv4PublicNetworks) {
+                            if (!output.contains(replacement)) {
+                                output.add(replacement)
+                            }
+                        }
+                        replaced = true
+                    }
+                } else if (!output.contains(network)) {
+                    output.add(network)
+                }
             }
+            output.addAll(listOf(*Attribute.split(dnsRoutes)))
+            return Attribute.join(output)
+        }
 
-            ikEV2 -> {
-                preferencesHelper.ikev2Credentials
+        private fun modifyAllowedIpsIPv4Only(
+            allowedIps: String,
+            dnsRoutes: String,
+        ): String {
+            // Create IPv4-only array by filtering out IPv6 addresses
+            val ipv4OnlyNetworks = publicIpV4Array.filter { !it.contains(":") }.toTypedArray()
+            val ipv4PublicNetworks = HashSet(listOf(*ipv4OnlyNetworks))
+            val ipv4Wildcard = "0.0.0.0/0"
+            val allNetworks = HashSet(listOf(ipv4Wildcard))
+            val input: Collection<String> = HashSet(listOf(*Attribute.split(allowedIps)))
+            val outputSize = input.size - allNetworks.size + ipv4PublicNetworks.size
+            val output: MutableCollection<String?> = LinkedHashSet(outputSize)
+            var replaced = false
+            for (network in input) {
+                if (allNetworks.contains(network)) {
+                    if (!replaced) {
+                        for (replacement in ipv4PublicNetworks) {
+                            if (!output.contains(replacement)) {
+                                output.add(replacement)
+                            }
+                        }
+                        replaced = true
+                    }
+                } else if (!output.contains(network)) {
+                    output.add(network)
+                }
             }
+            output.addAll(listOf(*Attribute.split(dnsRoutes)))
+            return Attribute.join(output)
+        }
 
-            else -> {
-                preferencesHelper.openVpnCredentials
+        private fun setSplitMode(profile: VpnProfile) {
+            if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.EXCLUSIVE_MODE)) {
+                preferencesHelper.lastConnectedUsingSplit = true
+                profile.selectedAppsHandling = SELECTED_APPS_EXCLUDE
+            } else if (preferencesHelper.splitTunnelToggle &&
+                (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE)
+            ) {
+                preferencesHelper.lastConnectedUsingSplit = true
+                profile.selectedAppsHandling = SELECTED_APPS_ONLY
+            } else {
+                preferencesHelper.lastConnectedUsingSplit = false
+                profile.selectedAppsHandling = SELECTED_APPS_DISABLE
             }
         }
-                ?: throw InvalidVPNConfigException(CallResult.Error(ERROR_VALID_CONFIG_NOT_FOUND, "valid server credential not found."))
-    }
 
-    private val subnetMask: String?
-        get() {
+        fun createOpenVPNProfile(openVPNConnectionInfo: OpenVPNConnectionInfo) {
+            val configParser = ConfigParser()
+            val reader = StringReader(openVPNConnectionInfo.serverConfig)
             try {
-                val interfaces = NetworkInterface.getNetworkInterfaces()
-                while (interfaces.hasMoreElements()) {
-                    val networkInterface = interfaces.nextElement()
-                    if (networkInterface.isLoopback) {
-                        continue
-                    }
-                    logger.info(
-                            "Interface Name:" + networkInterface.displayName + "  Addresses: " + networkInterface
-                                    .interfaceAddresses.toString()
-                    )
-                    for (interfaceAddress in networkInterface.interfaceAddresses) {
-                        val broadcast = interfaceAddress.broadcast
-                        if (broadcast is Inet4Address) {
-                            logger.info("chosen address: $interfaceAddress")
-                            return interfaceAddress.networkPrefixLength.toString()
-                        }
-                    }
-                }
-            } catch (ex: Exception) {
-                logger.info("Failed to get Subnet mask: $ex")
-                return null
+                configParser.parseConfig(reader)
+            } catch (e: Exception) {
+                throw e
             }
-            logger.info("No interface found...")
-            return null
-        }
-
-    private fun getUserCredentials(jsonString: String?): ServerCredentialsResponse {
-        return Gson().fromJson(jsonString, ServerCredentialsResponse::class.java)
-    }
-
-    private fun modifyAllowedIps(allowedIps: String, dnsRoutes: String): String {
-        val ipv4PublicNetworks = HashSet(listOf(*publicIpV4Array))
-        val ipv4Wildcard = "0.0.0.0/0"
-        val allNetworks = HashSet(listOf(ipv4Wildcard))
-        val input: Collection<String> = HashSet(listOf(*Attribute.split(allowedIps)))
-        val outputSize = input.size - allNetworks.size + ipv4PublicNetworks.size
-        val output: MutableCollection<String?> = LinkedHashSet(outputSize)
-        var replaced = false
-        for (network in input) {
-            if (allNetworks.contains(network)) {
-                if (!replaced) {
-                    for (replacement in ipv4PublicNetworks) {
-                        if (!output.contains(replacement)) {
-                            output.add(replacement)
-                        }
-                    }
-                    replaced = true
-                }
-            } else if (!output.contains(network)) {
-                output.add(network)
-            }
-        }
-        output.addAll(listOf(*Attribute.split(dnsRoutes)))
-        return Attribute.join(output)
-    }
-
-    private fun modifyAllowedIpsIPv4Only(allowedIps: String, dnsRoutes: String): String {
-        // Create IPv4-only array by filtering out IPv6 addresses
-        val ipv4OnlyNetworks = publicIpV4Array.filter { !it.contains(":") }.toTypedArray()
-        val ipv4PublicNetworks = HashSet(listOf(*ipv4OnlyNetworks))
-        val ipv4Wildcard = "0.0.0.0/0"
-        val allNetworks = HashSet(listOf(ipv4Wildcard))
-        val input: Collection<String> = HashSet(listOf(*Attribute.split(allowedIps)))
-        val outputSize = input.size - allNetworks.size + ipv4PublicNetworks.size
-        val output: MutableCollection<String?> = LinkedHashSet(outputSize)
-        var replaced = false
-        for (network in input) {
-            if (allNetworks.contains(network)) {
-                if (!replaced) {
-                    for (replacement in ipv4PublicNetworks) {
-                        if (!output.contains(replacement)) {
-                            output.add(replacement)
-                        }
-                    }
-                    replaced = true
-                }
-            } else if (!output.contains(network)) {
-                output.add(network)
-            }
-        }
-        output.addAll(listOf(*Attribute.split(dnsRoutes)))
-        return Attribute.join(output)
-    }
-
-    private fun setSplitMode(profile: VpnProfile) {
-        if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.EXCLUSIVE_MODE)) {
-            preferencesHelper.lastConnectedUsingSplit = true
-            profile.selectedAppsHandling = SELECTED_APPS_EXCLUDE
-        } else if (preferencesHelper.splitTunnelToggle && (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE)) {
-            preferencesHelper.lastConnectedUsingSplit = true
-            profile.selectedAppsHandling = SELECTED_APPS_ONLY
-        } else {
-            preferencesHelper.lastConnectedUsingSplit = false
-            profile.selectedAppsHandling = SELECTED_APPS_DISABLE
-        }
-    }
-
-    fun createOpenVPNProfile(openVPNConnectionInfo: OpenVPNConnectionInfo) {
-        val configParser = ConfigParser()
-        val reader = StringReader(openVPNConnectionInfo.serverConfig)
-        try {
-            configParser.parseConfig(reader)
-        } catch (e: Exception) {
-            throw e
-        }
-        val vpnProfile = configParser.convertProfile()
-        vpnProfile.mUsername = openVPNConnectionInfo.username
-        vpnProfile.mPassword = openVPNConnectionInfo.password
-        vpnProfile.writeConfigFile(
+            val vpnProfile = configParser.convertProfile()
+            vpnProfile.mUsername = openVPNConnectionInfo.username
+            vpnProfile.mPassword = openVPNConnectionInfo.password
+            vpnProfile.writeConfigFile(
                 appContext,
                 openVPNConnectionInfo.base64EncodedServerConfig,
                 openVPNConnectionInfo.ip,
                 openVPNConnectionInfo.protocol,
                 openVPNConnectionInfo.port,
                 null,
-                null
-        )
-        saveProfile(vpnProfile)
+                null,
+            )
+            saveProfile(vpnProfile)
+        }
     }
-}

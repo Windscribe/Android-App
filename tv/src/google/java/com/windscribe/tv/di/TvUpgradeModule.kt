@@ -11,7 +11,6 @@ import dagger.hilt.android.scopes.ActivityScoped
 @Module
 @InstallIn(ActivityComponent::class)
 abstract class TvUpgradeModule {
-
     @Binds
     @ActivityScoped
     abstract fun bindUpgradePresenter(impl: UpgradePresenterImpl): UpgradePresenter

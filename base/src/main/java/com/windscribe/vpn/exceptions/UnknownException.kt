@@ -3,4 +3,6 @@
  */
 package com.windscribe.vpn.exceptions
 
-class UnknownException(message: String) : Exception(message)
+class UnknownException(
+    message: String,
+) : Exception(message)

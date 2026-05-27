@@ -6,8 +6,6 @@ package com.windscribe.vpn.backend.ikev2
 
 import android.app.Notification
 import android.content.Intent
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
-import android.net.VpnService
 import android.util.Log
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
@@ -29,7 +27,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class CharonVpnServiceWrapper : CharonVpnService() {
-
     companion object {
         private const val STATE_CHILD_SA_UP = 1
         private const val STATE_CHILD_SA_DOWN = 2
@@ -65,19 +62,17 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            Connecting
+            Connecting,
         )
         Log.i("GoLog", "Setting service")
         iKev2VpnBackend.serviceCreated(this)
     }
 
-    override fun getMainActivityClass(): Class<*> {
-        return appContext.applicationInterface.homeIntent.component!!.javaClass
-    }
+    override fun getMainActivityClass(): Class<*> =
+        appContext.applicationInterface.homeIntent.component!!
+            .javaClass
 
-    override fun buildNotification(publicVersion: Boolean): Notification {
-        return windNotificationBuilder.buildNotification(Connecting)
-    }
+    override fun buildNotification(publicVersion: Boolean): Notification = windNotificationBuilder.buildNotification(Connecting)
 
     override fun onDestroy() {
         logger.debug("CharonVpnServiceWrapper onDestroy()")
@@ -86,17 +81,19 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         super.onDestroy()
     }
 
-    override fun getNotificationID(): Int {
-        return NotificationConstants.SERVICE_NOTIFICATION_ID
-    }
+    override fun getNotificationID(): Int = NotificationConstants.SERVICE_NOTIFICATION_ID
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         if (intent == null || intent.action == SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
             startForegroundSafely(
                 windNotificationBuilder,
                 NotificationConstants.SERVICE_NOTIFICATION_ID,
-                Connecting
+                Connecting,
             )
             shortcutStateManager.connect()
             stopSelf()
@@ -113,7 +110,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
                 startForegroundSafely(
                     windNotificationBuilder,
                     NotificationConstants.SERVICE_NOTIFICATION_ID,
-                    Connecting
+                    Connecting,
                 )
                 Util.getProfile<VpnProfile>()?.let {
                     setNextProfile(it)
@@ -149,76 +146,84 @@ class CharonVpnServiceWrapper : CharonVpnService() {
                 logger.info("IKEv2 tunnel: CHILD_SA_DOWN -> CONNECTING")
                 iKev2VpnBackend.getTunnel().onStateChange(IKev2Tunnel.State.CONNECTING)
             }
+
             STATE_CHILD_SA_UP -> {
                 logger.info("IKEv2 tunnel: CHILD_SA_UP -> CONNECTED")
                 iKev2VpnBackend.getTunnel().onStateChange(IKev2Tunnel.State.CONNECTED)
             }
+
             STATE_AUTH_ERROR -> {
                 logger.error("IKEv2 authentication failed")
                 scope.launch {
                     iKev2VpnBackend.disconnect(
                         VPNState.Error(
                             error = VPNState.ErrorType.AuthenticationError,
-                            message = "Authentication failed."
-                        )
+                            message = "Authentication failed.",
+                        ),
                     )
                 }
             }
+
             STATE_PEER_AUTH_ERROR -> {
                 logger.error("IKEv2 peer authentication failed")
                 scope.launch {
                     iKev2VpnBackend.disconnect(
                         VPNState.Error(
                             error = VPNState.ErrorType.AuthenticationError,
-                            message = "Peer authentication failed."
-                        )
+                            message = "Peer authentication failed.",
+                        ),
                     )
                 }
             }
+
             STATE_LOOKUP_ERROR -> {
                 logger.error("IKEv2 DNS lookup failed")
                 scope.launch {
                     iKev2VpnBackend.disconnect(
                         VPNState.Error(
                             error = VPNState.ErrorType.GenericError,
-                            message = "Failed to resolve server hostname."
-                        )
+                            message = "Failed to resolve server hostname.",
+                        ),
                     )
                 }
             }
+
             STATE_UNREACHABLE_ERROR -> {
                 logger.error("IKEv2 server unreachable")
                 scope.launch {
                     iKev2VpnBackend.disconnect(
                         VPNState.Error(
                             error = VPNState.ErrorType.TimeoutError,
-                            message = "Server unreachable."
-                        )
+                            message = "Server unreachable.",
+                        ),
                     )
                 }
             }
+
             STATE_CERTIFICATE_UNAVAILABLE -> {
                 logger.error("IKEv2 certificate unavailable")
                 scope.launch {
                     iKev2VpnBackend.disconnect(
                         VPNState.Error(
                             error = VPNState.ErrorType.AuthenticationError,
-                            message = "Certificate unavailable."
-                        )
+                            message = "Certificate unavailable.",
+                        ),
                     )
                 }
             }
+
             STATE_GENERIC_ERROR -> {
                 logger.error("IKEv2 generic error")
                 scope.launch {
                     iKev2VpnBackend.disconnect(
                         VPNState.Error(
                             error = VPNState.ErrorType.GenericError,
-                            message = "Connection error."
-                        )
+                            message = "Connection error.",
+                        ),
                     )
                 }
             }
+
             else -> {
                 logger.warn("Unknown IKEv2 status: $status")
             }

@@ -471,7 +471,7 @@ dernier emplacement choisi.</string>
     <string name="failed_to_update_robert_rules">Impossible de mettre à jour les règles Robert.</string>
     <string name="successfully_updated_robert_rules">Mise à jour réussie des règles Robert.</string>
     <string name="share_app">Partager l’application</string>
-    <string name="share_app_description">"« %s vous invite à rejoindre Windscribe. Fournissez leur nom d’utilisateur lors de l’inscription et vous obtiendrez tous les deux 1 Go de données gratuites ajoutées à vos comptes. Si vous devenez pro, ils le deviendront aussi !\n%s »"</string>
+    <string name="share_app_description">"« %1$s vous invite à rejoindre Windscribe. Fournissez leur nom d’utilisateur lors de l’inscription et vous obtiendrez tous les deux 1 Go de données gratuites ajoutées à vos comptes. Si vous devenez pro, ils le deviendront aussi !\n%2$s »"</string>
     <string name="allow_all_the_time_location_access_required">« Autoriser tout le temps » Accès à l’emplacement requis!</string>
     <string name="enable_location_access">Activer l’accès à l’emplacement</string>
     <string name="location_permission_required">Autorisation de localisation requise</string>

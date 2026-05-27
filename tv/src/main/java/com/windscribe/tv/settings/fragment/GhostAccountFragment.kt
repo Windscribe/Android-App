@@ -43,13 +43,16 @@ class GhostAccountFragment : Fragment {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentGhostAccountBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         listener?.onFragmentReady(this)
         if (proUser) {
@@ -70,10 +73,11 @@ class GhostAccountFragment : Fragment {
     }
 
     private fun addFocusListener() {
-        val focusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
-            val color = if (hasFocus) R.color.colorWhite else R.color.colorWhite50
-            (view as? TextView)?.setTextColor(resources.getColor(color))
-        }
+        val focusChangeListener =
+            View.OnFocusChangeListener { view, hasFocus ->
+                val color = if (hasFocus) R.color.colorWhite else R.color.colorWhite50
+                (view as? TextView)?.setTextColor(resources.getColor(color))
+            }
         with(binding) {
             claimAccount.onFocusChangeListener = focusChangeListener
             login.onFocusChangeListener = focusChangeListener

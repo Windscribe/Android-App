@@ -2,17 +2,13 @@ package com.windscribe.mobile.ui.preferences.debug
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.LogRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.File
+import javax.inject.Inject
 
 abstract class DebugViewModel : ViewModel() {
     abstract val showProgress: StateFlow<Boolean>
@@ -20,27 +16,30 @@ abstract class DebugViewModel : ViewModel() {
 }
 
 @HiltViewModel
-class DebugViewModelImpl @Inject constructor(
-    val logRepository: LogRepository
-) : DebugViewModel() {
-    private val _showProgress = MutableStateFlow(false)
-    override val showProgress: StateFlow<Boolean> = _showProgress
-    private val _debugLog = MutableStateFlow(emptyList<String>())
-    override val debugLog: StateFlow<List<String>> = _debugLog
+class DebugViewModelImpl
+    @Inject
+    constructor(
+        val logRepository: LogRepository,
+    ) : DebugViewModel() {
+        private val _showProgress = MutableStateFlow(false)
+        override val showProgress: StateFlow<Boolean> = _showProgress
+        private val _debugLog = MutableStateFlow(emptyList<String>())
+        override val debugLog: StateFlow<List<String>> = _debugLog
 
-    init {
-        load()
-    }
+        init {
+            load()
+        }
 
-    private fun load() {
-        _showProgress.value = true
-        viewModelScope.launch(Dispatchers.IO) {
-            runCatching { logRepository.getPartialLog() }.onSuccess {
-                _debugLog.emit(it)
-                _showProgress.value = false
-            }.onFailure {
-                _showProgress.value = false
+        private fun load() {
+            _showProgress.value = true
+            viewModelScope.launch(Dispatchers.IO) {
+                runCatching { logRepository.getPartialLog() }
+                    .onSuccess {
+                        _debugLog.emit(it)
+                        _showProgress.value = false
+                    }.onFailure {
+                        _showProgress.value = false
+                    }
             }
         }
     }
-}

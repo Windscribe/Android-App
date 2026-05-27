@@ -7,10 +7,10 @@ import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
-import java.util.*
+import java.util.Enumeration
+import java.util.Locale
 
-class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
-
+class AndroidDeviceIdentityImpl : AndroidDeviceIdentity {
     override var deviceHostName: String? = null
     override var deviceMacAddress: String? = null
     override var deviceLanIp: String? = null
@@ -20,6 +20,7 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
         setLanIp()
         deviceMacAddress = "Android"
     }
+
     /**
      * Android does not provide direct api access to device hostname.
      * Device hostname is generated from device Info(bluetooth name, device name or manufacturer and model) .
@@ -27,18 +28,19 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
      */
     private fun loadHostname(): String? {
         val systemBluetoothName =
-                Settings.System.getString(appContext.contentResolver, "bluetooth_name")
+            Settings.System.getString(appContext.contentResolver, "bluetooth_name")
         val blueToothName = kotlin.runCatching { Settings.Secure.getString(appContext.contentResolver, "bluetooth_name") }.getOrNull()
         val deviceName = kotlin.runCatching { Settings.Secure.getString(appContext.contentResolver, "device_name") }.getOrNull()
-        val hostName = if (!systemBluetoothName.isNullOrEmpty()) {
-            systemBluetoothName
-        } else if (!blueToothName.isNullOrEmpty()) {
-            blueToothName
-        } else if (!deviceName.isNullOrEmpty()) {
-            deviceName
-        } else {
-            "${Build.MANUFACTURER} ${Build.MODEL}"
-        }
+        val hostName =
+            if (!systemBluetoothName.isNullOrEmpty()) {
+                systemBluetoothName
+            } else if (!blueToothName.isNullOrEmpty()) {
+                blueToothName
+            } else if (!deviceName.isNullOrEmpty()) {
+                deviceName
+            } else {
+                "${Build.MANUFACTURER} ${Build.MODEL}"
+            }
         deviceHostName = formatAsHostname(hostName)
         return deviceHostName
     }
@@ -64,9 +66,10 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
             // On some devices, NetworkInterface.getNetworkInterfaces() or childs field can be null
         }
     }
-    private fun formatAsHostname(hostName: String): String {
-        return hostName.capitalize(Locale.ROOT)
-                .replace(Regex("[^A-Za-z0-9 ]"), "")
-                .replace(" ", "-")
-    }
+
+    private fun formatAsHostname(hostName: String): String =
+        hostName
+            .capitalize(Locale.ROOT)
+            .replace(Regex("[^A-Za-z0-9 ]"), "")
+            .replace(" ", "-")
 }

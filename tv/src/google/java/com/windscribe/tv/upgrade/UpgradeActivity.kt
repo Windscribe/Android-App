@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.amazon.device.iap.model.Product
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams
@@ -25,12 +28,13 @@ import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.billing.*
+import com.windscribe.vpn.billing.AmazonBillingManager
+import com.windscribe.vpn.billing.BillingFragmentCallback
+import com.windscribe.vpn.billing.GoogleBillingManager
+import com.windscribe.vpn.billing.PurchaseState
+import com.windscribe.vpn.billing.WindscribeInAppProduct
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.internal.toImmutableList
@@ -38,9 +42,15 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
-    enum class BillingType(val value: String) {
-        Google("android"), Amazon("amazon")
+class UpgradeActivity :
+    BaseActivity(),
+    UpgradeView,
+    BillingFragmentCallback {
+    enum class BillingType(
+        val value: String,
+    ) {
+        Google("android"),
+        Amazon("amazon"),
     }
 
     @Inject
@@ -60,6 +70,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     lateinit var googleBillingManager: GoogleBillingManager
     private val logger = LoggerFactory.getLogger("basic")
     private var selectedProductDetails: ProductDetails? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentLayout(R.layout.activity_upgrade)
@@ -67,8 +78,9 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         logger.info("OnCreate: Upgrade Activity")
         showProgressBar("Loading Billing Plans...")
         if (intent.hasExtra(PROMO_EXTRA)) {
-            val pushNotificationAction = intent
-                .getSerializableExtra(PROMO_EXTRA) as PushNotificationAction?
+            val pushNotificationAction =
+                intent
+                    .getSerializableExtra(PROMO_EXTRA) as PushNotificationAction?
             pushNotificationAction?.let {
                 presenter.setPushNotificationAction(it)
             }
@@ -131,7 +143,10 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         }
     }
 
-    override fun onContinuePlanClick(productDetails: ProductDetails, selectedIndex: Int) {
+    override fun onContinuePlanClick(
+        productDetails: ProductDetails,
+        selectedIndex: Int,
+    ) {
         logger.info("User clicked on plan item...")
         selectedProductDetails = productDetails
         val builder = ProductDetailsParams.newBuilder()
@@ -162,7 +177,6 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         }
     }
 
-
     override fun onRestorePurchaseClick() {
         presenter.restorePurchase()
     }
@@ -189,12 +203,15 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         isBillingProcessFinished = processFinished
     }
 
-    override fun setEmailStatus(isEmailAdded: Boolean, isEmailConfirmed: Boolean) {}
+    override fun setEmailStatus(
+        isEmailAdded: Boolean,
+        isEmailConfirmed: Boolean,
+    ) {}
 
     override fun showBillingDialog(
         windscribeInAppProduct: WindscribeInAppProduct,
         isEmailAdded: Boolean,
-        isEmailConfirmed: Boolean
+        isEmailConfirmed: Boolean,
     ) {
         newInstance()
             .add(
@@ -203,7 +220,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
                 R.id.cl_upgrade,
                 false,
                 isEmailAdded,
-                isEmailConfirmed
+                isEmailConfirmed,
             )
     }
 
@@ -220,7 +237,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
                     message,
                     this@UpgradeActivity,
                     R.id.cl_upgrade,
-                    false
+                    false,
                 )
                 supportFragmentManager.executePendingTransactions()
             }
@@ -237,7 +254,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
 
     override fun startPurchaseFlow(
         productDetailsParams: List<ProductDetailsParams>,
-        accountID: String?
+        accountID: String?,
     ) {
         val builder =
             BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParams)
@@ -321,20 +338,20 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
             logger.debug("Product consumption failed...")
             presenter.onConsumeFailed(
                 customPurchase.responseCode,
-                customPurchase.purchase
+                customPurchase.purchase,
             )
         }
         googleBillingManager.purchaseUpdateEvent.collectOnStart { customPurchases ->
             logger.info("Purchase updated...")
             presenter.onPurchaseUpdated(
                 customPurchases.responseCode,
-                customPurchases.purchase
+                customPurchases.purchase,
             )
         }
         googleBillingManager.querySkuDetailEvent.collectOnStart { customProductDetails ->
             presenter.onSkuDetailsReceived(
                 customProductDetails.billingResult.responseCode,
-                customProductDetails.productDetails.toImmutableList()
+                customProductDetails.productDetails.toImmutableList(),
             )
         }
     }
@@ -352,8 +369,6 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
 
     companion object {
         @JvmStatic
-        fun getStartIntent(context: Context): Intent {
-            return Intent(context, UpgradeActivity::class.java)
-        }
+        fun getStartIntent(context: Context): Intent = Intent(context, UpgradeActivity::class.java)
     }
 }

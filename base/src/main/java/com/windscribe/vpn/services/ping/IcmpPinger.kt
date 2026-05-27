@@ -13,10 +13,14 @@ import java.net.Socket
  * DNS resolution is dispatched to IO; ICMP itself dispatches internally.
  */
 class IcmpPinger : Pinger {
-    override suspend fun ping(host: String, timeoutMs: Int): Int {
-        val address = withContext(Dispatchers.IO) {
-            runCatching { Inet4Address.getByName(host) }.getOrNull()
-        } ?: return -1
+    override suspend fun ping(
+        host: String,
+        timeoutMs: Int,
+    ): Int {
+        val address =
+            withContext(Dispatchers.IO) {
+                runCatching { Inet4Address.getByName(host) }.getOrNull()
+            } ?: return -1
 
         // Try ICMP first.
         runCatching { return Ping.run(address, timeoutMs).toInt() }
@@ -25,7 +29,10 @@ class IcmpPinger : Pinger {
         return tcpConnectLatency(address.hostAddress ?: host, timeoutMs)
     }
 
-    private suspend fun tcpConnectLatency(ip: String, timeoutMs: Int): Int =
+    private suspend fun tcpConnectLatency(
+        ip: String,
+        timeoutMs: Int,
+    ): Int =
         withContext(Dispatchers.IO) {
             runCatching {
                 val start = System.currentTimeMillis()

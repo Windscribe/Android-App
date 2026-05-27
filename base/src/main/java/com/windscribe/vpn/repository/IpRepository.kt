@@ -25,7 +25,7 @@ class IpRepository(
     private val preferenceHelper: PreferencesHelper,
     private val apiCallManagerV2: IApiCallManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager,
-    private val isOnline: StateFlow<Boolean>
+    private val isOnline: StateFlow<Boolean>,
 ) {
     private val logger = LoggerFactory.getLogger("data")
     private val events = MutableSharedFlow<RepositoryEvent>()
@@ -38,7 +38,7 @@ class IpRepository(
             // refresh on vpn state changes
             vpnConnectionStateManager.state.map {
                 RepositoryEvent.Refresh
-            }
+            },
         ).onStart {
             emit(RepositoryEvent.Refresh)
         }.mapLatest { event ->
@@ -62,7 +62,7 @@ class IpRepository(
         }.stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
-            initialValue = RepositoryState.Loading()
+            initialValue = RepositoryState.Loading(),
         )
 
     fun update() {
@@ -79,6 +79,7 @@ class IpRepository(
             is CallResult.Error -> {
                 loadIpFromStorage()
             }
+
             is CallResult.Success -> {
                 val ipAddress = getModifiedIpAddress(result.data.userIp?.trim() ?: "")
                 preferenceHelper.userIP = ipAddress
@@ -96,8 +97,8 @@ class IpRepository(
         }
     }
 
-    private fun getModifiedIpAddress(ipResponse: String): String {
-        return if (ipResponse.length >= 32) {
+    private fun getModifiedIpAddress(ipResponse: String): String =
+        if (ipResponse.length >= 32) {
             logger.info("Ipv6 address. Truncating and saving ip data...")
             ipResponse
                 .replace("0000".toRegex(), "0")
@@ -106,5 +107,4 @@ class IpRepository(
         } else {
             ipResponse
         }
-    }
 }

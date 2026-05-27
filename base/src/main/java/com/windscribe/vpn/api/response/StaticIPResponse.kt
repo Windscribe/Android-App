@@ -11,7 +11,6 @@ import com.windscribe.vpn.serverlist.entity.StaticRegion
 
 @Keep
 class StaticIPResponse {
-
     @SerializedName("static_ips")
     @Expose
     var staticIpList: List<StaticRegion>? = null

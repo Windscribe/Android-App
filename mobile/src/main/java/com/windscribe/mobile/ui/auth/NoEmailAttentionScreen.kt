@@ -26,32 +26,40 @@ import com.windscribe.mobile.ui.theme.font16
 @Composable
 fun NoEmailAttentionScreen(
     isPro: Boolean,
-    onContinueWithoutEmail: () -> Unit
+    onContinueWithoutEmail: () -> Unit,
 ) {
     val navController = LocalNavController.current
     AppBackground {
         Column(
-            modifier = Modifier
-                .navigationBarsPadding()
-                .width(400.dp)
-                .padding(horizontal = 32.dp)
-                .align(Alignment.Center)
-                .padding(vertical = 16.dp),
+            modifier =
+                Modifier
+                    .navigationBarsPadding()
+                    .width(400.dp)
+                    .padding(horizontal = 32.dp)
+                    .align(Alignment.Center)
+                    .padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Spacer(modifier = Modifier.weight(1f))
             Image(
                 painter = painterResource(id = R.drawable.ic_noemailprompticon),
                 contentDescription = stringResource(com.windscribe.vpn.R.string.image_description),
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(bottom = 24.dp),
             )
 
             Text(
-                text = stringResource(if (isPro) com.windscribe.vpn.R.string.warning_no_email_pro_account else com.windscribe.vpn.R.string.no_email_warning),
+                text =
+                    stringResource(
+                        if (isPro) {
+                            com.windscribe.vpn.R.string.warning_no_email_pro_account
+                        } else {
+                            com.windscribe.vpn.R.string.no_email_warning
+                        },
+                    ),
                 style = font16,
                 color = AppColors.white.copy(alpha = 0.50f),
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(bottom = 24.dp),
             )
             Spacer(modifier = Modifier.weight(1f))
             NextButtonLighter(

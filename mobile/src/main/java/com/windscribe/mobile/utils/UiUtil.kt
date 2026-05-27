@@ -6,10 +6,9 @@ package com.windscribe.mobile.utils
 
 import java.util.regex.Pattern
 
-
 object UiUtil {
     fun getPriceWithCurrency(price: String?): Pair<String, Double>? {
-        if (price == null){
+        if (price == null) {
             return null
         }
         val rawPrice = price.replace("\u00A0", " ").trim()

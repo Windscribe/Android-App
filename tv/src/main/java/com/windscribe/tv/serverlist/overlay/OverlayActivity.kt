@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.transition.AutoTransition
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
@@ -27,14 +28,16 @@ import com.windscribe.tv.serverlist.fragments.FavouriteFragment
 import com.windscribe.tv.serverlist.fragments.StaticIpFragment
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import org.slf4j.LoggerFactory
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import kotlin.jvm.java
 
 @AndroidEntryPoint
-class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
+class OverlayActivity :
+    BaseActivity(),
+    OverlayView,
+    OverlayListener {
     private lateinit var binding: ActivityOverlayBinding
 
     @Inject
@@ -44,6 +47,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     private var maxHeader: ConstraintSet? = null
     private var minHeader: ConstraintSet? = null
     private val logger = LoggerFactory.getLogger("basic")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         presenter.bind(this, lifecycleScope)
@@ -51,7 +55,8 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         binding = ActivityOverlayBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setConstraints()
-        supportFragmentManager.beginTransaction()
+        supportFragmentManager
+            .beginTransaction()
             .replace(R.id.BrowseRow, AllOverlayFragment(), "1")
             .commit()
         registerDataChangeObservers()
@@ -66,7 +71,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
                 AllOverlayFragment::class.java,
                 binding.headerItemAllBar,
                 binding.headerItemAllIcon,
-                binding.headerItemAllText
+                binding.headerItemAllText,
             )
             onAllNodeClick()
         }
@@ -76,7 +81,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
                 FavouriteFragment::class.java,
                 binding.headerItemFavBar,
                 binding.headerItemFavIcon,
-                binding.headerItemFavText
+                binding.headerItemFavText,
             )
             onFavNodeClick()
         }
@@ -86,13 +91,17 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
                 StaticIpFragment::class.java,
                 binding.headerItemStaticBar,
                 binding.headerItemStaticIcon,
-                binding.headerItemStaticText
+                binding.headerItemStaticText,
             )
             onStaticClick()
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (requestDetailCode == requestCode && resultCode == RESULT_OK) {
             logger.debug("Closing overlay view to connect.")
             setResult(RESULT_OK)
@@ -131,8 +140,8 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
             getIntent(
                 appContext,
                 getString(com.windscribe.vpn.R.string.node_under_construction_text),
-                "Alert"
-            )
+                "Alert",
+            ),
         )
     }
 
@@ -191,7 +200,11 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         activityScope { presenter.staticIpViewReady() }
     }
 
-    override fun onStaticSelected(regionID: Int, userNameEncoded: String, passwordEncoded: String) {
+    override fun onStaticSelected(
+        regionID: Int,
+        userNameEncoded: String,
+        passwordEncoded: String,
+    ) {
         logger.debug("Closing overlay view to connect to static ip")
         val startIntent = Intent(this, WindscribeActivity::class.java)
         startIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -218,21 +231,25 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         state: LoadState,
         stateDrawable: Int,
         stateText: Int,
-        fragmentIndex: Int
+        fragmentIndex: Int,
     ) {
         currentFragment?.let { fragment ->
             fragment.tag?.let { tag ->
                 if (tag == fragmentIndex.toString()) {
                     val stateLayout = fragment.view?.findViewById<TextView>(R.id.state_layout)
                     when (state) {
-                        LoadState.Loaded -> stateLayout?.visibility = View.GONE
+                        LoadState.Loaded -> {
+                            stateLayout?.visibility = View.GONE
+                        }
+
                         LoadState.Loading, LoadState.NoResult, LoadState.Error -> {
                             stateLayout?.visibility = View.VISIBLE
                             stateLayout?.text = getString(stateText)
                             stateLayout?.setCompoundDrawablesWithIntrinsicBounds(
                                 null,
-                                ResourcesCompat.getDrawable(resources, stateDrawable, theme), null,
-                                null
+                                ResourcesCompat.getDrawable(resources, stateDrawable, theme),
+                                null,
+                                null,
                             )
                         }
                     }
@@ -268,13 +285,14 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     }
 
     private fun addFocusListeners() {
-        val focusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
-            if (hasFocus && !isHeaderOpen) {
-                maximizeHeader()
-            } else if (!hasFocus && isHeaderOpen) {
-                minimizeHeader()
+        val focusChangeListener =
+            View.OnFocusChangeListener { v, hasFocus ->
+                if (hasFocus && !isHeaderOpen) {
+                    maximizeHeader()
+                } else if (!hasFocus && isHeaderOpen) {
+                    minimizeHeader()
+                }
             }
-        }
         with(binding) {
             headerItemAll.onFocusChangeListener = focusChangeListener
             headerItemFav.onFocusChangeListener = focusChangeListener
@@ -287,7 +305,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         fragmentClass: Class<*>,
         selectedBar: View,
         selectedIcon: View,
-        selectedText: View
+        selectedText: View,
     ) {
         binding.overlayParent.setCurrentFragment(fragmentIndex)
         if (fragmentClass.isInstance(currentFragment)) {
@@ -298,7 +316,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         listOf(
             binding.headerItemAllBar,
             binding.headerItemFavBar,
-            binding.headerItemStaticBar
+            binding.headerItemStaticBar,
         ).forEach { it.visibility = View.INVISIBLE }
         selectedBar.visibility = View.VISIBLE
 
@@ -306,7 +324,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         listOf(
             binding.headerItemAllIcon,
             binding.headerItemFavIcon,
-            binding.headerItemStaticIcon
+            binding.headerItemStaticIcon,
         ).forEach { it.alpha = 0.40f }
         selectedIcon.alpha = 1.0f
 
@@ -314,7 +332,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         listOf(
             binding.headerItemAllText,
             binding.headerItemFavText,
-            binding.headerItemStaticText
+            binding.headerItemStaticText,
         ).forEach { it.alpha = 0.40f }
         selectedText.alpha = 1.0f
     }

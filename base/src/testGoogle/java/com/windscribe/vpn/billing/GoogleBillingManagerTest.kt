@@ -37,7 +37,6 @@ import org.junit.Test
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class GoogleBillingManagerTest {
-
     private lateinit var app: Application
     private lateinit var billingClient: BillingClient
     private lateinit var manager: GoogleBillingManager
@@ -78,108 +77,116 @@ class GoogleBillingManagerTest {
         return collected
     }
 
-    private fun billingResult(code: Int): BillingResult =
-        mockk { every { responseCode } returns code }
+    private fun billingResult(code: Int): BillingResult = mockk { every { responseCode } returns code }
 
     @Test
-    fun `onCreate billing setup success emits response code on success flow`() = runTest {
-        val collected = firstEmission(manager.onBillingSetUpSuccess)
-        manager.onCreate(mockk<LifecycleOwner>())
+    fun `onCreate billing setup success emits response code on success flow`() =
+        runTest {
+            val collected = firstEmission(manager.onBillingSetUpSuccess)
+            manager.onCreate(mockk<LifecycleOwner>())
 
-        stateListener.captured.onBillingSetupFinished(billingResult(BillingResponseCode.OK))
+            stateListener.captured.onBillingSetupFinished(billingResult(BillingResponseCode.OK))
 
-        assertEquals(1, collected.size)
-        assertEquals(BillingResponseCode.OK, collected[0])
-    }
-
-    @Test
-    fun `onCreate billing setup failure emits response code on failure flow`() = runTest {
-        val collected = firstEmission(manager.onBillingSetupFailure)
-        manager.onCreate(mockk<LifecycleOwner>())
-
-        stateListener.captured.onBillingSetupFinished(billingResult(BillingResponseCode.ERROR))
-
-        assertEquals(1, collected.size)
-        assertEquals(BillingResponseCode.ERROR, collected[0])
-    }
-
-    @Test
-    fun `billing service disconnected emits PLAY_STORE_UPDATE on failure flow`() = runTest {
-        val collected = firstEmission(manager.onBillingSetupFailure)
-        manager.onCreate(mockk<LifecycleOwner>())
-
-        stateListener.captured.onBillingServiceDisconnected()
-
-        assertEquals(1, collected.size)
-        assertEquals(BillingConstants.PLAY_STORE_UPDATE, collected[0])
-    }
-
-    @Test
-    fun `onPurchasesUpdated with purchases emits them on purchaseUpdateEvent`() = runTest {
-        val collected = firstEmission(manager.purchaseUpdateEvent)
-        val purchases = listOf(mockk<Purchase>())
-
-        manager.onPurchasesUpdated(billingResult(BillingResponseCode.OK), purchases)
-
-        assertEquals(1, collected.size)
-        assertEquals(BillingResponseCode.OK, collected[0].responseCode)
-        assertEquals(purchases, collected[0].purchase)
-    }
-
-    @Test
-    fun `onPurchasesUpdated with null purchases emits empty list`() = runTest {
-        val collected = firstEmission(manager.purchaseUpdateEvent)
-
-        manager.onPurchasesUpdated(billingResult(BillingResponseCode.USER_CANCELED), null)
-
-        assertEquals(1, collected.size)
-        assertEquals(BillingResponseCode.USER_CANCELED, collected[0].responseCode)
-        assertEquals(emptyList<Purchase>(), collected[0].purchase)
-    }
-
-    @Test
-    fun `InAppConsume success emits on consume-success flow`() = runTest {
-        manager.onCreate(mockk<LifecycleOwner>())
-        val consumeListener = slot<ConsumeResponseListener>()
-        every { billingClient.consumeAsync(any<ConsumeParams>(), capture(consumeListener)) } returns Unit
-
-        val purchase = mockk<Purchase> { every { purchaseToken } returns "token" }
-        val collected = firstEmission(manager.onProductConsumeSuccess)
-
-        manager.InAppConsume(purchase)
-        consumeListener.captured.onConsumeResponse(billingResult(BillingResponseCode.OK), "token")
-
-        assertEquals(1, collected.size)
-        assertEquals(purchase, collected[0])
-    }
-
-    @Test
-    fun `InAppConsume failure emits CustomPurchase on consume-failure flow`() = runTest {
-        manager.onCreate(mockk<LifecycleOwner>())
-        val consumeListener = slot<ConsumeResponseListener>()
-        every { billingClient.consumeAsync(any<ConsumeParams>(), capture(consumeListener)) } returns Unit
-
-        val purchase = mockk<Purchase> { every { purchaseToken } returns "token" }
-        val collected = firstEmission(manager.onProductConsumeFailure)
-
-        manager.InAppConsume(purchase)
-        consumeListener.captured.onConsumeResponse(billingResult(BillingResponseCode.ERROR), "token")
-
-        assertEquals(1, collected.size)
-        assertEquals(BillingResponseCode.ERROR, collected[0].responseCode)
-        assertEquals(purchase, collected[0].purchase)
-    }
-
-    @Test
-    fun `subscriptionConsume on non-purchased state emits success directly`() = runTest {
-        val collected = firstEmission(manager.onProductConsumeSuccess)
-        val purchase = mockk<Purchase> {
-            every { purchaseState } returns Purchase.PurchaseState.PENDING
+            assertEquals(1, collected.size)
+            assertEquals(BillingResponseCode.OK, collected[0])
         }
 
-        manager.subscriptionConsume(purchase)
+    @Test
+    fun `onCreate billing setup failure emits response code on failure flow`() =
+        runTest {
+            val collected = firstEmission(manager.onBillingSetupFailure)
+            manager.onCreate(mockk<LifecycleOwner>())
 
-        assertEquals(1, collected.size)
-        assertEquals(purchase, collected[0])
-    }
+            stateListener.captured.onBillingSetupFinished(billingResult(BillingResponseCode.ERROR))
+
+            assertEquals(1, collected.size)
+            assertEquals(BillingResponseCode.ERROR, collected[0])
+        }
+
+    @Test
+    fun `billing service disconnected emits PLAY_STORE_UPDATE on failure flow`() =
+        runTest {
+            val collected = firstEmission(manager.onBillingSetupFailure)
+            manager.onCreate(mockk<LifecycleOwner>())
+
+            stateListener.captured.onBillingServiceDisconnected()
+
+            assertEquals(1, collected.size)
+            assertEquals(BillingConstants.PLAY_STORE_UPDATE, collected[0])
+        }
+
+    @Test
+    fun `onPurchasesUpdated with purchases emits them on purchaseUpdateEvent`() =
+        runTest {
+            val collected = firstEmission(manager.purchaseUpdateEvent)
+            val purchases = listOf(mockk<Purchase>())
+
+            manager.onPurchasesUpdated(billingResult(BillingResponseCode.OK), purchases)
+
+            assertEquals(1, collected.size)
+            assertEquals(BillingResponseCode.OK, collected[0].responseCode)
+            assertEquals(purchases, collected[0].purchase)
+        }
+
+    @Test
+    fun `onPurchasesUpdated with null purchases emits empty list`() =
+        runTest {
+            val collected = firstEmission(manager.purchaseUpdateEvent)
+
+            manager.onPurchasesUpdated(billingResult(BillingResponseCode.USER_CANCELED), null)
+
+            assertEquals(1, collected.size)
+            assertEquals(BillingResponseCode.USER_CANCELED, collected[0].responseCode)
+            assertEquals(emptyList<Purchase>(), collected[0].purchase)
+        }
+
+    @Test
+    fun `InAppConsume success emits on consume-success flow`() =
+        runTest {
+            manager.onCreate(mockk<LifecycleOwner>())
+            val consumeListener = slot<ConsumeResponseListener>()
+            every { billingClient.consumeAsync(any<ConsumeParams>(), capture(consumeListener)) } returns Unit
+
+            val purchase = mockk<Purchase> { every { purchaseToken } returns "token" }
+            val collected = firstEmission(manager.onProductConsumeSuccess)
+
+            manager.InAppConsume(purchase)
+            consumeListener.captured.onConsumeResponse(billingResult(BillingResponseCode.OK), "token")
+
+            assertEquals(1, collected.size)
+            assertEquals(purchase, collected[0])
+        }
+
+    @Test
+    fun `InAppConsume failure emits CustomPurchase on consume-failure flow`() =
+        runTest {
+            manager.onCreate(mockk<LifecycleOwner>())
+            val consumeListener = slot<ConsumeResponseListener>()
+            every { billingClient.consumeAsync(any<ConsumeParams>(), capture(consumeListener)) } returns Unit
+
+            val purchase = mockk<Purchase> { every { purchaseToken } returns "token" }
+            val collected = firstEmission(manager.onProductConsumeFailure)
+
+            manager.InAppConsume(purchase)
+            consumeListener.captured.onConsumeResponse(billingResult(BillingResponseCode.ERROR), "token")
+
+            assertEquals(1, collected.size)
+            assertEquals(BillingResponseCode.ERROR, collected[0].responseCode)
+            assertEquals(purchase, collected[0].purchase)
+        }
+
+    @Test
+    fun `subscriptionConsume on non-purchased state emits success directly`() =
+        runTest {
+            val collected = firstEmission(manager.onProductConsumeSuccess)
+            val purchase =
+                mockk<Purchase> {
+                    every { purchaseState } returns Purchase.PurchaseState.PENDING
+                }
+
+            manager.subscriptionConsume(purchase)
+
+            assertEquals(1, collected.size)
+            assertEquals(purchase, collected[0])
+        }
 }

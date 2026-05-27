@@ -8,8 +8,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.windscribe.vpn.BuildConfig
 import org.slf4j.LoggerFactory
 
-
-class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
+class GoogleSignInManagerImpl(
+    val context: Context,
+) : GoogleSignInManager() {
     private val googleSignInClient: GoogleSignInClient
     private val logger = LoggerFactory.getLogger("sso")
 
@@ -18,16 +19,21 @@ class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
         if (clientId.isEmpty()) {
             clientId = "com.windscribe.vpn"
         }
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(clientId)
-            .requestEmail()
-            .build()
+        val gso =
+            GoogleSignInOptions
+                .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(clientId)
+                .requestEmail()
+                .build()
         googleSignInClient = GoogleSignIn.getClient(context, gso)
     }
 
     override fun getSignInIntent() = googleSignInClient.signInIntent
 
-    override fun getToken(result: Intent, callback: (String?, String?) -> Unit) {
+    override fun getToken(
+        result: Intent,
+        callback: (String?, String?) -> Unit,
+    ) {
         val task = GoogleSignIn.getSignedInAccountFromIntent(result)
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
@@ -56,7 +62,7 @@ class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
 
     override fun signOut(callback: () -> Unit) {
         googleSignInClient.signOut().addOnCompleteListener {
-           callback()
+            callback()
         }
     }
 }

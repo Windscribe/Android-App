@@ -42,12 +42,13 @@ android {
     }
     packagingOptions {
         jniLibs {
-            excludes += setOf(
-                "lib/arm64-v8a/libwg-quick.so",
-                "lib/armeabi-v7a/libwg-quick.so",
-                "lib/x86/libwg-quick.so",
-                "lib/x86_64/libwg-quick.so"
-            )
+            excludes +=
+                setOf(
+                    "lib/arm64-v8a/libwg-quick.so",
+                    "lib/armeabi-v7a/libwg-quick.so",
+                    "lib/x86/libwg-quick.so",
+                    "lib/x86_64/libwg-quick.so",
+                )
         }
     }
     lint {
@@ -64,29 +65,29 @@ android {
 }
 
 dependencies {
-    //Android
+    // Android
     "api"("androidx.appcompat:appcompat:${libs.versions.appcompat.get()}")
     "api"("androidx.multidex:multidex:2.0.1")
     "api"("androidx.security:security-crypto:1.1.0-alpha05")
-    //VPN
+    // VPN
     implementation(project(":openvpn"))
     implementation(project(":strongswan"))
     implementation(project(":common"))
     "api"(project(":wgtunnel"))
-    //Gson
+    // Gson
     "api"("com.google.code.gson:gson:2.10.1")
-    //Okhttp
+    // Okhttp
     implementation("com.squareup.okhttp3:logging-interceptor:4.2.2")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     "api"("com.squareup.okhttp3:mockwebserver:4.9.3")
-    //Logging
+    // Logging
     "api"("org.slf4j:slf4j-api:1.7.36")
     "api"("com.github.tony19:logback-android:2.0.0")
     implementation("net.logstash.logback:logstash-logback-encoder:5.0") {
         exclude(group = "ch.qos.logback", module = "logback-core")
     }
     implementation("androidx.lifecycle:lifecycle-process:2.6.2")
-    //Room
+    // Room
     "api"("androidx.room:room-ktx:${libs.versions.room.get()}")
     "api"("androidx.room:room-runtime:${libs.versions.room.get()}")
     ksp("androidx.room:room-compiler:${libs.versions.room.get()}")

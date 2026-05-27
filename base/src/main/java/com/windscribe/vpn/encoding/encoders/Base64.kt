@@ -9,7 +9,6 @@ import java.io.IOException
 import java.io.OutputStream
 
 object Base64 {
-
     private val encoder: Encoder = Base64Encoder()
 
     /**
@@ -57,9 +56,10 @@ object Base64 {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun encode(data: ByteArray, out: OutputStream): Int {
-        return encoder.encode(data, 0, data.size, out)
-    }
+    fun encode(
+        data: ByteArray,
+        out: OutputStream,
+    ): Int = encoder.encode(data, 0, data.size, out)
 
     /**
      * Encode the byte data to base 64 writing it to the given output stream.
@@ -68,7 +68,10 @@ object Base64 {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun encode(data: ByteArray, off: Int, length: Int, out: OutputStream): Int {
-        return encoder.encode(data, off, length, out)
-    }
+    fun encode(
+        data: ByteArray,
+        off: Int,
+        length: Int,
+        out: OutputStream,
+    ): Int = encoder.encode(data, off, length, out)
 }

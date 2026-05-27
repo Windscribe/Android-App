@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">रॉबर्ट नियमों को अपडेट करने में विफल रहा।</string>
     <string name="successfully_updated_robert_rules">रॉबर्ट नियमों को सफलतापूर्वक अपडेट किया।</string>
     <string name="share_app">साझा अनुप्रयोग</string>
-    <string name="share_app_description">"\"%s आपको विंडस्क्राइब में शामिल होने के लिए आमंत्रित कर रहा है। साइनअप पर उनका उपयोगकर्ता नाम प्रदान करें और आप दोनों को अपने खातों में जोड़ा गया 1 जीबी मुफ्त डेटा मिलेगा। यदि आप प्रो जाते हैं, तो वे भी प्रो जाएंगे!\"</string>
+    <string name="share_app_description">"\"%1$s आपको विंडस्क्राइब में शामिल होने के लिए आमंत्रित कर रहा है। साइनअप पर उनका उपयोगकर्ता नाम प्रदान करें और आप दोनों को अपने खातों में जोड़ा गया 1 जीबी मुफ्त डेटा मिलेगा। यदि आप प्रो जाते हैं, तो वे भी प्रो जाएंगे!\n%2$s\"</string>
     <string name="allow_all_the_time_location_access_required">\"हर समय अनुमति दें\" स्थान पहुंच की आवश्यकता है!</string>
     <string name="enable_location_access">स्थान पहुँच सक्षम करें</string>
     <string name="location_permission_required">स्थान अनुमति आवश्यक है</string>

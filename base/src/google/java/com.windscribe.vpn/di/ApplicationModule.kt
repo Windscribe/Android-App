@@ -23,32 +23,27 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
-
     @Provides
     @Singleton
-    fun provideReceiptValidator(app: Windscribe, manager: WindScribeWorkManager): ReceiptValidator {
-        return ReceiptValidator(
+    fun provideReceiptValidator(
+        app: Windscribe,
+        manager: WindScribeWorkManager,
+    ): ReceiptValidator =
+        ReceiptValidator(
             app,
             manager.createOneTimeWorkerRequest(AmazonPendingReceiptValidator::class.java),
-            manager.createOneTimeWorkerRequest(GooglePendingReceiptValidator::class.java)
+            manager.createOneTimeWorkerRequest(GooglePendingReceiptValidator::class.java),
         )
-    }
 
     @Provides
     @Singleton
-    fun providesFirebaseManager(app: Windscribe): FirebaseManager {
-        return FireBaseManagerImpl(app)
-    }
+    fun providesFirebaseManager(app: Windscribe): FirebaseManager = FireBaseManagerImpl(app)
 
     @Provides
     @Singleton
-    fun providesGoogleSignInManager(app: Windscribe): GoogleSignInManager {
-        return GoogleSignInManagerImpl(app)
-    }
+    fun providesGoogleSignInManager(app: Windscribe): GoogleSignInManager = GoogleSignInManagerImpl(app)
 
     @Provides
     @Singleton
-    fun provideAndroidIdentity(): AndroidDeviceIdentity {
-        return AndroidDeviceIdentityImpl()
-    }
+    fun provideAndroidIdentity(): AndroidDeviceIdentity = AndroidDeviceIdentityImpl()
 }

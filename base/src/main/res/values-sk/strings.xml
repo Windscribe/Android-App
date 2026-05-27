@@ -489,7 +489,7 @@ naposledy vybranú polohu.</string>
     <string name="failed_to_update_robert_rules">Zlyhala aktualizácia pravidiel Robert.</string>
     <string name="successfully_updated_robert_rules">Pravidlá Robert boli úspešne aktualizované.</string>
     <string name="share_app">Zdieľať aplikáciu</string>
-    <string name="share_app_description">"%s vás pozýva pripojiť sa k Windscribe. Zadajte jeho používateľské meno pri registrácii a obaja získate 1gb bezplatných dát pridaných k vašim účtom. Ak prejdete na pro, prejdú na pro aj oni!\n%s"</string>
+    <string name="share_app_description">"%1$s vás pozýva pripojiť sa k Windscribe. Zadajte jeho používateľské meno pri registrácii a obaja získate 1gb bezplatných dát pridaných k vašim účtom. Ak prejdete na pro, prejdú na pro aj oni!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">"Povoliť vždy" - prístup k polohe je povinný!</string>
     <string name="enable_location_access">Povoliť prístup k polohe</string>
     <string name="location_permission_required">Povolenie k polohe je povinné</string>

@@ -13,5 +13,5 @@ import androidx.datastore.preferences.preferencesDataStore
  * Single instance per application context (lazy init).
  */
 val Context.windscribeDataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "windscribe_preferences"
+    name = "windscribe_preferences",
 )

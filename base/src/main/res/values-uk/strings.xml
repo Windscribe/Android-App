@@ -472,7 +472,7 @@
     <string name="failed_to_update_robert_rules">Не вдалося оновити правила Роберта.</string>
     <string name="successfully_updated_robert_rules">Успішно оновлені правила Роберта.</string>
     <string name="share_app">Поділитися додатком</string>
-    <string name="share_app_description">"«%s запрошує вас приєднатися до Windscribe. Вкажіть їх ім\я користувача під час реєстрації, і ви обидва отримаєте 1 ГБ безкоштовних даних, доданих до своїх облікових записів. Якщо ви підете професіоналом, вони також стануть професіоналами!\n%s\""</string>
+    <string name="share_app_description">"«%1$s запрошує вас приєднатися до Windscribe. Вкажіть їх ім\я користувача під час реєстрації, і ви обидва отримаєте 1 ГБ безкоштовних даних, доданих до своїх облікових записів. Якщо ви підете професіоналом, вони також стануть професіоналами!\n%2$s\""</string>
     <string name="allow_all_the_time_location_access_required">\"Дозволяти весь час\" Потрібен доступ до місцезнаходження!</string>
     <string name="enable_location_access">Увімкнення доступу до геоданих</string>
     <string name="location_permission_required">Потрібен дозвіл на місцезнаходження</string>

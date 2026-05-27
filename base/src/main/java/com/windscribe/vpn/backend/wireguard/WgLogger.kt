@@ -40,12 +40,13 @@ class WgLogger {
             if (!logFile.exists()) {
                 logFile.createNewFile()
             }
-            val process = try {
-                Runtime.getRuntime().exec("logcat -T 1 WireGuard/GoBackend/Windscribe:D *:S")
-            } catch (e: Exception) {
-                logger.warn("WgLogger failed to start logcat: ${e.message}")
-                return@withContext
-            }
+            val process =
+                try {
+                    Runtime.getRuntime().exec("logcat -T 1 WireGuard/GoBackend/Windscribe:D *:S")
+                } catch (e: Exception) {
+                    logger.warn("WgLogger failed to start logcat: ${e.message}")
+                    return@withContext
+                }
             activeProcess = process
             val reader = BufferedReader(InputStreamReader(process.inputStream))
             activeReader = reader
@@ -63,8 +64,14 @@ class WgLogger {
             } catch (_: Exception) {
                 // Reader closed by stopCapture(), or process died — expected on shutdown.
             } finally {
-                try { reader.close() } catch (_: Exception) {}
-                try { process.destroy() } catch (_: Exception) {}
+                try {
+                    reader.close()
+                } catch (_: Exception) {
+                }
+                try {
+                    process.destroy()
+                } catch (_: Exception) {
+                }
                 if (activeProcess === process) activeProcess = null
                 if (activeReader === reader) activeReader = null
             }
@@ -76,8 +83,14 @@ class WgLogger {
         val process = activeProcess
         activeReader = null
         activeProcess = null
-        try { process?.destroy() } catch (_: Exception) {}
-        try { reader?.close() } catch (_: Exception) {}
+        try {
+            process?.destroy()
+        } catch (_: Exception) {
+        }
+        try {
+            reader?.close()
+        } catch (_: Exception) {
+        }
     }
 
     private suspend fun processHandshakeEvents(line: String) {
@@ -85,13 +98,17 @@ class WgLogger {
             line.contains(HANDSHAKE_RESPONSE_RECEIVED) -> {
                 _handshakeReceivedEvent.emit(Unit)
             }
+
             line.contains(HANDSHAKE_NOT_COMPLETE) -> {
                 _handshakeFailureEvent.emit(Unit)
             }
         }
     }
 
-    private fun appendLineToFile(file: File, line: String) {
+    private fun appendLineToFile(
+        file: File,
+        line: String,
+    ) {
         file.appendText("$line\n")
     }
 

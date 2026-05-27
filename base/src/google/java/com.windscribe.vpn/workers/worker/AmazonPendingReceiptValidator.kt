@@ -21,59 +21,72 @@ import dagger.assisted.AssistedInject
 import org.slf4j.LoggerFactory
 
 @HiltWorker
-class AmazonPendingReceiptValidator @AssistedInject constructor(
-    @Assisted appContext: Context,
-    @Assisted params: WorkerParameters,
-    private val apiManager: IApiCallManager,
-    private val preferencesHelper: PreferencesHelper
-) : CoroutineWorker(appContext, params) {
-    private val logger = LoggerFactory.getLogger("billing")
+class AmazonPendingReceiptValidator
+    @AssistedInject
+    constructor(
+        @Assisted appContext: Context,
+        @Assisted params: WorkerParameters,
+        private val apiManager: IApiCallManager,
+        private val preferencesHelper: PreferencesHelper,
+    ) : CoroutineWorker(appContext, params) {
+        private val logger = LoggerFactory.getLogger("billing")
 
-    override suspend fun doWork(): Result {
-        val state = preferencesHelper.purchaseFlowState
-        if (state == PurchaseState.FINISHED.name) {
-            return Result.success()
-        }
-        return try {
-            val result = verifyPayment(getPendingAmazonPurchase())
-            return if (result) {
-                logger.debug("Successfully verified purchase receipt")
-                preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
-                Windscribe.appContext.workManager.updateSession()
-                Result.success()
-            } else {
-                logger.debug("Failure to verify receipt")
+        override suspend fun doWork(): Result {
+            val state = preferencesHelper.purchaseFlowState
+            if (state == PurchaseState.FINISHED.name) {
+                return Result.success()
+            }
+            return try {
+                val result = verifyPayment(getPendingAmazonPurchase())
+                return if (result) {
+                    logger.debug("Successfully verified purchase receipt")
+                    preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
+                    Windscribe.appContext.workManager.updateSession()
+                    Result.success()
+                } else {
+                    logger.debug("Failure to verify receipt")
+                    Result.failure()
+                }
+            } catch (e: Exception) {
+                logger.debug(e.message)
                 Result.failure()
             }
-        } catch (e: Exception) {
-            logger.debug(e.message)
-            Result.failure()
         }
-    }
 
-    private fun getPendingAmazonPurchase(): AmazonPurchase {
-        val json = preferencesHelper.amazonPurchasedItem
-                ?: throw WindScribeException("No amazon purchase found.")
-        try {
-            return Gson().fromJson(json, AmazonPurchase::class.java)
-        } catch (jsonException: JsonSyntaxException) {
-            throw WindScribeException("Fatal error: Invalid purchase response saved.")
-        }
-    }
-
-    private suspend fun verifyPayment(amazonPurchase: AmazonPurchase): Boolean {
-        logger.debug("Verifying amazon receipt.")
-        return when (val result = result<GenericSuccess> {
-            apiManager.verifyPurchaseReceipt(amazonPurchase.receiptId, "", "", BillingConstants.AMAZON_PURCHASE_TYPE, amazonPurchase.userId)
-        }) {
-            is CallResult.Error -> {
-                logger.debug("Payment verification failed: ${result.errorMessage}")
-                false
-            }
-            is CallResult.Success -> {
-                logger.info("Payment verification successful.")
-                true
+        private fun getPendingAmazonPurchase(): AmazonPurchase {
+            val json =
+                preferencesHelper.amazonPurchasedItem
+                    ?: throw WindScribeException("No amazon purchase found.")
+            try {
+                return Gson().fromJson(json, AmazonPurchase::class.java)
+            } catch (jsonException: JsonSyntaxException) {
+                throw WindScribeException("Fatal error: Invalid purchase response saved.")
             }
         }
+
+        private suspend fun verifyPayment(amazonPurchase: AmazonPurchase): Boolean {
+            logger.debug("Verifying amazon receipt.")
+            return when (
+                val result =
+                    result<GenericSuccess> {
+                        apiManager.verifyPurchaseReceipt(
+                            amazonPurchase.receiptId,
+                            "",
+                            "",
+                            BillingConstants.AMAZON_PURCHASE_TYPE,
+                            amazonPurchase.userId,
+                        )
+                    }
+            ) {
+                is CallResult.Error -> {
+                    logger.debug("Payment verification failed: ${result.errorMessage}")
+                    false
+                }
+
+                is CallResult.Success -> {
+                    logger.info("Payment verification successful.")
+                    true
+                }
+            }
+        }
     }
-}

@@ -9,10 +9,16 @@ import com.windscribe.vpn.localdatabase.tables.NewsfeedAction
 
 interface NewsFeedView {
     fun setActionLabel(action: NewsfeedAction)
+
     fun setItemSelected(notificationId: Int)
+
     fun setNewsFeedAdapter(mAdapter: NewsFeedAdapter)
+
     fun setNewsFeedContentText(contentText: String)
+
     fun showLoadingError(errorMessage: String)
+
     fun startUpgradeActivity(pushNotificationAction: PushNotificationAction)
+
     fun hideActionLabel()
 }

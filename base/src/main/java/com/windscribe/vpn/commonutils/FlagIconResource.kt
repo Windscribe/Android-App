@@ -9,13 +9,9 @@ import com.windscribe.vpn.R
  * Created by Mustafizur on 2018-03-05.
  */
 object FlagIconResource {
-    fun getFlag(countryCode: String?): Int {
-        return flagIcons[countryCode] ?: R.drawable.dummy_flag
-    }
+    fun getFlag(countryCode: String?): Int = flagIcons[countryCode] ?: R.drawable.dummy_flag
 
-    fun getSmallFlag(countryCode: String?): Int {
-        return smallIcons[countryCode] ?: R.drawable.dummy_flag
-    }
+    fun getSmallFlag(countryCode: String?): Int = smallIcons[countryCode] ?: R.drawable.dummy_flag
 
     val flagIcons: Map<String, Int>
         get() {

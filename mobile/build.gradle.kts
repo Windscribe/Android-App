@@ -72,12 +72,13 @@ android {
     }
     packagingOptions {
         jniLibs {
-            excludes += setOf(
-                "lib/arm64-v8a/libwg-quick.so",
-                "lib/armeabi-v7a/libwg-quick.so",
-                "lib/x86/libwg-quick.so",
-                "lib/x86_64/libwg-quick.so"
-            )
+            excludes +=
+                setOf(
+                    "lib/arm64-v8a/libwg-quick.so",
+                    "lib/armeabi-v7a/libwg-quick.so",
+                    "lib/x86/libwg-quick.so",
+                    "lib/x86_64/libwg-quick.so",
+                )
             useLegacyPackaging = true
         }
     }
@@ -87,14 +88,14 @@ android {
 }
 
 dependencies {
-    //Android
+    // Android
     implementation("androidx.appcompat:appcompat:${libs.versions.appcompat.get()}")
     implementation("com.google.android.material:material:${libs.versions.material.get()}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${libs.versions.archLifecycle.get()}")
     implementation("androidx.navigation:navigation-fragment-ktx:${libs.versions.navigation.get()}")
     implementation("androidx.navigation:navigation-ui-ktx:${libs.versions.navigation.get()}")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-    //Core Module
+    // Core Module
     implementation(project(":base"))
     // Hilt
     implementation("com.google.dagger:hilt-android:${libs.versions.hilt.get()}")
@@ -106,7 +107,7 @@ dependencies {
     implementation("androidx.test.espresso:espresso-intents:3.5.1")
     implementation("androidx.test.uiautomator:uiautomator:2.2.0")
     implementation("androidx.core:core-splashscreen:1.2.0")
-    //Compose
+    // Compose
     implementation("androidx.activity:activity-ktx:1.9.0")
     val composeBom = platform("androidx.compose:compose-bom:2025.11.01")
     implementation(composeBom)

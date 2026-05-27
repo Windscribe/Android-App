@@ -23,5 +23,5 @@ data class ClaimVoucherCodeResponse(
     @SerializedName("new_plan_name") @Expose
     var newPlanName: String?,
     @SerializedName("promo_discount") @Expose
-    var promoDiscount: Long?
+    var promoDiscount: Long?,
 )

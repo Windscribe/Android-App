@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.common
 
 import android.R.attr.end
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -84,17 +83,22 @@ fun StyledTextFieldWithActions(
     showInfoButton: Boolean = false,
     onInfoClick: () -> Unit = {},
     keyboardType: KeyboardType = KeyboardType.Text,
-    imeAction: ImeAction = ImeAction.Done
+    imeAction: ImeAction = ImeAction.Done,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     // Define colors based on state
-    val borderColor = when {
-        isError -> Color(0xFFFF7F7F) // Red border for error state
-        isFocused -> AppColors.white // White border for active/focused state
-        else -> AppColors.white.copy(alpha = 0.1f) // Gray border for default state
-    }
+    val borderColor =
+        when {
+            isError -> Color(0xFFFF7F7F)
+
+            // Red border for error state
+            isFocused -> AppColors.white
+
+            // White border for active/focused state
+            else -> AppColors.white.copy(alpha = 0.1f) // Gray border for default state
+        }
 
     val textColor = if (isError) Color(0xFFFF7F7F) else AppColors.white
     val placeholderColor = if (isError) Color(0xFFFF7F7F) else Color(0xFF898F9D)
@@ -112,44 +116,48 @@ fun StyledTextFieldWithActions(
                     text = placeholder,
                     style = font16,
                     color = placeholderColor,
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Start,
                 )
             },
             singleLine = true,
             shape = RoundedCornerShape(9.dp),
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.None,
-                autoCorrectEnabled = false,
-                imeAction = imeAction,
-                keyboardType = keyboardType
-            ),
-            visualTransformation = if (isPassword && !passwordVisible) {
-                PasswordVisualTransformation()
-            } else {
-                VisualTransformation.None
-            },
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false,
+                    imeAction = imeAction,
+                    keyboardType = keyboardType,
+                ),
+            visualTransformation =
+                if (isPassword && !passwordVisible) {
+                    PasswordVisualTransformation()
+                } else {
+                    VisualTransformation.None
+                },
             trailingIcon = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(end = endPadding)
+                    modifier = Modifier.padding(end = endPadding),
                 ) {
                     // Password visibility toggle button
                     if (isPassword) {
                         IconButton(
                             onClick = onPasswordVisibilityToggle,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         ) {
                             Icon(
-                                painter = painterResource(
-                                    id = if (passwordVisible) {
-                                        R.drawable.ic_eye_off
-                                    } else {
-                                        R.drawable.ic_eye
-                                    }
-                                ),
+                                painter =
+                                    painterResource(
+                                        id =
+                                            if (passwordVisible) {
+                                                R.drawable.ic_eye_off
+                                            } else {
+                                                R.drawable.ic_eye
+                                            },
+                                    ),
                                 contentDescription = if (passwordVisible) "Hide password" else "Show password",
                                 tint = AppColors.white.copy(alpha = 0.7f),
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(24.dp),
                             )
                         }
                     }
@@ -161,13 +169,13 @@ fun StyledTextFieldWithActions(
                         }
                         IconButton(
                             onClick = onRefreshClick,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_refresh),
                                 contentDescription = "Refresh",
                                 tint = AppColors.white.copy(alpha = 0.7f),
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(24.dp),
                             )
                         }
                     }
@@ -179,54 +187,57 @@ fun StyledTextFieldWithActions(
                         }
                         IconButton(
                             onClick = onInfoClick,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_info_circle),
                                 contentDescription = "Information",
                                 tint = AppColors.white.copy(alpha = 0.7f),
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(24.dp),
                             )
                         }
                     }
                 }
             },
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = textColor,
-                unfocusedTextColor = textColor,
-                disabledTextColor = textColor,
-                errorTextColor = textColor,
-                unfocusedContainerColor = AppColors.white.copy(alpha = 0.05f),
-                focusedContainerColor = AppColors.white.copy(alpha = 0.05f),
-                disabledContainerColor = AppColors.white.copy(alpha = 0.05f),
-                errorContainerColor = AppColors.white.copy(alpha = 0.05f),
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                cursorColor = AppColors.white,
-                selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                    handleColor = AppColors.white,
-                    backgroundColor = AppColors.white.copy(alpha = 0.3f)
-                )
-            ),
-            modifier = modifier
-                .fillMaxWidth()
-                .background(
-                    color = AppColors.white.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(9.dp)
-                )
-                .border(
-                    width = 1.dp,
-                    color = borderColor,
-                    shape = RoundedCornerShape(9.dp)
+            colors =
+                TextFieldDefaults.colors(
+                    focusedTextColor = textColor,
+                    unfocusedTextColor = textColor,
+                    disabledTextColor = textColor,
+                    errorTextColor = textColor,
+                    unfocusedContainerColor = AppColors.white.copy(alpha = 0.05f),
+                    focusedContainerColor = AppColors.white.copy(alpha = 0.05f),
+                    disabledContainerColor = AppColors.white.copy(alpha = 0.05f),
+                    errorContainerColor = AppColors.white.copy(alpha = 0.05f),
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    cursorColor = AppColors.white,
+                    selectionColors =
+                        androidx.compose.foundation.text.selection.TextSelectionColors(
+                            handleColor = AppColors.white,
+                            backgroundColor = AppColors.white.copy(alpha = 0.3f),
+                        ),
                 ),
-            textStyle = font16.copy(
-                color = textColor,
-                textAlign = TextAlign.Start,
-                lineHeight = 20.sp
-            ),
-            interactionSource = interactionSource
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = AppColors.white.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(9.dp),
+                    ).border(
+                        width = 1.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(9.dp),
+                    ),
+            textStyle =
+                font16.copy(
+                    color = textColor,
+                    textAlign = TextAlign.Start,
+                    lineHeight = 20.sp,
+                ),
+            interactionSource = interactionSource,
         )
     }
 }
@@ -243,17 +254,18 @@ fun StyledTextFieldWithActionsPreview() {
     var errorVisible by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.deepBlue)
-            .padding(16.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(AppColors.deepBlue)
+                .padding(16.dp),
     ) {
         // Email field with info button (like Figma design)
         Text(
             text = "Email with info button",
             style = font16,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         StyledTextFieldWithActions(
             value = emailText,
@@ -264,7 +276,7 @@ fun StyledTextFieldWithActionsPreview() {
                 // Show info dialog/tooltip
             },
             keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next
+            imeAction = ImeAction.Next,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -274,7 +286,7 @@ fun StyledTextFieldWithActionsPreview() {
             text = "Password with visibility toggle",
             style = font16,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         StyledTextFieldWithActions(
             value = passwordText,
@@ -283,7 +295,7 @@ fun StyledTextFieldWithActionsPreview() {
             isPassword = true,
             passwordVisible = passwordVisible,
             onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
-            keyboardType = KeyboardType.Password
+            keyboardType = KeyboardType.Password,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -293,7 +305,7 @@ fun StyledTextFieldWithActionsPreview() {
             text = "Password with visibility + refresh",
             style = font16,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         StyledTextFieldWithActions(
             value = passwordWithRefresh,
@@ -307,7 +319,7 @@ fun StyledTextFieldWithActionsPreview() {
                 // Generate random password or refresh action
                 passwordWithRefresh = "Generated${(1000..9999).random()}"
             },
-            keyboardType = KeyboardType.Password
+            keyboardType = KeyboardType.Password,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -317,7 +329,7 @@ fun StyledTextFieldWithActionsPreview() {
             text = "Error state with actions",
             style = font16,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         StyledTextFieldWithActions(
             value = errorText,
@@ -329,7 +341,7 @@ fun StyledTextFieldWithActionsPreview() {
             onPasswordVisibilityToggle = { errorVisible = !errorVisible },
             showRefreshButton = true,
             onRefreshClick = { errorText = "" },
-            keyboardType = KeyboardType.Password
+            keyboardType = KeyboardType.Password,
         )
     }
 }

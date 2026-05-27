@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.confirmemail.ConfirmActivity
@@ -16,14 +17,14 @@ import com.windscribe.tv.customview.ProgressFragment.Companion.instance
 import com.windscribe.tv.databinding.ActivityAddEmailAddressBinding
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import org.slf4j.LoggerFactory
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AddEmailActivity : BaseActivity(), AddEmailView {
-
+class AddEmailActivity :
+    BaseActivity(),
+    AddEmailView {
     @Inject
     lateinit var presenter: AddEmailPresenter
 
@@ -115,14 +116,13 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
         imm.hideSoftInputFromWindow(
             window
                 .decorView.windowToken,
-            InputMethodManager.HIDE_NOT_ALWAYS
+            InputMethodManager.HIDE_NOT_ALWAYS,
         )
     }
 
     private fun onAddEmailClick() {
         val email = binding.emailEdit.text
-        if (intent != null && intent.action != null && (intent.action == PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT)
-        ) {
+        if (intent != null && intent.action != null && (intent.action == PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT)) {
             email?.let {
                 presenter.onResendEmail(it.toString())
             }
@@ -151,9 +151,13 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
 
     private fun resetButtonTextColor() {
         binding.back.setTextColor(
-            if (binding.back.hasFocus()) resources.getColor(R.color.colorWhite) else resources.getColor(
-                R.color.colorWhite50
-            )
+            if (binding.back.hasFocus()) {
+                resources.getColor(R.color.colorWhite)
+            } else {
+                resources.getColor(
+                    R.color.colorWhite50,
+                )
+            },
         )
     }
 
@@ -165,7 +169,9 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
     private fun setTextFieldsFromStartingPoint() {
         val action = intent.action ?: return
         val proUser = intent.getBooleanExtra("pro_user", false)
-        binding.title.setText(if (proUser) com.windscribe.vpn.R.string.pro_reason_to_add_email else com.windscribe.vpn.R.string.free_reason_to_add_email)
+        binding.title.setText(
+            if (proUser) com.windscribe.vpn.R.string.pro_reason_to_add_email else com.windscribe.vpn.R.string.free_reason_to_add_email,
+        )
         when (action) {
             PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT -> {
                 binding.back.text = getString(com.windscribe.vpn.R.string.back_uppercase)
@@ -187,8 +193,6 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
         const val Email_Tag = "email_tag"
 
         @JvmStatic
-        fun getStartIntent(context: Context?): Intent {
-            return Intent(context, AddEmailActivity::class.java)
-        }
+        fun getStartIntent(context: Context?): Intent = Intent(context, AddEmailActivity::class.java)
     }
 }

@@ -12,8 +12,10 @@ import java.io.IOException
 import java.io.Serializable
 import java.io.StringReader
 
-class WireGuardVpnProfile(val content: String) : Cloneable, Serializable {
-
+class WireGuardVpnProfile(
+    val content: String,
+) : Cloneable,
+    Serializable {
     public override fun clone(): VpnProfile {
         try {
             return super.clone() as VpnProfile
@@ -34,18 +36,18 @@ class WireGuardVpnProfile(val content: String) : Cloneable, Serializable {
         }
 
         @JvmStatic
-        fun getHostName(content: String): String? {
-            return try {
+        fun getHostName(content: String): String? =
+            try {
                 val config = createConfigFromString(content)
-                config.peers[0].endpoint.get().host
+                config.peers[0]
+                    .endpoint
+                    .get()
+                    .host
             } catch (e: Exception) {
                 null
             }
-        }
 
         @JvmStatic
-        fun validConfig(profileContent: String): Boolean {
-            return profileContent.contains("[Interface]") && profileContent.contains("[Peer]")
-        }
+        fun validConfig(profileContent: String): Boolean = profileContent.contains("[Interface]") && profileContent.contains("[Peer]")
     }
 }

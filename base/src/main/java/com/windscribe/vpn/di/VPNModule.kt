@@ -37,9 +37,9 @@ class VPNModule {
         emergencyConnectRepository: EmergencyConnectRepository,
         localDbInterface: LocalDbInterface,
         preferencesHelper: PreferencesHelper,
-        deviceStateManager: DeviceStateManager
-    ): WindVpnController {
-        return WindVpnController(
+        deviceStateManager: DeviceStateManager,
+    ): WindVpnController =
+        WindVpnController(
             coroutineScope,
             preferencesHelper,
             vpnProfileCreator,
@@ -51,7 +51,6 @@ class VPNModule {
             autoConnectionManager,
             emergencyConnectRepository,
             localDbInterface,
-            deviceStateManager
+            deviceStateManager,
         )
-    }
 }

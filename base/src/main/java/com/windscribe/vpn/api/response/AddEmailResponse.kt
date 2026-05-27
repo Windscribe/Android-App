@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class AddEmailResponse {
-
     @SerializedName("email")
     @Expose
     val emailAddress: String? = null

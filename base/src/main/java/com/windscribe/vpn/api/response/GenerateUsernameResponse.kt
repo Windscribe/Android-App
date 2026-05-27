@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class GenerateUsernameResponse {
-
     @SerializedName("username")
     @Expose
     val username: String? = null

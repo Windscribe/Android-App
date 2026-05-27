@@ -18,14 +18,20 @@ class FocusAwareConstraintLayout : ConstraintLayout {
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(
-        context, attrs
+        context,
+        attrs,
     )
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context, attrs, defStyleAttr
+        context,
+        attrs,
+        defStyleAttr,
     )
 
-    override fun focusSearch(focused: View, direction: Int): View? {
+    override fun focusSearch(
+        focused: View,
+        direction: Int,
+    ): View? {
         val id = focused.id
         if (direction == FOCUS_DOWN) { // Open browse overlay window
             if (R.id.vpn == id) {

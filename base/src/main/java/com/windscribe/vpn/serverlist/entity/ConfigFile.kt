@@ -13,7 +13,6 @@ import java.io.Serializable
 @Keep
 @Entity(tableName = "ConfigFile")
 class ConfigFile : Serializable {
-
     @PrimaryKey
     @ColumnInfo(name = "primary_key")
     var primaryKey: Int = 0
@@ -43,7 +42,7 @@ class ConfigFile : Serializable {
         content: String?,
         username: String?,
         password: String?,
-        remember: Boolean
+        remember: Boolean,
     ) {
         this.primaryKey = primaryKey
         this.content = content
@@ -55,17 +54,16 @@ class ConfigFile : Serializable {
 
     constructor()
 
-    override fun toString(): String {
-        return "ConfigFile{" +
-                "primaryKey=" + primaryKey +
-                ", content='[redacted]'" +
-                ", username='" + mask(username) + '\'' +
-                ", password='" + mask(password) + '\'' +
-                ", remember=" + isRemember +
-                ", type=" + type +
-                ", name='" + name + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "ConfigFile{" +
+            "primaryKey=" + primaryKey +
+            ", content='[redacted]'" +
+            ", username='" + mask(username) + '\'' +
+            ", password='" + mask(password) + '\'' +
+            ", remember=" + isRemember +
+            ", type=" + type +
+            ", name='" + name + '\'' +
+            '}'
 
     private companion object {
         fun mask(value: String?): String {

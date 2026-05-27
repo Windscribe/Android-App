@@ -13,6 +13,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.URLSpan
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.windscribe.tv.R
@@ -25,13 +26,14 @@ import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import com.windscribe.vpn.localdatabase.tables.NewsfeedAction
-import org.slf4j.LoggerFactory
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class NewsFeedActivity : BaseActivity(), NewsFeedView {
+class NewsFeedActivity :
+    BaseActivity(),
+    NewsFeedView {
     @JvmField
     @Inject
     var customProgressDialog: CustomDialog? = null
@@ -57,7 +59,7 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
         binding.newsFeedRecycleView.layoutManager = LinearLayoutManager(this)
         presenter.init(
             intent.getBooleanExtra("showPopUp", false),
-            intent.getIntExtra("popUp", -1)
+            intent.getIntExtra("popUp", -1),
         )
         binding.actionLabel.setOnClickListener {
             val action = binding.actionLabel.getTag(R.id.action_label)
@@ -93,11 +95,12 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
     }
 
     override fun setNewsFeedContentText(contentText: String) {
-        val spanned: Spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Html.fromHtml(contentText, Html.FROM_HTML_MODE_LEGACY)
-        } else {
-            Html.fromHtml(contentText)
-        }
+        val spanned: Spanned =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Html.fromHtml(contentText, Html.FROM_HTML_MODE_LEGACY)
+            } else {
+                Html.fromHtml(contentText)
+            }
         val spannable: Spannable = SpannableString(spanned)
         val spans = spannable.getSpans(0, spannable.length, URLSpan::class.java)
         for (span in spans) {
@@ -118,7 +121,11 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
     }
 
     companion object {
-        fun getStartIntent(context: Context?, showPopUp: Boolean, popUp: Int): Intent {
+        fun getStartIntent(
+            context: Context?,
+            showPopUp: Boolean,
+            popUp: Int,
+        ): Intent {
             val startIntent = Intent(context, NewsFeedActivity::class.java)
             startIntent.putExtra("showPopUp", showPopUp)
             startIntent.putExtra("popUp", popUp)

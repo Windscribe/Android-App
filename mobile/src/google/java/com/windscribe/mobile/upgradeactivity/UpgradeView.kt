@@ -11,7 +11,6 @@ import com.android.billingclient.api.QueryProductDetailsParams
 import com.windscribe.vpn.billing.WindscribeInAppProduct
 
 interface UpgradeView {
-
     val billingType: UpgradeActivity.BillingType
 
     fun getProducts(skuList: List<String>)
@@ -41,7 +40,10 @@ interface UpgradeView {
 
     fun showToast(toastText: String)
 
-    fun startPurchaseFlow(productDetailsParams: List<BillingFlowParams.ProductDetailsParams>, accountID: String?)
+    fun startPurchaseFlow(
+        productDetailsParams: List<BillingFlowParams.ProductDetailsParams>,
+        accountID: String?,
+    )
 
     fun startPurchaseFlow(product: Product)
 

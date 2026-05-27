@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,9 +35,10 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 @Composable
 fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
     val context = LocalContext.current
-    val importPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? -> uri?.let { viewmodel?.loadServerListFile(context, it) } }
+    val importPickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+        ) { uri: Uri? -> uri?.let { viewmodel?.loadServerListFile(context, it) } }
 
     val exportPickerLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
@@ -49,7 +49,7 @@ fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
             }
         }
 
-    Column{
+    Column {
         Header()
         Spacer(modifier = Modifier.height(1.dp))
         Section(com.windscribe.vpn.R.string.export_locations, "Export server list file.") {
@@ -60,7 +60,11 @@ fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
             importPickerLauncher.launch(arrayOf("*/*"))
         }
         Spacer(modifier = Modifier.height(1.dp))
-        Section(com.windscribe.vpn.R.string.reset, "Reset custom server list file.", shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)) {
+        Section(
+            com.windscribe.vpn.R.string.reset,
+            "Reset custom server list file.",
+            shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
+        ) {
             viewmodel?.onResetClick()
         }
     }
@@ -68,21 +72,26 @@ fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
 
 @Composable
 private fun Header() {
-    Column(modifier = Modifier.fillMaxWidth().background(
-        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-    ).padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically,) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                ).padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painterResource(R.drawable.ic_sound),
                 contentDescription = "",
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
             )
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
                 stringResource(com.windscribe.vpn.R.string.renamed_location),
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.primaryTextColor
+                color = MaterialTheme.colorScheme.primaryTextColor,
             )
         }
         Spacer(modifier = Modifier.padding(8.dp))
@@ -91,21 +100,31 @@ private fun Header() {
 }
 
 @Composable
-private fun Section(title: Int, description: String, shape: RoundedCornerShape = RoundedCornerShape(0.dp), onClick: () -> Unit) {
-    Row(modifier =  Modifier.background(
-        MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-        shape = shape
-    ).hapticClickable { onClick() }.padding(16.dp)) {
+private fun Section(
+    title: Int,
+    description: String,
+    shape: RoundedCornerShape = RoundedCornerShape(0.dp),
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .background(
+                    MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = shape,
+                ).hapticClickable { onClick() }
+                .padding(16.dp),
+    ) {
         Text(
             stringResource(title),
             style = font16.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.primaryTextColor
+            color = MaterialTheme.colorScheme.primaryTextColor,
         )
         Spacer(modifier = Modifier.weight(1.0f))
         Icon(
             painter = painterResource(R.drawable.ic_forward_arrow_white),
             contentDescription = description,
-            tint = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.40f)
+            tint = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.40f),
         )
     }
 }
@@ -114,9 +133,10 @@ private fun Section(title: Int, description: String, shape: RoundedCornerShape =
 @MultiDevicePreview
 private fun AppCustomBackgroundPreview() {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp),
     ) {
         Spacer(modifier = Modifier.height(30.dp))
         RenameLocations()

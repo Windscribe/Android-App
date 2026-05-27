@@ -14,7 +14,6 @@ import androidx.annotation.Keep
  */
 @Keep
 class ServerNodeListOverLoaded : Parcelable {
-
     private val countryCode: String?
 
     private val countryName: String?
@@ -48,9 +47,7 @@ class ServerNodeListOverLoaded : Parcelable {
         randomNodeStrength = parcel.readInt()
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     override fun equals(other: Any?): Boolean {
         if (other !is ServerNodeListOverLoaded) {
@@ -59,14 +56,15 @@ class ServerNodeListOverLoaded : Parcelable {
         return id == other.id
     }
 
-    override fun hashCode(): Int {
-        return id
-    }
+    override fun hashCode(): Int = id
 
     val id: Int
         get() = (nodeNames[0] + nodeNames[1]).hashCode()
 
-    override fun writeToParcel(dest: Parcel, flags: Int) {
+    override fun writeToParcel(
+        dest: Parcel,
+        flags: Int,
+    ) {
         dest.writeStringList(ip)
         dest.writeStringList(ip2)
         dest.writeStringList(ip3)
@@ -104,13 +102,9 @@ class ServerNodeListOverLoaded : Parcelable {
         @JvmField
         val CREATOR: Parcelable.Creator<ServerNodeListOverLoaded> =
             object : Parcelable.Creator<ServerNodeListOverLoaded> {
-                override fun createFromParcel(parcel: Parcel): ServerNodeListOverLoaded {
-                    return ServerNodeListOverLoaded(parcel)
-                }
+                override fun createFromParcel(parcel: Parcel): ServerNodeListOverLoaded = ServerNodeListOverLoaded(parcel)
 
-                override fun newArray(size: Int): Array<ServerNodeListOverLoaded?> {
-                    return arrayOfNulls(size)
-                }
+                override fun newArray(size: Int): Array<ServerNodeListOverLoaded?> = arrayOfNulls(size)
             }
     }
 }

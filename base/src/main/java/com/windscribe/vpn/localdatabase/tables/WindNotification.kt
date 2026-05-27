@@ -46,6 +46,5 @@ data class WindNotification(
     @Expose
     @Embedded
     var action: NewsfeedAction?,
-    var isRead: Boolean = false
-
+    var isRead: Boolean = false,
 )

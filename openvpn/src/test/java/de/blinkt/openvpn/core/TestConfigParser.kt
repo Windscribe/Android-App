@@ -24,26 +24,27 @@ import java.util.Arrays
  */
 
 const val miniconfig = "client\nremote test.blinkt.de\n"
-const val fakeCerts = "<ca>\n" +
-    "-----BEGIN CERTIFICATE-----\n" +
-    "\n" +
-    "-----END CERTIFICATE-----\n" +
-    "\n" +
-    "</ca>\n" +
-    "\n" +
-    "<cert>\n" +
-    "-----BEGIN CERTIFICATE-----\n" +
-    "\n" +
-    "-----END CERTIFICATE-----\n" +
-    "\n" +
-    "</cert>\n" +
-    "\n" +
-    "<key>\n" +
-    "-----BEGIN PRIVATE KEY-----\n" +
-    "\n" +
-    "-----END PRIVATE KEY-----\n" +
-    "\n" +
-    "</key>"
+const val fakeCerts =
+    "<ca>\n" +
+        "-----BEGIN CERTIFICATE-----\n" +
+        "\n" +
+        "-----END CERTIFICATE-----\n" +
+        "\n" +
+        "</ca>\n" +
+        "\n" +
+        "<cert>\n" +
+        "-----BEGIN CERTIFICATE-----\n" +
+        "\n" +
+        "-----END CERTIFICATE-----\n" +
+        "\n" +
+        "</cert>\n" +
+        "\n" +
+        "<key>\n" +
+        "-----BEGIN PRIVATE KEY-----\n" +
+        "\n" +
+        "-----END PRIVATE KEY-----\n" +
+        "\n" +
+        "</key>"
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])
@@ -51,10 +52,11 @@ class TestConfigParser {
     @Test
     @Throws(IOException::class, ConfigParser.ConfigParseError::class)
     fun testHttpProxyPass() {
-        val httpproxypass = "<http-proxy-user-pass>\n" +
-            "foo\n" +
-            "bar\n" +
-            "</http-proxy-user-pass>\n"
+        val httpproxypass =
+            "<http-proxy-user-pass>\n" +
+                "foo\n" +
+                "bar\n" +
+                "</http-proxy-user-pass>\n"
 
         val cp = ConfigParser()
         cp.parseConfig(StringReader(miniconfig + httpproxypass))
@@ -93,7 +95,7 @@ class TestConfigParser {
                 "tun-mtu 1222\n" +
                 "</connection>\n" +
                 "route 8.8.8.8 255.255.255.255 net_gateway\n"
-            )
+        )
 
         val cp = ConfigParser()
         cp.parseConfig(StringReader(config))
@@ -122,7 +124,7 @@ class TestConfigParser {
                 "tun-mtu 1222\n" +
                 "</connection>\n" +
                 "route 8.8.8.8 255.255.255.255 net_gateway\n"
-            )
+        )
 
         val config1 = config + "cipher AES-128-GCM\n"
 
@@ -157,24 +159,25 @@ class TestConfigParser {
     @Test
     @Throws(IOException::class, ConfigParser.ConfigParseError::class)
     fun testSockProxyImport() {
-        val proxy = "ca baz\n" +
-            "key foo\n" +
-            "cert bar\n" +
-            "client\n" +
-            "<connection>\n" +
-            "socks-proxy 13.23.3.2\n" +
-            "remote foo.bar\n" +
-            "</connection>\n" +
-            "\n" +
-            "<connection>\n" +
-            "socks-proxy 1.2.3.4 1234\n" +
-            "remote foo.bar\n" +
-            "</connection>\n" +
-            "\n" +
-            "<connection>\n" +
-            "http-proxy 1.2.3.7 8080\n" +
-            "remote foo.bar\n" +
-            "</connection>"
+        val proxy =
+            "ca baz\n" +
+                "key foo\n" +
+                "cert bar\n" +
+                "client\n" +
+                "<connection>\n" +
+                "socks-proxy 13.23.3.2\n" +
+                "remote foo.bar\n" +
+                "</connection>\n" +
+                "\n" +
+                "<connection>\n" +
+                "socks-proxy 1.2.3.4 1234\n" +
+                "remote foo.bar\n" +
+                "</connection>\n" +
+                "\n" +
+                "<connection>\n" +
+                "http-proxy 1.2.3.7 8080\n" +
+                "remote foo.bar\n" +
+                "</connection>"
 
         val cp = ConfigParser()
         cp.parseConfig(StringReader(proxy))
@@ -201,37 +204,38 @@ class TestConfigParser {
     @Test
     @Throws(IOException::class, ConfigParser.ConfigParseError::class)
     fun testHttpUserPassAuth() {
-        val proxy = "client\n" +
-            "dev tun\n" +
-            "proto tcp\n" +
-            "remote 1.2.3.4 443\n" +
-            "resolv-retry infinite\n" +
-            "nobind\n" +
-            "persist-key\n" +
-            "persist-tun\n" +
-            "auth-user-pass\n" +
-            "verb 3\n" +
-            "cipher AES-128-CBC\n" +
-            "pull\n" +
-            "route-delay 2\n" +
-            "redirect-gateway\n" +
-            "remote-cert-tls server\n" +
-            "ns-cert-type server\n" +
-            "comp-lzo no\n" +
-            "http-proxy 1.2.3.4 1234\n" +
-            "<http-proxy-user-pass>\n" +
-            "username12\n" +
-            "password34\n" +
-            "</http-proxy-user-pass>\n" +
-            "<ca>\n" +
-            "foo\n" +
-            "</ca>\n" +
-            "<cert>\n" +
-            "bar\n" +
-            "</cert>\n" +
-            "<key>\n" +
-            "baz\n" +
-            "</key>\n"
+        val proxy =
+            "client\n" +
+                "dev tun\n" +
+                "proto tcp\n" +
+                "remote 1.2.3.4 443\n" +
+                "resolv-retry infinite\n" +
+                "nobind\n" +
+                "persist-key\n" +
+                "persist-tun\n" +
+                "auth-user-pass\n" +
+                "verb 3\n" +
+                "cipher AES-128-CBC\n" +
+                "pull\n" +
+                "route-delay 2\n" +
+                "redirect-gateway\n" +
+                "remote-cert-tls server\n" +
+                "ns-cert-type server\n" +
+                "comp-lzo no\n" +
+                "http-proxy 1.2.3.4 1234\n" +
+                "<http-proxy-user-pass>\n" +
+                "username12\n" +
+                "password34\n" +
+                "</http-proxy-user-pass>\n" +
+                "<ca>\n" +
+                "foo\n" +
+                "</ca>\n" +
+                "<cert>\n" +
+                "bar\n" +
+                "</cert>\n" +
+                "<key>\n" +
+                "baz\n" +
+                "</key>\n"
         val cp = ConfigParser()
         cp.parseConfig(StringReader(proxy))
         val vp = cp.convertProfile()
@@ -252,31 +256,32 @@ class TestConfigParser {
     @Test
     @Throws(IOException::class, ConfigParser.ConfigParseError::class)
     fun testConfigWithHttpProxyOptions() {
-        val proxyconf = "pull\n" +
-            "dev tun\n" +
-            "proto tcp-client\n" +
-            "cipher AES-128-CBC\n" +
-            "auth SHA1\n" +
-            "reneg-sec 0\n" +
-            "remote-cert-tls server\n" +
-            "tls-version-min 1.2 or-highest\n" +
-            "persist-tun\n" +
-            "nobind\n" +
-            "connect-retry 2 2\n" +
-            "dhcp-option DNS 1.1.1.1\n" +
-            "dhcp-option DNS 84.200.69.80\n" +
-            "auth-user-pass\n" +
-            "\n" +
-            "remote xx.xx.xx.xx 1194\n" +
-            "http-proxy 1.2.3.4 8080\n" +
-            "http-proxy-option VERSION 1.1\n" +
-            "http-proxy-option CUSTOM-HEADER \"Connection: Upgrade\"\n" +
-            "http-proxy-option CUSTOM-HEADER \"X-Forwarded-Proto: https\"\n" +
-            "http-proxy-option CUSTOM-HEADER \"Upgrade-Insecure-Requests: 1\"\n" +
-            "http-proxy-option CUSTOM-HEADER \"DNT: 1\"\n" +
-            "http-proxy-option CUSTOM-HEADER \"Tk: N\"\n" +
-            "\n" +
-            fakeCerts
+        val proxyconf =
+            "pull\n" +
+                "dev tun\n" +
+                "proto tcp-client\n" +
+                "cipher AES-128-CBC\n" +
+                "auth SHA1\n" +
+                "reneg-sec 0\n" +
+                "remote-cert-tls server\n" +
+                "tls-version-min 1.2 or-highest\n" +
+                "persist-tun\n" +
+                "nobind\n" +
+                "connect-retry 2 2\n" +
+                "dhcp-option DNS 1.1.1.1\n" +
+                "dhcp-option DNS 84.200.69.80\n" +
+                "auth-user-pass\n" +
+                "\n" +
+                "remote xx.xx.xx.xx 1194\n" +
+                "http-proxy 1.2.3.4 8080\n" +
+                "http-proxy-option VERSION 1.1\n" +
+                "http-proxy-option CUSTOM-HEADER \"Connection: Upgrade\"\n" +
+                "http-proxy-option CUSTOM-HEADER \"X-Forwarded-Proto: https\"\n" +
+                "http-proxy-option CUSTOM-HEADER \"Upgrade-Insecure-Requests: 1\"\n" +
+                "http-proxy-option CUSTOM-HEADER \"DNT: 1\"\n" +
+                "http-proxy-option CUSTOM-HEADER \"Tk: N\"\n" +
+                "\n" +
+                fakeCerts
 
         val cp = ConfigParser()
         cp.parseConfig(StringReader(proxyconf))
@@ -298,7 +303,10 @@ class TestConfigParser {
 
         vp.mConnections[vp.mConnections.size - 1].mProxyType = Connection.ProxyType.ORBOT
 
-        Assert.assertEquals(vp.checkProfile(ApplicationProvider.getApplicationContext(), false).toLong(), R.string.error_orbot_and_proxy_options.toLong())
+        Assert.assertEquals(
+            vp.checkProfile(ApplicationProvider.getApplicationContext(), false).toLong(),
+            R.string.error_orbot_and_proxy_options.toLong(),
+        )
     }
 
     @Test

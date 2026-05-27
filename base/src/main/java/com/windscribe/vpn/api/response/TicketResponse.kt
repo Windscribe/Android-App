@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class TicketResponse {
-
     @SerializedName("status")
     @Expose
     val status: String? = null

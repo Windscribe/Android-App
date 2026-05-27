@@ -16,5 +16,5 @@ class PingTestResults(
     @ColumnInfo(name = "node_parent_index")
     val nodeParentIndex: Int,
     @ColumnInfo(name = "node_ping_time")
-    val nodePingTime: Int?
+    val nodePingTime: Int?,
 )

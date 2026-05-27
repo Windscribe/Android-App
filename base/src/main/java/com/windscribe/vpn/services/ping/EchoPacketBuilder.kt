@@ -4,19 +4,22 @@
 
 package com.windscribe.vpn.services.ping
 
+import okhttp3.internal.and
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
-import okhttp3.internal.and
 
-class EchoPacketBuilder(private val mType: Byte, payload: ByteArray?) {
-
-    private val mPayload: ByteArray = if (payload == null) {
-        ByteArray(0)
-    } else if (payload.size > MAX_PAYLOAD) {
-        throw IllegalArgumentException("Payload limited to $MAX_PAYLOAD")
-    } else {
-        payload
-    }
+class EchoPacketBuilder(
+    private val mType: Byte,
+    payload: ByteArray?,
+) {
+    private val mPayload: ByteArray =
+        if (payload == null) {
+            ByteArray(0)
+        } else if (payload.size > MAX_PAYLOAD) {
+            throw IllegalArgumentException("Payload limited to $MAX_PAYLOAD")
+        } else {
+            payload
+        }
 
     fun build(): ByteBuffer {
         val identifier = sSequence.getAndIncrement().toShort()
@@ -34,13 +37,16 @@ class EchoPacketBuilder(private val mType: Byte, payload: ByteArray?) {
     }
 
     companion object {
-
         const val MAX_PAYLOAD = 65507
         const val TYPE_ICMP_V4: Byte = 8
         const val TYPE_ICMP_V6 = 128.toByte()
         private const val CODE: Byte = 0
         private val sSequence = AtomicInteger(0)
-        fun checksum(data: ByteArray, end: Int): Short {
+
+        fun checksum(
+            data: ByteArray,
+            end: Int,
+        ): Short {
             var sum = 0
             // High bytes (even indices)
             run {

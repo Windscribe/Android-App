@@ -13,7 +13,6 @@ import com.google.gson.annotations.SerializedName
  */
 @Keep
 class BillingPlanResponse {
-
     @SerializedName("plans")
     @Expose
     val plansList: List<BillingPlans>? = null
@@ -50,7 +49,6 @@ class BillingPlanResponse {
 
     @Keep
     class BillingPlans {
-
         @SerializedName("discount")
         @Expose
         var discount = 0
@@ -90,15 +88,14 @@ class BillingPlanResponse {
         val isReBill: Boolean
             get() = reBill != null && reBill == 1
 
-        override fun toString(): String {
-            return "BillingPlan{" +
-                    "name=" + planName +
-                    ", ws_plan_id='" + wsPlanId + '\'' +
-                    ", ext_id='" + extId + '\'' +
-                    ", price='" + planPrice + '\'' +
-                    ", active='" + planStatus + '\'' +
-                    ", rebill='" + isReBill + '\'' +
-                    '}'
-        }
+        override fun toString(): String =
+            "BillingPlan{" +
+                "name=" + planName +
+                ", ws_plan_id='" + wsPlanId + '\'' +
+                ", ext_id='" + extId + '\'' +
+                ", price='" + planPrice + '\'' +
+                ", active='" + planStatus + '\'' +
+                ", rebill='" + isReBill + '\'' +
+                '}'
     }
 }

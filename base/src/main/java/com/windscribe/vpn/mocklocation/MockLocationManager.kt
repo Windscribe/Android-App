@@ -20,14 +20,21 @@ import org.slf4j.LoggerFactory
 import javax.inject.Singleton
 
 @Singleton
-class MockLocationManager(val context: Context, val scope: CoroutineScope, val vpnConnectionStateManager: VPNConnectionStateManager, val preferencesHelper: PreferencesHelper) {
-
+class MockLocationManager(
+    val context: Context,
+    val scope: CoroutineScope,
+    val vpnConnectionStateManager: VPNConnectionStateManager,
+    val preferencesHelper: PreferencesHelper,
+) {
     private val logger = LoggerFactory.getLogger("state")
     private var mockGps: MockLocationProvider? = null
     private var mockNetwork: MockLocationProvider? = null
     private var pushLocationJob: Job? = null
 
-    fun start(lat: Double, lng: Double) {
+    fun start(
+        lat: Double,
+        lng: Double,
+    ) {
         try {
             mockNetwork = MockLocationProvider(LocationManager.NETWORK_PROVIDER, context)
             mockGps = MockLocationProvider(LocationManager.GPS_PROVIDER, context)
@@ -37,19 +44,20 @@ class MockLocationManager(val context: Context, val scope: CoroutineScope, val v
             return
         }
         if (pushLocationJob == null) {
-            pushLocationJob = scope.launch {
-                while (true) {
-                    try {
-                        mockNetwork?.pushLocation(lat, lng)
-                    } catch (ignored: Exception) {
+            pushLocationJob =
+                scope.launch {
+                    while (true) {
+                        try {
+                            mockNetwork?.pushLocation(lat, lng)
+                        } catch (ignored: Exception) {
+                        }
+                        try {
+                            mockGps?.pushLocation(lat, lng)
+                        } catch (ignored: Exception) {
+                        }
+                        delay(2000)
                     }
-                    try {
-                        mockGps?.pushLocation(lat, lng)
-                    } catch (ignored: Exception) {
-                    }
-                    delay(2000)
                 }
-            }
         }
     }
 
@@ -79,25 +87,23 @@ class MockLocationManager(val context: Context, val scope: CoroutineScope, val v
     }
 
     companion object {
-
         @JvmStatic
-        fun isAppSelectedInMockLocationList(applicationContext: Context): Boolean {
-            return runCatching {
+        fun isAppSelectedInMockLocationList(applicationContext: Context): Boolean =
+            runCatching {
                 MockLocationProvider(
                     LocationManager.NETWORK_PROVIDER,
-                    applicationContext
+                    applicationContext,
                 )
                 MockLocationProvider(LocationManager.GPS_PROVIDER, applicationContext)
                 true
             }.getOrDefault(false)
-        }
 
         @JvmStatic
-        fun isDevModeOn(applicationContext: Context): Boolean {
-            return Global.getInt(
-                    applicationContext.contentResolver,
-                    Global.DEVELOPMENT_SETTINGS_ENABLED, 0
+        fun isDevModeOn(applicationContext: Context): Boolean =
+            Global.getInt(
+                applicationContext.contentResolver,
+                Global.DEVELOPMENT_SETTINGS_ENABLED,
+                0,
             ) != 0
-        }
     }
 }

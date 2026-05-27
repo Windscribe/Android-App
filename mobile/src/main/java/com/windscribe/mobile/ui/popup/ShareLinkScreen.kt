@@ -46,61 +46,77 @@ fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
     HandleExit(viewmodel)
     val intentBuilder = buildIntentBuilder(viewmodel)
     val navController = LocalNavController.current
+
+    @Suppress("ktlint:standard:max-line-length")
+    val refereeDescription =
+        stringResource(
+            com.windscribe.vpn.R.string.referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account,
+        )
     PreferenceBackground {
         Column(
-            modifier = Modifier
-                .statusBarsPadding()
-                .padding(vertical = 16.dp, horizontal = 16.dp)
-                .navigationBarsPadding(),
+            modifier =
+                Modifier
+                    .statusBarsPadding()
+                    .padding(vertical = 16.dp, horizontal = 16.dp)
+                    .navigationBarsPadding(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             PreferencesNavBar(stringResource(com.windscribe.vpn.R.string.refer_for_data)) {
                 navController.popBackStack()
             }
             Spacer(modifier = Modifier.weight(1.0f))
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
-                    .widthIn(max = 560.dp)
-                    .padding(horizontal = 32.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier =
+                    Modifier
+                        .widthIn(max = 560.dp)
+                        .padding(horizontal = 32.dp),
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_share_favourite),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(86.dp)
-                        .padding(top = 32.dp)
+                    modifier =
+                        Modifier
+                            .size(86.dp)
+                            .padding(top = 32.dp),
                 )
                 Text(
                     text = stringResource(id = com.windscribe.vpn.R.string.share_windscribe_with_a_friend),
                     style = font24,
                     color = MaterialTheme.colorScheme.primaryTextColor,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .fillMaxWidth()
+                    modifier =
+                        Modifier
+                            .padding(vertical = 16.dp)
+                            .fillMaxWidth(),
                 )
-                Column() {
+                Column {
                     Spacer(modifier = Modifier.height(16.dp))
                     ReferralFeature(stringResource(com.windscribe.vpn.R.string.first_reason_to_use_share))
                     Spacer(modifier = Modifier.height(16.dp))
                     ReferralFeature(stringResource(com.windscribe.vpn.R.string.if_they_go_pro_you_ll_go_pro_to))
                 }
                 NextButton(
-                    text = stringResource(com.windscribe.vpn.R.string.share_invite_link), enabled = true, onClick = {
+                    text = stringResource(com.windscribe.vpn.R.string.share_invite_link),
+                    enabled = true,
+                    onClick = {
                         intentBuilder?.startChooser()
                         viewmodel?.exit()
-                    }, modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 32.dp, start = 32.dp, end = 32.dp)
+                    },
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 32.dp, start = 32.dp, end = 32.dp),
                 )
                 Text(
-                    text = stringResource(id = com.windscribe.vpn.R.string.referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account),
+                    text = refereeDescription,
                     style = font12,
                     color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 48.dp, start = 32.dp, end = 32.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 48.dp, start = 32.dp, end = 32.dp),
                 )
             }
             Spacer(modifier = Modifier.weight(1.0f))
@@ -112,19 +128,20 @@ fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
 private fun ReferralFeature(text: String) {
     Row(
         modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_check),
             contentDescription = text,
-            modifier = Modifier
-                .size(16.dp),
+            modifier =
+                Modifier
+                    .size(16.dp),
         )
         Text(
             text,
             style = font12.copy(textAlign = TextAlign.Start),
             color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
-            modifier = Modifier.padding(start = 16.dp)
+            modifier = Modifier.padding(start = 16.dp),
         )
     }
 }
@@ -141,7 +158,8 @@ private fun buildIntentBuilder(viewmodel: SharedLinkViewmodel?): IntentBuilder? 
     if (launchActivity == null) {
         return null
     }
-    return IntentBuilder(launchActivity).setType("text/plain")
+    return IntentBuilder(launchActivity)
+        .setType("text/plain")
         .setChooserTitle(title)
         .setText(description)
 }

@@ -11,7 +11,6 @@ import com.google.gson.annotations.SerializedName
 @Suppress("unused")
 @Keep
 class Sip {
-
     @SerializedName("update")
     @Expose
     val update: List<String>? = null

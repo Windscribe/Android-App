@@ -37,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -47,6 +46,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -88,21 +88,20 @@ private const val MIN_HEALTH_VALUE = 50
 fun AllServerList(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
-    homeViewmodel: HomeViewmodel
+    homeViewmodel: HomeViewmodel,
 ) {
     val state by viewModel.serverListState.collectAsState()
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
     val bestLocation by connectionViewModel.bestLocation.collectAsState()
     val isRefreshing by viewModel.refreshState.collectAsState()
 
-
     Box(modifier = Modifier.testTag("server_list_all")) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 0.dp),
-            verticalArrangement = Arrangement.Top
-
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(top = 0.dp),
+            verticalArrangement = Arrangement.Top,
         ) {
             when (state) {
                 is ListState.Loading -> {
@@ -122,7 +121,7 @@ fun AllServerList(
                         onRefresh = {
                             viewModel.refresh(ServerListType.All)
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         LazyColumn(state = lazyListState) {
                             item {
@@ -133,7 +132,7 @@ fun AllServerList(
                                         it,
                                         connectionViewModel,
                                         homeViewmodel,
-                                        serverListViewModel = viewModel
+                                        serverListViewModel = viewModel,
                                     )
                                 }
                             }
@@ -145,7 +144,7 @@ fun AllServerList(
                                     serverListViewModel = viewModel,
                                     item,
                                     expanded = expandedStates[item.region.name.orEmpty()] == true,
-                                    onExpandChange = { expandedStates[item.region.name.orEmpty()] = it }
+                                    onExpandChange = { expandedStates[item.region.name.orEmpty()] = it },
                                 )
                             }
                         }
@@ -165,41 +164,43 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
     val haptic = LocalHapticFeedback.current
     if (userState is UserState.Free) {
         val angle = (userState as UserState.Free).dataLeftAngle
-        val textColor = if (angle <= 0) {
-            AppColors.red
-        } else if (angle > 0 && angle <= 36) {
-            Color.Yellow
-        } else {
-            AppColors.neonGreen
-        }
+        val textColor =
+            if (angle <= 0) {
+                AppColors.red
+            } else if (angle > 0 && angle <= 36) {
+                Color.Yellow
+            } else {
+                AppColors.neonGreen
+            }
         Box(
             Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = AppColors.midnightNavy, shape = RoundedCornerShape(8.dp))
-                    .clickable {
-                        if (hapticFeedbackEnabled) haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                        activity.startActivity(UpgradeActivity.getStartIntent(activity))
-                    }
-                    .border(
-                        width = 1.dp,
-                        color = AppColors.white.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(12.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(color = AppColors.midnightNavy, shape = RoundedCornerShape(8.dp))
+                        .clickable {
+                            if (hapticFeedbackEnabled) haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                            activity.startActivity(UpgradeActivity.getStartIntent(activity))
+                        }.border(
+                            width = 1.dp,
+                            color = AppColors.white.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp),
+                        ).padding(12.dp),
             ) {
                 Row {
                     Box(
-                        modifier = Modifier
-                            .size(40.dp)
+                        modifier =
+                            Modifier
+                                .size(40.dp),
                     ) {
                         Canvas(
-                            modifier = Modifier
-                                .size(40.dp)
+                            modifier =
+                                Modifier
+                                    .size(40.dp),
                         ) {
                             val strokeWidth = 3.dp.toPx()
 
@@ -210,7 +211,7 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                                 useCenter = false,
                                 style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
                                 size = Size(size.width, size.height),
-                                topLeft = Offset.Zero
+                                topLeft = Offset.Zero,
                             )
 
                             drawArc(
@@ -220,7 +221,7 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                                 useCenter = false,
                                 style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
                                 size = Size(size.width, size.height),
-                                topLeft = Offset.Zero
+                                topLeft = Offset.Zero,
                             )
                         }
                         Text(
@@ -229,7 +230,7 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                             lineHeight = 9.sp,
                             textAlign = TextAlign.Center,
                             color = textColor,
-                            modifier = Modifier.align(Alignment.Center)
+                            modifier = Modifier.align(Alignment.Center),
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
@@ -250,9 +251,10 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                     Image(
                         painter = painterResource(R.drawable.arrow_right),
                         contentDescription = "Upgrade",
-                        modifier = Modifier
-                            .size(16.dp)
-                            .align(Alignment.CenterVertically)
+                        modifier =
+                            Modifier
+                                .size(16.dp)
+                                .align(Alignment.CenterVertically),
                     )
                 }
             }
@@ -269,7 +271,7 @@ fun LocationCount(viewModel: ServerViewModel) {
             text = "All locations ($totalCities)",
             style = font12,
             color = MaterialTheme.colorScheme.serverItemTextColor,
-            modifier = Modifier.padding(start = 8.dp, top = 16.dp)
+            modifier = Modifier.padding(start = 8.dp, top = 16.dp),
         )
     }
 }
@@ -279,7 +281,7 @@ fun LocationSplitBorderCircle(
     health: Int,
     flagRes: Int,
     showProIcon: Boolean = false,
-    showLocationLoad: Boolean = false
+    showLocationLoad: Boolean = false,
 ) {
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
@@ -289,10 +291,18 @@ fun LocationSplitBorderCircle(
         Image(
             painter = painterResource(id = flagRes),
             contentDescription = "Flag",
-            modifier = Modifier
-                .size(20.dp)
-                .align(Alignment.Center),
-            colorFilter = if (flagRes == R.drawable.ic_dc) ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor) else null
+            modifier =
+                Modifier
+                    .size(20.dp)
+                    .align(Alignment.Center),
+            colorFilter =
+                if (flagRes == R.drawable.ic_dc) {
+                    ColorFilter.tint(
+                        MaterialTheme.colorScheme.expandedServerItemTextColor,
+                    )
+                } else {
+                    null
+                },
         )
         Canvas(modifier = Modifier.size(24.dp)) {
             val strokeWidth = 1.dp.toPx()
@@ -304,7 +314,7 @@ fun LocationSplitBorderCircle(
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
                 size = Size(size.width, size.height),
-                topLeft = Offset.Zero
+                topLeft = Offset.Zero,
             )
 
             drawArc(
@@ -314,17 +324,18 @@ fun LocationSplitBorderCircle(
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
                 size = Size(size.width, size.height),
-                topLeft = Offset.Zero
+                topLeft = Offset.Zero,
             )
         }
         if (showProIcon) {
             Image(
                 painter = painterResource(if (MaterialTheme.colorScheme.isDark) R.drawable.pro_mask else R.drawable.pro_mask_light),
                 contentDescription = "Flag",
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .size(16.dp)
-                    .offset(x = (-6).dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .size(16.dp)
+                        .offset(x = (-6).dp),
             )
         }
     }
@@ -336,7 +347,7 @@ fun DataCenterSplitBorderCircle(
     flagRes: Int,
     showProIcon: Boolean = false,
     showLocationLoad: Boolean = false,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
@@ -349,7 +360,7 @@ fun DataCenterSplitBorderCircle(
             painter = painterResource(id = flagRes),
             contentDescription = null,
             modifier = modifier.align(Alignment.Center),
-            colorFilter = if (needsColorFilter) ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor) else null
+            colorFilter = if (needsColorFilter) ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor) else null,
         )
 
         if (showLocationLoad && angle > 0f) {
@@ -364,7 +375,7 @@ fun DataCenterSplitBorderCircle(
                     sweepAngle = angle,
                     useCenter = false,
                     style = strokeStyle,
-                    size = canvasSize
+                    size = canvasSize,
                 )
 
                 drawArc(
@@ -373,7 +384,7 @@ fun DataCenterSplitBorderCircle(
                     sweepAngle = 360f - angle,
                     useCenter = false,
                     style = strokeStyle,
-                    size = canvasSize
+                    size = canvasSize,
                 )
             }
         }
@@ -382,10 +393,11 @@ fun DataCenterSplitBorderCircle(
             Image(
                 painter = painterResource(if (MaterialTheme.colorScheme.isDark) R.drawable.pro_mask else R.drawable.pro_mask_light),
                 contentDescription = null,
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .size(16.dp)
-                    .offset(x = (-6).dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .size(16.dp)
+                        .offset(x = (-6).dp),
             )
         }
     }
@@ -396,29 +408,32 @@ private fun BestLocation(
     item: ServerListItem,
     connectionViewModel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel,
-    serverListViewModel: ServerViewModel
+    serverListViewModel: ServerViewModel,
 ) {
     val health by serverListViewModel.observeAverageRegionHealth(item.datacenters).collectAsState(initial = MIN_HEALTH_VALUE)
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     Column(
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Transparent)
-            .padding(start = 12.dp, end = 8.dp)
-            .clickable {
-                connectionViewModel.onCityClick(item.datacenters.first())
-            }) {
-        Row(
-            modifier = Modifier
+        modifier =
+            Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .background(Color.Transparent)
+                .padding(start = 12.dp, end = 8.dp)
+                .clickable {
+                    connectionViewModel.onCityClick(item.datacenters.first())
+                },
+    ) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             LocationSplitBorderCircle(
                 health = health,
                 flagRes = FlagIconResource.getSmallFlag(item.region.countryCode),
-                showLocationLoad = showLocationLoad
+                showLocationLoad = showLocationLoad,
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
@@ -426,16 +441,17 @@ private fun BestLocation(
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.serverItemTextColor,
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
             )
             Spacer(modifier = Modifier.weight(1.0f))
             Image(
                 painter = painterResource(R.drawable.arrow_right),
                 contentDescription = "Expand",
-                modifier = Modifier
-                    .size(32.dp)
-                    .padding(8.dp),
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor)
+                modifier =
+                    Modifier
+                        .size(32.dp)
+                        .padding(8.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor),
             )
         }
     }
@@ -449,7 +465,7 @@ private fun ExpandableListItem(
     serverListViewModel: ServerViewModel,
     item: ServerListItem,
     expanded: Boolean,
-    onExpandChange: (Boolean) -> Unit
+    onExpandChange: (Boolean) -> Unit,
 ) {
     val health by serverListViewModel.observeAverageRegionHealth(item.datacenters).collectAsState(initial = MIN_HEALTH_VALUE)
     val isPremium by serverListViewModel.observeRegionPremiumStatus(item.datacenters).collectAsState(initial = false)
@@ -458,52 +474,62 @@ private fun ExpandableListItem(
     val interactionSource = remember { MutableInteractionSource() }
     Column(
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .testTag("country_row")
-                .clickable(interactionSource, indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)) {
-                    onExpandChange(!expanded)
-                }
-                .padding(start = 12.dp, end = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .testTag("country_row")
+                    .clickable(
+                        interactionSource,
+                        indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor),
+                    ) {
+                        onExpandChange(!expanded)
+                    }.padding(start = 12.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             LocationSplitBorderCircle(
                 health = health,
                 flagRes = FlagIconResource.getSmallFlag(item.region.countryCode),
                 showProIcon = userState !is UserState.Pro && isPremium,
-                showLocationLoad = showLocationLoad
+                showLocationLoad = showLocationLoad,
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
                 text = item.region.name ?: "",
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
-                color = if (expanded) MaterialTheme.colorScheme.expandedServerItemTextColor else MaterialTheme.colorScheme.serverItemTextColor,
-                textAlign = TextAlign.Start
+                color =
+                    if (expanded) {
+                        MaterialTheme.colorScheme.expandedServerItemTextColor
+                    } else {
+                        MaterialTheme.colorScheme.serverItemTextColor
+                    },
+                textAlign = TextAlign.Start,
             )
             Image(
                 painter = painterResource(if (expanded) R.drawable.ic_server_list_open else R.drawable.ic_server_list_close),
                 contentDescription = "Expand",
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor),
                 alpha = if (expanded) 1f else 0.4f,
-                modifier = Modifier
-                    .testTag("country_chevron")
-                    .size(32.dp)
-                    .padding(8.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(
-                            bounded = false,
-                            radius = 16.dp,
-                            color = MaterialTheme.colorScheme.expandedServerItemTextColor
-                        )
-                    ) {
-                        onExpandChange(!expanded)
-                    }
+                modifier =
+                    Modifier
+                        .testTag("country_chevron")
+                        .size(32.dp)
+                        .padding(8.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication =
+                                ripple(
+                                    bounded = false,
+                                    radius = 16.dp,
+                                    color = MaterialTheme.colorScheme.expandedServerItemTextColor,
+                                ),
+                        ) {
+                            onExpandChange(!expanded)
+                        },
             )
         }
         AnimatedVisibility(visible = expanded) {
@@ -521,7 +547,7 @@ private fun DataCenterItem(
     item: Datacenter,
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
-    homeViewmodel: HomeViewmodel
+    homeViewmodel: HomeViewmodel,
 ) {
     val favouriteState by viewModel.favouriteListState.collectAsState()
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
@@ -534,24 +560,26 @@ private fun DataCenterItem(
     val latency by rememberUpdatedState(
         if (latencyState is ListState.Success) {
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
-        } else -1
+        } else {
+            -1
+        },
     )
     val serverCount by viewModel.observeDatacenterServerCount(item.id).collectAsState(initial = 0)
     val isPro by viewModel.isPro.collectAsState()
     val isAvailable = DatacenterStatusHelper.getStatus(item, serverCount, isPro) == DatacenterStatus.Available
     val interactionSource = remember { MutableInteractionSource() }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .clickable(
-                interactionSource,
-                indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
-            ) {
-                connectionViewModel.onCityClick(item)
-            }
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clickable(
+                    interactionSource,
+                    indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor),
+                ) {
+                    connectionViewModel.onCityClick(item)
+                }.padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         DataCenterIcon(item, health, showLocationLoad, serverCount, isPro)
         Spacer(modifier = Modifier.width(8.dp))
@@ -574,9 +602,11 @@ private fun DataCenterItem(
 private fun ProgressIndicator() {
     Box(modifier = Modifier.fillMaxSize()) {
         CircularProgressIndicator(
-            modifier = Modifier
-                .size(24.dp)
-                .align(Alignment.Center), color = AppColors.white
+            modifier =
+                Modifier
+                    .size(24.dp)
+                    .align(Alignment.Center),
+            color = AppColors.white,
         )
     }
 }

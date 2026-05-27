@@ -33,9 +33,15 @@ import java.util.UUID
 import javax.inject.Singleton
 
 sealed class UserDataState {
-    data class Loading(val status: String) : UserDataState()
+    data class Loading(
+        val status: String,
+    ) : UserDataState()
+
     object Success : UserDataState()
-    data class Error(val error: String) : UserDataState()
+
+    data class Error(
+        val error: String,
+    ) : UserDataState()
 }
 
 @Singleton
@@ -51,7 +57,7 @@ class UserRepository(
     private val serverListRepository: ServerListRepository,
     private val staticIpRepository: StaticIpRepository,
     private val googleSignInManager: GoogleSignInManager,
-    private val unblockWgParamsRepository: UnblockWgParamsRepository
+    private val unblockWgParamsRepository: UnblockWgParamsRepository,
 ) {
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user.asStateFlow()
@@ -62,7 +68,8 @@ class UserRepository(
     }
 
     fun reload(
-        response: UserSessionResponse? = null, callback: (suspend (user: User) -> Unit)? = null
+        response: UserSessionResponse? = null,
+        callback: (suspend (user: User) -> Unit)? = null,
     ) {
         // No explicit Dispatchers.IO — applicationScope already runs on IO in production,
         // and tests need the scope's dispatcher so advanceUntilIdle drains the launch.
@@ -101,14 +108,16 @@ class UserRepository(
 
             // Only log if something actually changed
             if (alcListChanged || sipChanged || userStatusChanged || accountStatusChanged || migrationRequired || emailStatusChanged) {
-                logger.debug("Alc: $alcListChanged | Sip: $sipChanged | User Status: $userStatusChanged | Account Status: $accountStatusChanged | Migration: $migrationRequired | Email Status: $emailStatusChanged")
+                logger.debug(
+                    "Alc: $alcListChanged | Sip: $sipChanged | User Status: $userStatusChanged | Account Status: $accountStatusChanged | Migration: $migrationRequired | Email Status: $emailStatusChanged",
+                )
             }
             return listOf(
                 alcListChanged,
                 sipChanged,
                 userStatusChanged or accountStatusChanged,
                 migrationRequired,
-                emailStatusChanged
+                emailStatusChanged,
             )
         } ?: kotlin.run {
             logger.debug("No user information found to compare.")
@@ -117,42 +126,43 @@ class UserRepository(
     }
 
     fun logout() {
-        scope.launch {
-            if (appContext.vpnConnectionStateManager.isVPNActive()) {
-                vpnController.disconnectAsync()
-            }
-            googleSignInManager.signOut {
-                logger.debug("Signed out from Google.")
-            }
-        }.invokeOnCompletion {
-            WorkManager.getInstance(appContext).cancelAllWork()
-            scope.launch {
-                logger.debug("Deleting user session.")
-                var attempts = 0
-                val maxAttempts = 3
-                var success = false
+        scope
+            .launch {
+                if (appContext.vpnConnectionStateManager.isVPNActive()) {
+                    vpnController.disconnectAsync()
+                }
+                googleSignInManager.signOut {
+                    logger.debug("Signed out from Google.")
+                }
+            }.invokeOnCompletion {
+                WorkManager.getInstance(appContext).cancelAllWork()
+                scope.launch {
+                    logger.debug("Deleting user session.")
+                    var attempts = 0
+                    val maxAttempts = 3
+                    var success = false
 
-                while (attempts < maxAttempts && !success) {
-                    attempts++
-                    try {
-                        val response = apiManager.deleteSession()
-                        response.dataClass?.let {
-                            logger.debug("Successfully deleted user session: ${it.isSuccessful}")
-                            success = true
-                        } ?: response.errorClass?.let {
-                            logger.debug("Error deleting session (attempt $attempts/$maxAttempts): ${it.errorMessage}")
+                    while (attempts < maxAttempts && !success) {
+                        attempts++
+                        try {
+                            val response = apiManager.deleteSession()
+                            response.dataClass?.let {
+                                logger.debug("Successfully deleted user session: ${it.isSuccessful}")
+                                success = true
+                            } ?: response.errorClass?.let {
+                                logger.debug("Error deleting session (attempt $attempts/$maxAttempts): ${it.errorMessage}")
+                            }
+                        } catch (e: Exception) {
+                            logger.debug("Unknown error deleting session (attempt $attempts/$maxAttempts): ${e.localizedMessage}")
                         }
-                    } catch (e: Exception) {
-                        logger.debug("Unknown error deleting session (attempt $attempts/$maxAttempts): ${e.localizedMessage}")
                     }
-                }
 
-                if (!success) {
-                    logger.debug("Failed to delete session after $maxAttempts attempts")
+                    if (!success) {
+                        logger.debug("Failed to delete session after $maxAttempts attempts")
+                    }
+                    onSessionDeleted()
                 }
-                onSessionDeleted()
             }
-        }
     }
 
     private fun onSessionDeleted() {
@@ -168,7 +178,7 @@ class UserRepository(
                     val intent = appContext.applicationInterface.welcomeIntent
                     if (appContext.applicationInterface.isTV) {
                         intent.addFlags(
-                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK,
                         )
                     }
                     it.startActivity(intent)
@@ -219,47 +229,49 @@ class UserRepository(
         }
     }
 
-    fun prepareDashboard(firebaseToken: String?): Flow<UserDataState> = flow {
-        preferenceHelper.loginTime = Date()
-        emit(UserDataState.Loading("Getting session"))
-        unblockWgParamsRepository.update()
-        try {
-            val backup = preferenceHelper.getBackupParameter()
-            val result = apiManager.getSessionGeneric(firebaseToken, backup = backup).callResult<UserSessionResponse>()
-            when (result) {
-                is CallResult.Error -> {
-                    logger.debug("Error getting session: ${result.errorMessage}")
-                    emit(UserDataState.Error(result.errorMessage))
-                    return@flow
-                }
-                is CallResult.Success -> {
-                    logger.debug("Successfully added token $firebaseToken to ${result.data.userName}.")
-                    if (preferenceHelper.deviceUuid == null) {
-                        logger.debug("No device id is found for the current user, generating and saving UUID")
-                        preferenceHelper.deviceUuid = UUID.randomUUID().toString()
+    fun prepareDashboard(firebaseToken: String?): Flow<UserDataState> =
+        flow {
+            preferenceHelper.loginTime = Date()
+            emit(UserDataState.Loading("Getting session"))
+            unblockWgParamsRepository.update()
+            try {
+                val backup = preferenceHelper.getBackupParameter()
+                val result = apiManager.getSessionGeneric(firebaseToken, backup = backup).callResult<UserSessionResponse>()
+                when (result) {
+                    is CallResult.Error -> {
+                        logger.debug("Error getting session: ${result.errorMessage}")
+                        emit(UserDataState.Error(result.errorMessage))
+                        return@flow
+                    }
+
+                    is CallResult.Success -> {
+                        logger.debug("Successfully added token $firebaseToken to ${result.data.userName}.")
+                        if (preferenceHelper.deviceUuid == null) {
+                            logger.debug("No device id is found for the current user, generating and saving UUID")
+                            preferenceHelper.deviceUuid = UUID.randomUUID().toString()
+                        }
                     }
                 }
+                reload(result.data, null)
+                val staticIpCount = result.data.sipCount()
+                if (staticIpCount > 0) {
+                    emit(UserDataState.Loading("Getting static IPs"))
+                    staticIpRepository.updateFromApi()
+                }
+                emit(UserDataState.Loading("Getting connection data"))
+                connectionDataRepository.update()
+                emit(UserDataState.Loading("Getting server list"))
+                serverListRepository.update()
+                if (appContext.vpnConnectionStateManager.isVPNActive()) {
+                    vpnController.disconnectAsync()
+                }
+                Util.removeLastSelectedLocation()
+                workManager.onAppStart()
+                workManager.onAppMovedToForeground()
+                workManager.updateNodeLatencies()
+                emit(UserDataState.Success)
+            } catch (e: Exception) {
+                emit(UserDataState.Error(e.localizedMessage ?: "Unknown error"))
             }
-            reload(result.data, null)
-            val staticIpCount =result.data.sipCount()
-            if (staticIpCount > 0) {
-                emit(UserDataState.Loading("Getting static IPs"))
-                staticIpRepository.updateFromApi()
-            }
-            emit(UserDataState.Loading("Getting connection data"))
-            connectionDataRepository.update()
-            emit(UserDataState.Loading("Getting server list"))
-            serverListRepository.update()
-            if (appContext.vpnConnectionStateManager.isVPNActive()) {
-                vpnController.disconnectAsync()
-            }
-            Util.removeLastSelectedLocation()
-            workManager.onAppStart()
-            workManager.onAppMovedToForeground()
-            workManager.updateNodeLatencies()
-            emit(UserDataState.Success)
-        } catch (e: Exception) {
-            emit(UserDataState.Error(e.localizedMessage ?: "Unknown error"))
         }
-    }
 }

@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class ProxyDNSManager(
     val scope: CoroutineScope,
-    val preferenceHelper: PreferencesHelper
+    val preferenceHelper: PreferencesHelper,
 ) {
     companion object {
         const val LOG_PATH = "controlD.log"
@@ -39,7 +39,6 @@ class ProxyDNSManager(
     /** Returns the port ctrld is currently configured to listen on. */
     fun getListenPort(): Int = activePort.get()
 
-
     private fun updateControlDConfig() {
         val configFile = File(appContext.filesDir, CONFIG_FILE)
         if (dnsDetails?.type == DnsType.Proxy) {
@@ -48,10 +47,21 @@ class ProxyDNSManager(
             }
             val address = dnsDetails?.address ?: ""
             val upStreamInfo =
-                "[upstream.0]\n" + "bootstrap_ip = \"${dnsDetails?.ip ?: ""}\"\n" + "endpoint = \"$address\"\n" + "name = \"Custom DNS\"\n" + "timeout = 5000\n" + "type = \"${dnsDetails?.getTypeValue}\"\n" + "ip_stack = \"v4\""
-            val staticConfig = appContext.assets.open("config.toml").bufferedReader().readText()
-            val listenPort = findAvailablePort()
-                ?: throw WindScribeException("Unable to find port to start ControlD cli.")
+                "[upstream.0]\n" +
+                    "bootstrap_ip = \"${dnsDetails?.ip ?: ""}\"\n" +
+                    "endpoint = \"$address\"\n" +
+                    "name = \"Custom DNS\"\n" +
+                    "timeout = 5000\n" +
+                    "type = \"${dnsDetails?.getTypeValue}\"\n" +
+                    "ip_stack = \"v4\""
+            val staticConfig =
+                appContext.assets
+                    .open("config.toml")
+                    .bufferedReader()
+                    .readText()
+            val listenPort =
+                findAvailablePort()
+                    ?: throw WindScribeException("Unable to find port to start ControlD cli.")
             activePort.set(listenPort.toInt())
             val listenerInfo = staticConfig.replace("5355", listenPort)
             val configData = "$listenerInfo\n$upStreamInfo".encodeToByteArray()
@@ -85,9 +95,10 @@ class ProxyDNSManager(
         return logFile.absolutePath
     }
 
-    private fun shouldRunControlD(): Boolean {
-        return dnsDetails?.type == DnsType.Proxy && preferenceHelper.dnsMode == PreferencesKeyConstants.DNS_MODE_CUSTOM && preferenceHelper.dnsAddress != null
-    }
+    private fun shouldRunControlD(): Boolean =
+        dnsDetails?.type == DnsType.Proxy &&
+            preferenceHelper.dnsMode == PreferencesKeyConstants.DNS_MODE_CUSTOM &&
+            preferenceHelper.dnsAddress != null
 
     suspend fun startControlDIfRequired() {
         if (shouldRunControlD() && isRunning.get().not()) {
@@ -105,23 +116,24 @@ class ProxyDNSManager(
             logger.debug("Previous ControlD job is still running. Waiting for it to finish.")
             controlDJob?.join()
         }
-        controlDJob = scope.launch {
-            isRunning.set(true)
-            logger.debug("Started ControlD.")
-            // we are providing config file in home dir instead of UID
-            // Pass device info directly to avoid JNI callbacks from Go goroutines
-            cdLib.startCd(
-                "",
-                homeDir,
-                "doh",
-                logPath,
-                cdLib.getHostName(),
-                cdLib.getLanIP(),
-                cdLib.getMacAddress()
-            )
-            logger.debug("ControlD stopped.")
-            isRunning.set(false)
-        }
+        controlDJob =
+            scope.launch {
+                isRunning.set(true)
+                logger.debug("Started ControlD.")
+                // we are providing config file in home dir instead of UID
+                // Pass device info directly to avoid JNI callbacks from Go goroutines
+                cdLib.startCd(
+                    "",
+                    homeDir,
+                    "doh",
+                    logPath,
+                    cdLib.getHostName(),
+                    cdLib.getLanIP(),
+                    cdLib.getMacAddress(),
+                )
+                logger.debug("ControlD stopped.")
+                isRunning.set(false)
+            }
         controlDJob?.start()
         waitForControlDReady()
     }

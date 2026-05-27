@@ -24,14 +24,13 @@ enum class DatacenterStatus {
      * Location is under maintenance.
      * Status is set to maintenance (2) and has no active servers.
      */
-    UnderMaintenance
+    UnderMaintenance,
 }
 
 /**
  * Helper object to determine datacenter status based on various conditions.
  */
 object DatacenterStatusHelper {
-
     /**
      * Determines the status of a datacenter based on status field, server count, and user status.
      *
@@ -46,7 +45,11 @@ object DatacenterStatusHelper {
      * @param isPro Whether the user has Pro subscription
      * @return The determined status
      */
-    fun getStatus(datacenter: Datacenter, serverCount: Int, isPro: Boolean): DatacenterStatus {
+    fun getStatus(
+        datacenter: Datacenter,
+        serverCount: Int,
+        isPro: Boolean,
+    ): DatacenterStatus {
         val hasServers = serverCount > 0
 
         return when {
@@ -73,9 +76,11 @@ object DatacenterStatusHelper {
      * @param isPro Whether the user has Pro subscription
      * @return true if available, false otherwise
      */
-    fun isAvailable(datacenter: Datacenter, serverCount: Int, isPro: Boolean): Boolean {
-        return getStatus(datacenter, serverCount, isPro) == DatacenterStatus.Available
-    }
+    fun isAvailable(
+        datacenter: Datacenter,
+        serverCount: Int,
+        isPro: Boolean,
+    ): Boolean = getStatus(datacenter, serverCount, isPro) == DatacenterStatus.Available
 
     /**
      * Checks if a datacenter requires Pro subscription.
@@ -85,9 +90,11 @@ object DatacenterStatusHelper {
      * @param isPro Whether the user has Pro subscription
      * @return true if Pro required, false otherwise
      */
-    fun requiresPro(datacenter: Datacenter, serverCount: Int, isPro: Boolean): Boolean {
-        return getStatus(datacenter, serverCount, isPro) == DatacenterStatus.Pro
-    }
+    fun requiresPro(
+        datacenter: Datacenter,
+        serverCount: Int,
+        isPro: Boolean,
+    ): Boolean = getStatus(datacenter, serverCount, isPro) == DatacenterStatus.Pro
 
     /**
      * Checks if a datacenter is under maintenance.
@@ -97,7 +104,9 @@ object DatacenterStatusHelper {
      * @param isPro Whether the user has Pro subscription
      * @return true if under maintenance, false otherwise
      */
-    fun isUnderMaintenance(datacenter: Datacenter, serverCount: Int, isPro: Boolean): Boolean {
-        return getStatus(datacenter, serverCount, isPro) == DatacenterStatus.UnderMaintenance
-    }
+    fun isUnderMaintenance(
+        datacenter: Datacenter,
+        serverCount: Int,
+        isPro: Boolean,
+    ): Boolean = getStatus(datacenter, serverCount, isPro) == DatacenterStatus.UnderMaintenance
 }

@@ -47,7 +47,6 @@ import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.popup.FullScreenDialog
-import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
@@ -57,9 +56,10 @@ import com.windscribe.vpn.api.response.QueryType
 fun TicketScreen(viewModel: TicketViewModel? = null) {
     val navController = LocalNavController.current
     val selectedKey by remember { mutableStateOf(QueryType.Account) }
-    val queryTypes = QueryType.entries.map {
-        DropDownStringItem(it.name, it.name)
-    }
+    val queryTypes =
+        QueryType.entries.map {
+            DropDownStringItem(it.name, it.name)
+        }
     val submitTicketState by viewModel?.submitTicketState?.collectAsState()
         ?: remember { mutableStateOf(SubmitTicketState.Idle) }
     val isButtonEnabled by viewModel?.buttonEnabled?.collectAsState()
@@ -68,9 +68,10 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
 
     PreferenceBackground {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
         ) {
             PreferencesNavBar(stringResource(R.string.contact_humans)) {
                 navController.popBackStack()
@@ -79,15 +80,16 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
             ScreenDescription(stringResource(R.string.how_to_send_ticket))
             Spacer(modifier = Modifier.height(16.dp))
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .imePadding()
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
             ) {
                 DropDownNoDescription(
                     R.string.category,
                     queryTypes,
-                    selectedItemKey = selectedKey.name
+                    selectedItemKey = selectedKey.name,
                 ) {
                     viewModel?.onQueryTypeSelected(QueryType.valueOf(it.key))
                 }
@@ -98,7 +100,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                     hint = stringResource(R.string.email),
                     modifier = Modifier.fillMaxWidth(),
                     defaultValue = email,
-                    onValueChange = { viewModel?.onEmailChanged(it) }
+                    onValueChange = { viewModel?.onEmailChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -106,26 +108,27 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                 TextField(
                     hint = stringResource(R.string.subject),
                     modifier = Modifier.fillMaxWidth(),
-                    onValueChange = { viewModel?.onSubjectChanged(it) }
+                    onValueChange = { viewModel?.onSubjectChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextField(
                     hint = stringResource(R.string.what_is_the_issue),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
                     singleLine = false,
                     height = 120.dp,
-                    onValueChange = { viewModel?.onMessageChanged(it) }
+                    onValueChange = { viewModel?.onMessageChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 NextButton(
                     text = stringResource(R.string.send),
-                    enabled = isButtonEnabled
+                    enabled = isButtonEnabled,
                 ) {
                     viewModel?.onSendTicketClicked()
                 }
@@ -146,19 +149,20 @@ private fun HandleState(viewModel: TicketViewModel?) {
     val submitTicketState by viewModel?.submitTicketState?.collectAsState()
         ?: remember { mutableStateOf(SubmitTicketState.Idle) }
     val showDialog = remember { mutableStateOf(false) }
-    val message = when (submitTicketState) {
-        is SubmitTicketState.Success -> {
-            (submitTicketState as SubmitTicketState.Success).message
-        }
+    val message =
+        when (submitTicketState) {
+            is SubmitTicketState.Success -> {
+                (submitTicketState as SubmitTicketState.Success).message
+            }
 
-        is SubmitTicketState.Error -> {
-            (submitTicketState as SubmitTicketState.Error).message
-        }
+            is SubmitTicketState.Error -> {
+                (submitTicketState as SubmitTicketState.Error).message
+            }
 
-        else -> {
-            ""
+            else -> {
+                ""
+            }
         }
-    }
     LaunchedEffect(submitTicketState) {
         if (submitTicketState is SubmitTicketState.Success || submitTicketState is SubmitTicketState.Error) {
             showDialog.value = true
@@ -205,39 +209,42 @@ private fun TextField(
                 },
                 singleLine = singleLine,
                 shape = RoundedCornerShape(9.dp),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
-                    imeAction = ImeAction.Done
-                ),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = contentColor,
-                    unfocusedTextColor = contentColor,
-                    disabledTextColor = contentColor,
-                    unfocusedContainerColor = containerColor,
-                    focusedContainerColor = containerColor,
-                    disabledContainerColor = containerColor,
-                    errorContainerColor = containerColor,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.primaryTextColor,
-                    disabledIndicatorColor = Color.Transparent,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = MaterialTheme.colorScheme.primaryTextColor,
-                        backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f)
-                    )
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        autoCorrectEnabled = false,
+                        imeAction = ImeAction.Done,
+                    ),
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedTextColor = contentColor,
+                        unfocusedTextColor = contentColor,
+                        disabledTextColor = contentColor,
+                        unfocusedContainerColor = containerColor,
+                        focusedContainerColor = containerColor,
+                        disabledContainerColor = containerColor,
+                        errorContainerColor = containerColor,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = Color.Transparent,
+                        cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                        disabledIndicatorColor = Color.Transparent,
+                        selectionColors =
+                            androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                                backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f),
+                            ),
+                    ),
                 visualTransformation = VisualTransformation.None,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(height),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(height),
                 textStyle = font16.copy(color = contentColor, textAlign = TextAlign.Start),
             )
         }
     }
 }
-
 
 @Composable
 @MultiDevicePreview

@@ -39,27 +39,27 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.theme.AppColors
-import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.nav.LocalNavController
+import com.windscribe.mobile.ui.theme.AppColors
+import com.windscribe.mobile.ui.theme.font16
 
 @RequiresApi(Build.VERSION_CODES.M)
 @Composable
 fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
     val navController = LocalNavController.current
     val packageName = LocalContext.current.packageName
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        viewmodel?.onPermissionResult(it.resultCode == Activity.RESULT_OK)
-    }
+    val filePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+        ) {
+            viewmodel?.onPermissionResult(it.resultCode == Activity.RESULT_OK)
+        }
     val shouldExit by viewmodel?.shouldExit?.collectAsState() ?: remember { mutableStateOf(false) }
     LaunchedEffect(shouldExit) {
         if (shouldExit) {
@@ -67,24 +67,27 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
         }
     }
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = AppColors.deepBlue)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(color = AppColors.deepBlue),
     ) {
         Column(
-            modifier = Modifier
-                .width(400.dp)
-                .padding(horizontal = 32.dp)
-                .align(Alignment.Center),
+            modifier =
+                Modifier
+                    .width(400.dp)
+                    .padding(horizontal = 32.dp)
+                    .align(Alignment.Center),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
                 painter = painterResource(id = R.drawable.battery),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(86.dp)
-                    .padding(top = 32.dp)
+                modifier =
+                    Modifier
+                        .size(86.dp)
+                        .padding(top = 32.dp),
             )
             Text(
                 text = stringResource(id = com.windscribe.vpn.R.string.power_whitelist_title),
@@ -93,9 +96,10 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                 fontSize = 24.sp,
                 color = Color.White,
                 textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .fillMaxWidth()
+                modifier =
+                    Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth(),
             )
             Text(
                 text = stringResource(id = com.windscribe.vpn.R.string.power_whitelist_summary),
@@ -103,40 +107,46 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.4f),
                 textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier =
+                    Modifier
+                        .fillMaxWidth(),
             )
             NextButton(
-                text = stringResource(com.windscribe.vpn.R.string.grant_permission), enabled = true, onClick = {
-                    val intent = Intent(
-                        Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                        Uri.parse("package:$packageName")
-                    )
+                text = stringResource(com.windscribe.vpn.R.string.grant_permission),
+                enabled = true,
+                onClick = {
+                    val intent =
+                        Intent(
+                            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                            Uri.parse("package:$packageName"),
+                        )
                     filePickerLauncher.launch(intent)
-                }, modifier = Modifier
-                    .testTag("battery_grant_permission")
-                    .fillMaxWidth()
-                    .padding(top = 32.dp)
+                },
+                modifier =
+                    Modifier
+                        .testTag("battery_grant_permission")
+                        .fillMaxWidth()
+                        .padding(top = 32.dp),
             )
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(
                 onClick = { viewmodel?.onLaterClicked() },
-                modifier = Modifier.testTag("battery_maybe_later")
+                modifier = Modifier.testTag("battery_maybe_later"),
             ) {
                 Text(
                     stringResource(id = com.windscribe.vpn.R.string.may_be_later),
                     style = font16,
-                    color = AppColors.white.copy(alpha = 0.50f)
+                    color = AppColors.white.copy(alpha = 0.50f),
                 )
             }
             TextButton(
                 onClick = { viewmodel?.onNeverAskAgainClicked() },
-                modifier = Modifier.testTag("battery_dont_ask_again")
+                modifier = Modifier.testTag("battery_dont_ask_again"),
             ) {
                 Text(
                     stringResource(id = com.windscribe.vpn.R.string.never_aks_again_for_permission),
                     style = font16,
-                    color = AppColors.white.copy(alpha = 0.50f)
+                    color = AppColors.white.copy(alpha = 0.50f),
                 )
             }
         }

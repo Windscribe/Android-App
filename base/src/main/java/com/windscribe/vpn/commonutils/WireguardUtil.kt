@@ -9,7 +9,6 @@ import java.util.Base64
  * based on hashing public keys.
  */
 object WireguardUtil {
-
     /**
      * Represents a parsed CIDR notation with network address and prefix length.
      *
@@ -18,7 +17,7 @@ object WireguardUtil {
      */
     data class CIDRBlock(
         val networkAddress: Int,
-        val prefixLength: Int
+        val prefixLength: Int,
     ) {
         val hostBits: Int get() = 32 - prefixLength
         val hostMask: Int get() = if (hostBits == 32) -1 else (1 shl hostBits) - 1
@@ -37,8 +36,9 @@ object WireguardUtil {
         require(parts.size == 2) { "Invalid CIDR format: $cidr (expected format: x.x.x.x/n)" }
 
         val baseIp = parts[0]
-        val prefixLength = parts[1].toIntOrNull()
-            ?: throw IllegalArgumentException("Invalid prefix length in CIDR: $cidr")
+        val prefixLength =
+            parts[1].toIntOrNull()
+                ?: throw IllegalArgumentException("Invalid prefix length in CIDR: $cidr")
 
         require(prefixLength in 0..32) {
             "Invalid prefix length: $prefixLength (must be 0-32)"
@@ -67,9 +67,9 @@ object WireguardUtil {
                 }
             }
             ((octets[0] and 0xFF) shl 24) or
-            ((octets[1] and 0xFF) shl 16) or
-            ((octets[2] and 0xFF) shl 8) or
-            (octets[3] and 0xFF)
+                ((octets[1] and 0xFF) shl 16) or
+                ((octets[2] and 0xFF) shl 8) or
+                (octets[3] and 0xFF)
         } catch (e: NumberFormatException) {
             throw IllegalArgumentException("Invalid IP address octets: $ip", e)
         }
@@ -97,17 +97,18 @@ object WireguardUtil {
      * @throws IllegalArgumentException if public key is not valid Base64
      */
     fun hashPublicKey(publicKeyBase64: String): Int {
-        val publicKeyBytes = try {
-            Base64.getDecoder().decode(publicKeyBase64)
-        } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException("Invalid Base64 public key: $publicKeyBase64", e)
-        }
+        val publicKeyBytes =
+            try {
+                Base64.getDecoder().decode(publicKeyBase64)
+            } catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException("Invalid Base64 public key: $publicKeyBase64", e)
+            }
 
         val digest = MessageDigest.getInstance("SHA-256").digest(publicKeyBytes)
         return ((digest[0].toInt() and 0xFF) shl 24) or
-               ((digest[1].toInt() and 0xFF) shl 16) or
-               ((digest[2].toInt() and 0xFF) shl 8) or
-               (digest[3].toInt() and 0xFF)
+            ((digest[1].toInt() and 0xFF) shl 16) or
+            ((digest[2].toInt() and 0xFF) shl 8) or
+            (digest[3].toInt() and 0xFF)
     }
 
     /**
@@ -119,10 +120,12 @@ object WireguardUtil {
      * @param hashValue Hash value to use for host portion
      * @return IP address as a 32-bit integer
      */
-    fun generateIPFromHash(cidrBlock: CIDRBlock, hashValue: Int): Int {
-        return (cidrBlock.networkAddress and cidrBlock.networkMask) or
-               (hashValue and cidrBlock.hostMask)
-    }
+    fun generateIPFromHash(
+        cidrBlock: CIDRBlock,
+        hashValue: Int,
+    ): Int =
+        (cidrBlock.networkAddress and cidrBlock.networkMask) or
+            (hashValue and cidrBlock.hostMask)
 
     /**
      * Generates a WireGuard LAN IP address from a public key and CIDR block.
@@ -136,7 +139,10 @@ object WireguardUtil {
      * @return IP address string within the specified CIDR range with /32 suffix
      * @throws IllegalArgumentException if inputs are invalid
      */
-    fun generateWireguardIP(publicKeyBase64: String, cidr: String): String {
+    fun generateWireguardIP(
+        publicKeyBase64: String,
+        cidr: String,
+    ): String {
         val cidrBlock = parseCIDR(cidr)
         val hashValue = hashPublicKey(publicKeyBase64)
         val ipInt = generateIPFromHash(cidrBlock, hashValue)
@@ -161,14 +167,18 @@ object WireguardUtil {
      * @return IPv6 address string (without /128 suffix)
      * @throws IllegalArgumentException if inputs are invalid or prefix length > 64
      */
-    fun generateWireguardIPv6(publicKeyBase64: String, cidr: String): String {
+    fun generateWireguardIPv6(
+        publicKeyBase64: String,
+        cidr: String,
+    ): String {
         // Parse the IPv6 CIDR prefix
         val parts = cidr.split("/")
         require(parts.size == 2) { "Invalid IPv6 CIDR format: $cidr" }
 
         val prefixAddr = parts[0]
-        val prefixLength = parts[1].toIntOrNull()
-            ?: throw IllegalArgumentException("Invalid prefix length in IPv6 CIDR: $cidr")
+        val prefixLength =
+            parts[1].toIntOrNull()
+                ?: throw IllegalArgumentException("Invalid prefix length in IPv6 CIDR: $cidr")
 
         require(prefixLength in 0..128) {
             "Invalid IPv6 prefix length: $prefixLength (must be 0-128)"
@@ -180,11 +190,15 @@ object WireguardUtil {
         }
 
         // Decode the base64 public key
-        val publicKeyBytes = try {
-            Base64.getDecoder().decode(publicKeyBase64)
-        } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException("Failed to decode base64 public key: $publicKeyBase64", e)
-        }
+        val publicKeyBytes =
+            try {
+                Base64.getDecoder().decode(publicKeyBase64)
+            } catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException(
+                    "Failed to decode base64 public key: $publicKeyBase64",
+                    e,
+                )
+            }
 
         // Generate SHA-256 hash of the decoded public key
         val hashBytes = MessageDigest.getInstance("SHA-256").digest(publicKeyBytes)
@@ -193,11 +207,14 @@ object WireguardUtil {
         val interfaceId = hashBytes.copyOfRange(0, 8)
 
         // Parse the prefix address to a 16-byte binary representation
-        val prefixBytes = try {
-            java.net.InetAddress.getByName(prefixAddr).address
-        } catch (e: Exception) {
-            throw IllegalArgumentException("Failed to parse IPv6 address: $prefixAddr", e)
-        }
+        val prefixBytes =
+            try {
+                java.net.InetAddress
+                    .getByName(prefixAddr)
+                    .address
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Failed to parse IPv6 address: $prefixAddr", e)
+            }
         require(prefixBytes.size == 16) {
             "Invalid IPv6 address: $prefixAddr (must be an IPv6 address)"
         }
@@ -207,11 +224,13 @@ object WireguardUtil {
             ipBytes[8 + i] = interfaceId[i]
         }
         // Convert back to a human-readable IPv6 address
-        val ipv6Address = try {
-            java.net.InetAddress.getByAddress(ipBytes)
-        } catch (e: Exception) {
-            throw IllegalArgumentException("Failed to construct IPv6 address from public key", e)
-        }
-        return ipv6Address.hostAddress ?: throw IllegalArgumentException("Failed to format IPv6 address")
+        val ipv6Address =
+            try {
+                java.net.InetAddress.getByAddress(ipBytes)
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Failed to construct IPv6 address from public key", e)
+            }
+        return ipv6Address.hostAddress
+            ?: throw IllegalArgumentException("Failed to format IPv6 address")
     }
 }

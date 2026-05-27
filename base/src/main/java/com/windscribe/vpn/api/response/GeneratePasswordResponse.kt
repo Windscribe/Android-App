@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class GeneratePasswordResponse {
-
     @SerializedName("password")
     @Expose
     val password: String? = null

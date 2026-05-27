@@ -10,14 +10,12 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class XPressLoginVerifyResponse {
-
     @SerializedName("session_auth_hash")
     @Expose
     val sessionAuth: String? = null
 
-    override fun toString(): String {
-        return "XPressLoginVerifyResponse{" +
-                "sessionAuth='" + sessionAuth + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "XPressLoginVerifyResponse{" +
+            "sessionAuth='" + sessionAuth + '\'' +
+            '}'
 }

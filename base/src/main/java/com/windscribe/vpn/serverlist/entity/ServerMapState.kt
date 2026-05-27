@@ -9,6 +9,12 @@ package com.windscribe.vpn.serverlist.entity
  */
 sealed class ServerMapState {
     object Loading : ServerMapState()
-    data class Success(val data: Map<Int, List<Server>>) : ServerMapState()
-    data class Error(val message: String) : ServerMapState()
+
+    data class Success(
+        val data: Map<Int, List<Server>>,
+    ) : ServerMapState()
+
+    data class Error(
+        val message: String,
+    ) : ServerMapState()
 }

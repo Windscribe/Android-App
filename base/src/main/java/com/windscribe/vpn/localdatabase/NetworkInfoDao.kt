@@ -14,10 +14,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class NetworkInfoDao {
-
-    suspend fun addNetwork(networkInfo: NetworkInfo): Long {
-        return insert(networkInfo)
-    }
+    suspend fun addNetwork(networkInfo: NetworkInfo): Long = insert(networkInfo)
 
     @Query("Select * from network_info")
     abstract fun allNetworks(): Flow<List<NetworkInfo>>

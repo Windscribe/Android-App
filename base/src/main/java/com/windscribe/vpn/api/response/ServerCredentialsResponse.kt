@@ -13,7 +13,6 @@ import com.google.gson.annotations.SerializedName
  */
 @Keep
 class ServerCredentialsResponse {
-
     @SerializedName("password")
     @Expose
     var passwordEncoded: String? = null
@@ -22,12 +21,11 @@ class ServerCredentialsResponse {
     @Expose
     var userNameEncoded: String? = null
 
-    override fun toString(): String {
-        return "ServerCredentialsResponse{" +
-                "userNameEncoded='" + mask(userNameEncoded) + '\'' +
-                ", passwordEncoded='" + mask(passwordEncoded) + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "ServerCredentialsResponse{" +
+            "userNameEncoded='" + mask(userNameEncoded) + '\'' +
+            ", passwordEncoded='" + mask(passwordEncoded) + '\'' +
+            '}'
 
     private companion object {
         fun mask(value: String?): String {

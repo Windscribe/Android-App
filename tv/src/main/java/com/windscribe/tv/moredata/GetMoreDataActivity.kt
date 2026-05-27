@@ -16,7 +16,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class GetMoreDataActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityGetMoreDataBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,13 +50,10 @@ class GetMoreDataActivity : AppCompatActivity() {
                 binding.getPro.setTextColor(resources.getColor(R.color.colorWhite50))
             }
         }
-
     }
 
     companion object {
         @JvmStatic
-        fun getStartIntent(context: Context?): Intent {
-            return Intent(context, GetMoreDataActivity::class.java)
-        }
+        fun getStartIntent(context: Context?): Intent = Intent(context, GetMoreDataActivity::class.java)
     }
 }

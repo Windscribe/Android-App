@@ -17,7 +17,7 @@ object NetworkErrorCodes {
     const val ERROR_WG_KEY_LIMIT_EXCEEDED = 1313
     const val EXPIRED_OR_BANNED_ACCOUNT = 1700
 
-    //Internal app error codes.
+    // Internal app error codes.
     const val ERROR_UNABLE_TO_REACH_API = 30001
     const val ERROR_UNEXPECTED_API_DATA = 30002
     const val ERROR_VALID_CONFIG_NOT_FOUND = 30003

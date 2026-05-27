@@ -50,11 +50,12 @@ fun AnimatedIPAddress(
     if (ipAddress.contains("--") && !isRotatingIp) {
         Text(text = ipAddress, style = style, color = color, modifier = modifier)
     } else {
-        val displayIp = if (isRotatingIp && ipAddress.contains("--")) {
-            "000.000.000.000" // Placeholder to animate
-        } else {
-            ipAddress
-        }
+        val displayIp =
+            if (isRotatingIp && ipAddress.contains("--")) {
+                "000.000.000.000" // Placeholder to animate
+            } else {
+                ipAddress
+            }
 
         key(displayIp, isRotatingIp) {
             Row(modifier = modifier) {
@@ -71,20 +72,23 @@ fun AnimatedIPAddress(
                                 style = style,
                                 color = color,
                                 isRotating = isRotatingIp,
-                                onAnimationComplete = if (isLastDigit && !isRotatingIp) {
-                                    { connectionViewmodel.onIpAnimationComplete() }
-                                } else null
+                                onAnimationComplete =
+                                    if (isLastDigit && !isRotatingIp) {
+                                        { connectionViewmodel.onIpAnimationComplete() }
+                                    } else {
+                                        null
+                                    },
                             )
                         } else {
                             Box(
                                 modifier = Modifier.height((style.fontSize.value * 1.5f).dp),
-                                contentAlignment = Alignment.BottomCenter
+                                contentAlignment = Alignment.BottomCenter,
                             ) {
                                 Text(
                                     text = char.toString(),
                                     style = style,
                                     color = color,
-                                    modifier = Modifier.offset(y = (-1).dp)
+                                    modifier = Modifier.offset(y = (-1).dp),
                                 )
                             }
                         }
@@ -102,7 +106,7 @@ private fun AnimatedDigit(
     style: TextStyle,
     color: Color,
     isRotating: Boolean = false,
-    onAnimationComplete: (() -> Unit)? = null
+    onAnimationComplete: (() -> Unit)? = null,
 ) {
     var previousDigit by remember { mutableIntStateOf(targetDigit) }
     val animatedValue = remember { Animatable(targetDigit.toFloat()) }
@@ -116,26 +120,29 @@ private fun AnimatedDigit(
                 val currentValue = animatedValue.value
                 animatedValue.animateTo(
                     targetValue = currentValue + 10f,
-                    animationSpec = tween(
-                        durationMillis = 300,
-                        easing = LinearOutSlowInEasing
-                    )
+                    animationSpec =
+                        tween(
+                            durationMillis = 300,
+                            easing = LinearOutSlowInEasing,
+                        ),
                 )
             }
             // When rotation stops, animate to the final target digit
             val from = animatedValue.value
             val currentMod = from.toInt() % 10
-            val diff = if (targetDigit >= currentMod) {
-                targetDigit - currentMod
-            } else {
-                (10 - currentMod) + targetDigit
-            }
+            val diff =
+                if (targetDigit >= currentMod) {
+                    targetDigit - currentMod
+                } else {
+                    (10 - currentMod) + targetDigit
+                }
             animatedValue.animateTo(
                 targetValue = from + diff,
-                animationSpec = tween(
-                    durationMillis = 500,
-                    easing = LinearOutSlowInEasing
-                )
+                animationSpec =
+                    tween(
+                        durationMillis = 500,
+                        easing = LinearOutSlowInEasing,
+                    ),
             )
             animatedValue.snapTo(targetDigit.toFloat())
             previousDigit = targetDigit
@@ -149,18 +156,20 @@ private fun AnimatedDigit(
 
             val from = animatedValue.value
             val currentMod = from.toInt() % 10
-            val diff = if (targetDigit >= currentMod) {
-                targetDigit - currentMod
-            } else {
-                (10 - currentMod) + targetDigit
-            }
+            val diff =
+                if (targetDigit >= currentMod) {
+                    targetDigit - currentMod
+                } else {
+                    (10 - currentMod) + targetDigit
+                }
 
             animatedValue.animateTo(
                 targetValue = from + 30f + diff,
-                animationSpec = tween(
-                    durationMillis = 750,
-                    easing = LinearOutSlowInEasing
-                )
+                animationSpec =
+                    tween(
+                        durationMillis = 750,
+                        easing = LinearOutSlowInEasing,
+                    ),
             )
 
             animatedValue.snapTo(targetDigit.toFloat())
@@ -173,10 +182,11 @@ private fun AnimatedDigit(
     }
 
     Box(
-        modifier = Modifier
-            .height(itemHeight.dp)
-            .clipToBounds(),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .height(itemHeight.dp)
+                .clipToBounds(),
+        contentAlignment = Alignment.Center,
     ) {
         val currentValue = animatedValue.value
 
@@ -185,7 +195,7 @@ private fun AnimatedDigit(
             Text(
                 text = targetDigit.toString(),
                 style = style,
-                color = color
+                color = color,
             )
         } else {
             val currentFloor = currentValue.toInt()
@@ -195,14 +205,14 @@ private fun AnimatedDigit(
                 text = (currentFloor % 10).toString(),
                 style = style,
                 color = color,
-                modifier = Modifier.offset(y = (-delta * itemHeight).dp)
+                modifier = Modifier.offset(y = (-delta * itemHeight).dp),
             )
 
             Text(
                 text = ((currentFloor + 1) % 10).toString(),
                 style = style,
                 color = color,
-                modifier = Modifier.offset(y = ((1 - delta) * itemHeight).dp)
+                modifier = Modifier.offset(y = ((1 - delta) * itemHeight).dp),
             )
         }
     }

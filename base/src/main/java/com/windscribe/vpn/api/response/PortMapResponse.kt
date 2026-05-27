@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class PortMapResponse {
-
     @SerializedName("portmap")
     @Expose
     val portmap: List<PortMap>? = null
@@ -22,16 +21,14 @@ class PortMapResponse {
     val isProtocolSuggested: Boolean
         get() = suggested != null
 
-    override fun toString(): String {
-        return "PortMapResponse{" +
-                ", portmap=" + portmap +
-                ", suggested=" + suggested +
-                '}'
-    }
+    override fun toString(): String =
+        "PortMapResponse{" +
+            ", portmap=" + portmap +
+            ", suggested=" + suggested +
+            '}'
 
     @Keep
     class PortMap {
-
         @SerializedName("legacy_ports")
         @Expose
         val legacyPorts: List<String>? = null
@@ -52,20 +49,18 @@ class PortMapResponse {
         @Expose
         val use: String? = null
 
-        override fun toString(): String {
-            return "PortMap{" +
-                    "protocol='" + protocol + '\'' +
-                    ", heading='" + heading + '\'' +
-                    ", use='" + use + '\'' +
-                    ", ports=" + ports +
-                    ", legacyPorts=" + legacyPorts +
-                    '}'
-        }
+        override fun toString(): String =
+            "PortMap{" +
+                "protocol='" + protocol + '\'' +
+                ", heading='" + heading + '\'' +
+                ", use='" + use + '\'' +
+                ", ports=" + ports +
+                ", legacyPorts=" + legacyPorts +
+                '}'
     }
 
     @Keep
     class Suggested {
-
         @SerializedName("port")
         @Expose
         val port: Int = 0
@@ -74,11 +69,10 @@ class PortMapResponse {
         @Expose
         val protocol: String? = null
 
-        override fun toString(): String {
-            return "Suggested{" +
-                    "protocol='" + protocol + '\'' +
-                    ", port='" + port + '\'' +
-                    '}'
-        }
+        override fun toString(): String =
+            "Suggested{" +
+                "protocol='" + protocol + '\'' +
+                ", port='" + port + '\'' +
+                '}'
     }
 }

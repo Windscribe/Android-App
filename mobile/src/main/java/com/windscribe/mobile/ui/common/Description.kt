@@ -12,10 +12,11 @@ import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 fun Description(description: String) {
     Text(
         text = description,
-        style = font14.copy(
-            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-            textAlign = TextAlign.Start,
-            fontWeight = FontWeight.Normal
-        )
+        style =
+            font14.copy(
+                color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                textAlign = TextAlign.Start,
+                fontWeight = FontWeight.Normal,
+            ),
     )
 }

@@ -12,7 +12,6 @@ import androidx.room.PrimaryKey
 @Keep
 @Entity
 class PingTime {
-
     @ColumnInfo(name = "static")
     var isStatic: Boolean = false
 
@@ -47,13 +46,12 @@ class PingTime {
     fun isPro(): Boolean = pro
 
     @Ignore
-    override fun toString(): String {
-        return "PingTime{" +
-                "ping_id=" + ping_id +
-                ", pingTime=" + pingTime +
-                ", regionId=" + regionId +
-                ", isStatic=" + isStatic +
-                ", pro=" + pro +
-                '}'
-    }
+    override fun toString(): String =
+        "PingTime{" +
+            "ping_id=" + ping_id +
+            ", pingTime=" + pingTime +
+            ", regionId=" + regionId +
+            ", isStatic=" + isStatic +
+            ", pro=" + pro +
+            '}'
 }

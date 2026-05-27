@@ -8,28 +8,27 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ProtocolConfigTest {
-
     @Test
     fun `heading maps every supported protocol`() {
         assertEquals(
             "UDP",
-            ProtocolConfig(PreferencesKeyConstants.PROTO_UDP, "443", ProtocolConfig.Type.Auto).heading
+            ProtocolConfig(PreferencesKeyConstants.PROTO_UDP, "443", ProtocolConfig.Type.Auto).heading,
         )
         assertEquals(
             "TCP",
-            ProtocolConfig(PreferencesKeyConstants.PROTO_TCP, "443", ProtocolConfig.Type.Auto).heading
+            ProtocolConfig(PreferencesKeyConstants.PROTO_TCP, "443", ProtocolConfig.Type.Auto).heading,
         )
         assertEquals(
             "Stealth",
-            ProtocolConfig(PreferencesKeyConstants.PROTO_STEALTH, "443", ProtocolConfig.Type.Auto).heading
+            ProtocolConfig(PreferencesKeyConstants.PROTO_STEALTH, "443", ProtocolConfig.Type.Auto).heading,
         )
         assertEquals(
             "WStunnel",
-            ProtocolConfig(PreferencesKeyConstants.PROTO_WS_TUNNEL, "443", ProtocolConfig.Type.Auto).heading
+            ProtocolConfig(PreferencesKeyConstants.PROTO_WS_TUNNEL, "443", ProtocolConfig.Type.Auto).heading,
         )
         assertEquals(
             "WireGuard",
-            ProtocolConfig(PreferencesKeyConstants.PROTO_WIRE_GUARD, "443", ProtocolConfig.Type.Auto).heading
+            ProtocolConfig(PreferencesKeyConstants.PROTO_WIRE_GUARD, "443", ProtocolConfig.Type.Auto).heading,
         )
     }
 
@@ -37,15 +36,15 @@ class ProtocolConfigTest {
     fun `heading falls back to IKEv2 for ikev2 protocol and unknown values`() {
         assertEquals(
             "IKEv2",
-            ProtocolConfig(PreferencesKeyConstants.PROTO_IKev2, "500", ProtocolConfig.Type.Auto).heading
+            ProtocolConfig(PreferencesKeyConstants.PROTO_IKev2, "500", ProtocolConfig.Type.Auto).heading,
         )
         assertEquals(
             "IKEv2",
-            ProtocolConfig("totally-bogus-protocol", "1", ProtocolConfig.Type.Auto).heading
+            ProtocolConfig("totally-bogus-protocol", "1", ProtocolConfig.Type.Auto).heading,
         )
         assertEquals(
             "IKEv2",
-            ProtocolConfig("", "1", ProtocolConfig.Type.Auto).heading
+            ProtocolConfig("", "1", ProtocolConfig.Type.Auto).heading,
         )
     }
 

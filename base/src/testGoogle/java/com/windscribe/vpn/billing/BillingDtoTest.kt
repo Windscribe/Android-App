@@ -15,7 +15,6 @@ import org.junit.Test
  * that billing consumers depend on.
  */
 class BillingDtoTest {
-
     @Test
     fun `CustomPurchase exposes responseCode and purchase`() {
         val purchase = mockk<Purchase>()

@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">无法更新罗伯特规则。</string>
     <string name="successfully_updated_robert_rules">已成功更新罗伯特规则。</string>
     <string name="share_app">共享应用</string>
-    <string name="share_app_description">"“%s邀请您加入Windscribe。在注册时提供他们的用户名，你们都将获得 1GB 的免费数据添加到您的帐户中。如果你成为专业人士，他们也会成为专业人士！\n%s”"</string>
+    <string name="share_app_description">"“%1$s邀请您加入Windscribe。在注册时提供他们的用户名，你们都将获得 1GB 的免费数据添加到您的帐户中。如果你成为专业人士，他们也会成为专业人士！\n%2$s”"</string>
     <string name="allow_all_the_time_location_access_required">“一直允许”需要位置访问！</string>
     <string name="enable_location_access">启用位置信息访问</string>
     <string name="location_permission_required">需要位置权限</string>

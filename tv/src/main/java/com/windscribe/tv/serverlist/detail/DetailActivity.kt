@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
@@ -18,13 +19,14 @@ import com.windscribe.tv.serverlist.adapters.DetailViewAdapter
 import com.windscribe.tv.serverlist.overlay.LoadState
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import org.slf4j.LoggerFactory
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DetailActivity : BaseActivity(), DetailView {
+class DetailActivity :
+    BaseActivity(),
+    DetailView {
     private lateinit var binding: ActivityDetailBinding
 
     @Inject
@@ -62,8 +64,8 @@ class DetailActivity : BaseActivity(), DetailView {
             getIntent(
                 appContext,
                 getString(com.windscribe.vpn.R.string.node_under_construction_text),
-                "Alert"
-            )
+                "Alert",
+            ),
         )
     }
 
@@ -81,7 +83,8 @@ class DetailActivity : BaseActivity(), DetailView {
     }
 
     override fun setCountryFlagBackground(flagIconResource: Int) {
-        Glide.with(this@DetailActivity)
+        Glide
+            .with(this@DetailActivity)
             .load(ContextCompat.getDrawable(this, flagIconResource))
             .dontAnimate()
             .into(binding.imageBackground)
@@ -91,14 +94,22 @@ class DetailActivity : BaseActivity(), DetailView {
         binding.detailRecycleView.adapter = detailAdapter
     }
 
-    override fun setState(state: LoadState, stateDrawable: Int, stateText: Int) {
-        val selectedStateListDrawable: Int = if (fragmentTag == 1) {
-            R.drawable.ic_all_icon
-        } else {
-            R.drawable.ic_flix_icon
-        }
+    override fun setState(
+        state: LoadState,
+        stateDrawable: Int,
+        stateText: Int,
+    ) {
+        val selectedStateListDrawable: Int =
+            if (fragmentTag == 1) {
+                R.drawable.ic_all_icon
+            } else {
+                R.drawable.ic_flix_icon
+            }
         when (state) {
-            LoadState.Loaded -> binding.stateLayout.visibility = View.GONE
+            LoadState.Loaded -> {
+                binding.stateLayout.visibility = View.GONE
+            }
+
             LoadState.NoResult, LoadState.Error, LoadState.Loading -> {
                 binding.stateLayout.visibility = View.VISIBLE
                 binding.stateLayout.text = getString(stateText)
@@ -106,7 +117,7 @@ class DetailActivity : BaseActivity(), DetailView {
                     null,
                     ResourcesCompat.getDrawable(resources, selectedStateListDrawable, theme),
                     null,
-                    null
+                    null,
                 )
             }
         }

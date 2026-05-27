@@ -9,10 +9,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import java.util.Locale
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class BaseActivity : AppCompatActivity() {
     val coldLoad = AtomicBoolean()
@@ -50,4 +50,3 @@ fun AppCompatActivity.applyAppLocale() {
     @Suppress("DEPRECATION")
     resources.updateConfiguration(config, resources.displayMetrics)
 }
-

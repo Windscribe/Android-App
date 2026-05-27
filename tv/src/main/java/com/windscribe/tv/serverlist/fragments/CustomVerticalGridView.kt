@@ -21,10 +21,13 @@ class CustomVerticalGridView : VerticalGridView {
     constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(
         context,
         attrs,
-        defStyle
+        defStyle,
     )
 
-    override fun focusSearch(focused: View, direction: Int): View {
+    override fun focusSearch(
+        focused: View,
+        direction: Int,
+    ): View {
         if (direction == FOCUS_UP && focused.id == R.id.server_item && nextFocusUpId != R.id.server_item && selectedPosition <= 3) {
             customFocusListener?.onExit()
         }

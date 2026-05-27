@@ -11,19 +11,21 @@ import dagger.assisted.AssistedInject
 import org.slf4j.LoggerFactory
 
 @HiltWorker
-class BootWorker @AssistedInject constructor(
-    @Assisted appContext: Context,
-    @Assisted params: WorkerParameters,
-    private val preferencesHelper: PreferencesHelper,
-    private val shortcutStateManager: ShortcutStateManager
-) : CoroutineWorker(appContext, params) {
-    private val logger = LoggerFactory.getLogger("worker")
+class BootWorker
+    @AssistedInject
+    constructor(
+        @Assisted appContext: Context,
+        @Assisted params: WorkerParameters,
+        private val preferencesHelper: PreferencesHelper,
+        private val shortcutStateManager: ShortcutStateManager,
+    ) : CoroutineWorker(appContext, params) {
+        private val logger = LoggerFactory.getLogger("worker")
 
-    override suspend fun doWork(): Result {
-        if (preferencesHelper.autoStartOnBoot) {
-            logger.debug("Device rebooted and Auto start on boot is true, attempting to connect.")
-            shortcutStateManager.connect()
+        override suspend fun doWork(): Result {
+            if (preferencesHelper.autoStartOnBoot) {
+                logger.debug("Device rebooted and Auto start on boot is true, attempting to connect.")
+                shortcutStateManager.connect()
+            }
+            return Result.success()
         }
-        return Result.success()
     }
-}

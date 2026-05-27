@@ -33,30 +33,38 @@ import com.windscribe.vpn.R
 
 sealed class FullScreenDialogState {
     object None : FullScreenDialogState()
-    data class Success(val message: String) : FullScreenDialogState()
-    data class Error(val message: String) : FullScreenDialogState()
+
+    data class Success(
+        val message: String,
+    ) : FullScreenDialogState()
+
+    data class Error(
+        val message: String,
+    ) : FullScreenDialogState()
 }
 
 @Composable
 fun HandleFullScreenDialog(
     state: FullScreenDialogState,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     when (state) {
         is FullScreenDialogState.Success -> {
             FullScreenDialog(
                 text = state.message,
                 error = false,
-                onDismiss = onDismiss
+                onDismiss = onDismiss,
             )
         }
+
         is FullScreenDialogState.Error -> {
             FullScreenDialog(
                 text = state.message,
                 error = true,
-                onDismiss = onDismiss
+                onDismiss = onDismiss,
             )
         }
+
         is FullScreenDialogState.None -> {
             // No dialog to show
         }
@@ -64,35 +72,49 @@ fun HandleFullScreenDialog(
 }
 
 @Composable
-fun FullScreenDialog(text: String, error: Boolean = false, onDismiss: () -> Unit) {
+fun FullScreenDialog(
+    text: String,
+    error: Boolean = false,
+    onDismiss: () -> Unit,
+) {
     Dialog(
         onDismissRequest = {
             onDismiss()
         },
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         val scrollState = rememberScrollState()
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.serverListBackgroundColor),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.serverListBackgroundColor),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(274.dp)
-                    .verticalScroll(scrollState)
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .width(274.dp)
+                        .verticalScroll(scrollState),
             ) {
                 Spacer(modifier = Modifier.weight(1f))
 
                 // Icon
                 Image(
-                    painter = painterResource(id = if (error) com.windscribe.mobile.R.drawable.ic_attention_icon else com.windscribe.mobile.R.drawable.ic_green_check_with_background),
+                    painter =
+                        painterResource(
+                            id =
+                                if (error) {
+                                    com.windscribe.mobile.R.drawable.ic_attention_icon
+                                } else {
+                                    com.windscribe.mobile.R.drawable.ic_green_check_with_background
+                                },
+                        ),
                     contentDescription = if (error) "Error" else "Success",
-                    colorFilter = if (error) ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor) else null
+                    colorFilter = if (error) ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor) else null,
                 )
 
                 Spacer(modifier = Modifier.height(25.dp))
@@ -103,7 +125,7 @@ fun FullScreenDialog(text: String, error: Boolean = false, onDismiss: () -> Unit
                     style = font16,
                     color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
+                    modifier = Modifier,
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -113,7 +135,7 @@ fun FullScreenDialog(text: String, error: Boolean = false, onDismiss: () -> Unit
                     text = stringResource(id = R.string.close),
                     onClick = {
                         onDismiss()
-                    }
+                    },
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -127,7 +149,6 @@ fun FullScreenDialog(text: String, error: Boolean = false, onDismiss: () -> Unit
 private fun SuccessDialog() {
     PreviewWithNav {
         FullScreenDialog("Sweet, we’ll get back to you as soon as one of our agents is back from lunch.", true) {
-
         }
     }
 }

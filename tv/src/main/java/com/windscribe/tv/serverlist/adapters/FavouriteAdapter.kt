@@ -25,9 +25,11 @@ import com.windscribe.vpn.serverlist.entity.ServerListData
 class FavouriteAdapter(
     private val locations: MutableList<Datacenter>,
     serverListData: ServerListData,
-    private val listener: DatacenterClickListener
+    private val listener: DatacenterClickListener,
 ) : RecyclerView.Adapter<FavouriteHolder>() {
-    inner class FavouriteHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class FavouriteHolder(
+        itemView: View,
+    ) : RecyclerView.ViewHolder(itemView) {
         private val btnConnect: ConnectButtonView = itemView.findViewById(R.id.connect)
         private val btnFav: FavouriteButtonView = itemView.findViewById(R.id.fav)
         private val detailStar: ImageView = itemView.findViewById(R.id.pro_label)
@@ -35,6 +37,7 @@ class FavouriteAdapter(
         private val latencyView: TextView = itemView.findViewById(R.id.latency)
         private val nodeNameLabel: TextView = itemView.findViewById(R.id.nodeName)
         private val nodeNickNameLabel: TextView = itemView.findViewById(R.id.nodeNickName)
+
         fun bind(city: Datacenter) {
             btnFav.setState(2)
             nodeNameLabel.text = city.nodeName
@@ -58,55 +61,57 @@ class FavouriteAdapter(
                 detailStar.visibility = if (requiresPro) View.VISIBLE else View.INVISIBLE
             }
 
-                btnFav.setColorFilter(
-                    ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
-                )
-                btnConnect.setColorFilter(
-                    ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
-                )
-                btnConnect.setOnClickListener {
-                    when (status) {
-                        DatacenterStatus.UnderMaintenance -> {
-                            listener.onDisabledClick()
-                        }
-                        DatacenterStatus.Pro, DatacenterStatus.Available -> {
-                            // Pro locations go through onConnectClick → attemptConnection → upgrade logic
-                            listener.onFavouriteDatacenterClick(city)
-                        }
+            btnFav.setColorFilter(
+                ContextCompat.getColor(itemView.context, R.color.colorWhite40),
+                PorterDuff.Mode.MULTIPLY,
+            )
+            btnConnect.setColorFilter(
+                ContextCompat.getColor(itemView.context, R.color.colorWhite40),
+                PorterDuff.Mode.MULTIPLY,
+            )
+            btnConnect.setOnClickListener {
+                when (status) {
+                    DatacenterStatus.UnderMaintenance -> {
+                        listener.onDisabledClick()
+                    }
+
+                    DatacenterStatus.Pro, DatacenterStatus.Available -> {
+                        // Pro locations go through onConnectClick → attemptConnection → upgrade logic
+                        listener.onFavouriteDatacenterClick(city)
                     }
                 }
-                btnFav.setOnClickListener {
-                    locations.remove(city)
-                    listener.onFavouriteButtonClick(city, btnFav.getState())
+            }
+            btnFav.setOnClickListener {
+                locations.remove(city)
+                listener.onFavouriteButtonClick(city, btnFav.getState())
+            }
+            itemView.onFocusChangeListener =
+                View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
+                    selectedBackground(hasFocus)
                 }
-                itemView.onFocusChangeListener =
-                    View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-                        selectedBackground(hasFocus)
-                    }
-                itemView.onFocusChangeListener =
-                    View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-                        selectedBackground(hasFocus)
-                    }
-                btnConnect.onFocusChangeListener =
-                    View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-                        selectedBackground(hasFocus)
-                        val text = when (status) {
+            itemView.onFocusChangeListener =
+                View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
+                    selectedBackground(hasFocus)
+                }
+            btnConnect.onFocusChangeListener =
+                View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
+                    selectedBackground(hasFocus)
+                    val text =
+                        when (status) {
                             DatacenterStatus.Pro -> appContext.getString(com.windscribe.vpn.R.string.upgrade)
                             DatacenterStatus.UnderMaintenance -> appContext.getString(com.windscribe.vpn.R.string.unavailable)
                             DatacenterStatus.Available -> appContext.getString(com.windscribe.vpn.R.string.connect)
                         }
-                        setHighlightText(text, hasFocus)
-                    }
-                btnFav.onFocusChangeListener =
-                    View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-                        selectedBackground(hasFocus)
-                        setHighlightText(
-                            appContext.getString(com.windscribe.vpn.R.string.remove_it_from_favourites),
-                            hasFocus
-                        )
-                    }
+                    setHighlightText(text, hasFocus)
+                }
+            btnFav.onFocusChangeListener =
+                View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
+                    selectedBackground(hasFocus)
+                    setHighlightText(
+                        appContext.getString(com.windscribe.vpn.R.string.remove_it_from_favourites),
+                        hasFocus,
+                    )
+                }
         }
 
         private fun selectedBackground(selected: Boolean) {
@@ -120,16 +125,19 @@ class FavouriteAdapter(
             } else {
                 btnFav.setColorFilter(
                     ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
+                    PorterDuff.Mode.MULTIPLY,
                 )
                 btnConnect.setColorFilter(
                     ContextCompat.getColor(itemView.context, R.color.colorWhite40),
-                    PorterDuff.Mode.MULTIPLY
+                    PorterDuff.Mode.MULTIPLY,
                 )
             }
         }
 
-        private fun setHighlightText(text: String, hasFocus: Boolean) {
+        private fun setHighlightText(
+            text: String,
+            hasFocus: Boolean,
+        ) {
             if (hasFocus) {
                 highlightTextView.text = text
                 highlightTextView.visibility = View.VISIBLE
@@ -142,22 +150,27 @@ class FavouriteAdapter(
 
     private val serverListData: ServerListData
     private var isPremiumUser = false
-    override fun getItemCount(): Int {
-        return locations.size
-    }
 
-    override fun getItemId(position: Int): Long {
-        return locations[position].id.toLong()
-    }
+    override fun getItemCount(): Int = locations.size
 
-    override fun onBindViewHolder(favouriteHolder: FavouriteHolder, i: Int) {
+    override fun getItemId(position: Int): Long = locations[position].id.toLong()
+
+    override fun onBindViewHolder(
+        favouriteHolder: FavouriteHolder,
+        i: Int,
+    ) {
         val city = locations[i]
         favouriteHolder.bind(city)
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): FavouriteHolder {
-        val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.favourite_item_view, viewGroup, false)
+    override fun onCreateViewHolder(
+        viewGroup: ViewGroup,
+        i: Int,
+    ): FavouriteHolder {
+        val view =
+            LayoutInflater
+                .from(viewGroup.context)
+                .inflate(R.layout.favourite_item_view, viewGroup, false)
         return FavouriteHolder(view)
     }
 

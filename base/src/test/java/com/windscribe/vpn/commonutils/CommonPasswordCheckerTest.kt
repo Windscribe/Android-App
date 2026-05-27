@@ -5,7 +5,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CommonPasswordCheckerTest {
-
     @Test
     fun `flags well known weak passwords`() {
         listOf(
@@ -15,7 +14,7 @@ class CommonPasswordCheckerTest {
             "iloveyou",
             "monkey",
             "welcome",
-            "passw0rd"
+            "passw0rd",
         ).forEach {
             assertTrue("Expected '$it' to be flagged as common", CommonPasswordChecker.isAMatch(it))
         }
@@ -50,7 +49,7 @@ class CommonPasswordCheckerTest {
             "correct-horse-battery-staple",
             "windscribe-rocks-2026",
             "T#3Quick&Brown-Fox",
-            "ZxC!asd789-PoIuYt"
+            "ZxC!asd789-PoIuYt",
         ).forEach {
             assertFalse("Expected '$it' NOT to be flagged", CommonPasswordChecker.isAMatch(it))
         }

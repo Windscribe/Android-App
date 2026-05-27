@@ -2,7 +2,6 @@ package com.windscribe.mobile.ui.preferences.network_options
 
 import PreferencesNavBar
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.ui.common.PreferenceBackground
-import com.windscribe.mobile.ui.common.ScreenDescription
 import com.windscribe.mobile.ui.common.SwitchItemView
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -51,13 +49,16 @@ fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
         ?: remember { mutableStateOf(false) }
     val currentNetwork by viewModel?.currentNetwork?.collectAsState() ?: remember {
         mutableStateOf(
-            null
+            null,
         )
     }
     PreferenceBackground {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 16.dp, horizontal = 16.dp)) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 16.dp, horizontal = 16.dp),
+        ) {
             PreferencesNavBar(stringResource(R.string.network_options)) {
                 navController.popBackStack()
             }
@@ -90,7 +91,7 @@ private fun CurrentNetwork(networkInfo: NetworkInfo) {
             color = MaterialTheme.colorScheme.preferencesSubtitleColor,
             style = font12.copy(fontWeight = FontWeight.SemiBold),
             textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(8.dp))
         Network(networkInfo)
@@ -101,21 +102,20 @@ private fun CurrentNetwork(networkInfo: NetworkInfo) {
 private fun Network(networkInfo: NetworkInfo) {
     val navController = LocalNavController.current
     Row(
-        modifier = Modifier
-            .height(48.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .hapticClickable {
-                navController.currentBackStackEntry?.savedStateHandle?.set(
-                    "network_name",
-                    networkInfo.networkName
-                )
-                navController.navigate(Screen.NetworkDetails.route)
-            }
-            .padding(14.dp)
-           , verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .height(48.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(12.dp),
+                ).hapticClickable {
+                    navController.currentBackStackEntry?.savedStateHandle?.set(
+                        "network_name",
+                        networkInfo.networkName,
+                    )
+                    navController.navigate(Screen.NetworkDetails.route)
+                }.padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = networkInfo.networkName,
@@ -133,7 +133,8 @@ private fun Network(networkInfo: NetworkInfo) {
         Spacer(modifier = Modifier.width(8.dp))
         Icon(
             painterResource(com.windscribe.mobile.R.drawable.arrow_right),
-            contentDescription = "", tint = MaterialTheme.colorScheme.primaryTextColor
+            contentDescription = "",
+            tint = MaterialTheme.colorScheme.primaryTextColor,
         )
     }
 }
@@ -142,7 +143,7 @@ private fun Network(networkInfo: NetworkInfo) {
 private fun OtherNetworks(viewModel: NetworkOptionsViewModel?) {
     val allNetworks by viewModel?.allNetworks?.collectAsState() ?: remember {
         mutableStateOf(
-            emptyList()
+            emptyList(),
         )
     }
     if (allNetworks.isNotEmpty()) {
@@ -152,7 +153,7 @@ private fun OtherNetworks(viewModel: NetworkOptionsViewModel?) {
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 style = font12.copy(fontWeight = FontWeight.SemiBold),
                 textAlign = TextAlign.Start,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(8.dp))
             LazyColumn {

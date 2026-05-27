@@ -10,7 +10,7 @@ class WindscribeReviewManagerImpl(
     val scope: CoroutineScope,
     val context: Context,
     val preferencesHelper: PreferencesHelper,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
 ) : WindscribeReviewManager {
     override fun handleAppReview() {}
 }

@@ -7,7 +7,6 @@ import org.junit.Test
 import java.io.ByteArrayInputStream
 
 class HashUtilsTest {
-
     @Test
     fun `sha256FromInputStream produces 34 char prefixed hex string`() {
         val hash = HashUtils.sha256FromInputStream(ByteArrayInputStream("hello".toByteArray()))

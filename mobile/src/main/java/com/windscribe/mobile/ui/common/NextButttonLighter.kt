@@ -16,22 +16,26 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 
 @Composable
-fun NextButtonLighter(modifier: Modifier = Modifier,
-                      text: String,
-                      onClick: () -> Unit) {
+fun NextButtonLighter(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+) {
     val interactionSource = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .padding(horizontal = 24.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.white.copy(alpha = 0.10f),
-            contentColor = AppColors.white,
-            disabledContainerColor = AppColors.white.copy(alpha = 0.10f),
-            disabledContentColor = AppColors.white.copy(alpha = 0.25f)
-        ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .padding(horizontal = 24.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = AppColors.white.copy(alpha = 0.10f),
+                contentColor = AppColors.white,
+                disabledContainerColor = AppColors.white.copy(alpha = 0.10f),
+                disabledContentColor = AppColors.white.copy(alpha = 0.25f),
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {
@@ -43,20 +47,24 @@ fun NextButtonLighter(modifier: Modifier = Modifier,
 }
 
 @Composable
-fun NextButtonLighterNoPadding(modifier: Modifier = Modifier,
-                      text: String,
-                      onClick: () -> Unit) {
+fun NextButtonLighterNoPadding(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+) {
     val interactionSource = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
-        modifier = modifier
-            .height(48.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.white.copy(alpha = 0.10f),
-            contentColor = AppColors.white,
-            disabledContainerColor = AppColors.white.copy(alpha = 0.10f),
-            disabledContentColor = AppColors.white.copy(alpha = 0.25f)
-        ),
+        modifier =
+            modifier
+                .height(48.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = AppColors.white.copy(alpha = 0.10f),
+                contentColor = AppColors.white,
+                disabledContainerColor = AppColors.white.copy(alpha = 0.10f),
+                disabledContentColor = AppColors.white.copy(alpha = 0.25f),
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {

@@ -10,14 +10,12 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 class WebSession {
-
     @SerializedName("temp_session")
     @Expose
     val tempSession: String? = null
 
-    override fun toString(): String {
-        return "WebSession{" +
-                "tempSession='" + tempSession + '\'' +
-                '}'
-    }
+    override fun toString(): String =
+        "WebSession{" +
+            "tempSession='" + tempSession + '\'' +
+            '}'
 }

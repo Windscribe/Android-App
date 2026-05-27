@@ -8,9 +8,12 @@ class ServerListData {
     var serverListHash: String? = null
     var favourites: List<Favourite> = ArrayList()
     var flags: Map<String, Int>? = null
-        get() = if (field == null) {
-            HashMap()
-        } else field
+        get() =
+            if (field == null) {
+                HashMap()
+            } else {
+                field
+            }
     var pingTimes: List<PingTime> = ArrayList()
     var serverCountMap: Map<Int, Int> = HashMap()
     var isProUser = false

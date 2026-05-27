@@ -21,22 +21,29 @@ import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @Composable
-fun AppProgressBar(showProgressBar: Boolean, message: String) {
+fun AppProgressBar(
+    showProgressBar: Boolean,
+    message: String,
+) {
     if (showProgressBar) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .background(AppColors.deepBlue.copy(alpha = 0.90f))
-                .fillMaxSize()
+            modifier =
+                Modifier
+                    .background(AppColors.deepBlue.copy(alpha = 0.90f))
+                    .fillMaxSize(),
         ) {
             Spacer(modifier = Modifier.height(48.dp))
             Text(
-                text = message, style = font16, color = AppColors.white.copy(alpha = 0.50f)
+                text = message,
+                style = font16,
+                color = AppColors.white.copy(alpha = 0.50f),
             )
             Spacer(modifier = Modifier.height(16.dp))
             CircularProgressIndicator(
-                modifier = Modifier.size(48.dp), color = AppColors.white
+                modifier = Modifier.size(48.dp),
+                color = AppColors.white,
             )
         }
     }
@@ -48,13 +55,15 @@ fun PreferenceProgressBar(showProgressBar: Boolean) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.preferencesBackgroundColor.copy(alpha = 0.70f))
-                .fillMaxSize()
-                .clickable {}
+            modifier =
+                Modifier
+                    .background(MaterialTheme.colorScheme.preferencesBackgroundColor.copy(alpha = 0.70f))
+                    .fillMaxSize()
+                    .clickable {},
         ) {
             CircularProgressIndicator(
-                modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.primaryTextColor
+                modifier = Modifier.size(24.dp),
+                color = MaterialTheme.colorScheme.primaryTextColor,
             )
         }
     }

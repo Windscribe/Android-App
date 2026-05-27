@@ -22,8 +22,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.slf4j.LoggerFactory
 
-class AmazonBillingManager(private val app: Application) : PurchasingListener, DefaultLifecycleObserver {
-
+class AmazonBillingManager(
+    private val app: Application,
+) : PurchasingListener,
+    DefaultLifecycleObserver {
     private val _onAmazonPurchaseHistoryError = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
     val onAmazonPurchaseHistoryError: SharedFlow<String> = _onAmazonPurchaseHistoryError.asSharedFlow()
 

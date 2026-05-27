@@ -1,9 +1,7 @@
 package com.windscribe.mobile.ui.common
 
-import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -11,13 +9,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -39,10 +36,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
@@ -59,7 +54,11 @@ import com.windscribe.mobile.ui.theme.AppColors
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel, bridgeApiViewModel: BridgeApiViewModel) {
+fun LocationImage(
+    connectionViewmodel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel,
+) {
     val connectionState by connectionViewmodel.connectionUIState.collectAsState()
     val locationBackground =
         (connectionState.locationInfo as? LocationInfoState.Success)?.locationInfo?.locationBackground
@@ -70,30 +69,33 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
         AnimatedContent(
             targetState = resource,
             transitionSpec = {
-                slideInVertically(animationSpec = tween(durationMillis = 800)) { it } + fadeIn(
-                    animationSpec = tween(800)
-                ) with
-                        slideOutVertically(animationSpec = tween(durationMillis = 800)) { -it } + fadeOut(
-                    animationSpec = tween(800)
-                )
+                slideInVertically(animationSpec = tween(durationMillis = 800)) { it } +
+                    fadeIn(
+                        animationSpec = tween(800),
+                    ) togetherWith
+                    slideOutVertically(animationSpec = tween(durationMillis = 800)) { -it } +
+                    fadeOut(
+                        animationSpec = tween(800),
+                    )
             },
-            label = "Flag Transition"
+            label = "Flag Transition",
         ) { targetCountryCode ->
             Box(
-                modifier = Modifier
-                    .height(imageDimen.height)
-                    .fillMaxSize()
-                    .alpha( 0.3f)
-                    .graphicsLayer(alpha = 1.0f)
-                    .drawWithContent {
-                        drawContent()
-                        if (connectionState !is ConnectionUIState.Connected) {
-                            drawRect(
-                                brush = FlagMask,
-                                blendMode = BlendMode.Modulate
-                            )
-                        }
-                    }
+                modifier =
+                    Modifier
+                        .height(imageDimen.height)
+                        .fillMaxSize()
+                        .alpha(0.3f)
+                        .graphicsLayer(alpha = 1.0f)
+                        .drawWithContent {
+                            drawContent()
+                            if (connectionState !is ConnectionUIState.Connected) {
+                                drawRect(
+                                    brush = FlagMask,
+                                    blendMode = BlendMode.Modulate,
+                                )
+                            }
+                        },
             ) {
                 val context = LocalContext.current
                 val aspectRatio by connectionViewmodel.aspectRatio.collectAsState()
@@ -102,46 +104,62 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (aspectRatio == 3) {
                             // TILE MODE (repeat pattern)
-                            val imageBitmapState = produceState<ImageBitmap?>(initialValue = null) {
-                                val imageLoader = context.imageLoader
-                                val request = ImageRequest.Builder(context)
-                                    .data(imageData)
-                                    .size(2048, 2048)  // Limit tile pattern to 2048x2048
-                                    .allowHardware(false)
-                                    .build()
+                            val imageBitmapState =
+                                produceState<ImageBitmap?>(initialValue = null) {
+                                    val imageLoader = context.imageLoader
+                                    val request =
+                                        ImageRequest
+                                            .Builder(context)
+                                            .data(imageData)
+                                            .size(2048, 2048) // Limit tile pattern to 2048x2048
+                                            .allowHardware(false)
+                                            .build()
 
-                                val result = imageLoader.execute(request)
-                                val drawable = result.drawable
-                                val bitmap = (drawable as? BitmapDrawable)?.bitmap
-                                value = bitmap?.asImageBitmap()
-                            }
+                                    val result = imageLoader.execute(request)
+                                    val drawable = result.drawable
+                                    val bitmap = (drawable as? BitmapDrawable)?.bitmap
+                                    value = bitmap?.asImageBitmap()
+                                }
 
                             imageBitmapState.value?.let { img ->
                                 Canvas(modifier = Modifier.fillMaxSize()) {
-                                    val frameworkPaint = Paint().asFrameworkPaint().apply {
-                                        isAntiAlias = true
-                                        shader = android.graphics.BitmapShader(
-                                            img.asAndroidBitmap(),
-                                            android.graphics.Shader.TileMode.REPEAT,
-                                            android.graphics.Shader.TileMode.REPEAT
-                                        )
-                                    }
+                                    val frameworkPaint =
+                                        Paint().asFrameworkPaint().apply {
+                                            isAntiAlias = true
+                                            shader =
+                                                android.graphics.BitmapShader(
+                                                    img.asAndroidBitmap(),
+                                                    android.graphics.Shader.TileMode.REPEAT,
+                                                    android.graphics.Shader.TileMode.REPEAT,
+                                                )
+                                        }
                                     drawContext.canvas.nativeCanvas.drawRect(
-                                        0f, 0f, size.width, size.height, frameworkPaint
+                                        0f,
+                                        0f,
+                                        size.width,
+                                        size.height,
+                                        frameworkPaint,
                                     )
                                 }
                             }
                         } else {
                             // NORMAL IMAGE MODES
-                            val contentScale = when (aspectRatio) {
-                                1 -> ContentScale.FillBounds // Fill
-                                2 -> ContentScale.Fit        // Fit
-                                else -> ContentScale.FillHeight // Default
-                            }
-                            val imageRequest = ImageRequest.Builder(context)
-                                .data(imageData)
-                                .size(2560, 2560)  // Limit to 2560x2560 max (safe for all devices)
-                                .build()
+                            val contentScale =
+                                when (aspectRatio) {
+                                    1 -> ContentScale.FillBounds
+
+                                    // Fill
+                                    2 -> ContentScale.Fit
+
+                                    // Fit
+                                    else -> ContentScale.FillHeight // Default
+                                }
+                            val imageRequest =
+                                ImageRequest
+                                    .Builder(context)
+                                    .data(imageData)
+                                    .size(2560, 2560) // Limit to 2560x2560 max (safe for all devices)
+                                    .build()
                             SubcomposeAsyncImage(
                                 model = imageRequest,
                                 contentDescription = null,
@@ -149,9 +167,10 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                                 contentScale = contentScale,
                                 loading = {
                                     Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(Color.Gray)
+                                        modifier =
+                                            Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Gray),
                                     )
                                 },
                                 error = {
@@ -159,9 +178,9 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                                         painterResource(id = R.drawable.dummy_flag),
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
-                                        contentScale = contentScale
+                                        contentScale = contentScale,
                                     )
-                                }
+                                },
                             )
                         }
                     }
@@ -171,32 +190,36 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                     Image(
                         painter = painterResource(id = imageDrawable),
                         contentDescription = null,
-                        modifier = Modifier
-                            .width(imageDimen.width)
-                            .height(imageDimen.height)
-                            .align(Alignment.Center),
-                        contentScale = ContentScale.Crop
+                        modifier =
+                            Modifier
+                                .width(imageDimen.width)
+                                .height(imageDimen.height)
+                                .align(Alignment.Center),
+                        contentScale = ContentScale.Crop,
                     )
                 }
                 val overlayAlpha by animateFloatAsState(
                     targetValue = if (connectionState is ConnectionUIState.Connected) 1.0f else 0.0f,
                     animationSpec = tween(durationMillis = 600),
-                    label = "overlay_alpha"
+                    label = "overlay_alpha",
                 )
-                val overlayBrush = remember {
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            AppColors.darkBlueAccent,
-                            Color.Transparent
+                val overlayBrush =
+                    remember {
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    AppColors.darkBlueAccent,
+                                    Color.Transparent,
+                                ),
                         )
-                    )
-                }
+                    }
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            alpha = overlayAlpha
-                        }.background(brush = overlayBrush)
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                alpha = overlayAlpha
+                            }.background(brush = overlayBrush),
                 )
             }
         }
@@ -204,12 +227,14 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
     }
 }
 
-private val FlagMask = Brush.verticalGradient(
-    colorStops = arrayOf(
-        0.0f to Color.White.copy(alpha = 0.0f),
-        0.2f to Color.White.copy(alpha = 0.35f),
-        0.3f to Color.White.copy(alpha = 0.5f),
-        0.4f to Color.White.copy(alpha = 0.75f),
-        0.5f to Color.White.copy(alpha = 1.0f),
+private val FlagMask =
+    Brush.verticalGradient(
+        colorStops =
+            arrayOf(
+                0.0f to Color.White.copy(alpha = 0.0f),
+                0.2f to Color.White.copy(alpha = 0.35f),
+                0.3f to Color.White.copy(alpha = 0.5f),
+                0.4f to Color.White.copy(alpha = 0.75f),
+                0.5f to Color.White.copy(alpha = 1.0f),
+            ),
     )
-)

@@ -4,5 +4,8 @@
 package com.windscribe.tv.serverlist.overlay
 
 enum class LoadState {
-    Loaded, Loading, NoResult, Error
+    Loaded,
+    Loading,
+    NoResult,
+    Error,
 }
