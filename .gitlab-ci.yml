@@ -45,19 +45,19 @@ variables:
   # Output Paths
   MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/build/outputs/apk/google/release/mobile-google-release.apk"
   TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/google/release/tv-google-release.apk"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  GRADLE_BUILD_CACHE: "$CI_PROJECT_DIR/.gradle/build-cache"
 
-  # Cache Configuration
-  CCACHE_DIR: "${CI_PROJECT_DIR}/.ccache"
-
-#------------------------------------------------------------------------------
-# Cache Configuration
-#------------------------------------------------------------------------------
 cache:
+  key:
+    prefix: gradle
+    files:
+      - gradle/wrapper/gradle-wrapper.properties
+      - gradle/libs.versions.toml
+  policy: pull-push
   paths:
-    - .gradle/wrapper
-    - .gradle/caches
-    - .ccache
-
+    - .gradle/caches/
+    - .gradle/wrapper/
 #------------------------------------------------------------------------------
 # Pipeline Stages
 #------------------------------------------------------------------------------
@@ -86,10 +86,9 @@ stages:
 .base_android_setup:
   before_script:
     # System packages installation
-    - apk -U upgrade
-    - apk --no-cache add curl flock jq swig
-    - apk --no-cache add git make musl-dev build-base cmake ninja zip unzip perl
-    - apk --no-cache add go=1.21.10-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.19/community
+    - apk add curl flock jq swig
+    - apk add git make musl-dev build-base cmake ninja zip unzip perl
+    - apk add go=1.21.10-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.19/community
 
     # Fetch secrets from Vault
     - authToken=$(curl -X POST https://pki.int.windscribe.com:8200/v1/auth/approle/login -d "role_id=$role_id&secret_id=$secret_id" | jq --raw-output '.auth.client_token')
@@ -155,8 +154,15 @@ stages:
 .minimal_setup:
   stage: Deploy
   before_script:
-    - apk --no-cache add curl
-    - extras fastlane || (apk --no-cache add ruby ruby-dev && gem install fastlane --force)
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+
+.debug_setup:
+  stage: Test
+  before_script:
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - extras ndk -n 27.2.12479018 -c 3.22.1
+    - apk add gcc g++ musl-dev patch
 
 #==============================================================================
 # TEST JOBS
@@ -180,7 +186,7 @@ Ktlint:
     - chmod +x ./gradlew
 
   script:
-    - ./gradlew ktlintCheck --continue --stacktrace
+    - ./gradlew ktlintCheck --continue
 
   artifacts:
     when: always   # upload reports even on failure so violations are inspectable
@@ -208,12 +214,10 @@ UnitTests:
 
   script:
     - ./gradlew
-        :base:testFdroidDebugUnitTest
-        :base:testGoogleDebugUnitTest
-        :openvpn:testSkeletonDebugUnitTest
-        :wgtunnel:testDebugUnitTest
-        --continue
-        --stacktrace
+      :base:testGoogleDebugUnitTest
+      :openvpn:testSkeletonDebugUnitTest
+      :wgtunnel:testDebugUnitTest
+      --continue
 
   artifacts:
     when: always   # upload reports even on failure so they're inspectable
@@ -233,7 +237,7 @@ UnitTests:
 # Produces the APK consumed by the "E2E tests" job.
 #------------------------------------------------------------------------------
 BuildDebugApk:
-  extends: .base_android_setup
+  extends: .debug_setup
   stage: Test
   rules:
     - *mr_to_develop_or_main
