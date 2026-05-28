@@ -4,13 +4,13 @@ import androidx.annotation.StringRes
 
 data class DropDownItem(
     val id: Int,
-    @StringRes val title: Int = 0,
+    @param:StringRes val title: Int = 0,
     val label: String = "",
 )
 
 data class ThemeItem(
     val id: String,
-    @StringRes val title: Int,
+    @param:StringRes val title: Int,
 )
 
 data class DropDownStringItem(

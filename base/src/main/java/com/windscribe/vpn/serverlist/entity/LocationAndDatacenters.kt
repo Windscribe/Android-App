@@ -23,13 +23,13 @@ class LocationAndDatacenters {
     @Ignore
     var isExpanded: Boolean = false
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o !is LocationAndDatacenters) return false
-        return latencyTotal == o.latencyTotal &&
-            datacenters == o.datacenters &&
-            location == o.location &&
-            isExpanded == o.isExpanded
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is LocationAndDatacenters) return false
+        return latencyTotal == other.latencyTotal &&
+            datacenters == other.datacenters &&
+            location == other.location &&
+            isExpanded == other.isExpanded
     }
 
     override fun hashCode(): Int = Objects.hash(datacenters, latencyTotal, location, isExpanded)

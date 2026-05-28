@@ -72,6 +72,11 @@ class MockLocationProvider constructor(
     }
 
     init {
+        setupTestProvider()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun setupTestProvider() {
         removeTesProviders()
         try {
             locationManager.addTestProvider(providerName, false, false, false, false, true, true, true, 1, 1)

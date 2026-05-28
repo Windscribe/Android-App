@@ -604,7 +604,7 @@
     <string name="ipv6_mode_description">Выберите, какую версию IP использовать для VPN-подключений.</string>
     <string name="ip_stack">IP-стек</string>
     <string name="ip_stack_description">Настройте IP-стек для VPN-подключений.</string>
-    <string name="egress">Исходящий</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Входящий</string>
     <string name="ipv4_only">Только IPv4</string>
     <string name="manual_connection_mode_failed_title">Режим ручного подключения не удался</string>

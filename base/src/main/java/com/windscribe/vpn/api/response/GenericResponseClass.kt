@@ -12,6 +12,7 @@ class GenericResponseClass<D, E>(
     val dataClass: D?,
     val errorClass: E?,
 ) {
+    @Suppress("UNCHECKED_CAST")
     fun <T> callResult(): CallResult<T> =
         if (dataClass != null) {
             CallResult.Success(dataClass as T)

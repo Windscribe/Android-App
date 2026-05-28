@@ -33,7 +33,6 @@ import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOUND
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
-import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.model.OpenVPNConnectionInfo
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
@@ -187,6 +186,8 @@ class VPNProfileCreator
                 val manager =
                     appContext.applicationContext
                         .getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+                @Suppress("DEPRECATION")
                 val wifInfo = manager.dhcpInfo
                 val gatewayAddress = gatewayAddressAsString(wifInfo)
                 val mask = subnetMask
@@ -537,7 +538,7 @@ class VPNProfileCreator
             }
             val dnsDetails = setCustomDNS()
             if (dnsDetails?.type == DnsType.Plain) {
-                interFaceBuilder.parseDnsServers(dnsDetails.ip)
+                interFaceBuilder.parseDnsServers(dnsDetails.ip!!)
             } else {
                 interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
             }
@@ -614,10 +615,6 @@ class VPNProfileCreator
                 is CallResult.Error -> {
                     throw InvalidVPNConfigException(remoteParamsResponse)
                 }
-
-                else -> {
-                    throw WindScribeException("Unexpected Error creating Wg profile")
-                }
             }
         }
 
@@ -628,7 +625,7 @@ class VPNProfileCreator
             builder.parseAddresses(wgRemoteParams.address)
             val dnsDetails = setCustomDNS()
             if (dnsDetails?.type == DnsType.Plain) {
-                builder.parseDnsServers(dnsDetails.ip)
+                builder.parseDnsServers(dnsDetails.ip!!)
             } else {
                 builder.parseDnsServers(wgRemoteParams.dns)
             }

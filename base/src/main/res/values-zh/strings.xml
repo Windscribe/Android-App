@@ -609,7 +609,7 @@
     <string name="ipv6_mode_description">选择用于VPN连接的IP版本。</string>
     <string name="ip_stack">IP堆栈</string>
     <string name="ip_stack_description">为VPN连接配置IP堆栈。</string>
-    <string name="egress">出口</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">入口</string>
     <string name="ipv4_only">仅IPv4</string>
     <string name="manual_connection_mode_failed_title">手动连接模式失败</string>

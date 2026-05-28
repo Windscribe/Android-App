@@ -203,15 +203,10 @@ open class Windscribe : MultiDexApplication() {
                         .toString()
             }
             val systemLanguageCode =
-                if (VERSION.SDK_INT >= VERSION_CODES.N) {
-                    resources.configuration.locales
-                        .get(0)
-                        .language
-                        .substring(0..1)
-                } else {
-                    resources.configuration.locale.language
-                        .substring(0..1)
-                }
+                resources.configuration.locales
+                    .get(0)
+                    .language
+                    .substring(0..1)
             wsNetWrapper.initialize(
                 if (applicationInterface.isTV) "android-tv" else "android",
                 WindUtilities.getVersionName(),
@@ -246,13 +241,9 @@ open class Windscribe : MultiDexApplication() {
 
     fun getAppSupportedSystemLanguage(): String {
         val systemLanguageCode =
-            if (VERSION.SDK_INT >= VERSION_CODES.N) {
-                resources.configuration.locales
-                    .get(0)
-                    .language
-            } else {
-                resources.configuration.locale.language
-            }
+            resources.configuration.locales
+                .get(0)
+                .language
         return appContext.resources.getStringArray(R.array.language).firstOrNull {
             systemLanguageCode == getLanguageCode(it)
         } ?: PreferencesKeyConstants.DEFAULT_LANGUAGE
@@ -261,13 +252,9 @@ open class Windscribe : MultiDexApplication() {
     val isRegionRestricted: Boolean
         get() {
             val systemLanguageCode =
-                if (VERSION.SDK_INT >= VERSION_CODES.N) {
-                    resources.configuration.locales
-                        .get(0)
-                        .language
-                } else {
-                    resources.configuration.locale.language
-                }
+                resources.configuration.locales
+                    .get(0)
+                    .language
             // Censored countries: Belarus, Iran, Russia, Turkey, China
             val censoredCountries = setOf("be", "fa", "ru", "tr", "zh")
             return censoredCountries.contains(systemLanguageCode)
@@ -278,9 +265,13 @@ open class Windscribe : MultiDexApplication() {
         val language = getLanguageCode(selectedLanguage)
         return if (language.contains("-")) {
             val splits = language.split("-")
-            Locale(splits[0], splits[1])
+            Locale
+                .Builder()
+                .setLanguage(splits[0])
+                .setRegion(splits[1])
+                .build()
         } else {
-            Locale(language)
+            Locale.Builder().setLanguage(language).build()
         }
     }
 

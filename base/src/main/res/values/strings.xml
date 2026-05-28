@@ -517,7 +517,7 @@ last chosen location.</string>
     <string name="ipv6_mode_description">Choose which IP version to use for VPN connections.</string>
     <string name="ip_stack">IP Stack</string>
     <string name="ip_stack_description">Configure IP stack for VPN connections.</string>
-    <string name="egress">Egress</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Ingress</string>
     <string name="ip_stack_egress">IP Stack - Egress</string>
     <string name="ipv4_only">IPv4 Only</string>

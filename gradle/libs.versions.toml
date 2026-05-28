@@ -1,25 +1,25 @@
 [versions]
 # Android / AndroidX
 appcompat = "1.7.1"
-material = "1.12.0"
-leanback = "1.0.0"
-navigation = "2.5.3"
-archLifecycle = "2.6.1"
+material = "1.13.0"
+leanback = "1.2.0"
+navigation = "2.9.8"
+archLifecycle = "2.10.0"
 
 # Async
-coroutines = "1.7.3"
+coroutines = "1.11.0"
 
 # DI / build tooling
-hilt = "2.51.1"
-ksp = "2.0.0-1.0.24"
+hilt = "2.59.2"
+ksp = "2.3.9"
 
 # Persistence / background
-room = "2.6.0"
-workManager = "2.10.5"
+room = "2.8.4"
+workManager = "2.11.2"
 
 # Feature libs
-firebase = "23.1.2"
-glide = "4.11.0"
+firebase = "25.0.0"
+glide = "5.0.7"
 
 # Test
 junit = "4.13.2"

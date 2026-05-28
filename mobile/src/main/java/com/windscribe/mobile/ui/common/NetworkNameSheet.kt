@@ -2,6 +2,7 @@ import android.content.Context
 import android.location.LocationManager
 import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -27,7 +28,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +47,6 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.vpn.Windscribe.Companion.appContext
 
 internal enum class PermissionDialogType {
-    ForegroundLocation,
     BackgroundLocation,
     None,
 }
@@ -66,7 +65,7 @@ fun RowScope.NetworkNameSheet(
     connectionViewmodel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel,
 ) {
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalActivity.current as AppStartActivity
     val networkInfo by connectionViewmodel.networkInfoState.collectAsState()
     var showPermissionRequest by remember { mutableStateOf(false) }
     val navController = LocalNavController.current

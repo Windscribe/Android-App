@@ -72,9 +72,9 @@ class Location {
 
     constructor()
 
-    override fun equals(obj: Any?): Boolean {
-        if (obj is Location) {
-            return obj.id == id
+    override fun equals(other: Any?): Boolean {
+        if (other is Location) {
+            return other.id == id
         }
         return false
     }

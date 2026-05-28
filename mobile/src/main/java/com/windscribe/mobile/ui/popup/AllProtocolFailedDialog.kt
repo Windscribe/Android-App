@@ -157,7 +157,7 @@ fun contactSupport(
     if (emailIntent.resolveActivity(context.packageManager) != null) {
         context.startActivity(chooser)
     }
-    navController?.popBackStack()
+    navController.popBackStack()
 }
 
 fun exportLog(

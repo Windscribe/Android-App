@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.home
 
 import android.content.Context
-import android.os.Build
 import android.os.PowerManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -173,8 +172,7 @@ class HomeViewmodelImpl
                     val askForPowerWhiteListPermission =
                         count > 1 && !isIgnoringBatteryOptimizations(appContext) && showCount < 3
                     if (askForPowerWhiteListPermission &&
-                        !isIgnoringBatteryOptimizations(appContext) &&
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                        !isIgnoringBatteryOptimizations(appContext)
                     ) {
                         _goto.emit(HomeGoto.PowerWhitelist)
                     }
@@ -261,11 +259,7 @@ class HomeViewmodelImpl
         private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
             val manager =
                 context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
-            val name = context.applicationContext.packageName
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                return manager.isIgnoringBatteryOptimizations(name)
-            }
-            return true
+            return manager.isIgnoringBatteryOptimizations(context.applicationContext.packageName)
         }
 
         override fun onMainMenuClick() {

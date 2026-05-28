@@ -4,6 +4,7 @@ import FeatureSection
 import android.content.res.Configuration
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -31,8 +32,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,11 +44,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.AppProgressBar
@@ -101,9 +102,14 @@ fun AppStartScreen(
     val isConnected by viewModel?.isConnected?.collectAsState() ?: remember {
         mutableStateOf(false)
     }
-    when (windowSizeClass?.widthSizeClass) {
-        WindowWidthSizeClass.Expanded -> ExpandedLayout(isConnected, viewModel)
-        else -> CompactLayout(isConnected, viewModel)
+    val isExpanded =
+        windowSizeClass?.isWidthAtLeastBreakpoint(
+            WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
+        ) == true
+    if (isExpanded) {
+        ExpandedLayout(isConnected, viewModel)
+    } else {
+        CompactLayout(isConnected, viewModel)
     }
     if (loginState is SsoLoginState.LoggingIn) {
         val message = (loginState as? SsoLoginState.LoggingIn)?.message ?: ""
@@ -204,7 +210,7 @@ fun ExpandedLayout(
 fun isTabletInLandscapeMode(): Boolean {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    return configuration.screenWidthDp >= 900 && isLandscape
+    return LocalWindowInfo.current.containerSize.width >= 900 && isLandscape
 }
 
 @Composable
@@ -236,7 +242,7 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
             Log.i("AppStartViewModel", "result: ${result.data}")
             viewModel?.onSignIntentResult(result.data)
         }
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     Button(
         onClick = {
             if (com.windscribe.mobile.BuildConfig.FLAVOR == "google") {

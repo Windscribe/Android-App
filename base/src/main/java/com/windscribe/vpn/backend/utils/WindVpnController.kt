@@ -507,6 +507,7 @@ open class WindVpnController
          * @param serviceClass Service class name
          * @return return true if service is running
          */
+        @Suppress("DEPRECATION")
         private fun isServiceRunning(serviceClass: Class<*>): Boolean {
             val manager: ActivityManager? =
                 appContext.getSystemService(ACTIVITY_SERVICE) as ActivityManager?

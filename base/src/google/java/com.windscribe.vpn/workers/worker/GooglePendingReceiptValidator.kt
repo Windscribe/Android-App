@@ -9,8 +9,9 @@ import com.android.billingclient.api.AcknowledgePurchaseResponseListener
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.PurchaseHistoryRecord
+import com.android.billingclient.api.QueryPurchasesParams
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.response.GenericSuccess
@@ -21,9 +22,9 @@ import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.CallResult
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.suspendCoroutine
 
 @HiltWorker
 class GooglePendingReceiptValidator
@@ -72,13 +73,14 @@ class GooglePendingReceiptValidator
         }
 
         private suspend fun initBillingClient() =
-            suspendCoroutine<Boolean> { continuation ->
+            suspendCancellableCoroutine { continuation ->
                 billingClient =
                     BillingClient
                         .newBuilder(applicationContext)
                         .setListener { _: BillingResult?, _: List<Purchase?>? -> logger.debug("Purchase flow: Purchases updated") }
-                        .enablePendingPurchases()
-                        .build()
+                        .enablePendingPurchases(
+                            PendingPurchasesParams.newBuilder().enableOneTimeProducts().build(),
+                        ).build()
                 val resumed = AtomicBoolean(false)
                 billingClient?.startConnection(
                     object : BillingClientStateListener {
@@ -109,8 +111,8 @@ class GooglePendingReceiptValidator
                 )
             }
 
-        private suspend fun tryToAcknowledgeProduct(purchase: PurchaseHistoryRecord) =
-            suspendCoroutine<PurchaseHistoryRecord> {
+        private suspend fun tryToAcknowledgeProduct(purchase: Purchase) =
+            suspendCancellableCoroutine {
                 val acknowledgePurchaseResponseListener =
                     AcknowledgePurchaseResponseListener { billingResult: BillingResult ->
                         if (BillingClient.BillingResponseCode.OK == billingResult.responseCode ||
@@ -129,16 +131,22 @@ class GooglePendingReceiptValidator
                         .newBuilder()
                         .setPurchaseToken(purchase.purchaseToken)
                         .build()
-                billingClient?.acknowledgePurchase(acknowledgePurchaseParams, acknowledgePurchaseResponseListener)
+                billingClient?.acknowledgePurchase(
+                    acknowledgePurchaseParams,
+                    acknowledgePurchaseResponseListener,
+                )
             }
 
         private suspend fun getProductHistory() =
-            suspendCoroutine<List<PurchaseHistoryRecord>> {
-                billingClient?.queryPurchaseHistoryAsync(
-                    BillingClient.SkuType.SUBS,
-                ) { billingResult: BillingResult, purchasesList: List<PurchaseHistoryRecord>? ->
+            suspendCancellableCoroutine {
+                val params =
+                    QueryPurchasesParams
+                        .newBuilder()
+                        .setProductType(BillingClient.ProductType.SUBS)
+                        .build()
+                billingClient?.queryPurchasesAsync(params) { billingResult: BillingResult, purchasesList: List<Purchase> ->
                     if (BillingClient.BillingResponseCode.OK == billingResult.responseCode) {
-                        if (purchasesList == null || purchasesList.isEmpty()) {
+                        if (purchasesList.isEmpty()) {
                             preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
                             it.resumeWith(kotlin.Result.failure(WindScribeException("No purchase history found.")))
                         } else {
@@ -150,7 +158,7 @@ class GooglePendingReceiptValidator
                 }
             }
 
-        private suspend fun verifyPayment(itemPurchased: PurchaseHistoryRecord): Boolean {
+        private suspend fun verifyPayment(itemPurchased: Purchase): Boolean {
             logger.info("Verifying payment for purchased item: " + itemPurchased.originalJson)
             return when (
                 val result =

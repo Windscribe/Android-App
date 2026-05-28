@@ -15,7 +15,6 @@ import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
@@ -150,19 +149,8 @@ class DeviceStateManager
                 }
 
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    connectivityManager.registerDefaultNetworkCallback(networkCallback!!)
-                    logger.info("Network callback registered using registerDefaultNetworkCallback()")
-                } else {
-                    // API 21-23: Use registerNetworkCallback with request
-                    val networkRequest =
-                        NetworkRequest
-                            .Builder()
-                            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                            .build()
-                    connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
-                    logger.info("Network callback registered using registerNetworkCallback() with request (API < 24)")
-                }
+                connectivityManager.registerDefaultNetworkCallback(networkCallback!!)
+                logger.info("Network callback registered using registerDefaultNetworkCallback()")
             } catch (e: Exception) {
                 logger.error("Failed to register network callback", e)
             }
@@ -247,26 +235,16 @@ class DeviceStateManager
         fun getCurrentNetworkName(): String? = _networkDetail.value?.name
 
         /**
-         * Gets the active network in an API-safe way.
-         * Uses getActiveNetwork() on API 23+ (Android 6.0+)
-         * Falls back to getAllNetworks() on older versions (including Fire OS)
+         * Gets the active network with a defensive fallback for Fire OS / modified Android
+         * builds where activeNetwork can throw.
          */
+        @Suppress("DEPRECATION")
         private fun ConnectivityManager.getActiveNetworkCompat(): Network? =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                try {
-                    activeNetwork
-                } catch (e: Exception) {
-                    // Fallback for Fire OS or other modified Android versions
-                    logger.warn("getActiveNetwork() failed, using fallback: ${e.message}")
-                    getAllNetworks().firstOrNull()
-                }
-            } else {
-                // API 21-22: Use getAllNetworks() and pick first one with internet capability
-                getAllNetworks().firstOrNull { network ->
-                    val info = getNetworkInfo(network)
-                    logger.info("Checking network $info")
-                    info?.isConnected == true
-                }
+            try {
+                activeNetwork
+            } catch (e: Exception) {
+                logger.warn("getActiveNetwork() failed, using fallback: ${e.message}")
+                getAllNetworks().firstOrNull()
             }
 
         /**
@@ -284,10 +262,8 @@ class DeviceStateManager
                 val hasWifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
                 val hasCellular = caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
                 val hasEthernet = caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
-                // On API < 23 (Fire OS, etc), don't require validation as it may not be set
-                val requireValidation = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 val hasTransport = hasWifi || hasCellular || hasEthernet
-                hasInternet && hasTransport && (isValidated || !requireValidation)
+                hasInternet && hasTransport && isValidated
             } catch (e: SecurityException) {
                 logger.error("SecurityException when checking connectivity: ${e.message}")
                 false
@@ -348,6 +324,7 @@ class DeviceStateManager
          * Returns null if network name cannot be determined.
          * Adapted from WindUtilities.getNetworkName() using modern APIs.
          */
+        @Suppress("DEPRECATION")
         private fun getNetworkDetailForType(type: NetworkType): NetworkDetail? {
             val context = this.context ?: return null
 

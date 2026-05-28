@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.preferences.help
 
 import PreferencesNavBar
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -108,7 +108,7 @@ fun HelpScreen(viewModel: HelpViewModel? = null) {
 
 @Composable
 private fun CommunitySupport() {
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
 
     val backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f)
     val textColor = MaterialTheme.colorScheme.primaryTextColor
@@ -357,7 +357,7 @@ private fun HelpItem(
     route: Route,
 ) {
     val navController = LocalNavController.current
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     Column(
         modifier =
             Modifier

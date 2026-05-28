@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.auth
 
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -33,16 +32,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AppBackground
@@ -72,12 +68,8 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
-@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun SignupScreen(
-    windowSizeClass: WindowSizeClass? = currentWindowAdaptiveInfo().windowSizeClass,
-    viewModel: SignupViewModel? = null,
-) {
+fun SignupScreen(viewModel: SignupViewModel? = null) {
     val context = LocalContext.current
     val navController = LocalNavController.current
     val signupState by viewModel?.signupState?.collectAsState() ?: remember {
@@ -277,7 +269,10 @@ private fun SignupCompactLayout(
                         onCopyHash = {},
                         onLearnMoreClick = {
                             val intent =
-                                Intent(Intent.ACTION_VIEW, Uri.parse("https://windscribe.net/knowledge-base/articles/hashed-login"))
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    "https://windscribe.net/knowledge-base/articles/hashed-login".toUri(),
+                                )
                             context.startActivity(intent)
                         },
                     )

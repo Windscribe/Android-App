@@ -7,6 +7,7 @@ package com.windscribe.mobile.upgradeactivity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -21,6 +22,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -90,7 +92,8 @@ class UpgradeActivity :
         showProgressBar("Loading Billing Plans...")
         // In app notification promo
         if (intent.hasExtra(PROMO_EXTRA)) {
-            val pushNotificationAction = intent.getSerializableExtra(PROMO_EXTRA) as? PushNotificationAction
+            val pushNotificationAction =
+                IntentCompat.getSerializableExtra(intent, PROMO_EXTRA, PushNotificationAction::class.java)
             if (pushNotificationAction != null) {
                 presenter.setPushNotificationAction(pushNotificationAction)
             }
@@ -583,7 +586,13 @@ class UpgradeActivity :
     }
 
     private fun setBillingType() {
-        val installerPackageName = packageManager.getInstallerPackageName(packageName)
+        val installerPackageName =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                packageManager.getInstallSourceInfo(packageName).installingPackageName
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getInstallerPackageName(packageName)
+            }
         billingTypeValue =
             if (installerPackageName != null && installerPackageName.startsWith("com.amazon")) {
                 BillingType.Amazon

@@ -4,7 +4,6 @@
 
 package com.windscribe.tv.windscribe
 
-import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
@@ -742,8 +741,7 @@ class WindscribePresenterImpl
                             .equals("Philips", ignoreCase = true)
                 return problematicBrands &&
                     VERSION.SDK_INT == VERSION_CODES.P &&
-                    windscribeView.networkInfo != null &&
-                    windscribeView.networkInfo?.type == ConnectivityManager.TYPE_ETHERNET
+                    windscribeView.isEthernetConnection
             }
 
         private fun disconnectFromVPN() {

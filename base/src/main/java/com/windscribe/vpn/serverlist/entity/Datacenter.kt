@@ -143,10 +143,10 @@ class Datacenter : Parcelable {
 
     override fun describeContents(): Int = 0
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val city = o as Datacenter
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val city = other as Datacenter
         return id == city.id &&
             primaryKey == city.primaryKey &&
             region_id == city.region_id &&

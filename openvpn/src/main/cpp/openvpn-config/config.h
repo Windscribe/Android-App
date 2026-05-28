@@ -670,3 +670,8 @@ int res_init();
 
 
 #define _SOCKLEN_T_DECLARED 1
+
+/* basename() is provided by Android NDK libc at API >= 23, conflicting with
+ * the shim in compat.h. Keep dirname() shim since options.c does not include
+ * <libgen.h>. */
+#define HAVE_BASENAME 1

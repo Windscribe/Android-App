@@ -15,6 +15,7 @@ import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
@@ -80,7 +81,9 @@ class GoogleBillingManager(
             BillingClient
                 .newBuilder(app)
                 .setListener(this)
-                .enablePendingPurchases() // Not used for subscriptions.
+                .enablePendingPurchases(
+                    PendingPurchasesParams.newBuilder().enableOneTimeProducts().build(),
+                ) // Not used for subscriptions.
                 .build()
         if (!mBillingClient.isReady) {
             mBillingClient.startConnection(
@@ -135,8 +138,8 @@ class GoogleBillingManager(
                 .newBuilder()
                 .setProductList(subs)
                 .build()
-        mBillingClient.queryProductDetailsAsync(productDetailsParams) { billingResult, list ->
-            _querySkuDetailEvent.tryEmit(CustomProductDetails(billingResult, list))
+        mBillingClient.queryProductDetailsAsync(productDetailsParams) { billingResult, result ->
+            _querySkuDetailEvent.tryEmit(CustomProductDetails(billingResult, result.productDetailsList))
         }
     }
 

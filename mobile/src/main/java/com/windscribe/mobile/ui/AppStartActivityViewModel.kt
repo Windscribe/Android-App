@@ -26,7 +26,7 @@ abstract class DialogCallback {
 }
 
 data class DialogData(
-    @DrawableRes val icon: Int,
+    @param:DrawableRes val icon: Int,
     val title: String,
     val description: String,
     val okLabel: String,

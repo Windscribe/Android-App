@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.helper
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyListState
@@ -17,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.home.HomeViewmodel
@@ -53,7 +53,7 @@ fun Modifier.hapticClickableRipple(onClick: () -> Unit): Modifier =
     composed {
         val haptics = LocalHapticFeedback.current
         val interactionSource = remember { MutableInteractionSource() }
-        val activity = LocalContext.current as? AppStartActivity
+        val activity = LocalActivity.current as? AppStartActivity
         val hapticEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
             ?: remember { mutableStateOf(false) }
         this.then(
@@ -73,7 +73,7 @@ fun Modifier.hapticClickableRipple(onClick: () -> Unit): Modifier =
 fun Modifier.hapticClickable(onClick: () -> Unit): Modifier =
     composed {
         val haptics = LocalHapticFeedback.current
-        val activity = LocalContext.current as? AppStartActivity
+        val activity = LocalActivity.current as? AppStartActivity
         val hapticEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
             ?: remember { mutableStateOf(false) }
         this.then(

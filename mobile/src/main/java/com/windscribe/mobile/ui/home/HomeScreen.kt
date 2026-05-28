@@ -290,7 +290,7 @@ fun HandleToast(connectionViewmodel: ConnectionViewmodel?) {
                         (toastMessage as ToastMessage.Localized).message,
                         Toast.LENGTH_SHORT,
                     ).show()
-                connectionViewmodel?.clearToast()
+                connectionViewmodel.clearToast()
             }
 
             is ToastMessage.Raw -> {
@@ -300,7 +300,7 @@ fun HandleToast(connectionViewmodel: ConnectionViewmodel?) {
                         (toastMessage as ToastMessage.Raw).message,
                         Toast.LENGTH_SHORT,
                     ).show()
-                connectionViewmodel?.clearToast()
+                connectionViewmodel.clearToast()
             }
 
             else -> {}

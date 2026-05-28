@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.serverlist
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -44,7 +45,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
@@ -158,7 +158,7 @@ fun AllServerList(
 
 @Composable
 fun UpgradeBar(viewModel: HomeViewmodel?) {
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalActivity.current as AppStartActivity
     val userState by viewModel?.userState?.collectAsState() ?: return
     val hapticFeedbackEnabled by viewModel.hapticFeedbackEnabled.collectAsState()
     val haptic = LocalHapticFeedback.current

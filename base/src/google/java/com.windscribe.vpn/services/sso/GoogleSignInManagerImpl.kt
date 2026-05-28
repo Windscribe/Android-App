@@ -1,3 +1,8 @@
+// GoogleSignIn (GMS Auth) is deprecated in favor of Credential Manager + Google Identity Services.
+// That is an intent-flow → CredentialManager API change affecting GoogleSignInManager and its callers,
+// needs a new androidx.credentials dependency and device testing — tracked as a separate migration.
+@file:Suppress("DEPRECATION")
+
 package com.windscribe.vpn.services.sso
 
 import android.content.Context

@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.LinkProperties
 import android.net.NetworkCapabilities
-import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.mobile.ui.connection.ToastMessage
@@ -472,13 +471,8 @@ class ConnectionViewModelImpl
                     return@launch
                 }
                 _autoDetecting.emit(true)
-                var prop: LinkProperties? = null
+                val prop: LinkProperties? = manager.getLinkProperties(manager.activeNetwork)
                 val iFace: NetworkInterface
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    prop = manager.getLinkProperties(manager.activeNetwork)
-                } else {
-                    prop = manager.legacyActiveLinkProperties()
-                }
                 if (prop != null) {
                     iFace = NetworkInterface.getByName(prop.interfaceName)
                     currentPoint = iFace.mtu
@@ -506,22 +500,8 @@ class ConnectionViewModelImpl
         }
 
         private fun ConnectivityManager.hasConnectedNetwork(): Boolean {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val caps = getNetworkCapabilities(activeNetwork) ?: return false
-                return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            }
-            @Suppress("DEPRECATION")
-            return activeNetworkInfo?.isConnected == true
-        }
-
-        @Suppress("DEPRECATION")
-        private fun ConnectivityManager.legacyActiveLinkProperties(): LinkProperties? {
-            for (network in allNetworks) {
-                if (activeNetworkInfo?.isConnected == true) {
-                    return getLinkProperties(network)
-                }
-            }
-            return null
+            val caps = getNetworkCapabilities(activeNetwork) ?: return false
+            return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         }
 
         private fun repeatPingFlow(startMtu: Int): Flow<Result<Int>> =

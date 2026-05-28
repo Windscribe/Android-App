@@ -1,15 +1,19 @@
 plugins {
     id("com.android.library")
-    id("kotlin-android")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
 }
 apply(from = "$rootDir/config/config.gradle")
-apply(from = "$rootDir/depedencycheck.gradle")
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -24,15 +28,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     buildFeatures {
         viewBinding = true
         buildConfig = true
     }
     defaultConfig {
         minSdk = rootProject.extra["appMinSdk"] as Int
+    }
+    testOptions {
         targetSdk = rootProject.extra["appTargetSdk"] as Int
     }
     sourceSets {
@@ -40,7 +43,7 @@ android {
         maybeCreate("fdroid").jniLibs.srcDirs("/frdroid/src/libs", "libs")
         maybeCreate("google").jniLibs.srcDirs("/google/src/libs", "libs")
     }
-    packagingOptions {
+    packaging {
         jniLibs {
             excludes +=
                 setOf(
@@ -68,25 +71,26 @@ dependencies {
     // Android
     "api"("androidx.appcompat:appcompat:${libs.versions.appcompat.get()}")
     "api"("androidx.multidex:multidex:2.0.1")
-    "api"("androidx.security:security-crypto:1.1.0-alpha05")
+    "api"("androidx.security:security-crypto:1.1.0")
     // VPN
     implementation(project(":openvpn"))
     implementation(project(":strongswan"))
     implementation(project(":common"))
     "api"(project(":wgtunnel"))
     // Gson
-    "api"("com.google.code.gson:gson:2.10.1")
+    "api"("com.google.code.gson:gson:2.14.0")
     // Okhttp
-    implementation("com.squareup.okhttp3:logging-interceptor:4.2.2")
-    implementation("com.squareup.okhttp3:okhttp:4.11.0")
-    "api"("com.squareup.okhttp3:mockwebserver:4.9.3")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.3.0")
+    implementation("com.squareup.okhttp3:okhttp:5.3.0")
+    "api"("com.squareup.okhttp3:mockwebserver:5.3.0")
     // Logging
-    "api"("org.slf4j:slf4j-api:1.7.36")
-    "api"("com.github.tony19:logback-android:2.0.0")
+    "api"("org.slf4j:slf4j-api:2.0.18")
+    "api"("com.github.tony19:logback-android:3.0.0")
+    // 6.x+ requires minSdk 26 via LMAX disruptor (MethodHandle.invoke).
     implementation("net.logstash.logback:logstash-logback-encoder:5.0") {
         exclude(group = "ch.qos.logback", module = "logback-core")
     }
-    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-process:${libs.versions.archLifecycle.get()}")
     // Room
     "api"("androidx.room:room-ktx:${libs.versions.room.get()}")
     "api"("androidx.room:room-runtime:${libs.versions.room.get()}")
@@ -100,27 +104,27 @@ dependencies {
     // Hilt
     implementation("com.google.dagger:hilt-android:${libs.versions.hilt.get()}")
     ksp("com.google.dagger:hilt-compiler:${libs.versions.hilt.get()}")
-    implementation("androidx.hilt:hilt-work:1.2.0")
-    ksp("androidx.hilt:hilt-compiler:1.2.0")
+    implementation("androidx.hilt:hilt-work:1.3.0")
+    ksp("androidx.hilt:hilt-compiler:1.3.0")
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.coroutines.get()}")
     // DataStore (replaces Tray)
-    "api"("androidx.datastore:datastore-preferences:1.0.0")
-    "api"("androidx.datastore:datastore-preferences-core:1.0.0")
+    "api"("androidx.datastore:datastore-preferences:1.2.1")
+    "api"("androidx.datastore:datastore-preferences-core:1.2.1")
     // Supporting libraries
-    "api"("com.github.seancfoley:ipaddress:5.3.1")
+    "api"("com.github.seancfoley:ipaddress:5.6.1")
     // Test
     testImplementation("junit:junit:${libs.versions.junit.get()}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.0")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${libs.versions.coroutines.get()}")
-    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("io.mockk:mockk:1.14.7")
     // Google only dependencies
     "googleApi"("com.google.firebase:firebase-messaging:${libs.versions.firebase.get()}")
     "googleApi"(files("$projectDir/src/google/libs/in-app-purchasing-2.0.76.jar"))
     implementation(files("$projectDir/src/main/libs/wsnet.aar"))
-    "googleApi"("com.android.billingclient:billing:7.0.0")
+    "googleApi"("com.android.billingclient:billing:9.0.0")
     "googleApi"("com.google.android.gms:play-services-appset:16.0.2")
     "googleApi"("com.google.android.play:review-ktx:2.0.2")
-    "googleApi"("com.google.android.gms:play-services-auth:20.4.1")
+    "googleApi"("com.google.android.gms:play-services-auth:21.4.0")
 }

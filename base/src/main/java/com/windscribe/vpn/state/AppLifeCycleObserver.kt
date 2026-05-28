@@ -4,11 +4,8 @@
 
 package com.windscribe.vpn.state
 
-import androidx.lifecycle.Lifecycle.Event.ON_CREATE
-import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
-import androidx.lifecycle.Lifecycle.Event.ON_RESUME
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.Windscribe.Companion.applicationScope
 import com.windscribe.vpn.api.response.PushNotificationAction
@@ -36,7 +33,7 @@ class AppLifeCycleObserver
         private val proxyDNSManager: ProxyDNSManager,
         private val wsNetWrapper: WSNetWrapper,
         private val deviceStateManager: DeviceStateManager,
-    ) : LifecycleObserver {
+    ) : DefaultLifecycleObserver {
         private val logger = LoggerFactory.getLogger("app")
         private val startingFresh = AtomicBoolean(false)
         var overriddenCountryCode: String? = null
@@ -50,13 +47,11 @@ class AppLifeCycleObserver
                 appContext.workManager.updateNotifications()
             }
 
-        @OnLifecycleEvent(ON_CREATE)
-        fun createApp() {
+        override fun onCreate(owner: LifecycleOwner) {
             startingFresh.set(true)
         }
 
-        @OnLifecycleEvent(ON_PAUSE)
-        fun pausingApp() {
+        override fun onPause(owner: LifecycleOwner) {
             isInForeground = false
             workManager.onAppMovedToBackground()
             if (!vpnConnectionStateManager.isVPNActive()) {
@@ -73,8 +68,7 @@ class AppLifeCycleObserver
             logger.info("----------App going to background.--------\n")
         }
 
-        @OnLifecycleEvent(ON_RESUME)
-        fun resumingApp() {
+        override fun onResume(owner: LifecycleOwner) {
             if (startingFresh.get().not()) {
                 logger.info("----------------App moved to Foreground.------------\n")
             }

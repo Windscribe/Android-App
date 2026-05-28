@@ -604,7 +604,7 @@
     <string name="ipv6_mode_description">選擇用於VPN連接的IP版本。</string>
     <string name="ip_stack">IP堆疊</string>
     <string name="ip_stack_description">為VPN連接配置IP堆疊。</string>
-    <string name="egress">出口</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">入口</string>
     <string name="ipv4_only">僅IPv4</string>
     <string name="manual_connection_mode_failed_title">手動連接模式失敗</string>

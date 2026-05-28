@@ -605,7 +605,7 @@
     <string name="ipv6_mode_description">Επιλέξτε ποια έκδοση IP θα χρησιμοποιηθεί για συνδέσεις VPN.</string>
     <string name="ip_stack">Στοίβα IP</string>
     <string name="ip_stack_description">Διαμορφώστε τη στοίβα IP για συνδέσεις VPN.</string>
-    <string name="egress">Έξοδος</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Είσοδος</string>
     <string name="ipv4_only">Μόνο IPv4</string>
     <string name="manual_connection_mode_failed_title">Αποτυχία χειροκίνητης λειτουργίας σύνδεσης</string>

@@ -4,7 +4,6 @@
 package com.windscribe.tv.adapter
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.text.Html
 import android.util.SparseIntArray
 import android.view.LayoutInflater
@@ -29,16 +28,11 @@ class NewsFeedAdapter(
 
             fun bind(windNotification: WindNotification) {
                 this.windNotification = windNotification
-                tvTitle.text = windNotification.notificationTitle
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    tvTitle.text =
-                        Html.fromHtml(
-                            windNotification.notificationTitle,
-                            Html.FROM_HTML_MODE_LEGACY,
-                        )
-                } else {
-                    tvTitle.text = Html.fromHtml(windNotification.notificationTitle)
-                }
+                tvTitle.text =
+                    Html.fromHtml(
+                        windNotification.notificationTitle,
+                        Html.FROM_HTML_MODE_LEGACY,
+                    )
                 val state = stateArray[windNotification.notificationId, -1]
                 if (state == 1) {
                     stateArray.clear()

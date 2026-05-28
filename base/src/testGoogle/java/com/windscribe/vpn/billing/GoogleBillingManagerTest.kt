@@ -51,7 +51,7 @@ class GoogleBillingManagerTest {
         val builder = mockk<BillingClient.Builder>(relaxed = true)
         every { BillingClient.newBuilder(any()) } returns builder
         every { builder.setListener(any()) } returns builder
-        every { builder.enablePendingPurchases() } returns builder
+        every { builder.enablePendingPurchases(any()) } returns builder
         every { builder.build() } returns billingClient
 
         every { billingClient.isReady } returns false

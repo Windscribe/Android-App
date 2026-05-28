@@ -608,7 +608,7 @@ Ihre Standortdaten bleiben auf Ihrem Gerät und werden ausschließlich für die 
     <string name="ipv6_mode_description">Wählen Sie, welche IP-Version für VPN-Verbindungen verwendet werden soll.</string>
     <string name="ip_stack">IP-Stack</string>
     <string name="ip_stack_description">Konfigurieren Sie den IP-Stack für VPN-Verbindungen.</string>
-    <string name="egress">Ausgang</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Eingang</string>
     <string name="ipv4_only">Nur IPv4</string>
     <string name="manual_connection_mode_failed_title">Manueller Verbindungsmodus fehlgeschlagen</string>

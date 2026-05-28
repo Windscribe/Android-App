@@ -30,3 +30,6 @@
 
 # Maestro local env (real credentials)
 maestro/.env
+
+# Maestro test reports
+/maestro-reports/

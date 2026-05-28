@@ -12,7 +12,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -127,10 +127,13 @@ class WindscribeActivity :
         super.onDestroy()
     }
 
-    override val networkInfo: NetworkInfo?
+    override val isEthernetConnection: Boolean
         get() {
             val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-            return connectivityManager.activeNetworkInfo
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+                    ?: return false
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
         }
 
     override fun gotoLoginRegistrationActivity() {

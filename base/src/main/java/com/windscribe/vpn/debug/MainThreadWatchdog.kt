@@ -66,8 +66,8 @@ class MainThreadWatchdog(
                                     "Main thread blocked for ${timeSinceLastTick}ms!\n" +
                                         "Stack trace shows what was blocking:\n" +
                                         capturedStackTrace
-                                            ?.take(10)
-                                            ?.joinToString("\n") { "  at $it" },
+                                            .take(10)
+                                            .joinToString("\n") { "  at $it" },
                                 )
                             }
                             break

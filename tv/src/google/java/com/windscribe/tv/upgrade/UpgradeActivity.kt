@@ -37,7 +37,6 @@ import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
-import okhttp3.internal.toImmutableList
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
@@ -351,7 +350,7 @@ class UpgradeActivity :
         googleBillingManager.querySkuDetailEvent.collectOnStart { customProductDetails ->
             presenter.onSkuDetailsReceived(
                 customProductDetails.billingResult.responseCode,
-                customProductDetails.productDetails.toImmutableList(),
+                customProductDetails.productDetails.toList(),
             )
         }
     }
