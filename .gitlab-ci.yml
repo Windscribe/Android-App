@@ -180,6 +180,8 @@ Ktlint:
   stage: Test
   rules:
     - *mr_to_develop_or_main
+    - when: manual
+      allow_failure: true
 
   before_script:
     - export GRADLE_USER_HOME=$(pwd)/.gradle
@@ -207,6 +209,8 @@ UnitTests:
   stage: Test
   rules:
     - *mr_to_develop_or_main
+    - when: manual
+      allow_failure: true
 
   before_script:
     - export GRADLE_USER_HOME=$(pwd)/.gradle
@@ -241,6 +245,8 @@ BuildDebugApk:
   stage: Test
   rules:
     - *mr_to_develop_or_main
+    - when: manual
+      allow_failure: true
   script:
     - export DEV=true
     - ./gradlew :mobile:assembleGoogleDebug -PabiFilter=arm64-v8a --no-daemon
@@ -265,6 +271,8 @@ E2E tests:
     - arm64
   rules:
     - *mr_to_develop_or_main
+    - when: manual
+      allow_failure: true
   retry:
     max: 2
     when:
