@@ -5,6 +5,7 @@ package main
 import "C"
 
 import (
+	"sync"
 	"github.com/Control-D-Inc/ctrld/cmd/cli"
 )
 
@@ -12,14 +13,27 @@ var controller *Controller
 
 // Controller holds global state
 type Controller struct {
-	stopCh chan struct{}
-	Config cli.AppConfig
+	stopCh   chan struct{}
+	stopOnce sync.Once
+	Config   cli.AppConfig
 }
 
 // NewController provides reference to global state to be managed by android vpn service and iOS network extension.
 // reference is not safe for concurrent use.
 func NewController() *Controller {
 	return &Controller{}
+}
+
+func safeStop() {
+	if controller != nil {
+		controller.stopOnce.Do(func() {
+			if controller.stopCh != nil {
+				close(controller.stopCh)
+				controller.stopCh = nil
+			}
+		})
+		controller = nil
+	}
 }
 
 //export StartCd
@@ -29,33 +43,23 @@ func StartCd(CdUID string, HomeDir string, UpstreamProto string, logLevel int, l
 			tag := cstring("ControlD/Panic")
 			logger := AndroidLogger{level: C.ANDROID_LOG_ERROR, tag: tag}
 			logger.Printf("StartCd panic recovered: %v", r)
-			// Clean up controller on panic to prevent invalid state
-			if controller != nil && controller.stopCh != nil {
-				close(controller.stopCh)
-				controller.stopCh = nil
-			}
-			controller = nil
+			safeStop()
 		}
 	}()
 
 	if controller != nil {
 		return
 	}
-	controller = NewController()
-	callback := cli.AppCallback{
-		HostName: func() string {
-			return hostName
-		},
-		LanIp: func() string {
-			return lanIp
-		},
-		MacAddress: func() string {
-			return macAddress
-		},
-		Exit: func(err string) {
 
-		},
+	controller = NewController()
+
+	callback := cli.AppCallback{
+		HostName: func() string { return hostName },
+		LanIp: func() string { return lanIp },
+		MacAddress: func() string { return macAddress },
+		Exit: func(err string) {},
 	}
+
 	if controller.stopCh == nil {
 		controller.stopCh = make(chan struct{})
 		controller.Config = cli.AppConfig{
@@ -65,6 +69,7 @@ func StartCd(CdUID string, HomeDir string, UpstreamProto string, logLevel int, l
 			Verbose:       logLevel,
 			LogPath:       logPath,
 		}
+
 		cli.RunMobile(&controller.Config, &callback, controller.stopCh)
 	}
 }
@@ -76,29 +81,24 @@ func StopCd(restart bool, pin int64) int {
 			tag := cstring("ControlD/Panic")
 			logger := AndroidLogger{level: C.ANDROID_LOG_ERROR, tag: tag}
 			logger.Printf("StopCd panic recovered: %v", r)
-			// Ensure cleanup even on panic
-			if controller != nil && controller.stopCh != nil {
-				close(controller.stopCh)
-				controller.stopCh = nil
-			}
-			controller = nil
+			safeStop()
 		}
 	}()
 
 	if controller == nil {
 		return 0
 	}
-	var errorCode = 0
-	// Force disconnect without checking pin.
-	// In iOS restart is required if vpn detects no connectivity after network change.
+
+	errorCode := 0
+
 	if !restart {
 		errorCode = cli.CheckDeactivationPin(pin, controller.stopCh)
 	}
-	if errorCode == 0 && controller.stopCh != nil {
-		close(controller.stopCh)
-		controller.stopCh = nil
+
+	if errorCode == 0 {
+		safeStop()
 	}
-	controller = nil
+
 	return errorCode
 }
 
