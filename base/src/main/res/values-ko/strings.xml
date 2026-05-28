@@ -516,7 +516,7 @@
     <string name="ipv6_mode_description">VPN 연결에 사용할 IP 버전을 선택하세요.</string>
     <string name="ip_stack">IP 스택</string>
     <string name="ip_stack_description">VPN 연결용 IP 스택을 구성합니다.</string>
-    <string name="egress">송신</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">수신</string>
     <string name="ip_stack_egress">IP 스택 - 송신</string>
     <string name="ipv4_only">IPv4만</string>

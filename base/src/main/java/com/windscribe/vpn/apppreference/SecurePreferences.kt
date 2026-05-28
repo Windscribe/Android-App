@@ -1,6 +1,11 @@
 /*
  * Copyright (c) 2021 Windscribe Limited.
  */
+
+// EncryptedSharedPreferences/MasterKey are deprecated in androidx.security-crypto with no stable
+// drop-in replacement; keeping them avoids re-encrypting existing users' stored credentials.
+@file:Suppress("DEPRECATION")
+
 package com.windscribe.vpn.apppreference
 
 import android.content.SharedPreferences

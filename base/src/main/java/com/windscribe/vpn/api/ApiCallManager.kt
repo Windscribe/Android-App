@@ -721,6 +721,7 @@ open class ApiCallManager
             }
         }
 
+        @Suppress("UNCHECKED_CAST")
         private fun <T> buildResponse(
             continuation: kotlin.coroutines.Continuation<GenericResponseClass<T?, ApiErrorResponse?>>,
             code: Int,
@@ -828,7 +829,7 @@ open class ApiCallManager
                     val response = client.newCall(request).execute()
                     val responseBody = response.body
 
-                    if (response.isSuccessful && responseBody != null) {
+                    if (response.isSuccessful) {
                         val responseString = responseBody.string()
                         responseBody.close()
                         GenericResponseClass(responseString, null)

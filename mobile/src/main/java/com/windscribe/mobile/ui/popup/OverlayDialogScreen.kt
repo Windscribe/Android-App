@@ -40,7 +40,9 @@ import com.windscribe.mobile.ui.theme.font22
 
 @Composable
 fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = null) {
-    val isIconAtBottom = appStartActivityViewModel?.dialogData?.iconAtBottom == true
+    val dialogData = appStartActivityViewModel?.dialogData
+    val isIconAtBottom = dialogData?.iconAtBottom == true
+    val dialogIcon = dialogData?.icon ?: R.drawable.ic_warning_icon
 
     Box(
         modifier =
@@ -85,10 +87,7 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
             // Show icon at top if not iconAtBottom
             if (!isIconAtBottom) {
                 Image(
-                    painter =
-                        painterResource(
-                            appStartActivityViewModel?.dialogData?.icon ?: R.drawable.ic_warning_icon,
-                        ),
+                    painter = painterResource(dialogIcon),
                     contentDescription = "Attention",
                     colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
                     contentScale = ContentScale.Fit,
@@ -102,7 +101,7 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
             }
 
             Text(
-                text = appStartActivityViewModel?.dialogData?.title ?: "",
+                text = dialogData?.title ?: "",
                 style = font22,
                 color = theme(R.attr.wdPrimaryColor),
                 textAlign = TextAlign.Center,
@@ -118,7 +117,7 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
                         .verticalScroll(rememberScrollState()),
             ) {
                 Text(
-                    text = appStartActivityViewModel?.dialogData?.description ?: "",
+                    text = dialogData?.description ?: "",
                     style = font14,
                     color = theme(R.attr.wdPrimaryColor),
                     textAlign = if (isIconAtBottom) TextAlign.Start else TextAlign.Center,
@@ -131,10 +130,7 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
             // Show icon at bottom if iconAtBottom
             if (isIconAtBottom) {
                 Image(
-                    painter =
-                        painterResource(
-                            appStartActivityViewModel?.dialogData?.icon ?: R.drawable.ic_warning_icon,
-                        ),
+                    painter = painterResource(dialogIcon),
                     contentDescription = "Attention",
                     colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
                     contentScale = ContentScale.Fit,

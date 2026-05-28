@@ -1,11 +1,11 @@
 package com.windscribe.mobile.ui.popup
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
@@ -25,7 +25,7 @@ import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 @Composable
 fun AccountStatusScreen(data: AccountStatusDialogData) {
     val navController = LocalNavController.current
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     PopupContainer {
         Spacer(Modifier.weight(1f))
         PopupHeroImage(data.icon)

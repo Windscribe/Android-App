@@ -160,7 +160,7 @@ open class BaseApplicationModule {
     fun provideDatabase(app: Windscribe): WindscribeDatabase =
         Room
             .databaseBuilder(app, WindscribeDatabase::class.java, "wind_db")
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .addCallback(
                 object : RoomDatabase.Callback() {
                     override fun onDestructiveMigration(db: SupportSQLiteDatabase) {

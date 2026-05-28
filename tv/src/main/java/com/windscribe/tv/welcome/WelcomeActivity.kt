@@ -9,7 +9,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.transition.Slide
 import android.view.Gravity
@@ -437,14 +436,7 @@ class WelcomeActivity :
     }
 
     private fun permissionGranted(): Boolean =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            (
-                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED
-            )
-        } else {
-            true
-        }
+        checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
 
     private fun registerFragmentChangeListener() {
         supportFragmentManager.addOnBackStackChangedListener(this)

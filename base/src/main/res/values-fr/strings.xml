@@ -606,7 +606,7 @@ Vos données de localisation restent sur votre appareil et sont utilisées uniqu
     <string name="ipv6_mode_description">Choisissez la version IP à utiliser pour les connexions VPN.</string>
     <string name="ip_stack">Pile IP</string>
     <string name="ip_stack_description">Configurez la pile IP pour les connexions VPN.</string>
-    <string name="egress">Sortie</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Entrée</string>
     <string name="ipv4_only">IPv4 uniquement</string>
     <string name="manual_connection_mode_failed_title">Échec du mode de connexion manuel</string>

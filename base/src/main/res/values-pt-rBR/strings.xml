@@ -608,7 +608,7 @@ Seus dados de localização permanecem no seu dispositivo e são usados apenas p
     <string name="ipv6_mode_description">Escolha qual versão IP usar para conexões VPN.</string>
     <string name="ip_stack">Pilha IP</string>
     <string name="ip_stack_description">Configure a pilha IP para conexões VPN.</string>
-    <string name="egress">Saída</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Entrada</string>
     <string name="ipv4_only">Apenas IPv4</string>
     <string name="manual_connection_mode_failed_title">Modo de conexão manual falhou</string>

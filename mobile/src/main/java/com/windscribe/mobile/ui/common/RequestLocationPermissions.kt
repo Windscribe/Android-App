@@ -5,11 +5,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
@@ -20,7 +20,7 @@ import com.windscribe.mobile.ui.nav.Screen
 
 @Composable
 fun RequestLocationPermissions(onGranted: () -> Unit) {
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalActivity.current as AppStartActivity
     val navController = LocalNavController.current
     val permissionDialogType = remember { mutableStateOf(PermissionDialogType.None) }
     val permissionHelper = activity.permissionHelper
@@ -75,7 +75,7 @@ fun RequestLocationPermissions(onGranted: () -> Unit) {
                     intent.resolveActivity(activity.packageManager)?.let {
                         try {
                             activity.startActivity(intent)
-                        } catch (e: SecurityException) {
+                        } catch (_: SecurityException) {
                             // Settings activity not accessible on this device
                         }
                     }
@@ -99,7 +99,7 @@ fun RequestLocationPermissions(onGranted: () -> Unit) {
                     intent.resolveActivity(activity.packageManager)?.let {
                         try {
                             activity.startActivity(intent)
-                        } catch (e: SecurityException) {
+                        } catch (_: SecurityException) {
                             // Settings activity not accessible on this device
                         }
                     }
@@ -139,7 +139,9 @@ fun RequestLocationPermissions(onGranted: () -> Unit) {
                     iconAtBottom = true,
                 )
             showDialog(backgroundLocationData) {
-                permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                }
             }
         }
 

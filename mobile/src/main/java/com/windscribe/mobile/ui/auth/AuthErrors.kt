@@ -25,7 +25,7 @@ sealed class AuthError {
     ) : AuthError()
 
     data class LocalizedInputError(
-        @StringRes val error: Int,
+        @param:StringRes val error: Int,
         override val highlightedFields: List<AuthInputFields> = listOf(),
     ) : AuthError()
 }

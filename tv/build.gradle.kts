@@ -3,12 +3,16 @@
  */
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
 }
 apply(from = "$rootDir/config/config.gradle")
-apply(from = "$rootDir/depedencycheck.gradle")
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
 
 android {
     namespace = "com.windscribe.tv"
@@ -37,7 +41,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             manifestPlaceholders["networkSecurityConfig"] = "@xml/network_security_config"
             ndk {
                 debugSymbolLevel = "SYMBOL_TABLE"
@@ -58,15 +62,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     lint {
         abortOnError = false
         checkReleaseBuilds = false
         disable += setOf("NonConstantResourceId", "ContentDescription", "VectorRaster")
     }
-    packagingOptions {
+    packaging {
         jniLibs {
             excludes +=
                 setOf(
@@ -85,18 +86,18 @@ dependencies {
     implementation("androidx.appcompat:appcompat:${libs.versions.appcompat.get()}")
     implementation("com.google.android.material:material:${libs.versions.material.get()}")
     implementation("androidx.leanback:leanback:${libs.versions.leanback.get()}")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     // Core
     implementation(project(":base"))
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${libs.versions.archLifecycle.get()}")
     // Hilt
     implementation("com.google.dagger:hilt-android:${libs.versions.hilt.get()}")
     ksp("com.google.dagger:hilt-compiler:${libs.versions.hilt.get()}")
-    implementation("androidx.hilt:hilt-work:1.2.0")
-    ksp("androidx.hilt:hilt-compiler:1.2.0")
+    implementation("androidx.hilt:hilt-work:1.3.0")
+    ksp("androidx.hilt:hilt-compiler:1.3.0")
     // Glide (runtime only — no @GlideModule, compiler not needed)
     implementation("com.github.bumptech.glide:glide:${libs.versions.glide.get()}")
 
     // Baseline Profile for startup optimization
-    implementation("androidx.profileinstaller:profileinstaller:1.3.1")
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 }

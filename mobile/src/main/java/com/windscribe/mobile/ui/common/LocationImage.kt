@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.common
 
-import android.graphics.drawable.BitmapDrawable
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
@@ -30,7 +29,6 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -38,9 +36,12 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import coil.compose.SubcomposeAsyncImage
-import coil.imageLoader
-import coil.request.ImageRequest
+import coil3.compose.SubcomposeAsyncImage
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.toBitmap
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionUIState
@@ -116,15 +117,14 @@ fun LocationImage(
                                             .build()
 
                                     val result = imageLoader.execute(request)
-                                    val drawable = result.drawable
-                                    val bitmap = (drawable as? BitmapDrawable)?.bitmap
+                                    val bitmap = (result as? SuccessResult)?.image?.toBitmap()
                                     value = bitmap?.asImageBitmap()
                                 }
 
                             imageBitmapState.value?.let { img ->
                                 Canvas(modifier = Modifier.fillMaxSize()) {
                                     val frameworkPaint =
-                                        Paint().asFrameworkPaint().apply {
+                                        android.graphics.Paint().apply {
                                             isAntiAlias = true
                                             shader =
                                                 android.graphics.BitmapShader(

@@ -596,7 +596,7 @@ class DataStorePreferenceHelper(
 
     override var migrationRequired: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.MIGRATION_REQUIRED, true) }
-        set(value) = setBoolean(DataStoreKeys.MIGRATION_REQUIRED, value)
+        set(value) = setBooleanSync(DataStoreKeys.MIGRATION_REQUIRED, value)
 
     override var pingTestRequired: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.PING_UPDATE_REQUIRED, true) }

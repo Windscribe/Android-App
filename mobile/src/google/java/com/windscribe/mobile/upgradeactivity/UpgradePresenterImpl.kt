@@ -250,21 +250,21 @@ class UpgradePresenterImpl
             presenterLog.debug("Unable query product for your account.")
         }
 
-        override fun onPurchaseConsumed(itemPurchased: Purchase) {
-            mPurchase = itemPurchased
+        override fun onPurchaseConsumed(purchase: Purchase) {
+            mPurchase = purchase
             presenterLog.info("Saving purchased item to process later...")
             upgradeView?.showProgressBar("#Verifying purchase...")
-            preferencesHelper.purchasedItem = itemPurchased.originalJson
-            presenterLog.info("Verifying payment for purchased item: " + itemPurchased.originalJson)
+            preferencesHelper.purchasedItem = purchase.originalJson
+            presenterLog.info("Verifying payment for purchased item: " + purchase.originalJson)
 
             activityScope.launch(Dispatchers.IO) {
                 try {
                     val result =
                         result<GenericSuccess> {
                             apiCallManager.verifyPurchaseReceipt(
-                                itemPurchased.purchaseToken,
-                                itemPurchased.packageName,
-                                itemPurchased.products[0],
+                                purchase.purchaseToken,
+                                purchase.packageName,
+                                purchase.products[0],
                                 "",
                                 "",
                             )

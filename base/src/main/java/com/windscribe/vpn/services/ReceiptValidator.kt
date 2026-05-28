@@ -2,6 +2,7 @@ package com.windscribe.vpn.services
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -18,7 +19,13 @@ class ReceiptValidator(
             return
         }
         val pkgManager: PackageManager = context.packageManager
-        val installerPackageName = pkgManager.getInstallerPackageName(context.packageName)
+        val installerPackageName =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                pkgManager.getInstallSourceInfo(context.packageName).installingPackageName
+            } else {
+                @Suppress("DEPRECATION")
+                pkgManager.getInstallerPackageName(context.packageName)
+            }
         if (installerPackageName != null && installerPackageName.startsWith("com.amazon")) {
             WorkManager.getInstance(context).enqueueUniqueWork(
                 PENDING_AMAZON_RECEIPT_WORKER_KEY,

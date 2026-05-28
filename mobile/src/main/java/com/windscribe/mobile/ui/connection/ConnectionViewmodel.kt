@@ -68,7 +68,7 @@ sealed class LocationInfoState {
 
 sealed class ToastMessage {
     data class Localized(
-        @StringRes val message: Int,
+        @param:StringRes val message: Int,
     ) : ToastMessage()
 
     data class Raw(
@@ -82,11 +82,11 @@ sealed class LocationBackground {
     open val resource: Int = R.drawable.dummy_flag
 
     data class Flag(
-        @DrawableRes override val resource: Int,
+        @param:DrawableRes override val resource: Int,
     ) : LocationBackground()
 
     data class Wallpaper(
-        @DrawableRes override val resource: Int,
+        @param:DrawableRes override val resource: Int,
     ) : LocationBackground()
 
     data class Custom(

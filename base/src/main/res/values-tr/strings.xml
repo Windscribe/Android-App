@@ -604,7 +604,7 @@ Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler içi
     <string name="ipv6_mode_description">VPN bağlantıları için hangi IP sürümünün kullanılacağını seçin.</string>
     <string name="ip_stack">IP Yığını</string>
     <string name="ip_stack_description">VPN bağlantıları için IP yığınını yapılandırın.</string>
-    <string name="egress">Çıkış</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Giriş</string>
     <string name="ipv4_only">Yalnızca IPv4</string>
     <string name="manual_connection_mode_failed_title">Manuel bağlantı modu başarısız oldu</string>

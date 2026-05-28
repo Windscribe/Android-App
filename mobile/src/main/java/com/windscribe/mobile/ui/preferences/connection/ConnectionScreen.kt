@@ -3,6 +3,7 @@ package com.windscribe.mobile.ui.preferences.connection
 import PreferencesNavBar
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -268,8 +269,6 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
 private fun IPVersionMode(viewModel: ConnectionViewModel?) {
     val ipStackEgressModes by viewModel?.ipStackEgressModes?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
     val ipStackEgressMode by viewModel?.ipStackEgressMode?.collectAsState() ?: remember { mutableStateOf("auto") }
-    val ipStackIngressModes by viewModel?.ipStackIngressModes?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
-    val ipStackIngressMode by viewModel?.ipStackIngressMode?.collectAsState() ?: remember { mutableStateOf("auto") }
 
     Column {
         // Header with title and description only (no mode selector on right)
@@ -330,7 +329,6 @@ private fun ConnectionItem(
     val navController = LocalNavController.current
     if (showPermissionRequest) {
         RequestLocationPermissions {
-            showPermissionRequest = false
             // Refresh network detail now that we have location permission
             appContext.deviceStateManager.refreshNetworkDetail()
             navController.navigate(Screen.NetworkOptions.route)
@@ -620,8 +618,8 @@ private fun AutoPacketSize(viewModel: ConnectionViewModel?) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     var text by remember { mutableStateOf(packetSize.toString()) }
-    val activity = LocalContext.current as? AppStartActivity
-    var showToast = remember { mutableStateOf(false) }
+    val activity = LocalActivity.current as? AppStartActivity
+    val showToast = remember { mutableStateOf(false) }
     val autoDetecting by viewModel?.autoDetecting?.collectAsState() ?: remember {
         mutableStateOf(
             false,

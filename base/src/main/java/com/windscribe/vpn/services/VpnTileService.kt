@@ -5,10 +5,8 @@
 package com.windscribe.vpn.services
 
 import android.graphics.drawable.Icon
-import android.os.Build.VERSION_CODES
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import androidx.annotation.RequiresApi
 import com.windscribe.vpn.R.drawable
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -28,7 +26,6 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @AndroidEntryPoint
-@RequiresApi(api = VERSION_CODES.N)
 class VpnTileService : TileService() {
     @Inject
     lateinit var vpnController: WindVpnController

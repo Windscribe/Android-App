@@ -25,16 +25,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -64,12 +60,8 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
-@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun LoginScreen(
-    windowSizeClass: WindowSizeClass? = currentWindowAdaptiveInfo().windowSizeClass,
-    viewModel: LoginViewModel? = null,
-) {
+fun LoginScreen(viewModel: LoginViewModel? = null) {
     val navController = LocalNavController.current
     val context = LocalContext.current
     val loginState by viewModel?.loginState?.collectAsState() ?: remember {
@@ -154,9 +146,6 @@ fun LoginCompactLayout(
     }
     val accountHashDisplay by viewModel?.accountHashDisplay?.collectAsState() ?: remember {
         mutableStateOf("")
-    }
-    val showTwoFactorTextField by viewModel?.twoFactorEnabled?.collectAsState() ?: remember {
-        mutableStateOf(false)
     }
 
     Column(

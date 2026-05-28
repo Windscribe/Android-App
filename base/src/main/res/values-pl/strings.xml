@@ -604,7 +604,7 @@ Twoje dane lokalizacyjne pozostają na urządzeniu i są używane wyłącznie do
     <string name="ipv6_mode_description">Wybierz, której wersji IP użyć do połączeń VPN.</string>
     <string name="ip_stack">Stos IP</string>
     <string name="ip_stack_description">Skonfiguruj stos IP dla połączeń VPN.</string>
-    <string name="egress">Wyjście</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Wejście</string>
     <string name="ipv4_only">Tylko IPv4</string>
     <string name="manual_connection_mode_failed_title">Tryb połączenia ręcznego nie powiódł się</string>

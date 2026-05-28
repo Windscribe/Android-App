@@ -604,7 +604,7 @@ Dữ liệu vị trí của bạn vẫn ở trên thiết bị của bạn và c
     <string name="ipv6_mode_description">Chọn phiên bản IP nào để sử dụng cho kết nối VPN.</string>
     <string name="ip_stack">Ngăn xếp IP</string>
     <string name="ip_stack_description">Cấu hình ngăn xếp IP cho kết nối VPN.</string>
-    <string name="egress">Lối ra</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Lối vào</string>
     <string name="ipv4_only">Chỉ IPv4</string>
     <string name="manual_connection_mode_failed_title">Chế độ kết nối thủ công thất bại</string>

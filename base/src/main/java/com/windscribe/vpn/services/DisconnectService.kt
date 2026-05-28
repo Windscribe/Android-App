@@ -4,8 +4,9 @@
 
 package com.windscribe.vpn.services
 
-import android.app.IntentService
+import android.app.Service
 import android.content.Intent
+import android.os.IBinder
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DisconnectService : IntentService("DisconnectService") {
+class DisconnectService : Service() {
     @Inject
     lateinit var controller: WindVpnController
 
@@ -31,7 +32,13 @@ class DisconnectService : IntentService("DisconnectService") {
 
     private val logger = LoggerFactory.getLogger("vpn")
 
-    override fun onHandleIntent(intent: Intent?) {
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         intent?.let {
             scope.launch {
                 logger.info("Stopping vpn services from notification.")
@@ -39,5 +46,7 @@ class DisconnectService : IntentService("DisconnectService") {
                 controller.disconnectAsync()
             }
         }
+        stopSelf(startId)
+        return START_NOT_STICKY
     }
 }

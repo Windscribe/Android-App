@@ -3,11 +3,9 @@ package com.windscribe.mobile.ui.popup
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -49,7 +47,6 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 
-@RequiresApi(Build.VERSION_CODES.M)
 @Composable
 fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
     val navController = LocalNavController.current
@@ -153,7 +150,6 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.M)
 @Composable
 @MultiDevicePreview
 fun PowerWhitelistScreenPreview() {

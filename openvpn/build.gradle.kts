@@ -7,21 +7,21 @@
 plugins {
     id("com.android.library")
     id("checkstyle")
-    kotlin("android")
-    // kotlin("android.extensions")
 }
 
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 android {
-    compileSdkVersion(34)
+    compileSdk = rootProject.extra["appCompiledSdk"] as Int
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
-        minSdkVersion(21)
-        targetSdkVersion(34) // 'Q'.toInt()
+        minSdk = rootProject.extra["appMinSdk"] as Int
 //        versionCode = 175
 //        versionName = "0.7.21"
 
@@ -46,7 +46,10 @@ android {
         buildConfig = true
         aidl = true
     }
-    testOptions.unitTests.isIncludeAndroidResources = true
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        targetSdk = rootProject.extra["appTargetSdk"] as Int
+    }
 
     externalNativeBuild {
         cmake {
@@ -124,9 +127,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
     }
 
     splits {
@@ -210,7 +210,7 @@ dependencies {
     val materialVersion = "1.1.0"
     val fragment_version = "1.2.4"
 
-    implementation("androidx.annotation:annotation:1.1.0")
+    implementation("androidx.annotation:annotation:1.9.1")
     implementation("androidx.core:core:$coreVersion")
 /*
     // Is there a nicer way to do this?
@@ -231,8 +231,8 @@ dependencies {
     dependencies.add("uiImplementation", "androidx.webkit:webkit:1.2.0")
 */
     testImplementation("junit:junit:${libs.versions.junit.get()}")
-    testImplementation("org.mockito:mockito-core:5.12.0")
-    testImplementation("org.robolectric:robolectric:4.13")
-    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("org.mockito:mockito-core:5.23.0")
+    testImplementation("org.robolectric:robolectric:4.16.1")
+    testImplementation("androidx.test:core:1.7.0")
     implementation(project(":common"))
 }

@@ -85,7 +85,7 @@ class AndroidDeviceIdentityImpl : AndroidDeviceIdentity {
             val leastSignificant48Bits =
                 UUID.fromString(it.id).leastSignificantBits and 0xFFFFFFFFFFFFL
             val hexadecimalValue =
-                leastSignificant48Bits.toString(16).toUpperCase(Locale.ROOT).padStart(12, '0')
+                leastSignificant48Bits.toString(16).uppercase(Locale.ROOT).padStart(12, '0')
             val formattedMacAddress = formatAsMacAddress(hexadecimalValue)
             deviceMacAddress = formattedMacAddress
         }
@@ -104,7 +104,7 @@ class AndroidDeviceIdentityImpl : AndroidDeviceIdentity {
 
     private fun formatAsHostname(hostName: String): String =
         hostName
-            .capitalize(Locale.ROOT)
+            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
             .replace(Regex("[^A-Za-z0-9 ]"), "")
             .replace(" ", "-")
 }

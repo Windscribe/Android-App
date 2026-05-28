@@ -10,14 +10,17 @@ java {
 
 android {
     namespace = "org.strongswan.android"
-    compileSdk = 34
+    compileSdk = rootProject.extra["appCompiledSdk"] as Int
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
-        minSdk = 21
+        minSdk = rootProject.extra["appMinSdk"] as Int
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+    }
+    testOptions {
+        targetSdk = rootProject.extra["appTargetSdk"] as Int
     }
 
     buildTypes {
@@ -39,9 +42,9 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    implementation("androidx.appcompat:appcompat:1.4.2")
-    implementation("androidx.preference:preference:1.2.0")
+    implementation("androidx.appcompat:appcompat:${libs.versions.appcompat.get()}")
+    implementation("androidx.preference:preference:1.2.1")
     implementation("com.google.android.material:material:${libs.versions.material.get()}")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }

@@ -1,15 +1,14 @@
 package com.windscribe.mobile.ui.nav
 
-import android.os.Build
 import android.util.Log
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
@@ -102,7 +101,7 @@ val LocalNavController =
 @Composable
 fun NavigationStack(startDestination: Screen) {
     val navController = rememberNavController()
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalActivity.current as AppStartActivity
     activity.navController = navController
     CompositionLocalProvider(LocalNavController provides navController) {
         NavHost(navController = navController, startDestination = startDestination.route) {
@@ -114,17 +113,17 @@ fun NavigationStack(startDestination: Screen) {
 private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.Start.route) {
         ViewModelRoute(AppStartViewModelImpl::class.java) {
-            AppStartScreen(null, it)
+            AppStartScreen(viewModel = it)
         }
     }
     composable(route = Screen.Login.route) {
         ViewModelRoute(LoginViewModel::class.java) {
-            LoginScreen(null, it)
+            LoginScreen(it)
         }
     }
     composable(route = Screen.Signup.route) {
         ViewModelRoute(SignupViewModel::class.java) {
-            SignupScreen(null, it)
+            SignupScreen(it)
         }
     }
     composable(route = Screen.TwoFactor.route) {
@@ -330,9 +329,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
         },
     ) { AboutScreen() }
     composable(route = Screen.PowerWhitelist.route) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            ViewModelRoute(PowerWhitelistViewmodelImpl::class.java) { PowerWhitelistScreen(it) }
-        }
+        ViewModelRoute(PowerWhitelistViewmodelImpl::class.java) { PowerWhitelistScreen(it) }
     }
     composable(
         route = Screen.Ticket.route,
@@ -497,42 +494,42 @@ private fun NavGraphBuilder.addNavigationScreens() {
         EditCustomConfigScreen(viewModel)
     }
     composable(route = Screen.ConnectionChange.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         ConnectionChangeScreen(appStartActivityViewModel = activity.viewmodel, false)
     }
     composable(route = Screen.ConnectionFailure.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         ConnectionChangeScreen(appStartActivityViewModel = activity.viewmodel, true)
     }
     composable(route = Screen.SetupPreferredProtocol.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         SetupPreferredProtocolScreen(appStartActivityViewModel = activity.viewmodel)
     }
     composable(route = Screen.DebugLogSent.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         DebugLogSentScreen(appStartActivityViewModel = activity.viewmodel)
     }
     composable(route = Screen.AllProtocolFailed.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         AllProtocolFailedScreen(appStartActivityViewModel = activity.viewmodel)
     }
     composable(route = Screen.ManualModeFailed.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         ManualModeFailedScreen(appStartActivityViewModel = activity.viewmodel)
     }
     composable(route = Screen.OverlayDialog.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         OverlayDialogScreen(appStartActivityViewModel = activity.viewmodel)
     }
     composable(route = Screen.AllProtocolFailedDialog.route) {
         AllProtocolFailedDialogScreen()
     }
     composable(route = Screen.ExtraDataUseWarning.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         ExtraDataUseWarningScreen(activity.viewmodel)
     }
     composable(route = Screen.GpsSpoofing.route) {
-        val activity = LocalContext.current as AppStartActivity
+        val activity = LocalActivity.current as AppStartActivity
         GpsSpoofing(activity.viewmodel)
     }
     composable(route = Screen.AddEmail.route) {
@@ -566,21 +563,11 @@ private fun NavGraphBuilder.addNavigationScreens() {
 
 @Composable
 private fun AddHomeScreenRoute() {
-    val serverViewModel: ServerViewModel =
-        androidx.hilt.navigation.compose
-            .hiltViewModel<ServerViewModelImpl>()
-    val connectionViewModel: ConnectionViewmodel =
-        androidx.hilt.navigation.compose
-            .hiltViewModel<ConnectionViewmodelImpl>()
-    val configViewModel: ConfigViewmodel =
-        androidx.hilt.navigation.compose
-            .hiltViewModel<ConfigViewmodelImpl>()
-    val homeViewModel: HomeViewmodel =
-        androidx.hilt.navigation.compose
-            .hiltViewModel<HomeViewmodelImpl>()
-    val bridgeApiViewModel: BridgeApiViewModel =
-        androidx.hilt.navigation.compose
-            .hiltViewModel<BridgeApiViewModelImpl>()
+    val serverViewModel: ServerViewModel = hiltViewModel<ServerViewModelImpl>()
+    val connectionViewModel: ConnectionViewmodel = hiltViewModel<ConnectionViewmodelImpl>()
+    val configViewModel: ConfigViewmodel = hiltViewModel<ConfigViewmodelImpl>()
+    val homeViewModel: HomeViewmodel = hiltViewModel<HomeViewmodelImpl>()
+    val bridgeApiViewModel: BridgeApiViewModel = hiltViewModel<BridgeApiViewModelImpl>()
     Log.i("AppStartViewModel", "Adding home screen.")
     HomeScreen(serverViewModel, connectionViewModel, configViewModel, homeViewModel, bridgeApiViewModel)
 }
@@ -590,23 +577,11 @@ private inline fun <reified VM : ViewModel> ViewModelRoute(
     @Suppress("UNUSED_PARAMETER") viewModelClass: Class<VM>,
     content: @Composable (VM) -> Unit,
 ) {
-    val viewModel: VM =
-        androidx.hilt.navigation.compose
-            .hiltViewModel()
+    val viewModel: VM = hiltViewModel()
     content(viewModel)
 }
 
 @Composable
 private inline fun <reified VM : ViewModel> getViewModel(
     @Suppress("UNUSED_PARAMETER") viewModelClass: Class<VM>,
-): VM =
-    androidx.hilt.navigation.compose
-        .hiltViewModel()
-
-data class ViewModels(
-    val serverViewModel: ServerViewModel,
-    val connectionViewModel: ConnectionViewmodel,
-    val configViewModel: ConfigViewmodel,
-    val homeViewModel: HomeViewmodel,
-    val bridgeApiViewModel: BridgeApiViewModel,
-)
+): VM = hiltViewModel()

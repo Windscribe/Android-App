@@ -8,7 +8,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.net.NetworkCapabilities
+import androidx.core.content.pm.PackageInfoCompat
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
@@ -68,18 +69,12 @@ object WindUtilities {
         }
     }
 
-    fun getUnderLayNetworkInfo(): NetworkInfo? {
-        val connectivityManager =
-            appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-        return connectivityManager?.activeNetworkInfo
-    }
-
     fun getVersionCode(): String =
         try {
             val info =
                 appContext.packageManager
                     .getPackageInfo(appContext.packageName, 0)
-            info.versionCode.toString()
+            PackageInfoCompat.getLongVersionCode(info).toString()
         } catch (_: PackageManager.NameNotFoundException) {
             ""
         }
@@ -120,8 +115,14 @@ object WindUtilities {
     }
 
     fun isOnline(): Boolean {
-        val activeNetworkInfo = getUnderLayNetworkInfo()
-        return activeNetworkInfo?.isConnected == true
+        val connectivityManager =
+            appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+                ?: return false
+        val capabilities =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+                ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
     /**

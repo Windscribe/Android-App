@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.Objects
 import java.util.concurrent.TimeUnit
 
 class User(
@@ -124,22 +123,20 @@ class User(
             return TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)
         }
 
-    fun nextResetDate(): String? =
-        if (resetDate != null) {
-            try {
-                val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val lastResetDate = formatter.parse(resetDate)
-                val c = Calendar.getInstance()
-                c.time = Objects.requireNonNull(lastResetDate)
-                c.add(Calendar.MONTH, 1)
-                val nextResetDate = c.time
-                formatter.format(nextResetDate)
-            } catch (e: Exception) {
-                null
-            }
-        } else {
+    fun nextResetDate(): String? {
+        val date = resetDate ?: return null
+        return try {
+            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val lastResetDate = formatter.parse(date) ?: return null
+            val c = Calendar.getInstance()
+            c.time = lastResetDate
+            c.add(Calendar.MONTH, 1)
+            val nextResetDate = c.time
+            formatter.format(nextResetDate)
+        } catch (e: Exception) {
             null
         }
+    }
 
     override fun toString(): String =
         "Account Status: $accountStatus | User Status: $userStatusInt | Ghost $isGhost | Email Status: $emailStatus | Sip count $sipCount"
@@ -180,11 +177,11 @@ class User(
         result = 31 * result + (email?.hashCode() ?: 0)
         result = 31 * result + userName.hashCode()
         result = 31 * result + sipCount
-        result = 31 * result + (dataUsed?.hashCode() ?: 0)
+        result = 31 * result + dataUsed.hashCode()
         result = 31 * result + maxData.hashCode()
         result = 31 * result + isPro.hashCode()
         result = 31 * result + userStatusInt
-        result = 31 * result + (dataLeft?.hashCode() ?: 0)
+        result = 31 * result + dataLeft.hashCode()
         result = 31 * result + accountStatus.hashCode()
         result = 31 * result + accountStatusToInt
         result = 31 * result + emailStatus.hashCode()

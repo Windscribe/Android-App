@@ -4,7 +4,6 @@
 
 package com.windscribe.tv.windscribe
 
-import android.net.NetworkInfo
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 
 interface WindscribeView {
@@ -14,7 +13,7 @@ interface WindscribeView {
         fun onConnectingAnimationCompleted()
     }
 
-    val networkInfo: NetworkInfo?
+    val isEthernetConnection: Boolean
 
     fun gotoLoginRegistrationActivity()
 

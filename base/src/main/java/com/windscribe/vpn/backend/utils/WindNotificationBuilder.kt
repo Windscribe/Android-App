@@ -153,17 +153,11 @@ class WindNotificationBuilder
 
         private fun createDisconnectPendingIntent(context: Windscribe): PendingIntent {
             val serviceIntent = Intent(context, DisconnectService::class.java)
-            val flags =
-                if (VERSION.SDK_INT >= VERSION_CODES.M) {
-                    PendingIntent.FLAG_IMMUTABLE
-                } else {
-                    0
-                }
             return PendingIntent.getService(
                 context,
                 DISCONNECT_ACTION_REQUEST_CODE,
                 serviceIntent,
-                flags,
+                PendingIntent.FLAG_IMMUTABLE,
             )
         }
 
@@ -172,32 +166,15 @@ class WindNotificationBuilder
                 context.applicationInterface.splashIntent.apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 }
-            val flags =
-                if (VERSION.SDK_INT >= VERSION_CODES.M) {
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                } else {
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                }
             return PendingIntent.getActivity(
                 context,
                 CONTENT_INTENT_REQUEST_CODE,
                 contentIntent,
-                flags,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
         }
 
-        private fun setupNotificationLegacy() {
-            notificationBuilder.apply {
-                setSmallIcon(getDefaultIcon(Connecting))
-                setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
-                setOnlyAlertOnce(true)
-                setOngoing(true)
-            }
-            setContentIntent()
-        }
-
-        @RequiresApi(VERSION_CODES.N)
-        private fun setupNotificationN() {
+        private fun setupNotificationPreO() {
             notificationBuilder.apply {
                 setSmallIcon(getDefaultIcon(Connecting))
                 setOnlyAlertOnce(true)
@@ -293,20 +270,15 @@ class WindNotificationBuilder
             }
         }
 
-        private fun isNotificationActive(): Boolean {
-            return try {
-                if (VERSION.SDK_INT >= VERSION_CODES.M) {
-                    notificationManager.activeNotifications.any {
-                        it.id == NotificationConstants.SERVICE_NOTIFICATION_ID
-                    }
-                } else {
-                    return false
+        private fun isNotificationActive(): Boolean =
+            try {
+                notificationManager.activeNotifications.any {
+                    it.id == NotificationConstants.SERVICE_NOTIFICATION_ID
                 }
             } catch (e: Exception) {
                 logger.debug("Failed to check active notifications", e)
                 false
             }
-        }
 
         private fun getDefaultIcon(status: Status): Int =
             when (status) {
@@ -317,10 +289,10 @@ class WindNotificationBuilder
             }
 
         private fun createDefaultNotification() {
-            when {
-                VERSION.SDK_INT >= VERSION_CODES.O -> setupNotificationO()
-                VERSION.SDK_INT >= VERSION_CODES.N -> setupNotificationN()
-                else -> setupNotificationLegacy()
+            if (VERSION.SDK_INT >= VERSION_CODES.O) {
+                setupNotificationO()
+            } else {
+                setupNotificationPreO()
             }
         }
     }

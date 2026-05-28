@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui.popup
 
 import PreferencesNavBar
 import android.annotation.SuppressLint
+import androidx.activity.compose.LocalActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -152,12 +153,9 @@ private fun buildIntentBuilder(viewmodel: SharedLinkViewmodel?): IntentBuilder? 
     val context = LocalContext.current
     val userName by viewmodel?.userName?.collectAsState() ?: remember { mutableStateOf("") }
     val launchUrl = "https://play.google.com/store/apps/details?id=${context.packageName}"
-    val description = context.getString(com.windscribe.vpn.R.string.share_app_description, userName, launchUrl)
-    val title = context.getString(com.windscribe.vpn.R.string.share_app)
-    val launchActivity = LocalContext.current as? AppCompatActivity
-    if (launchActivity == null) {
-        return null
-    }
+    val description = stringResource(com.windscribe.vpn.R.string.share_app_description, userName, launchUrl)
+    val title = stringResource(com.windscribe.vpn.R.string.share_app)
+    val launchActivity = LocalActivity.current as? AppCompatActivity ?: return null
     return IntentBuilder(launchActivity)
         .setType("text/plain")
         .setChooserTitle(title)

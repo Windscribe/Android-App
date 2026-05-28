@@ -120,7 +120,7 @@ class ConnectionDataRepository
                 preferencesHelper.suggestedProtocol = it.protocol
                 preferencesHelper.suggestedPort = it.port.toString()
                 val indexOfSuggestedProtocol =
-                    autoConnectionManager.get().listOfProtocols.indexOfFirst { proto -> proto.protocol == portMap.suggested?.protocol }
+                    autoConnectionManager.get().listOfProtocols.indexOfFirst { proto -> proto.protocol == portMap.suggested.protocol }
                 if (indexOfSuggestedProtocol != 0) {
                     autoConnectionManager.get().reset()
                 }

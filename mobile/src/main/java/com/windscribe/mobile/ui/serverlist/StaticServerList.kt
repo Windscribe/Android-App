@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.serverlist
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,7 +31,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,7 +58,7 @@ fun StaticIPServerList(
     connectionViewModel: ConnectionViewmodel,
 ) {
     val state by viewModel.staticListState.collectAsState()
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalActivity.current as AppStartActivity
     val isRefreshing by viewModel.refreshState.collectAsState()
     Box(modifier = Modifier.testTag("server_list_static").fillMaxSize()) {
         when (state) {

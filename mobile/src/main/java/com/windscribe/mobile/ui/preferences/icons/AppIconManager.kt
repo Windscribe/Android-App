@@ -28,7 +28,7 @@ enum class AppIconCategory {
 class AppIconManager
     @Inject
     constructor(
-        @ApplicationContext val context: Context,
+        @param:ApplicationContext val context: Context,
         val preferenceManager: PreferencesHelper,
     ) {
         var appIcons = mapOf<String, AppIcon>()

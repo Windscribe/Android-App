@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.IntentCompat
 import com.windscribe.vpn.R.layout
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.alert.showErrorDialog
@@ -71,8 +72,9 @@ class VPNPermissionActivity : ComponentActivity() {
         setContentView(layout.activity_launch)
         if (intent.hasExtra("protocolInformation")) {
             protocolInformation =
-                intent.getSerializableExtra("protocolInformation") as ProtocolInformation
-            connectionId = intent.getSerializableExtra("connectionId") as UUID
+                IntentCompat.getSerializableExtra(intent, "protocolInformation", ProtocolInformation::class.java)
+                    as ProtocolInformation
+            connectionId = IntentCompat.getSerializableExtra(intent, "connectionId", UUID::class.java) as UUID
             askForPermission()
         } else {
             finish()

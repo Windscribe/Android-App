@@ -4,7 +4,6 @@
 
 package com.windscribe.vpn.services.ping
 
-import okhttp3.internal.and
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -52,7 +51,7 @@ class EchoPacketBuilder(
             run {
                 var i = 0
                 while (i < end) {
-                    sum += data[i] and 0xFF shl 8
+                    sum += (data[i].toInt() and 0xFF) shl 8
                     sum = (sum and 0xFFFF) + (sum shr 16)
                     i += 2
                 }
@@ -60,7 +59,7 @@ class EchoPacketBuilder(
             // Low bytes (odd indices)
             var i = 1
             while (i < end) {
-                sum += data[i] and 0xFF
+                sum += data[i].toInt() and 0xFF
                 sum = (sum and 0xFFFF) + (sum shr 16)
                 i += 2
             }

@@ -604,7 +604,7 @@
     <string name="ipv6_mode_description">اختر إصدار IP الذي سيتم استخدامه لاتصالات VPN.</string>
     <string name="ip_stack">مكدس IP</string>
     <string name="ip_stack_description">تكوين مكدس IP لاتصالات VPN.</string>
-    <string name="egress">الخروج</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">الدخول</string>
     <string name="ipv4_only">IPv4 فقط</string>
     <string name="manual_connection_mode_failed_title">فشل وضع الاتصال اليدوي</string>

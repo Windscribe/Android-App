@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.preferences.general
 
 import PreferencesNavBar
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,7 +36,7 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 @Composable
 fun GeneralScreen(viewModel: GeneralViewModel? = null) {
     val navController = LocalNavController.current
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     val reloadAppState = viewModel?.reloadApp?.collectAsState(initial = false)
     val isHapticEnabled by viewModel?.isHapticEnabled?.collectAsState()
         ?: remember { mutableStateOf(false) }

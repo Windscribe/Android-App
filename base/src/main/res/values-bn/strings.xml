@@ -607,7 +607,7 @@
     <string name="ipv6_mode_description">VPN সংযোগগুলির জন্য কোন IP সংস্করণ ব্যবহার করবেন তা চয়ন করুন।</string>
     <string name="ip_stack">IP স্ট্যাক</string>
     <string name="ip_stack_description">VPN সংযোগগুলির জন্য IP স্ট্যাক কনফিগার করুন।</string>
-    <string name="egress">নির্গমন</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">প্রবেশ</string>
     <string name="ipv4_only">শুধুমাত্র IPv4</string>
     <string name="manual_connection_mode_failed_title">ম্যানুয়াল সংযোগ মোড ব্যর্থ</string>

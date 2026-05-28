@@ -608,7 +608,7 @@ last chosen location.</string>
     <string name="ipv6_mode_description">VPN کنکشن کے لیے کون سا IP ورژن استعمال کرنا ہے منتخب کریں۔</string>
     <string name="ip_stack">IP اسٹیک</string>
     <string name="ip_stack_description">VPN کنکشن کے لیے IP اسٹیک کی ترتیب کریں۔</string>
-    <string name="egress">باہر نکلنا</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">اندر آنا</string>
     <string name="ipv4_only">صرف IPv4</string>
     <string name="manual_connection_mode_failed_title">دستی کنکشن موڈ ناکام</string>

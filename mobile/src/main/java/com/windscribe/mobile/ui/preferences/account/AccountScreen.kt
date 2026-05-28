@@ -3,6 +3,7 @@ package com.windscribe.mobile.ui.preferences.account
 import PreferencesNavBar
 import android.content.res.Configuration
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -176,7 +177,7 @@ private fun GhostAccountState() {
 
 @Composable
 private fun HandleAlertState(viewModel: AccountViewModel?) {
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     val alertState by viewModel?.alertState?.collectAsState() ?: remember {
         mutableStateOf(AlertState.None)
     }
@@ -253,7 +254,7 @@ private fun TextFieldDialog(
     onSubmit: (String) -> Unit,
     isLazyLogin: Boolean = false,
 ) {
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     val hapticFeedbackEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
         ?: remember { mutableStateOf(false) }
     val hapticFeedback = LocalHapticFeedback.current
@@ -514,9 +515,7 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
                             Spacer(modifier = Modifier.width(8.dp))
                         }
 
-                        else -> {
-                            Unit
-                        }
+                        else -> {}
                     }
 
                     Text(
@@ -597,9 +596,7 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
                         }
                     }
 
-                    else -> {
-                        Unit
-                    }
+                    else -> {}
                 }
             }
 
@@ -633,7 +630,7 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
     val accountState by viewModel?.accountState?.collectAsState() ?: remember {
         mutableStateOf(AccountState.Loading)
     }
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     if (accountState !is AccountState.Account) {
         return
     }
@@ -900,7 +897,7 @@ private fun LazyLogin(viewModel: AccountViewModel?) {
 
 @Composable
 private fun HandleGoto(viewModel: AccountViewModel?) {
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     val goto by viewModel?.goTo?.collectAsState(initial = AccountGoTo.None) ?: remember {
         mutableStateOf(
             AccountGoTo.None,

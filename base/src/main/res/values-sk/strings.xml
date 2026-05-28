@@ -610,7 +610,7 @@ Vaše údaje o polohe zostávajú vo vašom zariadení a používajú sa výluč
     <string name="ipv6_mode_description">Vyberte, ktorú verziu IP použiť pre VPN pripojenia.</string>
     <string name="ip_stack">IP zásobník</string>
     <string name="ip_stack_description">Nakonfigurujte IP zásobník pre VPN pripojenia.</string>
-    <string name="egress">Výstup</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Vstup</string>
     <string name="ipv4_only">Iba IPv4</string>
     <string name="manual_connection_mode_failed_title">Manuálny režim pripojenia zlyhal</string>
