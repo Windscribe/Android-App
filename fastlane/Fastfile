@@ -72,7 +72,7 @@ end
 
   desc "Upload to Play Store Internal Testing Track (official release channel)"
   lane :publishToPlayStoreInternal do
-    buildAndSign(task:"clean bundle")
+    buildAndSign(task:"mobile:bundleGoogleRelease tv:bundleGoogleRelease")
 
     # Upload to Play Store Internal testing track
     supply(
@@ -117,7 +117,7 @@ end
 
   desc "Upload to Internal App Sharing (quick test URLs for QA)"
   lane :publishToInternalAppSharing do
-    buildAndSign(task:"clean mobile:bundle tv:bundle")
+    buildAndSign(task:"mobile:bundleGoogleRelease tv:bundleGoogleRelease")
 
     # Upload Mobile to Internal App Sharing
     mobile_share_url = upload_to_play_store_internal_app_sharing(
@@ -183,5 +183,5 @@ end
 
  desc "Build Signed Apks for all modules."
  lane :buildReleaseApk do
-  buildAndSign(task:"mobile:assemble tv:assemble")
+  buildAndSign(task:"mobile:assembleGoogleRelease tv:assembleGoogleRelease")
  end
