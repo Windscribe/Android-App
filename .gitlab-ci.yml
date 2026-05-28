@@ -147,15 +147,6 @@ stages:
     - touch ${CHANGE_LOG_PATH}${MOBILE_VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
 
-#------------------------------------------------------------------------------
-# .minimal_setup
-# Minimal setup for simple jobs (notifications, etc.)
-#------------------------------------------------------------------------------
-.minimal_setup:
-  stage: Deploy
-  before_script:
-    - export GRADLE_USER_HOME=$(pwd)/.gradle
-    - chmod +x ./gradlew
 
 .debug_setup:
   stage: Test
@@ -192,7 +183,7 @@ Ktlint:
 
   artifacts:
     when: always   # upload reports even on failure so violations are inspectable
-    expire_in: 1 week
+    expire_in: 1 day
     paths:
       - "**/build/reports/ktlint/**"
 
@@ -225,7 +216,7 @@ UnitTests:
 
   artifacts:
     when: always   # upload reports even on failure so they're inspectable
-    expire_in: 1 week
+    expire_in: 1 day
     paths:
       - "**/build/reports/tests/**"
       - "**/build/test-results/**"
@@ -464,7 +455,6 @@ NexusPublic:
 # Trigger: Automatic after PlayStoreInternal job succeeds
 #------------------------------------------------------------------------------
 SlackNotification:
-  extends: .minimal_setup
   stage: Deploy
   when: on_success
   dependencies:
