@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.auth
 
 import FeatureSection
+import android.content.Intent
 import android.content.res.Configuration
 import android.util.Log
 import android.widget.Toast
@@ -36,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +49,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.window.core.layout.WindowSizeClass
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
@@ -62,33 +65,34 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font18
 
+/**
+ * Callbacks the app-start UI can raise. Hoisted out so the stateless [AppStartContent] never
+ * needs to know about [AppStartViewModel] — previews supply no-op lambdas.
+ */
+class AppStartActions(
+    val onSignIntentLaunch: () -> Unit = {},
+    val onSignIntentResult: (Intent?) -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [AppStartViewModel], collects its flows and wires up navigation
+ * side effects, then delegates rendering to [AppStartContent].
+ */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun AppStartScreen(
     windowSizeClass: WindowSizeClass? = currentWindowAdaptiveInfo().windowSizeClass,
-    viewModel: AppStartViewModel? = null,
+    viewModel: AppStartViewModel = hiltViewModel<AppStartViewModelImpl>(),
 ) {
     val navController = LocalNavController.current
-    //   val bundle = navController.currentBackStackEntry?.savedStateHandle?.get<Bundle>("result")
-//    bundle?.let {
-//        val data = it.getSerializable("data") as? WebViewResult
-//        if (data != null) {
-//            Toast.makeText(LocalContext.current, data.toString(), Toast.LENGTH_SHORT).show()
-//        }
-//        navController.currentBackStackEntry?.savedStateHandle?.remove<Bundle>("result")
-//    }
-    LaunchedEffect(viewModel?.loggedIn) {
-        viewModel?.loggedIn?.let {
-            if (it) {
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Start.route) { inclusive = true }
-                }
+    LaunchedEffect(viewModel.loggedIn) {
+        if (viewModel.loggedIn) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Start.route) { inclusive = true }
             }
         }
     }
-    val loginState by viewModel?.loginState?.collectAsState() ?: remember {
-        mutableStateOf(LoginState.Idle)
-    }
+    val loginState by viewModel.loginState.collectAsState()
     LaunchedEffect(loginState) {
         if (loginState is SsoLoginState.Success) {
             Log.i("AppStartViewModel", "Logged in successfully.")
@@ -99,36 +103,63 @@ fun AppStartScreen(
         }
     }
 
-    val isConnected by viewModel?.isConnected?.collectAsState() ?: remember {
-        mutableStateOf(false)
-    }
-    val isExpanded =
-        windowSizeClass?.isWidthAtLeastBreakpoint(
-            WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
-        ) == true
-    if (isExpanded) {
-        ExpandedLayout(isConnected, viewModel)
-    } else {
-        CompactLayout(isConnected, viewModel)
-    }
-    if (loginState is SsoLoginState.LoggingIn) {
-        val message = (loginState as? SsoLoginState.LoggingIn)?.message ?: ""
-        AppProgressBar(true, message = message)
-    }
+    val isConnected by viewModel.isConnected.collectAsState()
+
     val context = LocalContext.current
     LaunchedEffect(loginState) {
         if (loginState is SsoLoginState.Error) {
             val errorMessage = (loginState as SsoLoginState.Error).error
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-            viewModel?.clearLoginState()
+            viewModel.clearLoginState()
         }
+    }
+
+    AppStartContent(
+        windowSizeClass = windowSizeClass,
+        isConnected = isConnected,
+        loginState = loginState,
+        signInIntent = viewModel.signInIntent,
+        actions =
+            AppStartActions(
+                onSignIntentLaunch = viewModel::onSignIntentLaunch,
+                onSignIntentResult = viewModel::onSignIntentResult,
+            ),
+    )
+}
+
+/**
+ * Stateless app-start UI. Everything it needs is passed in, so it renders identically in the
+ * app and in `@Preview`. This is the composable previews target.
+ */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+fun AppStartContent(
+    windowSizeClass: WindowSizeClass?,
+    isConnected: Boolean,
+    loginState: SsoLoginState,
+    signInIntent: Intent?,
+    actions: AppStartActions = AppStartActions(),
+) {
+    val isExpanded =
+        windowSizeClass?.isWidthAtLeastBreakpoint(
+            WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
+        ) == true
+    if (isExpanded) {
+        ExpandedLayout(isConnected, signInIntent, actions)
+    } else {
+        CompactLayout(isConnected, signInIntent, actions)
+    }
+    if (loginState is SsoLoginState.LoggingIn) {
+        val message = loginState.message
+        AppProgressBar(true, message = message)
     }
 }
 
 @Composable
 fun CompactLayout(
     isConnected: Boolean,
-    viewModel: AppStartViewModel?,
+    signInIntent: Intent?,
+    actions: AppStartActions,
 ) {
     Box(
         modifier =
@@ -155,7 +186,7 @@ fun CompactLayout(
             Spacer(modifier = Modifier.weight(1f))
             FeatureSection()
             Spacer(modifier = Modifier.weight(1f))
-            ActionSection(isConnected, viewModel)
+            ActionSection(isConnected, signInIntent, actions)
         }
     }
 }
@@ -163,7 +194,8 @@ fun CompactLayout(
 @Composable
 fun ExpandedLayout(
     isConnected: Boolean,
-    viewModel: AppStartViewModel?,
+    signInIntent: Intent?,
+    actions: AppStartActions,
 ) {
     Box(
         modifier =
@@ -199,7 +231,7 @@ fun ExpandedLayout(
                 modifier = Modifier.weight(1f),
             ) {
                 Spacer(modifier = Modifier.weight(1f))
-                ActionSection(isConnected, viewModel)
+                ActionSection(isConnected, signInIntent, actions)
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
@@ -232,15 +264,17 @@ fun Logo() {
 }
 
 @Composable
-private fun GoogleButton(viewModel: AppStartViewModel?) {
+private fun GoogleButton(
+    signInIntent: Intent?,
+    actions: AppStartActions,
+) {
     val interactionSource = remember { MutableInteractionSource() }
-    val signInIntent = viewModel?.signInIntent
     val launcher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartActivityForResult(),
         ) { result ->
             Log.i("AppStartViewModel", "result: ${result.data}")
-            viewModel?.onSignIntentResult(result.data)
+            actions.onSignIntentResult(result.data)
         }
     val activity = LocalActivity.current as? AppStartActivity
     Button(
@@ -250,7 +284,7 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
                     Toast.makeText(activity, "Google Signin not available.", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
-                viewModel.onSignIntentLaunch()
+                actions.onSignIntentLaunch()
                 launcher.launch(signInIntent)
             } else {
                 Toast.makeText(activity, "Google Sign-in not available in F-Droid version", Toast.LENGTH_SHORT).show()
@@ -353,7 +387,8 @@ private fun SignupButton() {
 @Composable
 fun ActionSection(
     isConnected: Boolean,
-    viewModel: AppStartViewModel?,
+    signInIntent: Intent?,
+    actions: AppStartActions,
 ) {
     Column(
         modifier =
@@ -364,7 +399,7 @@ fun ActionSection(
         verticalArrangement = Arrangement.spacedBy(22.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        GoogleButton(viewModel)
+        GoogleButton(signInIntent, actions)
         LoginButton()
         Row(verticalAlignment = Alignment.CenterVertically) {
             EmergencyConnectButton(isConnected)
@@ -375,10 +410,30 @@ fun ActionSection(
     }
 }
 
+/**
+ * Feeds representative [SsoLoginState] values into the preview. The renderer draws
+ * [AppStartContent] once per value.
+ */
+private class AppStartStateProvider : PreviewParameterProvider<SsoLoginState> {
+    override val values =
+        sequenceOf(
+            SsoLoginState.Idle,
+            SsoLoginState.LoggingIn("Logging in"),
+        )
+}
+
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 @MultiDevicePreview
-fun StartScreenPreview() {
+private fun AppStartContentPreview(
+    @PreviewParameter(AppStartStateProvider::class) loginState: SsoLoginState,
+) {
     PreviewWithNav {
-        AppStartScreen()
+        AppStartContent(
+            windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,
+            isConnected = false,
+            loginState = loginState,
+            signInIntent = null,
+        )
     }
 }

@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.preferences.robert
 
 import PreferencesNavBar
-import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,8 +28,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -38,13 +35,16 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.DescriptionWithLearnMore
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.connection.ToastMessage
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
@@ -57,17 +57,70 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.api.response.RobertFilter
 import com.windscribe.vpn.constants.FeatureExplainer
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Callbacks the Robert UI can raise. Hoisted out of the composables so the stateless
+ * [RobertContent] never needs to know about [RobertViewModel] — previews supply no-op lambdas.
+ */
+class RobertActions(
+    val onFilterSettingChanged: (RobertFilter, Int) -> Unit = { _, _ -> },
+    val onManageRulesClick: () -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [RobertViewModel], collects its flows and wires up
+ * side effects, then delegates rendering to [RobertContent].
+ */
 @Composable
-fun RobertScreen(viewModel: RobertViewModel? = null) {
+fun RobertScreen(viewModel: RobertViewModel = hiltViewModel<RobertViewModelImpl>()) {
+    val context = LocalContext.current
+    val state by viewModel.robertFilterState.collectAsState()
+    val showProgress by viewModel.showProgress.collectAsState()
+    val goToState by viewModel.goToState.collectAsState(initial = RobertGoToState.None)
+
+    LaunchedEffect(goToState) {
+        when (val current = goToState) {
+            is RobertGoToState.ManageRules -> {
+                context.openUrl(current.url)
+                viewModel.clearGoToState()
+            }
+
+            is RobertGoToState.Toast -> {
+                val toast = current.message
+                if (toast is ToastMessage.Raw) {
+                    Toast.makeText(context, toast.message, Toast.LENGTH_SHORT).show()
+                } else if (toast is ToastMessage.Localized) {
+                    Toast.makeText(context, toast.message, Toast.LENGTH_SHORT).show()
+                }
+                viewModel.clearGoToState()
+            }
+
+            RobertGoToState.None -> {}
+        }
+    }
+
+    RobertContent(
+        state = state,
+        showProgress = showProgress,
+        actions =
+            RobertActions(
+                onFilterSettingChanged = viewModel::onFilterSettingChanged,
+                onManageRulesClick = viewModel::onManageRulesClick,
+            ),
+    )
+}
+
+/**
+ * Stateless Robert UI. Everything it needs is passed in, so it renders identically in the
+ * app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun RobertContent(
+    state: RobertFilterState,
+    showProgress: Boolean,
+    actions: RobertActions,
+) {
     val navController = LocalNavController.current
-    val state by viewModel?.robertFilterState?.collectAsState()
-        ?: remember { mutableStateOf(RobertFilterState.Loading) }
-    val showProgress by viewModel?.showProgress?.collectAsState()
-        ?: remember { mutableStateOf(false) }
     PreferenceBackground {
         Column(
             modifier = Modifier.testTag("robert_screen").padding(vertical = 16.dp, horizontal = 16.dp).navigationBarsPadding(),
@@ -90,24 +143,23 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
 
                 is RobertFilterState.Failure -> {
                     Text(
-                        (state as RobertFilterState.Failure).error,
+                        state.error,
                         style = font12,
                         color = MaterialTheme.colorScheme.primaryTextColor,
                     )
                 }
 
                 is RobertFilterState.Success -> {
-                    val filters = (state as RobertFilterState.Success).filters
+                    val filters = state.filters
                     key(filters.hashCode()) {
-                        Filters(filters, viewModel, Modifier.weight(1.0f))
+                        Filters(filters, actions.onFilterSettingChanged, Modifier.weight(1.0f))
                     }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            ManageCustomRule(viewModel)
+            ManageCustomRule(actions.onManageRulesClick)
         }
         PreferenceProgressBar(showProgress)
-        HandleGoto(viewModel)
     }
 }
 
@@ -138,42 +190,12 @@ private fun RobertScreenDescription() {
 }
 
 @Composable
-private fun HandleGoto(viewModel: RobertViewModel?) {
-    val context = LocalContext.current
-    val state by viewModel?.goToState?.collectAsState(initial = RobertGoToState.None) ?: remember {
-        mutableStateOf(RobertGoToState.None)
-    }
-    LaunchedEffect(state) {
-        when (state) {
-            is RobertGoToState.ManageRules -> {
-                val url = (state as RobertGoToState.ManageRules).url
-                context.openUrl(url)
-                viewModel?.clearGoToState()
-            }
-
-            is RobertGoToState.Toast -> {
-                val toast = (state as RobertGoToState.Toast).message
-                if (toast is ToastMessage.Raw) {
-                    Toast.makeText(context, toast.message, Toast.LENGTH_SHORT).show()
-                } else if (toast is ToastMessage.Localized) {
-                    Toast.makeText(context, toast.message, Toast.LENGTH_SHORT).show()
-                }
-
-                viewModel?.clearGoToState()
-            }
-
-            RobertGoToState.None -> {}
-        }
-    }
-}
-
-@Composable
 private fun Filters(
     filters: List<RobertFilter>,
-    viewModel: RobertViewModel?,
+    onFilterSettingChanged: (RobertFilter, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var iconMap =
+    val iconMap =
         mapOf(
             Pair("malware", com.windscribe.mobile.R.drawable.ic_malware),
             Pair("ads", com.windscribe.mobile.R.drawable.ic_ads),
@@ -247,7 +269,7 @@ private fun Filters(
                                 .testTag("robert_toggle_on_${filters[index].id}")
                                 .clickable {
                                     isEnabled = !isEnabled
-                                    viewModel?.onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
+                                    onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
                                 },
                     )
                 } else {
@@ -259,7 +281,7 @@ private fun Filters(
                                 .testTag("robert_toggle_off_${filters[index].id}")
                                 .clickable {
                                     isEnabled = !isEnabled
-                                    viewModel?.onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
+                                    onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
                                 },
                     )
                 }
@@ -269,7 +291,7 @@ private fun Filters(
 }
 
 @Composable
-private fun ManageCustomRule(viewModel: RobertViewModel? = null) {
+private fun ManageCustomRule(onManageRulesClick: () -> Unit = {}) {
     Row(
         modifier =
             Modifier
@@ -277,7 +299,7 @@ private fun ManageCustomRule(viewModel: RobertViewModel? = null) {
                     color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                     shape = RoundedCornerShape(size = 12.dp),
                 ).hapticClickable {
-                    viewModel?.onManageRulesClick()
+                    onManageRulesClick()
                 }.padding(vertical = 14.dp, horizontal = 14.dp),
     ) {
         Spacer(modifier = Modifier.weight(1f))
@@ -293,50 +315,44 @@ private fun ManageCustomRule(viewModel: RobertViewModel? = null) {
     }
 }
 
-@Composable
-private fun RobertScreenPreview(robertFilterState: RobertFilterState) {
-    PreviewWithNav {
-        val viewModel =
-            object : RobertViewModel() {
-                override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
-                override val robertFilterState: StateFlow<RobertFilterState> =
-                    MutableStateFlow(robertFilterState)
-                override val goToState: SharedFlow<RobertGoToState> =
-                    MutableStateFlow(RobertGoToState.None)
-            }
-        RobertScreen(viewModel)
-    }
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun RobertScreenLoading() {
-    RobertScreenPreview(RobertFilterState.Loading)
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun RobertScreenError() {
-    RobertScreenPreview(RobertFilterState.Failure("Failed to load to Robert settings. Check your network connection."))
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun RobertScreenSuccess() {
-    val list =
-        listOf(
-            RobertFilter(
-                title = "Malware",
-                description = "Blocks all kinds of malware.",
-                id = "malware",
-                status = 1,
-            ),
-            RobertFilter(
-                title = "Social",
-                description = "Blocks facebook.",
-                id = "social",
-                status = 0,
+/**
+ * Feeds representative [RobertFilterState] values into the preview. The renderer draws
+ * [RobertContent] once per value, so the preview pane shows the loading, error and success states.
+ */
+private class RobertStateProvider : PreviewParameterProvider<RobertFilterState> {
+    override val values =
+        sequenceOf(
+            RobertFilterState.Loading,
+            RobertFilterState.Failure("Failed to load to Robert settings. Check your network connection."),
+            RobertFilterState.Success(
+                listOf(
+                    RobertFilter(
+                        title = "Malware",
+                        description = "Blocks all kinds of malware.",
+                        id = "malware",
+                        status = 1,
+                    ),
+                    RobertFilter(
+                        title = "Social",
+                        description = "Blocks facebook.",
+                        id = "social",
+                        status = 0,
+                    ),
+                ),
             ),
         )
-    RobertScreenPreview(RobertFilterState.Success(list))
+}
+
+@Composable
+@MultiDevicePreview
+private fun RobertContentPreview(
+    @PreviewParameter(RobertStateProvider::class) state: RobertFilterState,
+) {
+    PreviewWithNav {
+        RobertContent(
+            state = state,
+            showProgress = false,
+            actions = RobertActions(),
+        )
+    }
 }

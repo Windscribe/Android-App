@@ -157,9 +157,9 @@ fun AllServerList(
 }
 
 @Composable
-fun UpgradeBar(viewModel: HomeViewmodel?) {
+fun UpgradeBar(viewModel: HomeViewmodel) {
     val activity = LocalActivity.current as AppStartActivity
-    val userState by viewModel?.userState?.collectAsState() ?: return
+    val userState by viewModel.userState.collectAsState()
     val hapticFeedbackEnabled by viewModel.hapticFeedbackEnabled.collectAsState()
     val haptic = LocalHapticFeedback.current
     if (userState is UserState.Free) {

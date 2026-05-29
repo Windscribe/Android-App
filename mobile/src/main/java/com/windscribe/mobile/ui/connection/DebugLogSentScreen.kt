@@ -32,10 +32,38 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
+/**
+ * Stateful entry point. The [AppStartActivityViewModel] is activity-scoped (it carries the
+ * connection callbacks set by the hosting activity), so it is passed in rather than resolved
+ * via `hiltViewModel()`. Side effects are wired here and rendering is delegated to
+ * [DebugLogSentContent].
+ */
 @Composable
-fun DebugLogSentScreen(appStartActivityViewModel: AppStartActivityViewModel? = null) {
+fun DebugLogSentScreen(appStartActivityViewModel: AppStartActivityViewModel) {
     val navController = LocalNavController.current
     val context = LocalContext.current
+    DebugLogSentContent(
+        onContactSupportClick = {
+            context.openUrl(NetworkKeyConstants.URL_HELP_ME)
+            appStartActivityViewModel.autoConnectionModeCallback?.onContactSupportClick()
+            navController.popBackStack()
+        },
+        onCancelClick = {
+            appStartActivityViewModel.autoConnectionModeCallback?.onCancel()
+            navController.popBackStack()
+        },
+    )
+}
+
+/**
+ * Stateless UI. Everything it needs is passed in, so it renders identically in the app and in
+ * `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun DebugLogSentContent(
+    onContactSupportClick: () -> Unit,
+    onCancelClick: () -> Unit,
+) {
     Box(
         modifier =
             Modifier
@@ -74,14 +102,9 @@ fun DebugLogSentScreen(appStartActivityViewModel: AppStartActivityViewModel? = n
             )
             Spacer(modifier = Modifier.padding(top = 24.dp))
             NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.contact_support), true) {
-                context.openUrl(NetworkKeyConstants.URL_HELP_ME)
-                appStartActivityViewModel?.autoConnectionModeCallback?.onContactSupportClick()
-                navController.popBackStack()
+                onContactSupportClick()
             }
-            TextButton(onClick = {
-                appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
-                navController.popBackStack()
-            }) {
+            TextButton(onClick = onCancelClick) {
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
@@ -96,6 +119,9 @@ fun DebugLogSentScreen(appStartActivityViewModel: AppStartActivityViewModel? = n
 @Composable
 fun DebugLogSentScreenPreview() {
     PreviewWithNav {
-        DebugLogSentScreen()
+        DebugLogSentContent(
+            onContactSupportClick = {},
+            onCancelClick = {},
+        )
     }
 }

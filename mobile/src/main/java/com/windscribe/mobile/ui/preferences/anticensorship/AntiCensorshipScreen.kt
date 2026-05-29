@@ -18,12 +18,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -36,29 +37,80 @@ import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
-@Composable
-fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel? = null) {
-    val navController = LocalNavController.current
-    val protocolTweaksModes by viewModel?.protocolTweaksModes?.collectAsState()
-        ?: remember { mutableStateOf(emptyList()) }
-    val selectedProtocolTweaksMode by viewModel?.selectedProtocolTweaksMode?.collectAsState()
-        ?: remember { mutableStateOf("auto") }
-    val serverRoutingModes by viewModel?.serverRoutingModes?.collectAsState()
-        ?: remember { mutableStateOf(emptyList()) }
-    val selectedServerRouting by viewModel?.selectedServerRouting?.collectAsState()
-        ?: remember { mutableStateOf("Auto") }
-    val amneziaPresets by viewModel?.amneziaPresets?.collectAsState()
-        ?: remember { mutableStateOf(emptyList()) }
-    val selectedPreset by viewModel?.selectedPreset?.collectAsState()
-        ?: remember { mutableStateOf("") }
-    val extraTlsPaddingEnabled by viewModel?.extraTlsPaddingEnabled?.collectAsState()
-        ?: remember { mutableStateOf(true) }
+/**
+ * Snapshot of the anti-censorship UI state. Hoisted so the stateless [AntiCensorshipContent]
+ * never touches [AntiCensorshipViewModel] — previews feed it directly.
+ */
+data class AntiCensorshipState(
+    val protocolTweaksModes: List<DropDownStringItem> = emptyList(),
+    val selectedProtocolTweaksMode: String = "auto",
+    val serverRoutingModes: List<DropDownStringItem> = emptyList(),
+    val selectedServerRouting: String = "Auto",
+    val amneziaPresets: List<DropDownStringItem> = emptyList(),
+    val selectedPreset: String = "",
+    val extraTlsPaddingEnabled: Boolean = true,
+)
 
-    val scrollState = rememberScrollState()
+/**
+ * Callbacks the anti-censorship UI can raise.
+ */
+class AntiCensorshipActions(
+    val onProtocolTweaksModeSelected: (String) -> Unit = {},
+    val onAmneziaPresetSelected: (String) -> Unit = {},
+    val onServerRoutingSelected: (String) -> Unit = {},
+    val onExtraTlsPaddingToggled: () -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [AntiCensorshipViewModel], collects its flows and wires up
+ * side effects, then delegates rendering to [AntiCensorshipContent].
+ */
+@Composable
+fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel = hiltViewModel<AntiCensorshipViewModelImpl>()) {
+    val protocolTweaksModes by viewModel.protocolTweaksModes.collectAsState()
+    val selectedProtocolTweaksMode by viewModel.selectedProtocolTweaksMode.collectAsState()
+    val serverRoutingModes by viewModel.serverRoutingModes.collectAsState()
+    val selectedServerRouting by viewModel.selectedServerRouting.collectAsState()
+    val amneziaPresets by viewModel.amneziaPresets.collectAsState()
+    val selectedPreset by viewModel.selectedPreset.collectAsState()
+    val extraTlsPaddingEnabled by viewModel.extraTlsPaddingEnabled.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel?.refreshPreferences()
+        viewModel.refreshPreferences()
     }
+
+    AntiCensorshipContent(
+        state =
+            AntiCensorshipState(
+                protocolTweaksModes = protocolTweaksModes,
+                selectedProtocolTweaksMode = selectedProtocolTweaksMode,
+                serverRoutingModes = serverRoutingModes,
+                selectedServerRouting = selectedServerRouting,
+                amneziaPresets = amneziaPresets,
+                selectedPreset = selectedPreset,
+                extraTlsPaddingEnabled = extraTlsPaddingEnabled,
+            ),
+        actions =
+            AntiCensorshipActions(
+                onProtocolTweaksModeSelected = viewModel::onProtocolTweaksModeSelected,
+                onAmneziaPresetSelected = viewModel::onAmneziaPresetSelected,
+                onServerRoutingSelected = viewModel::onServerRoutingSelected,
+                onExtraTlsPaddingToggled = viewModel::onExtraTlsPaddingToggled,
+            ),
+    )
+}
+
+/**
+ * Stateless anti-censorship UI. Everything it needs is passed in, so it renders identically in
+ * the app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun AntiCensorshipContent(
+    state: AntiCensorshipState,
+    actions: AntiCensorshipActions,
+) {
+    val navController = LocalNavController.current
+    val scrollState = rememberScrollState()
 
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
@@ -77,28 +129,29 @@ fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel? = null) {
             ) {
                 // Protocol Tweaks Section
                 ProtocolTweaksSection(
-                    protocolTweaksModes,
-                    selectedProtocolTweaksMode,
-                    amneziaPresets,
-                    selectedPreset,
-                    viewModel,
+                    state.protocolTweaksModes,
+                    state.selectedProtocolTweaksMode,
+                    state.amneziaPresets,
+                    state.selectedPreset,
+                    actions.onProtocolTweaksModeSelected,
+                    actions.onAmneziaPresetSelected,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Server Routing Section
                 ServerRoutingSection(
-                    serverRoutingModes,
-                    selectedServerRouting,
-                    viewModel,
+                    state.serverRoutingModes,
+                    state.selectedServerRouting,
+                    actions.onServerRoutingSelected,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Extra TLS Padding Section
                 ExtraTlsPaddingSection(
-                    extraTlsPaddingEnabled,
-                    viewModel,
+                    state.extraTlsPaddingEnabled,
+                    actions.onExtraTlsPaddingToggled,
                 )
             }
         }
@@ -131,7 +184,8 @@ private fun ProtocolTweaksSection(
     selectedMode: String,
     presets: List<DropDownStringItem>,
     selectedPreset: String,
-    viewModel: AntiCensorshipViewModel?,
+    onProtocolTweaksModeSelected: (String) -> Unit,
+    onAmneziaPresetSelected: (String) -> Unit,
 ) {
     val isEnabledMode = selectedMode == "manual"
 
@@ -150,7 +204,7 @@ private fun ProtocolTweaksSection(
                     RoundedCornerShape(12.dp)
                 },
         ) {
-            viewModel?.onProtocolTweaksModeSelected(it.key)
+            onProtocolTweaksModeSelected(it.key)
         }
 
         // Amnezia Preset Dropdown (only shown when Enabled mode is selected)
@@ -163,7 +217,7 @@ private fun ProtocolTweaksSection(
                 textAlign = TextAlign.Start,
                 shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
             ) {
-                viewModel?.onAmneziaPresetSelected(it.key)
+                onAmneziaPresetSelected(it.key)
             }
         }
     }
@@ -172,7 +226,7 @@ private fun ProtocolTweaksSection(
 @Composable
 private fun ExtraTlsPaddingSection(
     enabled: Boolean,
-    viewModel: AntiCensorshipViewModel?,
+    onExtraTlsPaddingToggled: () -> Unit,
 ) {
     SwitchItemView(
         title = com.windscribe.vpn.R.string.extra_tls_padding,
@@ -180,7 +234,7 @@ private fun ExtraTlsPaddingSection(
         description = com.windscribe.vpn.R.string.extra_tls_padding_description,
         enabled,
         shape = RoundedCornerShape(12.dp),
-        onSelect = { viewModel?.onExtraTlsPaddingToggled() },
+        onSelect = { onExtraTlsPaddingToggled() },
     )
 }
 
@@ -188,7 +242,7 @@ private fun ExtraTlsPaddingSection(
 private fun ServerRoutingSection(
     modes: List<DropDownStringItem>,
     selectedMode: String,
-    viewModel: AntiCensorshipViewModel?,
+    onServerRoutingSelected: (String) -> Unit,
 ) {
     if (modes.isNotEmpty()) {
         CustomDropDown(
@@ -199,15 +253,46 @@ private fun ServerRoutingSection(
             textAlign = TextAlign.Start,
             shape = RoundedCornerShape(12.dp),
         ) {
-            viewModel?.onServerRoutingSelected(it.key)
+            onServerRoutingSelected(it.key)
         }
     }
 }
 
+/**
+ * Feeds a representative [AntiCensorshipState] into the preview.
+ */
+private class AntiCensorshipStateProvider : PreviewParameterProvider<AntiCensorshipState> {
+    override val values =
+        sequenceOf(
+            AntiCensorshipState(
+                protocolTweaksModes =
+                    listOf(
+                        DropDownStringItem("auto", "Auto"),
+                        DropDownStringItem("manual", "Enabled"),
+                        DropDownStringItem("disabled", "Disabled"),
+                    ),
+                selectedProtocolTweaksMode = "auto",
+                serverRoutingModes =
+                    listOf(
+                        DropDownStringItem("auto", "Auto"),
+                        DropDownStringItem("regular", "Regular"),
+                        DropDownStringItem("alternate", "Alternate"),
+                    ),
+                selectedServerRouting = "auto",
+                extraTlsPaddingEnabled = true,
+            ),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun AntiCensorshipScreenPreview() {
+private fun AntiCensorshipContentPreview(
+    @PreviewParameter(AntiCensorshipStateProvider::class) state: AntiCensorshipState,
+) {
     PreviewWithNav {
-        AntiCensorshipScreen()
+        AntiCensorshipContent(
+            state = state,
+            actions = AntiCensorshipActions(),
+        )
     }
 }

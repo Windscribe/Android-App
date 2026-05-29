@@ -23,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +30,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -41,12 +42,50 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
+/**
+ * Callbacks the advance-parameters UI can raise. Hoisted out of the composables so the stateless
+ * [AdvanceContent] never needs to know about [AdvanceViewModel] — previews supply no-op lambdas.
+ */
+class AdvanceActions(
+    val onParamsChange: (String) -> Unit = {},
+    val onSaveClick: (String) -> Unit = {},
+    val onClearClick: () -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [AdvanceViewModel], collects its flows and wires the toast
+ * side effect, then delegates rendering to [AdvanceContent].
+ */
+@Composable
+fun AdvanceScreen(viewModel: AdvanceViewModel = hiltViewModel<AdvanceViewModelImpl>()) {
+    val params by viewModel.parameters.collectAsState()
+    AdvanceContent(
+        params = params,
+        toastMessage = viewModel.toastMessage,
+        actions =
+            AdvanceActions(
+                onParamsChange = viewModel::updateParams,
+                onSaveClick = viewModel::saveAdvanceParams,
+                onClearClick = viewModel::clearAdvanceParams,
+            ),
+    )
+}
+
+/**
+ * Stateless advance-parameters UI. Everything it needs is passed in, so it renders identically
+ * in the app and in `@Preview`. This is the composable previews target.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
+fun AdvanceContent(
+    params: String,
+    toastMessage: Flow<String>,
+    actions: AdvanceActions,
+) {
     val navController = LocalNavController.current
-    val params by viewModel?.parameters?.collectAsState() ?: remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     PreferenceBackground {
         Column(
@@ -73,7 +112,7 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
                     OutlinedTextField(
                         value = params,
                         onValueChange = {
-                            viewModel?.updateParams(it)
+                            actions.onParamsChange(it)
                         },
                         modifier =
                             Modifier
@@ -135,13 +174,13 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
                             enabled = true,
                             onClick = {
                                 focusManager.clearFocus()
-                                viewModel?.saveAdvanceParams(params)
+                                actions.onSaveClick(params)
                             },
                         )
                         TextButton(
                             onClick = {
                                 focusManager.clearFocus()
-                                viewModel?.clearAdvanceParams()
+                                actions.onClearClick()
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -154,27 +193,40 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
                 }
             }
         }
-        HandleToast(viewModel)
+        HandleToast(toastMessage)
     }
 }
 
 @Composable
-private fun HandleToast(viewModel: AdvanceViewModel?) {
+private fun HandleToast(toastMessage: Flow<String>) {
     val context = LocalContext.current
-    val toastMessage by viewModel?.toastMessage?.collectAsState(initial = "")
-        ?: remember { mutableStateOf("") }
-    LaunchedEffect(toastMessage) {
-        if (toastMessage.isBlank()) {
+    val message by toastMessage.collectAsState(initial = "")
+    LaunchedEffect(message) {
+        if (message.isBlank()) {
             return@LaunchedEffect
         }
-        Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
+}
+
+/**
+ * Feeds representative parameter text into the preview so the renderer draws [AdvanceContent]
+ * without a VM.
+ */
+private class AdvanceStateProvider : PreviewParameterProvider<String> {
+    override val values = sequenceOf("", "key=value")
 }
 
 @Composable
 @MultiDevicePreview
-private fun AdvanceScreenPreview() {
+private fun AdvanceContentPreview(
+    @PreviewParameter(AdvanceStateProvider::class) params: String,
+) {
     PreviewWithNav {
-        AdvanceScreen()
+        AdvanceContent(
+            params = params,
+            toastMessage = emptyFlow(),
+            actions = AdvanceActions(),
+        )
     }
 }

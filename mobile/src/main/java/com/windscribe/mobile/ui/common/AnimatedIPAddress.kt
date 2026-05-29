@@ -39,6 +39,27 @@ fun AnimatedIPAddress(
     val shouldAnimate by connectionViewmodel.shouldAnimateIp.collectAsState()
     val isRotatingIp by bridgeApiViewModel.isRotatingIp.collectAsState()
 
+    AnimatedIPAddressContent(
+        ipAddress = ipAddress,
+        shouldAnimate = shouldAnimate,
+        isRotatingIp = isRotatingIp,
+        onIpAnimationComplete = { connectionViewmodel.onIpAnimationComplete() },
+        modifier = modifier,
+        style = style,
+        color = color,
+    )
+}
+
+@Composable
+fun AnimatedIPAddressContent(
+    ipAddress: String,
+    shouldAnimate: Boolean,
+    isRotatingIp: Boolean,
+    onIpAnimationComplete: () -> Unit,
+    modifier: Modifier = Modifier,
+    style: TextStyle = TextStyle(fontSize = 20.sp),
+    color: Color = Color.Black,
+) {
     val animationTrigger = remember { mutableIntStateOf(0) }
 
     LaunchedEffect(shouldAnimate) {
@@ -74,7 +95,7 @@ fun AnimatedIPAddress(
                                 isRotating = isRotatingIp,
                                 onAnimationComplete =
                                     if (isLastDigit && !isRotatingIp) {
-                                        { connectionViewmodel.onIpAnimationComplete() }
+                                        { onIpAnimationComplete() }
                                     } else {
                                         null
                                     },

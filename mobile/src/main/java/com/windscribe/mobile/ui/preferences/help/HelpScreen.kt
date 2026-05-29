@@ -23,8 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +30,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.openUrl
@@ -50,10 +51,24 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
 @Composable
-fun HelpScreen(viewModel: HelpViewModel? = null) {
+fun HelpScreen(viewModel: HelpViewModel = hiltViewModel<HelpViewModelImpl>()) {
+    val isUserPro by viewModel.isUserPro.collectAsState()
+    val sendLogState by viewModel.sendLogState.collectAsState()
+    HelpContent(
+        isUserPro = isUserPro,
+        sendLogState = sendLogState,
+        onSendLogClicked = viewModel::sendLogClicked,
+    )
+}
+
+@Composable
+fun HelpContent(
+    isUserPro: Boolean,
+    sendLogState: SendLogState,
+    onSendLogClicked: () -> Unit = {},
+) {
     val navController = LocalNavController.current
     val scrollState = rememberScrollState()
-    val isUserPro by viewModel?.isUserPro?.collectAsState() ?: remember { mutableStateOf(false) }
     PreferenceBackground {
         Column(
             modifier =
@@ -101,7 +116,10 @@ fun HelpScreen(viewModel: HelpViewModel? = null) {
             Spacer(modifier = Modifier.height(16.dp))
             DebugView()
             Spacer(modifier = Modifier.height(16.dp))
-            DebugSend(viewModel)
+            DebugSend(
+                state = sendLogState,
+                onSendLogClicked = onSendLogClicked,
+            )
         }
     }
 }
@@ -273,9 +291,10 @@ private fun DebugView() {
 }
 
 @Composable
-private fun DebugSend(viewModel: HelpViewModel? = null) {
-    val state by viewModel?.sendLogState?.collectAsState()
-        ?: remember { mutableStateOf(SendLogState.Failure) }
+private fun DebugSend(
+    state: SendLogState,
+    onSendLogClicked: () -> Unit = {},
+) {
     val text =
         if (state is SendLogState.Success) {
             stringResource(R.string.sent_thanks)
@@ -295,7 +314,7 @@ private fun DebugSend(viewModel: HelpViewModel? = null) {
                     shape = RoundedCornerShape(size = 12.dp),
                 ).hapticClickable {
                     if (state is SendLogState.Idle) {
-                        viewModel?.sendLogClicked()
+                        onSendLogClicked()
                     }
                 }.padding(vertical = 14.dp, horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -411,10 +430,24 @@ private fun HelpItem(
     }
 }
 
+private class HelpStateProvider : PreviewParameterProvider<Pair<Boolean, SendLogState>> {
+    override val values =
+        sequenceOf(
+            false to SendLogState.Idle,
+            true to SendLogState.Loading,
+            true to SendLogState.Success,
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun HelpScreenPreview() {
+private fun HelpContentPreview(
+    @PreviewParameter(HelpStateProvider::class) state: Pair<Boolean, SendLogState>,
+) {
     PreviewWithNav {
-        HelpScreen()
+        HelpContent(
+            isUserPro = state.first,
+            sendLogState = state.second,
+        )
     }
 }

@@ -3,6 +3,7 @@ package com.windscribe.mobile.ui.popup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,10 +28,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivityViewModel
-import com.windscribe.mobile.ui.DialogCallback
 import com.windscribe.mobile.ui.DialogData
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.theme
@@ -38,9 +40,32 @@ import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font22
 
+/**
+ * Stateful entry point. The [AppStartActivityViewModel] is activity-scoped (it carries the dialog
+ * data and callback set by the hosting activity), so it is passed in rather than resolved via
+ * `hiltViewModel()`. The dialog data is read here and rendering is delegated to
+ * [OverlayDialogContent].
+ */
 @Composable
-fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = null) {
-    val dialogData = appStartActivityViewModel?.dialogData
+fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel) {
+    val dialogData = appStartActivityViewModel.dialogData
+    OverlayDialogContent(
+        dialogData = dialogData,
+        onConfirm = { appStartActivityViewModel.dialogCallback?.onConfirm() },
+        onDismiss = { appStartActivityViewModel.dialogCallback?.onDismiss() },
+    )
+}
+
+/**
+ * Stateless UI. Everything it needs is passed in, so it renders identically in the app and in
+ * `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun OverlayDialogContent(
+    dialogData: DialogData?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
     val isIconAtBottom = dialogData?.iconAtBottom == true
     val dialogIcon = dialogData?.icon ?: R.drawable.ic_warning_icon
 
@@ -62,16 +87,16 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
                     .align(Alignment.TopEnd)
                     .padding(32.dp)
                     .size(24.dp)
-                    .clickable { appStartActivityViewModel?.dialogCallback?.onDismiss() },
+                    .clickable { onDismiss() },
         )
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement =
                 if (isIconAtBottom) {
-                    androidx.compose.foundation.layout.Arrangement.Top
+                    Arrangement.Top
                 } else {
-                    androidx.compose.foundation.layout.Arrangement.Center
+                    Arrangement.Center
                 },
             modifier =
                 Modifier
@@ -146,14 +171,14 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
 
             NextButton(
                 modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth(),
-                text = appStartActivityViewModel?.dialogData?.okLabel ?: "",
+                text = dialogData?.okLabel ?: "",
                 enabled = true,
-                onClick = { appStartActivityViewModel?.dialogCallback?.onConfirm() },
+                onClick = onConfirm,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = { appStartActivityViewModel?.dialogCallback?.onDismiss() }) {
+            TextButton(onClick = onDismiss) {
                 Text(
                     text = stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
@@ -168,263 +193,81 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
     }
 }
 
+private class IconTopDialogProvider : PreviewParameterProvider<DialogData> {
+    override val values =
+        sequenceOf(
+            DialogData(
+                icon = R.drawable.ic_attention_icon,
+                title = "Missing Location Permission",
+                description =
+                    "Location permission is required to use this feature. " +
+                        "Go to App Settings > Permissions > Location and select \"Allow all the time\".",
+                okLabel = "Open Settings",
+                iconAtBottom = false,
+            ),
+        )
+}
+
+private class IconBottomDialogProvider : PreviewParameterProvider<DialogData> {
+    override val values =
+        sequenceOf(
+            DialogData(
+                icon = R.drawable.location_instruction_icon,
+                title = "Location Permission Disclosure",
+                description =
+                    "Before granting background location permission, please understand:\n\n" +
+                        "What we use it for:\n" +
+                        "• Access WiFi network names while app runs in background\n" +
+                        "• Enable Network Whitelist feature\n" +
+                        "• GPS spoofing functionality\n\n" +
+                        "What we DON'T do:\n" +
+                        "• Track your physical location\n" +
+                        "• Collect GPS coordinates\n" +
+                        "• Share data with third parties\n" +
+                        "• Send data off your device\n\n" +
+                        "Your location data stays on your device and is used solely for the features above.",
+                okLabel = "Grant Permission",
+                iconAtBottom = true,
+            ),
+        )
+}
+
 @Preview(name = "Icon at Top (Missing Permission)", showBackground = true, showSystemUi = true)
 @Composable
-fun OverlayDialogIconTopPreview() {
-    val mockViewModel =
-        object : AppStartActivityViewModel() {
-            override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
-            override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
-
-            override fun acknowledgeEncryptionWarning() {}
-
-            override fun enableDecoyTraffic() {}
-
-            override fun enableGpsSpoofing() {}
-
-            override fun setConnectionCallback(
-                protocolInformationList: List<com.windscribe.vpn.autoconnection.ProtocolInformation>,
-                autoConnectionModeCallback: com.windscribe.vpn.autoconnection.AutoConnectionModeCallback,
-                protocolInformation: com.windscribe.vpn.autoconnection.ProtocolInformation?,
-            ) {}
-
-            override fun setDialogCallback(
-                data: DialogData,
-                dialogCallback: DialogCallback,
-            ) {}
-        }.apply {
-            dialogData =
-                DialogData(
-                    icon = R.drawable.ic_attention_icon,
-                    title = "Missing Location Permission",
-                    description =
-                        "Location permission is required to use this feature. " +
-                            "Go to App Settings > Permissions > Location and select \"Allow all the time\".",
-                    okLabel = "Open Settings",
-                    iconAtBottom = false,
-                )
-            dialogCallback =
-                object : DialogCallback() {
-                    override fun onDismiss() {}
-
-                    override fun onConfirm() {}
-                }
-        }
-    OverlayDialogScreen(mockViewModel)
+fun OverlayDialogIconTopPreview(
+    @PreviewParameter(IconTopDialogProvider::class) dialogData: DialogData,
+) {
+    OverlayDialogContent(dialogData = dialogData, onConfirm = {}, onDismiss = {})
 }
 
 @Preview(name = "Icon at Bottom - Phone", showBackground = true, showSystemUi = true, device = "spec:width=411dp,height=891dp")
 @Composable
-fun OverlayDialogIconBottomPhonePreview() {
-    val mockViewModel =
-        object : AppStartActivityViewModel() {
-            override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
-            override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
-
-            override fun acknowledgeEncryptionWarning() {}
-
-            override fun enableDecoyTraffic() {}
-
-            override fun enableGpsSpoofing() {}
-
-            override fun setConnectionCallback(
-                protocolInformationList: List<com.windscribe.vpn.autoconnection.ProtocolInformation>,
-                autoConnectionModeCallback: com.windscribe.vpn.autoconnection.AutoConnectionModeCallback,
-                protocolInformation: com.windscribe.vpn.autoconnection.ProtocolInformation?,
-            ) {}
-
-            override fun setDialogCallback(
-                data: DialogData,
-                dialogCallback: DialogCallback,
-            ) {}
-        }.apply {
-            dialogData =
-                DialogData(
-                    icon = R.drawable.location_instruction_icon,
-                    title = "Location Permission Disclosure",
-                    description =
-                        "Before granting background location permission, please understand:\n\n" +
-                            "What we use it for:\n" +
-                            "• Access WiFi network names while app runs in background\n" +
-                            "• Enable Network Whitelist feature\n" +
-                            "• GPS spoofing functionality\n\n" +
-                            "What we DON'T do:\n" +
-                            "• Track your physical location\n" +
-                            "• Collect GPS coordinates\n" +
-                            "• Share data with third parties\n" +
-                            "• Send data off your device\n\n" +
-                            "Your location data stays on your device and is used solely for the features above.",
-                    okLabel = "Grant Permission",
-                    iconAtBottom = true,
-                )
-            dialogCallback =
-                object : DialogCallback() {
-                    override fun onDismiss() {}
-
-                    override fun onConfirm() {}
-                }
-        }
-    OverlayDialogScreen(mockViewModel)
+fun OverlayDialogIconBottomPhonePreview(
+    @PreviewParameter(IconBottomDialogProvider::class) dialogData: DialogData,
+) {
+    OverlayDialogContent(dialogData = dialogData, onConfirm = {}, onDismiss = {})
 }
 
 @Preview(name = "Icon at Bottom - Small Phone", showBackground = true, showSystemUi = true, device = "spec:width=360dp,height=640dp")
 @Composable
-fun OverlayDialogIconBottomSmallPhonePreview() {
-    val mockViewModel =
-        object : AppStartActivityViewModel() {
-            override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
-            override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
-
-            override fun acknowledgeEncryptionWarning() {}
-
-            override fun enableDecoyTraffic() {}
-
-            override fun enableGpsSpoofing() {}
-
-            override fun setConnectionCallback(
-                protocolInformationList: List<com.windscribe.vpn.autoconnection.ProtocolInformation>,
-                autoConnectionModeCallback: com.windscribe.vpn.autoconnection.AutoConnectionModeCallback,
-                protocolInformation: com.windscribe.vpn.autoconnection.ProtocolInformation?,
-            ) {}
-
-            override fun setDialogCallback(
-                data: DialogData,
-                dialogCallback: DialogCallback,
-            ) {}
-        }.apply {
-            dialogData =
-                DialogData(
-                    icon = R.drawable.location_instruction_icon,
-                    title = "Location Permission Disclosure",
-                    description =
-                        "Before granting background location permission, please understand:\n\n" +
-                            "What we use it for:\n" +
-                            "• Access WiFi network names while app runs in background\n" +
-                            "• Enable Network Whitelist feature\n" +
-                            "• GPS spoofing functionality\n\n" +
-                            "What we DON'T do:\n" +
-                            "• Track your physical location\n" +
-                            "• Collect GPS coordinates\n" +
-                            "• Share data with third parties\n" +
-                            "• Send data off your device\n\n" +
-                            "Your location data stays on your device and is used solely for the features above.",
-                    okLabel = "Grant Permission",
-                    iconAtBottom = true,
-                )
-            dialogCallback =
-                object : DialogCallback() {
-                    override fun onDismiss() {}
-
-                    override fun onConfirm() {}
-                }
-        }
-    OverlayDialogScreen(mockViewModel)
+fun OverlayDialogIconBottomSmallPhonePreview(
+    @PreviewParameter(IconBottomDialogProvider::class) dialogData: DialogData,
+) {
+    OverlayDialogContent(dialogData = dialogData, onConfirm = {}, onDismiss = {})
 }
 
 @Preview(name = "Icon at Bottom - Large Phone", showBackground = true, showSystemUi = true, device = "spec:width=412dp,height=915dp")
 @Composable
-fun OverlayDialogIconBottomLargePhonePreview() {
-    val mockViewModel =
-        object : AppStartActivityViewModel() {
-            override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
-            override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
-
-            override fun acknowledgeEncryptionWarning() {}
-
-            override fun enableDecoyTraffic() {}
-
-            override fun enableGpsSpoofing() {}
-
-            override fun setConnectionCallback(
-                protocolInformationList: List<com.windscribe.vpn.autoconnection.ProtocolInformation>,
-                autoConnectionModeCallback: com.windscribe.vpn.autoconnection.AutoConnectionModeCallback,
-                protocolInformation: com.windscribe.vpn.autoconnection.ProtocolInformation?,
-            ) {}
-
-            override fun setDialogCallback(
-                data: DialogData,
-                dialogCallback: DialogCallback,
-            ) {}
-        }.apply {
-            dialogData =
-                DialogData(
-                    icon = R.drawable.location_instruction_icon,
-                    title = "Location Permission Disclosure",
-                    description =
-                        "Before granting background location permission, please understand:\n\n" +
-                            "What we use it for:\n" +
-                            "• Access WiFi network names while app runs in background\n" +
-                            "• Enable Network Whitelist feature\n" +
-                            "• GPS spoofing functionality\n\n" +
-                            "What we DON'T do:\n" +
-                            "• Track your physical location\n" +
-                            "• Collect GPS coordinates\n" +
-                            "• Share data with third parties\n" +
-                            "• Send data off your device\n\n" +
-                            "Your location data stays on your device and is used solely for the features above.",
-                    okLabel = "Grant Permission",
-                    iconAtBottom = true,
-                )
-            dialogCallback =
-                object : DialogCallback() {
-                    override fun onDismiss() {}
-
-                    override fun onConfirm() {}
-                }
-        }
-    OverlayDialogScreen(mockViewModel)
+fun OverlayDialogIconBottomLargePhonePreview(
+    @PreviewParameter(IconBottomDialogProvider::class) dialogData: DialogData,
+) {
+    OverlayDialogContent(dialogData = dialogData, onConfirm = {}, onDismiss = {})
 }
 
 @Preview(name = "Icon at Bottom - Tablet", showBackground = true, showSystemUi = true, device = "spec:width=800dp,height=1280dp,dpi=240")
 @Composable
-fun OverlayDialogIconBottomTabletPreview() {
-    val mockViewModel =
-        object : AppStartActivityViewModel() {
-            override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
-            override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
-
-            override fun acknowledgeEncryptionWarning() {}
-
-            override fun enableDecoyTraffic() {}
-
-            override fun enableGpsSpoofing() {}
-
-            override fun setConnectionCallback(
-                protocolInformationList: List<com.windscribe.vpn.autoconnection.ProtocolInformation>,
-                autoConnectionModeCallback: com.windscribe.vpn.autoconnection.AutoConnectionModeCallback,
-                protocolInformation: com.windscribe.vpn.autoconnection.ProtocolInformation?,
-            ) {}
-
-            override fun setDialogCallback(
-                data: DialogData,
-                dialogCallback: DialogCallback,
-            ) {}
-        }.apply {
-            dialogData =
-                DialogData(
-                    icon = R.drawable.location_instruction_icon,
-                    title = "Location Permission Disclosure",
-                    description =
-                        "Before granting background location permission, please understand:\n\n" +
-                            "What we use it for:\n" +
-                            "• Access WiFi network names while app runs in background\n" +
-                            "• Enable Network Whitelist feature\n" +
-                            "• GPS spoofing functionality\n\n" +
-                            "What we DON'T do:\n" +
-                            "• Track your physical location\n" +
-                            "• Collect GPS coordinates\n" +
-                            "• Share data with third parties\n" +
-                            "• Send data off your device\n\n" +
-                            "Your location data stays on your device and is used solely for the features above.",
-                    okLabel = "Grant Permission",
-                    iconAtBottom = true,
-                )
-            dialogCallback =
-                object : DialogCallback() {
-                    override fun onDismiss() {}
-
-                    override fun onConfirm() {}
-                }
-        }
-    OverlayDialogScreen(mockViewModel)
+fun OverlayDialogIconBottomTabletPreview(
+    @PreviewParameter(IconBottomDialogProvider::class) dialogData: DialogData,
+) {
+    OverlayDialogContent(dialogData = dialogData, onConfirm = {}, onDismiss = {})
 }

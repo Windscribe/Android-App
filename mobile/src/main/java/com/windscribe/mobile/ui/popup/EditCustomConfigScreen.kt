@@ -49,6 +49,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -57,21 +58,72 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 
+/** State the edit-custom-config UI renders. */
+data class EditCustomConfigState(
+    val name: String = "",
+    val username: String = "",
+    val password: String = "",
+    val isOpenVPN: Boolean = true,
+    val isRemember: Boolean = false,
+    val connect: Boolean = true,
+)
+
+/** Callbacks the edit-custom-config UI can raise; defaults are no-ops for previews. */
+class EditCustomConfigActions(
+    val onNameChange: (String) -> Unit = {},
+    val onUsernameChange: (String) -> Unit = {},
+    val onPasswordChange: (String) -> Unit = {},
+    val onToggleIsRemember: () -> Unit = {},
+    val onSaveClick: () -> Unit = {},
+)
+
 @Composable
-fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
+fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel = hiltViewModel<EditCustomConfigViewmodelImpl>()) {
     val navController = LocalNavController.current
-    val shouldExit by viewmodel?.shouldExit?.collectAsState() ?: remember { mutableStateOf(false) }
+    val shouldExit by viewmodel.shouldExit.collectAsState()
     LaunchedEffect(shouldExit) {
         if (shouldExit) {
             navController.popBackStack()
         }
     }
-    val name by viewmodel?.name?.collectAsState() ?: remember { mutableStateOf("") }
-    val username by viewmodel?.username?.collectAsState() ?: remember { mutableStateOf("") }
-    val password by viewmodel?.password?.collectAsState() ?: remember { mutableStateOf("") }
-    val isOpenVPN by viewmodel?.isOpenVPN?.collectAsState() ?: remember { mutableStateOf(true) }
-    val isRemember by viewmodel?.isRemember?.collectAsState() ?: remember { mutableStateOf(false) }
-    val connect by viewmodel?.connect?.collectAsState() ?: remember { mutableStateOf(true) }
+    val name by viewmodel.name.collectAsState()
+    val username by viewmodel.username.collectAsState()
+    val password by viewmodel.password.collectAsState()
+    val isOpenVPN by viewmodel.isOpenVPN.collectAsState()
+    val isRemember by viewmodel.isRemember.collectAsState()
+    val connect by viewmodel.connect.collectAsState()
+    EditCustomConfigContent(
+        state =
+            EditCustomConfigState(
+                name = name,
+                username = username,
+                password = password,
+                isOpenVPN = isOpenVPN,
+                isRemember = isRemember,
+                connect = connect,
+            ),
+        actions =
+            EditCustomConfigActions(
+                onNameChange = viewmodel::onNameChange,
+                onUsernameChange = viewmodel::onUsernameChange,
+                onPasswordChange = viewmodel::onPasswordChange,
+                onToggleIsRemember = viewmodel::onToggleIsRemember,
+                onSaveClick = viewmodel::onSaveClick,
+            ),
+    )
+}
+
+@Composable
+fun EditCustomConfigContent(
+    state: EditCustomConfigState,
+    actions: EditCustomConfigActions,
+) {
+    val name = state.name
+    val username = state.username
+    val password = state.password
+    val isOpenVPN = state.isOpenVPN
+    val isRemember = state.isRemember
+    val connect = state.connect
     val tintColor =
         if (isRemember) {
             AppColors.neonGreen
@@ -118,7 +170,7 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             CustomTextField(
-                onValueChange = { viewmodel?.onNameChange(it) },
+                onValueChange = actions.onNameChange,
                 modifier = Modifier.fillMaxWidth(),
                 hint = stringResource(com.windscribe.vpn.R.string.config_title),
                 value = name,
@@ -126,14 +178,14 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
             if (isOpenVPN) {
                 Spacer(modifier = Modifier.height(16.dp))
                 CustomTextField(
-                    onValueChange = { viewmodel?.onUsernameChange(it) },
+                    onValueChange = actions.onUsernameChange,
                     modifier = Modifier.fillMaxWidth(),
                     hint = stringResource(com.windscribe.vpn.R.string.username),
                     value = username,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 CustomTextField(
-                    onValueChange = { viewmodel?.onPasswordChange(it) },
+                    onValueChange = actions.onPasswordChange,
                     modifier = Modifier.fillMaxWidth(),
                     hint = stringResource(com.windscribe.vpn.R.string.password),
                     value = password,
@@ -150,7 +202,7 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                         modifier =
                             Modifier
                                 .clickable {
-                                    viewmodel?.onToggleIsRemember()
+                                    actions.onToggleIsRemember()
                                 }.size(24.dp),
                     )
                     Spacer(modifier = Modifier.width(16.dp))
@@ -160,7 +212,7 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                 text = stringResource(if (connect) com.windscribe.vpn.R.string.connect else com.windscribe.vpn.R.string.update),
                 enabled = true,
                 onClick = {
-                    viewmodel?.onSaveClick()
+                    actions.onSaveClick()
                 },
                 modifier =
                     Modifier
@@ -265,6 +317,9 @@ private fun CustomTextField(
 @MultiDevicePreview
 fun EditCustomConfigScreenPreview() {
     PreviewWithNav {
-        EditCustomConfigScreen(viewmodel = null)
+        EditCustomConfigContent(
+            state = EditCustomConfigState(name = "My Config", isOpenVPN = true),
+            actions = EditCustomConfigActions(),
+        )
     }
 }

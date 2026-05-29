@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.preferences.lipstick
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,19 +33,29 @@ import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
+/**
+ * Callbacks the rename-locations UI can raise. Hoisted out so [RenameLocations] never needs the
+ * [LipstickViewmodel] — previews supply no-op lambdas.
+ */
+class RenameLocationsActions(
+    val onImportServerList: (Context, Uri) -> Unit = { _, _ -> },
+    val onExportServerList: (Context, Uri) -> Unit = { _, _ -> },
+    val onResetClick: () -> Unit = {},
+)
+
 @Composable
-fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
+fun RenameLocations(actions: RenameLocationsActions = RenameLocationsActions()) {
     val context = LocalContext.current
     val importPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument(),
-        ) { uri: Uri? -> uri?.let { viewmodel?.loadServerListFile(context, it) } }
+        ) { uri: Uri? -> uri?.let { actions.onImportServerList(context, it) } }
 
     val exportPickerLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
             run {
                 if (uri != null) {
-                    viewmodel?.exportServerListFile(context, uri)
+                    actions.onExportServerList(context, uri)
                 }
             }
         }
@@ -65,7 +76,7 @@ fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
             "Reset custom server list file.",
             shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
         ) {
-            viewmodel?.onResetClick()
+            actions.onResetClick()
         }
     }
 }

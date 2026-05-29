@@ -3,7 +3,6 @@ package com.windscribe.mobile.ui.preferences.email
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.AddEmailResponse
@@ -30,7 +29,6 @@ abstract class EmailViewModel : ViewModel() {
 
     abstract fun onEmailChanged(email: String)
 
-    abstract var emailAdded: Boolean
     abstract val pro: StateFlow<Boolean>
 }
 
@@ -49,7 +47,6 @@ class EmailViewModelImpl
         override var email: String = ""
         private val _exit = MutableStateFlow(false)
         override val exit: StateFlow<Boolean> = _exit
-        override var emailAdded: Boolean = false
         private val _pro = MutableStateFlow(false)
         override val pro: StateFlow<Boolean> = _pro
 

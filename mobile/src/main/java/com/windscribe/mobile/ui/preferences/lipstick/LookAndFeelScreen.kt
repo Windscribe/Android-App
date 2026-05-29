@@ -1,8 +1,8 @@
 package com.windscribe.mobile.ui.preferences.lipstick
 
 import AppTheme
+import AppThemeContent
 import PreferencesNavBar
-import android.R.attr.bitmap
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -51,10 +51,61 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 
 @Composable
-fun LookAndFeelScreen(viewmodel: LipstickViewmodel? = null) {
+fun LookAndFeelScreen(viewmodel: LipstickViewmodel = hiltViewModel<LipstickViewmodelImpl>()) {
     val navController = LocalNavController.current
     val scrollState = rememberScrollState()
-    HandleToast(viewmodel)
+    val toastMessage by viewmodel.toastMessage.collectAsState()
+    val selectedAppIcon by viewmodel.selectedAppIcon.collectAsState()
+
+    val backgroundState =
+        AppCustomBackgroundState(
+            aspectRatioItem = viewmodel.aspectRatioItem.collectAsState().value,
+            whenDisconnectedItem = viewmodel.whenDisconnectedBackgroundItem.collectAsState().value,
+            bundledDisconnectedItem = viewmodel.bundledDisconnectedBackgroundItem.collectAsState().value,
+            customDisconnectedItem = viewmodel.customDisconnectedBackgroundItem.collectAsState().value,
+            whenConnectedItem = viewmodel.whenConnectedBackgroundItem.collectAsState().value,
+            bundledConnectedItem = viewmodel.bundledConnectedBackgroundItem.collectAsState().value,
+            customConnectedItem = viewmodel.customConnectedBackgroundItem.collectAsState().value,
+        )
+    val backgroundActions =
+        AppCustomBackgroundActions(
+            onAspectRatioSelected = viewmodel::onAspectRatioItemSelected,
+            onWhenDisconnectedSelected = viewmodel::onWhenDisconnectedBackgroundItemSelected,
+            onDisconnectedBundledSelected = viewmodel::onDisconnectedBundledBackgroundItemSelected,
+            onLoadDisconnectedCustomBackground = viewmodel::loadDisconnectedCustomBackground,
+            onWhenConnectedSelected = viewmodel::onWhenConnectedBackgroundItemSelected,
+            onConnectedBundledSelected = viewmodel::onConnectedBundledBackgroundItemSelected,
+            onLoadConnectedCustomBackground = viewmodel::loadConnectedCustomBackground,
+        )
+
+    val soundState =
+        AppCustomSoundState(
+            whenDisconnectedItem = viewmodel.whenDisconnectedSoundItem.collectAsState().value,
+            bundledDisconnectedItem = viewmodel.bundledDisconnectedSoundItem.collectAsState().value,
+            customDisconnectedItem = viewmodel.customDisconnectedSoundItem.collectAsState().value,
+            whenConnectedItem = viewmodel.whenConnectedSoundItem.collectAsState().value,
+            bundledConnectedItem = viewmodel.bundledConnectedSoundItem.collectAsState().value,
+            customConnectedItem = viewmodel.customConnectedSoundItem.collectAsState().value,
+        )
+    val soundActions =
+        AppCustomSoundActions(
+            onWhenDisconnectedSelected = viewmodel::onWhenDisconnectedSoundItemSelected,
+            onDisconnectedBundledSelected = viewmodel::onDisconnectedBundledSoundItemSelected,
+            onLoadDisconnectedCustomSound = viewmodel::loadDisconnectedCustomSound,
+            onWhenConnectedSelected = viewmodel::onWhenConnectedSoundItemSelected,
+            onConnectedBundledSelected = viewmodel::onConnectedBundledSoundItemSelected,
+            onLoadConnectedCustomSound = viewmodel::loadConnectedCustomSound,
+        )
+
+    val renameActions =
+        RenameLocationsActions(
+            onImportServerList = viewmodel::loadServerListFile,
+            onExportServerList = viewmodel::exportServerListFile,
+            onResetClick = viewmodel::onResetClick,
+        )
+
+    HandleToast(toastMessage = toastMessage, onClearToast = viewmodel::clearToast)
+
     PreferenceBackground {
         Column(
             modifier =
@@ -69,13 +120,13 @@ fun LookAndFeelScreen(viewmodel: LipstickViewmodel? = null) {
             Column(modifier = Modifier.verticalScroll(scrollState)) {
                 AppTheme(viewmodel)
                 Spacer(modifier = Modifier.height(16.dp))
-                AppCustomBackground(viewmodel)
+                AppCustomBackground(state = backgroundState, actions = backgroundActions)
                 Spacer(modifier = Modifier.height(16.dp))
-                AppCustomSound(viewmodel)
+                AppCustomSound(state = soundState, actions = soundActions)
                 Spacer(modifier = Modifier.height(16.dp))
-                CustomIcon(viewmodel)
+                CustomIcon(selectedAppIcon = selectedAppIcon)
                 Spacer(modifier = Modifier.height(16.dp))
-                RenameLocations(viewmodel)
+                RenameLocations(actions = renameActions)
             }
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -83,10 +134,9 @@ fun LookAndFeelScreen(viewmodel: LipstickViewmodel? = null) {
 }
 
 @Composable
-private fun CustomIcon(viewmodel: LipstickViewmodel?) {
+private fun CustomIcon(selectedAppIcon: Int) {
     val navController = LocalNavController.current
     val context = LocalContext.current
-    val selectedAppIcon by viewmodel?.selectedAppIcon?.collectAsState() ?: remember { mutableIntStateOf(R.mipmap.windscribe) }
     val bitmap =
         remember(selectedAppIcon) {
             ContextCompat.getDrawable(context, selectedAppIcon)?.toBitmap()?.asImageBitmap()
@@ -140,29 +190,31 @@ private fun CustomIcon(viewmodel: LipstickViewmodel?) {
 }
 
 @Composable
-private fun HandleToast(lipstickViewmodel: LipstickViewmodel?) {
+private fun HandleToast(
+    toastMessage: ToastMessage,
+    onClearToast: () -> Unit,
+) {
     val context = LocalContext.current
-    val toastMessage by lipstickViewmodel?.toastMessage?.collectAsState() ?: return
     LaunchedEffect(toastMessage) {
         when (toastMessage) {
             is ToastMessage.Localized -> {
                 Toast
                     .makeText(
                         context,
-                        (toastMessage as ToastMessage.Localized).message,
+                        toastMessage.message,
                         Toast.LENGTH_SHORT,
                     ).show()
-                lipstickViewmodel.clearToast()
+                onClearToast()
             }
 
             is ToastMessage.Raw -> {
                 Toast
                     .makeText(
                         context,
-                        (toastMessage as ToastMessage.Raw).message,
+                        toastMessage.message,
                         Toast.LENGTH_SHORT,
                     ).show()
-                lipstickViewmodel.clearToast()
+                onClearToast()
             }
 
             else -> {}
@@ -173,7 +225,50 @@ private fun HandleToast(lipstickViewmodel: LipstickViewmodel?) {
 @Composable
 @MultiDevicePreview
 private fun LookAndFeelScreenPreview() {
+    val backgroundState =
+        AppCustomBackgroundState(
+            aspectRatioItem = LookAndFeelHelper.getAspectRatioOptions().first(),
+            whenDisconnectedItem = LookAndFeelHelper.getBackgroundOptions().first(),
+            bundledDisconnectedItem = LookAndFeelHelper.getBundledBackgroundOptions().first(),
+            customDisconnectedItem = null,
+            whenConnectedItem = LookAndFeelHelper.getBackgroundOptions().first(),
+            bundledConnectedItem = LookAndFeelHelper.getBundledBackgroundOptions().first(),
+            customConnectedItem = null,
+        )
+    val soundState =
+        AppCustomSoundState(
+            whenDisconnectedItem = LookAndFeelHelper.getSoundOptions().first(),
+            bundledDisconnectedItem = LookAndFeelHelper.getBundledSoundOptions().first(),
+            customDisconnectedItem = null,
+            whenConnectedItem = LookAndFeelHelper.getSoundOptions().first(),
+            bundledConnectedItem = LookAndFeelHelper.getBundledSoundOptions().first(),
+            customConnectedItem = null,
+        )
     PreviewWithNav {
-        LookAndFeelScreen()
+        PreferenceBackground {
+            Column(
+                modifier =
+                    Modifier
+                        .padding(vertical = 16.dp, horizontal = 16.dp)
+                        .navigationBarsPadding(),
+            ) {
+                PreferencesNavBar(stringResource(R.string.look_and_feel)) {}
+                Spacer(modifier = Modifier.height(20.dp))
+                Column {
+                    AppThemeContent(
+                        themeItem = LookAndFeelHelper.getThemeOptions().first(),
+                        onThemeSelected = {},
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AppCustomBackground(state = backgroundState)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AppCustomSound(state = soundState)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    CustomIcon(selectedAppIcon = R.mipmap.windscribe)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    RenameLocations()
+                }
+            }
+        }
     }
 }

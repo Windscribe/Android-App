@@ -22,8 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat.IntentBuilder
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -43,9 +42,24 @@ import com.windscribe.mobile.ui.theme.font24
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @Composable
-fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
-    HandleExit(viewmodel)
-    val intentBuilder = buildIntentBuilder(viewmodel)
+fun ShareLinkScreen(viewmodel: SharedLinkViewmodel = hiltViewModel<SharedLinkViewmodelImpl>()) {
+    val navController = LocalNavController.current
+    val userName by viewmodel.userName.collectAsState()
+    val shouldExit by viewmodel.shouldExit.collectAsState()
+    LaunchedEffect(shouldExit) {
+        if (shouldExit) {
+            navController.popBackStack()
+        }
+    }
+    ShareLinkContent(userName = userName, onShareClick = viewmodel::exit)
+}
+
+@Composable
+fun ShareLinkContent(
+    userName: String,
+    onShareClick: () -> Unit,
+) {
+    val intentBuilder = buildIntentBuilder(userName)
     val navController = LocalNavController.current
 
     @Suppress("ktlint:standard:max-line-length")
@@ -103,7 +117,7 @@ fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
                     enabled = true,
                     onClick = {
                         intentBuilder?.startChooser()
-                        viewmodel?.exit()
+                        onShareClick()
                     },
                     modifier =
                         Modifier
@@ -149,9 +163,8 @@ private fun ReferralFeature(text: String) {
 
 @SuppressLint("StringFormatInvalid")
 @Composable
-private fun buildIntentBuilder(viewmodel: SharedLinkViewmodel?): IntentBuilder? {
+private fun buildIntentBuilder(userName: String): IntentBuilder? {
     val context = LocalContext.current
-    val userName by viewmodel?.userName?.collectAsState() ?: remember { mutableStateOf("") }
     val launchUrl = "https://play.google.com/store/apps/details?id=${context.packageName}"
     val description = stringResource(com.windscribe.vpn.R.string.share_app_description, userName, launchUrl)
     val title = stringResource(com.windscribe.vpn.R.string.share_app)
@@ -162,21 +175,10 @@ private fun buildIntentBuilder(viewmodel: SharedLinkViewmodel?): IntentBuilder? 
         .setText(description)
 }
 
-@Composable
-private fun HandleExit(viewmodel: SharedLinkViewmodel?) {
-    val navController = LocalNavController.current
-    val shouldExit by viewmodel?.shouldExit?.collectAsState() ?: remember { mutableStateOf(false) }
-    LaunchedEffect(shouldExit) {
-        if (shouldExit) {
-            navController.popBackStack()
-        }
-    }
-}
-
 @MultiDevicePreview
 @Composable
 private fun ShareLinkScreenPreview() {
     PreviewWithNav {
-        ShareLinkScreen(null)
+        ShareLinkContent(userName = "windscribe_user", onShareClick = {})
     }
 }

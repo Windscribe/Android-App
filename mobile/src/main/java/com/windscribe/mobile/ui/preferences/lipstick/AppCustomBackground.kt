@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.preferences.lipstick
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,6 +34,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.Description
@@ -46,16 +48,46 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
+/**
+ * Plain state the background UI renders. Hoisted out of [AppCustomBackground] so it never needs
+ * the [LipstickViewmodel] — previews can supply representative values directly.
+ */
+data class AppCustomBackgroundState(
+    val aspectRatioItem: DropDownItem,
+    val whenDisconnectedItem: DropDownItem,
+    val bundledDisconnectedItem: DropDownItem,
+    val customDisconnectedItem: String?,
+    val whenConnectedItem: DropDownItem,
+    val bundledConnectedItem: DropDownItem,
+    val customConnectedItem: String?,
+)
+
+/**
+ * Callbacks the background UI can raise. Hoisted out so the composables never reference the VM.
+ */
+class AppCustomBackgroundActions(
+    val onAspectRatioSelected: (DropDownItem) -> Unit = {},
+    val onWhenDisconnectedSelected: (DropDownItem) -> Unit = {},
+    val onDisconnectedBundledSelected: (DropDownItem) -> Unit = {},
+    val onLoadDisconnectedCustomBackground: (Context, Uri) -> Unit = { _, _ -> },
+    val onWhenConnectedSelected: (DropDownItem) -> Unit = {},
+    val onConnectedBundledSelected: (DropDownItem) -> Unit = {},
+    val onLoadConnectedCustomBackground: (Context, Uri) -> Unit = { _, _ -> },
+)
+
 @Composable
-fun AppCustomBackground(viewmodel: LipstickViewmodel? = null) {
+fun AppCustomBackground(
+    state: AppCustomBackgroundState,
+    actions: AppCustomBackgroundActions = AppCustomBackgroundActions(),
+) {
     Column {
         Header()
         Spacer(modifier = Modifier.height(1.dp))
-        AspectRationSection(viewmodel)
+        AspectRationSection(state, actions)
         Spacer(modifier = Modifier.height(1.dp))
-        WhenDisconnectedSection(viewmodel)
+        WhenDisconnectedSection(state, actions)
         Spacer(modifier = Modifier.height(1.dp))
-        WhenConnectedSection(viewmodel)
+        WhenConnectedSection(state, actions)
     }
 }
 
@@ -89,26 +121,32 @@ private fun Header() {
 }
 
 @Composable
-private fun AspectRationSection(viewmodel: LipstickViewmodel?) {
-    val aspectRatioItem = viewmodel?.aspectRatioItem?.collectAsState()
+private fun AspectRationSection(
+    state: AppCustomBackgroundState,
+    actions: AppCustomBackgroundActions,
+) {
+    val aspectRatioItem = state.aspectRatioItem
     val expanded = remember { mutableStateOf(false) }
 
     DropdownSection(
         title = stringResource(com.windscribe.vpn.R.string.aspect_ratio),
-        displayValue = stringResource(aspectRatioItem?.value?.title ?: com.windscribe.vpn.R.string.fill),
+        displayValue = stringResource(aspectRatioItem.title),
         isDropdownExpanded = expanded,
         onDropdownClick = { expanded.value = !expanded.value },
         dropdownItems = LookAndFeelHelper.getAspectRatioOptions(),
-        onItemSelected = { viewmodel?.onAspectRatioItemSelected(it) },
+        onItemSelected = { actions.onAspectRatioSelected(it) },
         shape = RoundedCornerShape(0.dp),
     )
 }
 
 @Composable
-private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
-    val item = viewmodel?.whenDisconnectedBackgroundItem?.collectAsState()
-    val bundledItem = viewmodel?.bundledDisconnectedBackgroundItem?.collectAsState()
-    val customItem = viewmodel?.customDisconnectedBackgroundItem?.collectAsState()
+private fun WhenDisconnectedSection(
+    state: AppCustomBackgroundState,
+    actions: AppCustomBackgroundActions,
+) {
+    val item = state.whenDisconnectedItem
+    val bundledItem = state.bundledDisconnectedItem
+    val customItem = state.customDisconnectedItem
     val context = LocalContext.current
     val expandedMain = remember { mutableStateOf(false) }
     val expandedBundled = remember { mutableStateOf(false) }
@@ -116,20 +154,20 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
     val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument(),
-        ) { uri: Uri? -> uri?.let { viewmodel?.loadDisconnectedCustomBackground(context, it) } }
+        ) { uri: Uri? -> uri?.let { actions.onLoadDisconnectedCustomBackground(context, it) } }
     DropdownSection(
         title = stringResource(com.windscribe.vpn.R.string.when_disconnected),
-        displayValue = stringResource(item?.value?.title ?: com.windscribe.vpn.R.string.flags),
+        displayValue = stringResource(item.title),
         isDropdownExpanded = expandedMain,
         onDropdownClick = { expandedMain.value = !expandedMain.value },
         dropdownItems = LookAndFeelHelper.getBackgroundOptions(),
-        onItemSelected = { viewmodel?.onWhenDisconnectedBackgroundItemSelected(it) },
+        onItemSelected = { actions.onWhenDisconnectedSelected(it) },
         extraContent = {
             val title =
-                bundledItem?.value?.label?.ifBlank {
-                    stringResource(bundledItem.value.title)
+                bundledItem.label.ifBlank {
+                    stringResource(bundledItem.title)
                 }
-            if (item?.value?.id == 2) {
+            if (item.id == 2) {
                 Row(
                     modifier =
                         Modifier
@@ -138,7 +176,7 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        title ?: "",
+                        title,
                         style = font12,
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
                     )
@@ -155,13 +193,13 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                         expanded = expandedBundled,
                         items = LookAndFeelHelper.getBundledBackgroundOptions(),
                     ) {
-                        viewmodel.onDisconnectedBundledBackgroundItemSelected(it)
+                        actions.onDisconnectedBundledSelected(it)
                         expandedBundled.value = false
                     }
                 }
             }
 
-            if (item?.value?.id == 4) {
+            if (item.id == 4) {
                 Row(
                     modifier =
                         Modifier
@@ -170,7 +208,7 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        customItem?.value ?: "No selection",
+                        customItem ?: "No selection",
                         style = font12,
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
                     )
@@ -189,10 +227,13 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
 }
 
 @Composable
-private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
-    val item = viewmodel?.whenConnectedBackgroundItem?.collectAsState()
-    val bundledItem = viewmodel?.bundledConnectedBackgroundItem?.collectAsState()
-    val customItem = viewmodel?.customConnectedBackgroundItem?.collectAsState()
+private fun WhenConnectedSection(
+    state: AppCustomBackgroundState,
+    actions: AppCustomBackgroundActions,
+) {
+    val item = state.whenConnectedItem
+    val bundledItem = state.bundledConnectedItem
+    val customItem = state.customConnectedItem
     val context = LocalContext.current
     val expandedMain = remember { mutableStateOf(false) }
     val expandedBundled = remember { mutableStateOf(false) }
@@ -200,21 +241,21 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
     val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument(),
-        ) { uri: Uri? -> uri?.let { viewmodel?.loadConnectedCustomBackground(context, it) } }
+        ) { uri: Uri? -> uri?.let { actions.onLoadConnectedCustomBackground(context, it) } }
     DropdownSection(
         title = stringResource(com.windscribe.vpn.R.string.when_connected),
-        displayValue = stringResource(item?.value?.title ?: com.windscribe.vpn.R.string.flags),
+        displayValue = stringResource(item.title),
         isDropdownExpanded = expandedMain,
         onDropdownClick = { expandedMain.value = !expandedMain.value },
         dropdownItems = LookAndFeelHelper.getBackgroundOptions(),
-        onItemSelected = { viewmodel?.onWhenConnectedBackgroundItemSelected(it) },
+        onItemSelected = { actions.onWhenConnectedSelected(it) },
         shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
         extraContent = {
             val title =
-                bundledItem?.value?.label?.ifBlank {
-                    stringResource(bundledItem.value.title)
+                bundledItem.label.ifBlank {
+                    stringResource(bundledItem.title)
                 }
-            if (item?.value?.id == 2) {
+            if (item.id == 2) {
                 Row(
                     modifier =
                         Modifier
@@ -223,7 +264,7 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        title ?: "",
+                        title,
                         style = font12,
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
                     )
@@ -240,13 +281,13 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
                         expanded = expandedBundled,
                         items = LookAndFeelHelper.getBundledBackgroundOptions(),
                     ) {
-                        viewmodel.onConnectedBundledBackgroundItemSelected(it)
+                        actions.onConnectedBundledSelected(it)
                         expandedBundled.value = false
                     }
                 }
             }
 
-            if (item?.value?.id == 4) {
+            if (item.id == 4) {
                 Row(
                     modifier =
                         Modifier
@@ -255,7 +296,7 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        customItem?.value ?: "No selection",
+                        customItem ?: "No selection",
                         style = font12,
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
                     )
@@ -379,10 +420,27 @@ private fun DropDownItems(
     }
 }
 
+private class AppCustomBackgroundStateProvider : PreviewParameterProvider<AppCustomBackgroundState> {
+    override val values =
+        sequenceOf(
+            AppCustomBackgroundState(
+                aspectRatioItem = LookAndFeelHelper.getAspectRatioOptions().first(),
+                whenDisconnectedItem = LookAndFeelHelper.getBackgroundOptions().first(),
+                bundledDisconnectedItem = LookAndFeelHelper.getBundledBackgroundOptions().first(),
+                customDisconnectedItem = null,
+                whenConnectedItem = LookAndFeelHelper.getBackgroundOptions().first(),
+                bundledConnectedItem = LookAndFeelHelper.getBundledBackgroundOptions().first(),
+                customConnectedItem = null,
+            ),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun AppCustomBackgroundPreview() {
+private fun AppCustomBackgroundPreview(
+    @PreviewParameter(AppCustomBackgroundStateProvider::class) state: AppCustomBackgroundState,
+) {
     PreviewWithNav {
-        AppCustomBackground()
+        AppCustomBackground(state = state, actions = AppCustomBackgroundActions())
     }
 }

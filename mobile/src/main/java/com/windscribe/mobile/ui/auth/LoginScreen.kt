@@ -29,8 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,8 +39,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AppBackground
@@ -60,23 +61,47 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
+/**
+ * Callbacks the login UI can raise. Hoisted out of the composables so the stateless
+ * [LoginContent] never needs to know about [LoginViewModel] — previews supply no-op lambdas.
+ */
+class LoginActions(
+    val onUsernameChange: (String) -> Unit = {},
+    val onPasswordChange: (String) -> Unit = {},
+    val onTwoFactorChange: (String) -> Unit = {},
+    val onTwoFactorInfoClick: () -> Unit = {},
+    val onAuthTypeChange: (AuthType) -> Unit = {},
+    val onAccountHashChange: (String) -> Unit = {},
+    val onUploadHashClick: () -> Unit = {},
+    val onLoginClick: () -> Unit = {},
+    val onCaptchaCancel: () -> Unit = {},
+    val onCaptchaSolution: (CaptchaSolution) -> Unit = {},
+    val onTwoFactorInfoDismiss: () -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [LoginViewModel], collects its flows and wires up
+ * navigation / file-picker side effects, then delegates rendering to [LoginContent].
+ */
 @Composable
-fun LoginScreen(viewModel: LoginViewModel? = null) {
+fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val navController = LocalNavController.current
     val context = LocalContext.current
-    val loginState by viewModel?.loginState?.collectAsState() ?: remember {
-        mutableStateOf(LoginState.Error(AuthError.InputError("")))
-    }
+    val loginState by viewModel.loginState.collectAsState()
+    val selectedAuthType by viewModel.selectedAuthType.collectAsState()
+    val accountHashDisplay by viewModel.accountHashDisplay.collectAsState()
+    val loginButtonEnabled by viewModel.loginButtonEnabled.collectAsState()
+    val showTwoFactorInfoDialog by viewModel.showTwoFactorInfoDialog.collectAsState()
 
     val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent(),
         ) { uri ->
-            uri?.let { viewModel?.onFileSelected(context, it) }
+            uri?.let { viewModel.onFileSelected(context, it) }
         }
 
     LaunchedEffect(Unit) {
-        viewModel?.triggerFilePicker?.collect { trigger ->
+        viewModel.triggerFilePicker.collect { trigger ->
             if (trigger) {
                 filePickerLauncher.launch("*/*")
             }
@@ -92,7 +117,7 @@ fun LoginScreen(viewModel: LoginViewModel? = null) {
     }
 
     LaunchedEffect(Unit) {
-        viewModel?.showAllBackupFailedDialog?.collect { show ->
+        viewModel.showAllBackupFailedDialog.collect { show ->
             if (show) {
                 navController.navigate(Screen.AllProtocolFailedDialog.route)
                 viewModel.clearDialog()
@@ -100,25 +125,64 @@ fun LoginScreen(viewModel: LoginViewModel? = null) {
         }
     }
 
-    val showTwoFactorInfoDialog by viewModel?.showTwoFactorInfoDialog?.collectAsState() ?: remember {
-        mutableStateOf(false)
-    }
+    LoginContent(
+        navController = navController,
+        loginState = loginState,
+        selectedAuthType = selectedAuthType,
+        accountHashDisplay = accountHashDisplay,
+        loginButtonEnabled = loginButtonEnabled,
+        showTwoFactorInfoDialog = showTwoFactorInfoDialog,
+        actions =
+            LoginActions(
+                onUsernameChange = viewModel::onUsernameChanged,
+                onPasswordChange = viewModel::onPasswordChanged,
+                onTwoFactorChange = viewModel::onTwoFactorChanged,
+                onTwoFactorInfoClick = viewModel::onTwoFactorHintClicked,
+                onAuthTypeChange = viewModel::onAuthTypeChanged,
+                onAccountHashChange = viewModel::onAccountHashChanged,
+                onUploadHashClick = viewModel::onUploadHashClick,
+                onLoginClick = viewModel::loginButtonClick,
+                onCaptchaCancel = viewModel::dismissCaptcha,
+                onCaptchaSolution = viewModel::onCaptchaSolutionReceived,
+                onTwoFactorInfoDismiss = viewModel::dismissTwoFactorInfoDialog,
+            ),
+    )
+}
 
+/**
+ * Stateless login UI. Everything it needs is passed in, so it renders identically in the
+ * app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun LoginContent(
+    navController: NavController,
+    loginState: LoginState,
+    selectedAuthType: AuthType,
+    accountHashDisplay: String,
+    loginButtonEnabled: Boolean,
+    showTwoFactorInfoDialog: Boolean,
+    actions: LoginActions,
+) {
     AppBackground {
-        LoginCompactLayout(navController, loginState, viewModel)
+        LoginCompactLayout(
+            navController = navController,
+            loginState = loginState,
+            selectedAuthType = selectedAuthType,
+            accountHashDisplay = accountHashDisplay,
+            loginButtonEnabled = loginButtonEnabled,
+            actions = actions,
+        )
         val showProgressBar = loginState is LoginState.LoggingIn
         val message = (loginState as? LoginState.LoggingIn)?.message ?: ""
         AppProgressBar(showProgressBar, message = message)
         if (loginState is LoginState.Captcha) {
-            val captchaRequest = (loginState as LoginState.Captcha).request
+            val captchaRequest = loginState.request
             CaptchaDebugDialog(
                 captchaRequest,
-                onCancel = {
-                    viewModel?.dismissCaptcha()
-                },
+                onCancel = actions.onCaptchaCancel,
                 onSolutionSubmit = { t1, t2 ->
                     Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
-                    viewModel?.onCaptchaSolutionReceived(
+                    actions.onCaptchaSolution(
                         CaptchaSolution(
                             t1,
                             t2,
@@ -130,7 +194,7 @@ fun LoginScreen(viewModel: LoginViewModel? = null) {
         }
 
         if (showTwoFactorInfoDialog) {
-            TwoFactorInfoDialog(onDismiss = { viewModel?.dismissTwoFactorInfoDialog() })
+            TwoFactorInfoDialog(onDismiss = actions.onTwoFactorInfoDismiss)
         }
     }
 }
@@ -139,15 +203,11 @@ fun LoginScreen(viewModel: LoginViewModel? = null) {
 fun LoginCompactLayout(
     navController: NavController,
     loginState: LoginState,
-    viewModel: LoginViewModel? = null,
+    selectedAuthType: AuthType,
+    accountHashDisplay: String,
+    loginButtonEnabled: Boolean,
+    actions: LoginActions,
 ) {
-    val selectedAuthType by viewModel?.selectedAuthType?.collectAsState() ?: remember {
-        mutableStateOf(AuthType.STANDARD)
-    }
-    val accountHashDisplay by viewModel?.accountHashDisplay?.collectAsState() ?: remember {
-        mutableStateOf("")
-    }
-
     Column(
         modifier =
             Modifier
@@ -192,7 +252,7 @@ fun LoginCompactLayout(
 
             AuthTabSelector(
                 selectedTab = selectedAuthType,
-                onTabSelected = { viewModel?.onAuthTypeChanged(it) },
+                onTabSelected = actions.onAuthTypeChange,
             )
         }
 
@@ -205,10 +265,10 @@ fun LoginCompactLayout(
                     isUsernameError = isError(loginState, AuthInputFields.Username),
                     isPasswordError = isError(loginState, AuthInputFields.Password),
                     is2FAError = isError(loginState, AuthInputFields.TwoFactor),
-                    onUsernameChange = { viewModel?.onUsernameChanged(it) },
-                    onPasswordChange = { viewModel?.onPasswordChanged(it) },
-                    on2FAChange = { viewModel?.onTwoFactorChanged(it) },
-                    on2FAInfoClick = { viewModel?.onTwoFactorHintClicked() },
+                    onUsernameChange = actions.onUsernameChange,
+                    onPasswordChange = actions.onPasswordChange,
+                    on2FAChange = actions.onTwoFactorChange,
+                    on2FAInfoClick = actions.onTwoFactorInfoClick,
                 )
             }
 
@@ -217,10 +277,10 @@ fun LoginCompactLayout(
                     accountHash = accountHashDisplay,
                     isError = isError(loginState, AuthInputFields.Username),
                     is2FAError = isError(loginState, AuthInputFields.TwoFactor),
-                    onHashValueChange = { viewModel?.onAccountHashChanged(it) },
-                    onUploadClick = { viewModel?.onUploadHashClick() },
-                    on2FAChange = { viewModel?.onTwoFactorChanged(it) },
-                    on2FAInfoClick = { viewModel?.onTwoFactorHintClicked() },
+                    onHashValueChange = actions.onAccountHashChange,
+                    onUploadClick = actions.onUploadHashClick,
+                    on2FAChange = actions.onTwoFactorChange,
+                    on2FAInfoClick = actions.onTwoFactorInfoClick,
                 )
             }
         }
@@ -230,7 +290,10 @@ fun LoginCompactLayout(
             ErrorText(loginState.errorType)
         }
         Spacer(modifier = Modifier.height(16.dp))
-        LoginHeroButton(viewModel)
+        LoginHeroButton(
+            isButtonEnabled = loginButtonEnabled,
+            onLoginClick = actions.onLoginClick,
+        )
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
@@ -241,17 +304,17 @@ private fun isError(
 ): Boolean = (loginState as? LoginState.Error)?.errorType?.highlightedFields?.contains(field) ?: false
 
 @Composable
-fun LoginHeroButton(viewModel: LoginViewModel? = null) {
+fun LoginHeroButton(
+    isButtonEnabled: Boolean,
+    onLoginClick: () -> Unit,
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val isButtonEnabled by viewModel?.loginButtonEnabled?.collectAsState() ?: remember {
-        mutableStateOf(false)
-    }
     PrimaryButton(
         text = stringResource(com.windscribe.vpn.R.string.login),
         enabled = isButtonEnabled,
         onClick = {
             keyboardController?.hide()
-            viewModel?.loginButtonClick()
+            onLoginClick()
         },
         modifier =
             Modifier
@@ -334,10 +397,38 @@ private fun TwoFactorInfoDialog(onDismiss: () -> Unit) {
     }
 }
 
+/**
+ * Feeds representative [LoginState] values into the preview. The renderer draws [LoginContent]
+ * once per value, so the preview pane shows the idle, logging-in and error states side by side.
+ */
+private class LoginStateProvider : PreviewParameterProvider<LoginState> {
+    override val values =
+        sequenceOf(
+            LoginState.Idle,
+            LoginState.LoggingIn("Logging in..."),
+            LoginState.Error(
+                AuthError.InputError(
+                    "Invalid username or password",
+                    listOf(AuthInputFields.Username, AuthInputFields.Password),
+                ),
+            ),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-fun LoginScreenPreview() {
+private fun LoginContentPreview(
+    @PreviewParameter(LoginStateProvider::class) loginState: LoginState,
+) {
     PreviewWithNav {
-        LoginScreen()
+        LoginContent(
+            navController = LocalNavController.current,
+            loginState = loginState,
+            selectedAuthType = AuthType.STANDARD,
+            accountHashDisplay = "",
+            loginButtonEnabled = loginState is LoginState.Idle,
+            showTwoFactorInfoDialog = false,
+            actions = LoginActions(),
+        )
     }
 }

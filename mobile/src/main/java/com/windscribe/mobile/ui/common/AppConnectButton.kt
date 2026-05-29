@@ -26,14 +26,40 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.connection.LocationBackground
+import com.windscribe.mobile.ui.connection.LocationInfo
+import com.windscribe.mobile.ui.connection.LocationInfoState
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.theme.AppColors
+import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 
 @Composable
 fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
+    val shouldPlay by connectionViewmodel.shouldPlayHapticFeedback.collectAsState()
+    val state by connectionViewmodel.connectionUIState.collectAsState()
+    AppConnectButtonContent(
+        shouldPlayHapticFeedback = shouldPlay,
+        state = state,
+        onHapticFeedbackHandled = { connectionViewmodel.onHapticFeedbackHandled() },
+        onConnectButtonClick = { connectionViewmodel.onConnectButtonClick() },
+    )
+}
+
+@Composable
+fun AppConnectButtonContent(
+    shouldPlayHapticFeedback: Boolean,
+    state: ConnectionUIState,
+    onHapticFeedbackHandled: () -> Unit,
+    onConnectButtonClick: () -> Unit,
+) {
     val rotation by rememberInfiniteTransition(label = "rotation").animateFloat(
         initialValue = 0f,
         targetValue = 360f,
@@ -45,19 +71,17 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
         label = "ringRotation",
     )
     val haptics = LocalHapticFeedback.current
-    val shouldPlay by connectionViewmodel.shouldPlayHapticFeedback.collectAsState()
-    if (shouldPlay) {
+    if (shouldPlayHapticFeedback) {
         haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-        connectionViewmodel.onHapticFeedbackHandled()
+        onHapticFeedbackHandled()
     }
-    val state by connectionViewmodel.connectionUIState.collectAsState()
     Box(
         modifier =
             Modifier.size(95.dp).testTag("home_connect_button").clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
             ) {
-                connectionViewmodel.onConnectButtonClick()
+                onConnectButtonClick()
             },
     ) {
         when (state) {
@@ -88,7 +112,6 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
             }
 
             is ConnectionUIState.Connected -> {
-                val connectedState = state as ConnectionUIState.Connected
                 Image(
                     painter = painterResource(R.drawable.ic_on_button),
                     contentDescription = null,
@@ -102,7 +125,7 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
                 Image(
                     painter =
                         painterResource(
-                            if (connectedState.connectedUsingSplitRouting) {
+                            if (state.connectedUsingSplitRouting) {
                                 R.drawable.ic_connected_split_ring
                             } else {
                                 R.drawable.ic_connected_ring
@@ -132,5 +155,50 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
                 )
             }
         }
+    }
+}
+
+/**
+ * Feeds the three connection states into the preview so the pane shows the connect button
+ * disconnected (off), connecting (spinning ring) and connected (green ring) side by side.
+ */
+private class ConnectButtonStateProvider : PreviewParameterProvider<ConnectionUIState> {
+    private val protocol =
+        ProtocolInformation(
+            protocol = "WireGuard",
+            port = "443",
+            description = "",
+            type = ProtocolConnectionStatus.Connected,
+        )
+    private val location =
+        LocationInfoState.Success(
+            LocationInfo(
+                country = "United States",
+                nodeName = "New York",
+                nickName = "Liberty",
+                locationBackground = LocationBackground.Flag(R.drawable.dummy_flag),
+            ),
+        )
+
+    override val values =
+        sequenceOf(
+            ConnectionUIState.Disconnected(protocol, location),
+            ConnectionUIState.Connecting(protocol, location),
+            ConnectionUIState.Connected(protocol, location, connectedUsingSplitRouting = false),
+        )
+}
+
+@Composable
+@MultiDevicePreview
+private fun AppConnectButtonContentPreview(
+    @PreviewParameter(ConnectButtonStateProvider::class) state: ConnectionUIState,
+) {
+    PreviewWithNav {
+        AppConnectButtonContent(
+            shouldPlayHapticFeedback = false,
+            state = state,
+            onHapticFeedbackHandled = {},
+            onConnectButtonClick = {},
+        )
     }
 }

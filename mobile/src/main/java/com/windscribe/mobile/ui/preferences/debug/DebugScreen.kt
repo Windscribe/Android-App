@@ -17,14 +17,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -38,13 +39,22 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import java.io.File
 
 @Composable
-fun DebugScreen(viewModel: DebugViewModel? = null) {
+fun DebugScreen(viewModel: DebugViewModel = hiltViewModel<DebugViewModelImpl>()) {
+    val debugLog by viewModel.debugLog.collectAsState()
+    val showProgress by viewModel.showProgress.collectAsState()
+    DebugContent(
+        debugLog = debugLog,
+        showProgress = showProgress,
+    )
+}
+
+@Composable
+fun DebugContent(
+    debugLog: List<String>,
+    showProgress: Boolean,
+) {
     val navController = LocalNavController.current
     val context = LocalContext.current
-    val debugLog by viewModel?.debugLog?.collectAsState()
-        ?: remember { mutableStateOf(emptyList()) }
-    val showProgress by viewModel?.showProgress?.collectAsState()
-        ?: remember { mutableStateOf(false) }
 
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
@@ -104,10 +114,23 @@ private fun exportLog(context: Context) {
     }
 }
 
+private class DebugStateProvider : PreviewParameterProvider<Pair<List<String>, Boolean>> {
+    override val values =
+        sequenceOf(
+            emptyList<String>() to true,
+            listOf("Log line 1", "Log line 2", "Log line 3") to false,
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun DebugScreenPreview() {
+private fun DebugContentPreview(
+    @PreviewParameter(DebugStateProvider::class) state: Pair<List<String>, Boolean>,
+) {
     PreviewWithNav {
-        DebugScreen()
+        DebugContent(
+            debugLog = state.first,
+            showProgress = state.second,
+        )
     }
 }

@@ -25,6 +25,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivityViewModel
@@ -35,12 +37,21 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font24
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 
+/**
+ * Stateful entry point. The [AppStartActivityViewModel] is activity-scoped (it carries the
+ * connection callbacks and the selected protocol set by the hosting activity), so it is passed in
+ * rather than resolved via `hiltViewModel()`. The navigation guard and side effects are wired
+ * here and rendering is delegated to [SetupPreferredProtocolContent].
+ */
 @Composable
-fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityViewModel? = null) {
+fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityViewModel) {
     val navController = LocalNavController.current
-    val proto = appStartActivityViewModel?.protocolInformation
+    val proto = appStartActivityViewModel.protocolInformation
     var isNavigating by remember { mutableStateOf(false) }
 
     if (proto == null) {
@@ -49,6 +60,38 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
         }
         return
     }
+
+    SetupPreferredProtocolContent(
+        protocol = proto,
+        cancelEnabled = !isNavigating,
+        onSetAsPreferredClick = {
+            if (!isNavigating) {
+                isNavigating = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onSetAsPreferredClicked()
+                navController.popBackStack()
+            }
+        },
+        onCancelClick = {
+            if (!isNavigating) {
+                isNavigating = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onCancel()
+                navController.popBackStack()
+            }
+        },
+    )
+}
+
+/**
+ * Stateless UI. Everything it needs is passed in, so it renders identically in the app and in
+ * `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun SetupPreferredProtocolContent(
+    protocol: ProtocolInformation,
+    cancelEnabled: Boolean,
+    onSetAsPreferredClick: () -> Unit,
+    onCancelClick: () -> Unit,
+) {
     Box(
         modifier =
             Modifier
@@ -77,7 +120,7 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                 colorFilter = ColorFilter.tint(AppColors.white),
             )
             Text(
-                text = stringResource(com.windscribe.vpn.R.string.set_this_protocol_as_preferred, Util.getProtocolLabel(proto.protocol)),
+                text = stringResource(com.windscribe.vpn.R.string.set_this_protocol_as_preferred, Util.getProtocolLabel(protocol.protocol)),
                 style = font24,
                 color = AppColors.white,
                 textAlign = TextAlign.Center,
@@ -99,21 +142,11 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                 text = stringResource(com.windscribe.vpn.R.string.set_as_preferred),
                 enabled = true,
             ) {
-                if (!isNavigating) {
-                    isNavigating = true
-                    appStartActivityViewModel.autoConnectionModeCallback?.onSetAsPreferredClicked()
-                    navController.popBackStack()
-                }
+                onSetAsPreferredClick()
             }
             TextButton(
-                onClick = {
-                    if (!isNavigating) {
-                        isNavigating = true
-                        appStartActivityViewModel.autoConnectionModeCallback?.onCancel()
-                        navController.popBackStack()
-                    }
-                },
-                enabled = !isNavigating,
+                onClick = onCancelClick,
+                enabled = cancelEnabled,
                 modifier = Modifier.testTag("preferred_protocol_cancel"),
             ) {
                 Text(
@@ -126,10 +159,29 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
     }
 }
 
+private class SetupPreferredProtocolProvider : PreviewParameterProvider<ProtocolInformation> {
+    override val values =
+        sequenceOf(
+            ProtocolInformation(
+                PreferencesKeyConstants.PROTO_IKev2,
+                PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
+                "IKEv2",
+                ProtocolConnectionStatus.Connected,
+            ),
+        )
+}
+
 @MultiDevicePreview
 @Composable
-fun SetupPreferredProtocolScreenPreview() {
+fun SetupPreferredProtocolScreenPreview(
+    @PreviewParameter(SetupPreferredProtocolProvider::class) protocol: ProtocolInformation,
+) {
     PreviewWithNav {
-        SetupPreferredProtocolScreen()
+        SetupPreferredProtocolContent(
+            protocol = protocol,
+            cancelEnabled = true,
+            onSetAsPreferredClick = {},
+            onCancelClick = {},
+        )
     }
 }

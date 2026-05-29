@@ -1,8 +1,8 @@
 package com.windscribe.mobile.ui.popup
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,8 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -47,22 +47,42 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 
+/** Callbacks the power-whitelist UI can raise; defaults are no-ops for previews. */
+class PowerWhitelistActions(
+    val onPermissionResult: (Boolean) -> Unit = {},
+    val onLaterClicked: () -> Unit = {},
+    val onNeverAskAgainClicked: () -> Unit = {},
+)
+
 @Composable
-fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
+fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel = hiltViewModel<PowerWhitelistViewmodelImpl>()) {
     val navController = LocalNavController.current
-    val packageName = LocalContext.current.packageName
-    val filePickerLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartActivityForResult(),
-        ) {
-            viewmodel?.onPermissionResult(it.resultCode == Activity.RESULT_OK)
-        }
-    val shouldExit by viewmodel?.shouldExit?.collectAsState() ?: remember { mutableStateOf(false) }
+    val shouldExit by viewmodel.shouldExit.collectAsState()
     LaunchedEffect(shouldExit) {
         if (shouldExit) {
             navController.popBackStack()
         }
     }
+    PowerWhitelistContent(
+        actions =
+            PowerWhitelistActions(
+                onPermissionResult = viewmodel::onPermissionResult,
+                onLaterClicked = viewmodel::onLaterClicked,
+                onNeverAskAgainClicked = viewmodel::onNeverAskAgainClicked,
+            ),
+    )
+}
+
+@SuppressLint("BatteryLife")
+@Composable
+fun PowerWhitelistContent(actions: PowerWhitelistActions) {
+    val packageName = LocalContext.current.packageName
+    val filePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+        ) {
+            actions.onPermissionResult(it.resultCode == Activity.RESULT_OK)
+        }
     Box(
         modifier =
             Modifier
@@ -115,7 +135,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                     val intent =
                         Intent(
                             Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                            Uri.parse("package:$packageName"),
+                            "package:$packageName".toUri(),
                         )
                     filePickerLauncher.launch(intent)
                 },
@@ -127,7 +147,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(
-                onClick = { viewmodel?.onLaterClicked() },
+                onClick = { actions.onLaterClicked() },
                 modifier = Modifier.testTag("battery_maybe_later"),
             ) {
                 Text(
@@ -137,7 +157,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                 )
             }
             TextButton(
-                onClick = { viewmodel?.onNeverAskAgainClicked() },
+                onClick = { actions.onNeverAskAgainClicked() },
                 modifier = Modifier.testTag("battery_dont_ask_again"),
             ) {
                 Text(
@@ -154,6 +174,6 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
 @MultiDevicePreview
 fun PowerWhitelistScreenPreview() {
     PreviewWithNav {
-        PowerWhitelistScreen(null)
+        PowerWhitelistContent(actions = PowerWhitelistActions())
     }
 }

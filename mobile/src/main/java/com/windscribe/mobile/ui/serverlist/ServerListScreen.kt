@@ -22,20 +22,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.connection.BridgeApiViewModel
+import com.windscribe.mobile.ui.connection.BridgeApiViewModelImpl
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.connection.ConnectionViewmodelImpl
 import com.windscribe.mobile.ui.home.HomeViewmodel
+import com.windscribe.mobile.ui.home.HomeViewmodelImpl
 import com.windscribe.mobile.ui.theme.serverListBackgroundColor
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ServerListScreen(
-    viewModel: ServerViewModel,
-    connectionViewModel: ConnectionViewmodel,
-    bridgeApiViewModel: BridgeApiViewModel,
-    configViewmodel: ConfigViewmodel,
-    homeViewmodel: HomeViewmodel,
+    viewModel: ServerViewModel = hiltViewModel<ServerViewModelImpl>(),
+    connectionViewModel: ConnectionViewmodel = hiltViewModel<ConnectionViewmodelImpl>(),
+    bridgeApiViewModel: BridgeApiViewModel = hiltViewModel<BridgeApiViewModelImpl>(),
+    configViewmodel: ConfigViewmodel = hiltViewModel<ConfigViewmodelImpl>(),
+    homeViewmodel: HomeViewmodel = hiltViewModel<HomeViewmodelImpl>(),
 ) {
     val selectedType by viewModel.selectedServerListType.collectAsState()
 

@@ -36,8 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -48,9 +46,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AppBackground
@@ -68,14 +69,50 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
+/**
+ * Callbacks the signup UI can raise. Hoisted out so the stateless [SignupContent] never needs to
+ * know about [SignupViewModel] — previews supply no-op lambdas.
+ */
+class SignupActions(
+    val onAuthTypeChange: (AuthType) -> Unit = {},
+    val onUsernameChange: (String) -> Unit = {},
+    val onPasswordChange: (String) -> Unit = {},
+    val onConfirmPasswordChange: (String) -> Unit = {},
+    val onEmailChange: (String) -> Unit = {},
+    val onVoucherChange: (String) -> Unit = {},
+    val onReferralUsernameChange: (String) -> Unit = {},
+    val onGenerateUsername: () -> Unit = {},
+    val onGeneratePassword: () -> Unit = {},
+    val onEmailInfoClick: () -> Unit = {},
+    val onBackupConfirmedChanged: (Boolean) -> Unit = {},
+    val onRegenerateHash: () -> Unit = {},
+    val onUploadHash: () -> Unit = {},
+    val onDownloadHash: () -> Unit = {},
+    val onLearnMoreClick: () -> Unit = {},
+    val onSignupClick: () -> Unit = {},
+    val onCaptchaCancel: () -> Unit = {},
+    val onCaptchaSolution: (CaptchaSolution) -> Unit = {},
+    val onEmailInfoDismiss: () -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [SignupViewModel], collects its flows and wires up navigation /
+ * file-picker / toast side effects, then delegates rendering to [SignupContent].
+ */
 @Composable
-fun SignupScreen(viewModel: SignupViewModel? = null) {
+fun SignupScreen(viewModel: SignupViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val navController = LocalNavController.current
-    val signupState by viewModel?.signupState?.collectAsState() ?: remember {
-        mutableStateOf(SignupState.Idle)
-    }
-    viewModel?.isAccountClaim = navController.previousBackStackEntry
+    val signupState by viewModel.signupState.collectAsState()
+    val selectedAuthType by viewModel.selectedAuthType.collectAsState()
+    val accountHash by viewModel.accountHash.collectAsState()
+    val isBackupConfirmed by viewModel.isBackupConfirmed.collectAsState()
+    val generatedUsername by viewModel.generatedUsername.collectAsState()
+    val generatedPassword by viewModel.generatedPassword.collectAsState()
+    val signupButtonEnabled by viewModel.signupButtonEnabled.collectAsState()
+    val showEmailInfoDialog by viewModel.showEmailInfoDialog.collectAsState()
+
+    viewModel.isAccountClaim = navController.previousBackStackEntry
         ?.savedStateHandle
         ?.get<Boolean>("isAccountClaim") ?: false
 
@@ -83,11 +120,11 @@ fun SignupScreen(viewModel: SignupViewModel? = null) {
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent(),
         ) { uri ->
-            uri?.let { viewModel?.onFileSelected(context, it) }
+            uri?.let { viewModel.onFileSelected(context, it) }
         }
 
     LaunchedEffect(Unit) {
-        viewModel?.triggerFilePicker?.collect { trigger ->
+        viewModel.triggerFilePicker.collect { trigger ->
             if (trigger) {
                 filePickerLauncher.launch("*/*")
             }
@@ -102,7 +139,7 @@ fun SignupScreen(viewModel: SignupViewModel? = null) {
         }
     }
     LaunchedEffect(Unit) {
-        viewModel?.showAllBackupFailedDialog?.collect { show ->
+        viewModel.showAllBackupFailedDialog.collect { show ->
             if (show) {
                 navController.navigate(Screen.AllProtocolFailedDialog.route)
                 viewModel.clearDialog()
@@ -110,30 +147,93 @@ fun SignupScreen(viewModel: SignupViewModel? = null) {
         }
     }
     LaunchedEffect(Unit) {
-        viewModel?.toastMessage?.collect { message ->
+        viewModel.toastMessage.collect { message ->
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
 
-    val showEmailInfoDialog by viewModel?.showEmailInfoDialog?.collectAsState() ?: remember {
-        mutableStateOf(false)
-    }
+    SignupContent(
+        navController = navController,
+        signupState = signupState,
+        selectedAuthType = selectedAuthType,
+        accountHash = accountHash,
+        isBackupConfirmed = isBackupConfirmed,
+        generatedUsername = generatedUsername,
+        generatedPassword = generatedPassword,
+        signupButtonEnabled = signupButtonEnabled,
+        showEmailInfoDialog = showEmailInfoDialog,
+        actions =
+            SignupActions(
+                onAuthTypeChange = viewModel::onAuthTypeChanged,
+                onUsernameChange = viewModel::onUsernameChanged,
+                onPasswordChange = viewModel::onPasswordChanged,
+                onConfirmPasswordChange = viewModel::onConfirmPasswordChanged,
+                onEmailChange = viewModel::onEmailChanged,
+                onVoucherChange = viewModel::onVoucherChanged,
+                onReferralUsernameChange = viewModel::onReferralUsernameChanged,
+                onGenerateUsername = viewModel::generateUsername,
+                onGeneratePassword = viewModel::generatePassword,
+                onEmailInfoClick = viewModel::onEmailInfoClick,
+                onBackupConfirmedChanged = viewModel::onBackupConfirmedChanged,
+                onRegenerateHash = viewModel::generateAccountHash,
+                onUploadHash = viewModel::onUploadHashClick,
+                onDownloadHash = { viewModel.onDownloadHashClick(context) },
+                onLearnMoreClick = {
+                    val intent =
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            "https://windscribe.net/knowledge-base/articles/hashed-login".toUri(),
+                        )
+                    context.startActivity(intent)
+                },
+                onSignupClick = viewModel::signupButtonClick,
+                onCaptchaCancel = viewModel::dismissCaptcha,
+                onCaptchaSolution = viewModel::onCaptchaSolutionReceived,
+                onEmailInfoDismiss = viewModel::dismissEmailInfoDialog,
+            ),
+    )
+}
 
+/**
+ * Stateless signup UI. Everything it needs is passed in, so it renders identically in the app and
+ * in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun SignupContent(
+    navController: NavController,
+    signupState: SignupState,
+    selectedAuthType: AuthType,
+    accountHash: String,
+    isBackupConfirmed: Boolean,
+    generatedUsername: String,
+    generatedPassword: String,
+    signupButtonEnabled: Boolean,
+    showEmailInfoDialog: Boolean,
+    actions: SignupActions,
+) {
     AppBackground {
-        SignupCompactLayout(navController, signupState, viewModel)
+        SignupCompactLayout(
+            navController = navController,
+            signupState = signupState,
+            selectedAuthType = selectedAuthType,
+            accountHash = accountHash,
+            isBackupConfirmed = isBackupConfirmed,
+            generatedUsername = generatedUsername,
+            generatedPassword = generatedPassword,
+            signupButtonEnabled = signupButtonEnabled,
+            actions = actions,
+        )
         val showProgressBar = signupState is SignupState.Registering
         val message = (signupState as? SignupState.Registering)?.message ?: ""
         AppProgressBar(showProgressBar, message = message)
         if (signupState is SignupState.Captcha) {
-            val captchaRequest = (signupState as SignupState.Captcha).request
+            val captchaRequest = signupState.request
             CaptchaDebugDialog(
                 captchaRequest,
-                onCancel = {
-                    viewModel?.dismissCaptcha()
-                },
+                onCancel = actions.onCaptchaCancel,
                 onSolutionSubmit = { t1, t2 ->
                     Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
-                    viewModel?.onCaptchaSolutionReceived(
+                    actions.onCaptchaSolution(
                         CaptchaSolution(
                             t1,
                             t2,
@@ -145,7 +245,7 @@ fun SignupScreen(viewModel: SignupViewModel? = null) {
         }
 
         if (showEmailInfoDialog) {
-            EmailInfoDialog(onDismiss = { viewModel?.dismissEmailInfoDialog() })
+            EmailInfoDialog(onDismiss = actions.onEmailInfoDismiss)
         }
     }
 }
@@ -155,24 +255,14 @@ fun SignupScreen(viewModel: SignupViewModel? = null) {
 private fun SignupCompactLayout(
     navController: NavController,
     signupState: SignupState,
-    viewModel: SignupViewModel? = null,
+    selectedAuthType: AuthType,
+    accountHash: String,
+    isBackupConfirmed: Boolean,
+    generatedUsername: String,
+    generatedPassword: String,
+    signupButtonEnabled: Boolean,
+    actions: SignupActions,
 ) {
-    val context = LocalContext.current
-    val selectedAuthType by viewModel?.selectedAuthType?.collectAsState() ?: remember {
-        mutableStateOf(AuthType.STANDARD)
-    }
-    val accountHash by viewModel?.accountHash?.collectAsState() ?: remember {
-        mutableStateOf("")
-    }
-    val isBackupConfirmed by viewModel?.isBackupConfirmed?.collectAsState() ?: remember {
-        mutableStateOf(false)
-    }
-    val generatedUsername by viewModel?.generatedUsername?.collectAsState() ?: remember {
-        mutableStateOf("")
-    }
-    val generatedPassword by viewModel?.generatedPassword?.collectAsState() ?: remember {
-        mutableStateOf("")
-    }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
     val ime = WindowInsets.ime
@@ -228,7 +318,7 @@ private fun SignupCompactLayout(
 
                 AuthTabSelector(
                     selectedTab = selectedAuthType,
-                    onTabSelected = { viewModel?.onAuthTypeChanged(it) },
+                    onTabSelected = actions.onAuthTypeChange,
                 )
             }
 
@@ -245,15 +335,15 @@ private fun SignupCompactLayout(
                         isConfirmPasswordError = isError(signupState, AuthInputFields.ConfirmPassword),
                         isEmailError = isError(signupState, AuthInputFields.Email),
                         isReferralError = isError(signupState, AuthInputFields.Referral),
-                        onUsernameChange = { viewModel?.onUsernameChanged(it) },
-                        onPasswordChange = { viewModel?.onPasswordChanged(it) },
-                        onConfirmPasswordChange = { viewModel?.onConfirmPasswordChanged(it) },
-                        onEmailChange = { viewModel?.onEmailChanged(it) },
-                        onVoucherChange = { viewModel?.onVoucherChanged(it) },
-                        onReferralUsernameChange = { viewModel?.onReferralUsernameChanged(it) },
-                        onGenerateUsername = { viewModel?.generateUsername() },
-                        onGeneratePassword = { viewModel?.generatePassword() },
-                        onEmailInfoClick = { viewModel?.onEmailInfoClick() },
+                        onUsernameChange = actions.onUsernameChange,
+                        onPasswordChange = actions.onPasswordChange,
+                        onConfirmPasswordChange = actions.onConfirmPasswordChange,
+                        onEmailChange = actions.onEmailChange,
+                        onVoucherChange = actions.onVoucherChange,
+                        onReferralUsernameChange = actions.onReferralUsernameChange,
+                        onGenerateUsername = actions.onGenerateUsername,
+                        onGeneratePassword = actions.onGeneratePassword,
+                        onEmailInfoClick = actions.onEmailInfoClick,
                     )
                 }
 
@@ -261,20 +351,13 @@ private fun SignupCompactLayout(
                     HashedSignupForm(
                         accountHash = accountHash,
                         isBackupConfirmed = isBackupConfirmed,
-                        onBackupConfirmedChanged = { viewModel?.onBackupConfirmedChanged(it) },
-                        onVoucherChange = { viewModel?.onVoucherChanged(it) },
-                        onRegenerateHash = { viewModel?.generateAccountHash() },
-                        onUploadHash = { viewModel?.onUploadHashClick() },
-                        onDownloadHash = { viewModel?.onDownloadHashClick(context) },
+                        onBackupConfirmedChanged = actions.onBackupConfirmedChanged,
+                        onVoucherChange = actions.onVoucherChange,
+                        onRegenerateHash = actions.onRegenerateHash,
+                        onUploadHash = actions.onUploadHash,
+                        onDownloadHash = actions.onDownloadHash,
                         onCopyHash = {},
-                        onLearnMoreClick = {
-                            val intent =
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    "https://windscribe.net/knowledge-base/articles/hashed-login".toUri(),
-                                )
-                            context.startActivity(intent)
-                        },
+                        onLearnMoreClick = actions.onLearnMoreClick,
                     )
                 }
             }
@@ -286,7 +369,7 @@ private fun SignupCompactLayout(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SignupHeroButton(viewModel)
+            SignupHeroButton(signupButtonEnabled, actions.onSignupClick)
         }
 
         // Bottom "Already have account" link - Pinned to bottom, hide when keyboard is visible
@@ -331,17 +414,17 @@ private fun isError(
 ): Boolean = (signupState as? SignupState.Error)?.error?.highlightedFields?.contains(field) ?: false
 
 @Composable
-private fun SignupHeroButton(viewModel: SignupViewModel? = null) {
+private fun SignupHeroButton(
+    isButtonEnabled: Boolean,
+    onSignupClick: () -> Unit,
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val isButtonEnabled by viewModel?.signupButtonEnabled?.collectAsState() ?: remember {
-        mutableStateOf(false)
-    }
     PrimaryButton(
         text = stringResource(com.windscribe.vpn.R.string.text_sign_up),
         enabled = isButtonEnabled,
         onClick = {
             keyboardController?.hide()
-            viewModel?.signupButtonClick()
+            onSignupClick()
         },
         modifier =
             Modifier
@@ -423,10 +506,41 @@ private fun EmailInfoDialog(onDismiss: () -> Unit) {
     }
 }
 
+/**
+ * Feeds representative [SignupState] values into the preview. The renderer draws [SignupContent]
+ * once per value.
+ */
+private class SignupStateProvider : PreviewParameterProvider<SignupState> {
+    override val values =
+        sequenceOf(
+            SignupState.Idle,
+            SignupState.Registering("Creating account..."),
+            SignupState.Error(
+                AuthError.InputError(
+                    "Invalid username",
+                    listOf(AuthInputFields.Username),
+                ),
+            ),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-fun SignupScreenPreview() {
+private fun SignupContentPreview(
+    @PreviewParameter(SignupStateProvider::class) signupState: SignupState,
+) {
     PreviewWithNav {
-        SignupScreen()
+        SignupContent(
+            navController = LocalNavController.current,
+            signupState = signupState,
+            selectedAuthType = AuthType.STANDARD,
+            accountHash = "",
+            isBackupConfirmed = false,
+            generatedUsername = "",
+            generatedPassword = "",
+            signupButtonEnabled = signupState is SignupState.Idle,
+            showEmailInfoDialog = false,
+            actions = SignupActions(),
+        )
     }
 }

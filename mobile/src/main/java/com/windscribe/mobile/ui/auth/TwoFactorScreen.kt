@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,16 +39,58 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.NextButton
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 
+/**
+ * Callbacks the two-factor UI can raise. Hoisted out so the stateless [TwoFactorContent] never
+ * needs to know about [LoginViewModel] — previews supply no-op lambdas.
+ */
+class TwoFactorActions(
+    val onTwoFactorChange: (String) -> Unit = {},
+    val onContinueClick: () -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [LoginViewModel] and delegates rendering to [TwoFactorContent].
+ */
 @Composable
-fun TwoFactorScreen(viewModel: LoginViewModel? = null) {
+fun TwoFactorScreen(viewModel: LoginViewModel = hiltViewModel()) {
+    val loginState by viewModel.loginState.collectAsState()
+    TwoFactorContent(
+        isError = isError(loginState, AuthInputFields.TwoFactor),
+        actions =
+            TwoFactorActions(
+                onTwoFactorChange = viewModel::onTwoFactorChanged,
+                onContinueClick = viewModel::loginButtonClick,
+            ),
+    )
+}
+
+private fun isError(
+    loginState: LoginState,
+    field: AuthInputFields,
+): Boolean = (loginState as? LoginState.Error)?.errorType?.highlightedFields?.contains(field) ?: false
+
+/**
+ * Stateless two-factor UI. Everything it needs is passed in, so it renders identically in the
+ * app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun TwoFactorContent(
+    isError: Boolean,
+    actions: TwoFactorActions,
+) {
     val navController = LocalNavController.current
 
     AppBackground {
@@ -123,17 +166,17 @@ fun TwoFactorScreen(viewModel: LoginViewModel? = null) {
             // 2FA Code Input
             var twoFactorCode by remember { mutableStateOf("") }
             TwoFactorCodeField(
-                isError = false,
+                isError = isError,
                 onValueChange = {
                     twoFactorCode = it
-                    viewModel?.onTwoFactorChanged(it)
+                    actions.onTwoFactorChange(it)
                 },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Continue Button
-            TwoFactorContinueButton(viewModel, twoFactorCode)
+            TwoFactorContinueButton(twoFactorCode, actions.onContinueClick)
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -243,8 +286,8 @@ private fun TwoFactorCodeField(
 
 @Composable
 private fun TwoFactorContinueButton(
-    viewModel: LoginViewModel? = null,
     twoFactorCode: String,
+    onContinueClick: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val isButtonEnabled = twoFactorCode.isNotEmpty()
@@ -254,11 +297,25 @@ private fun TwoFactorContinueButton(
         enabled = isButtonEnabled,
         onClick = {
             keyboardController?.hide()
-            viewModel?.loginButtonClick()
+            onContinueClick()
         },
         modifier =
             Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding(),
     )
+}
+
+@Composable
+@MultiDevicePreview
+private fun TwoFactorContentPreview(
+    @PreviewParameter(TwoFactorActionsProvider::class) actions: TwoFactorActions,
+) {
+    PreviewWithNav {
+        TwoFactorContent(isError = false, actions = actions)
+    }
+}
+
+private class TwoFactorActionsProvider : PreviewParameterProvider<TwoFactorActions> {
+    override val values = sequenceOf(TwoFactorActions())
 }

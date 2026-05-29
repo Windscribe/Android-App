@@ -18,6 +18,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,6 +33,7 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.Description
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.model.ThemeItem
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper
 import com.windscribe.mobile.ui.theme.backgroundColor
@@ -39,11 +42,25 @@ import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @Composable
-fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
+fun AppTheme(lipstickViewmodel: LipstickViewmodel) {
+    val themeItem by lipstickViewmodel.themeItem.collectAsState()
+    val activity = LocalActivity.current as? AppStartActivity
+    AppThemeContent(
+        themeItem = themeItem,
+        onThemeSelected = {
+            lipstickViewmodel.onThemeItemSelected(it)
+            activity?.recreate()
+        },
+    )
+}
+
+@Composable
+fun AppThemeContent(
+    themeItem: ThemeItem,
+    onThemeSelected: (ThemeItem) -> Unit,
+) {
     val expanded = remember { mutableStateOf(false) }
     val items = LookAndFeelHelper.getThemeOptions()
-    val themeItem = lipstickViewmodel?.themeItem?.value ?: items.first()
-    val activity = LocalActivity.current as? AppStartActivity
     Column(
         modifier =
             Modifier
@@ -97,8 +114,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
                         DropdownMenuItem(
                             onClick = {
                                 expanded.value = false
-                                lipstickViewmodel?.onThemeItemSelected(it)
-                                activity?.recreate()
+                                onThemeSelected(it)
                             },
                             text = {
                                 Text(
@@ -122,5 +138,8 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
 @Composable
 @MultiDevicePreview
 private fun PreviewAppTheme() {
-    AppTheme(null)
+    AppThemeContent(
+        themeItem = LookAndFeelHelper.getThemeOptions().first(),
+        onThemeSelected = {},
+    )
 }
