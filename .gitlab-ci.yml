@@ -47,16 +47,13 @@ stages:
 # Docker deploy setup, split into composable fragments (toolchain / secrets /
 # version env) and assembled by .build_with_version via !reference.
 
-# System packages + NDK + fastlane.
+# Toolchain env. System packages, Go, NDK, CMake and fastlane are pre-baked into
+# $BASE_CI_IMAGE (built by BuildDeployImage from ci/android-deploy.Dockerfile), so
+# only the per-job env/setup remains here.
 .docker_android_toolchain:
   before_script:
-    - apk add curl flock jq swig
-    - apk add git make musl-dev build-base cmake ninja zip unzip perl
-    - apk add go=1.21.10-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.19/community
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - chmod +x ./gradlew
-    - extras ndk -n 27.2.12479018 -c 3.22.1
-    - extras fastlane || (apk --no-cache add ruby ruby-dev && gem install fastlane --force)
 
 # Fetch signing/build secrets from Vault, write to disk.
 .docker_vault_secrets:
@@ -361,6 +358,31 @@ SlackNotification:
     - curl --retry 5 -X POST $SLACK_URL --show-error --fail -d "$PAYLOAD"
 
 # ── Maintenance ───────────────────────────────────────────────────────────────
+
+# Build & push the deploy-stage CI image to this project's GitLab Container Registry.
+# Manual — re-run when ci/android-deploy.Dockerfile or its pinned versions change.
+# Uses the built-in $CI_REGISTRY* credentials (no PAT). The image path is built from
+# $CI_REGISTRY/$CI_PROJECT_PATH (always set) rather than $CI_REGISTRY_IMAGE, which is
+# empty on this instance. After it runs once, copy the "Pushed:" path from the log
+# into the BASE_CI_IMAGE CI/CD variable so the Deploy jobs pull it (the runner
+# authenticates automatically via CI_JOB_TOKEN).
+BuildDeployImage:
+  stage: Deploy
+  when: manual
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    # CI_REGISTRY_IMAGE is empty here, so derive the path from CI_REGISTRY + project.
+    - IMAGE="${CI_REGISTRY_IMAGE:-$CI_REGISTRY/$CI_PROJECT_PATH}/android-deploy:latest"
+    - echo "Building $IMAGE"
+    - docker build -f ci/android-deploy.Dockerfile -t "$IMAGE" .
+    - docker push "$IMAGE"
+    - echo "Pushed:$IMAGE"
 
 # Rebuild Strongswan native libs. Manual, standalone Ubuntu image (self-contained
 # toolchain — does not use the .docker_* or .metal_arm64 setup).
