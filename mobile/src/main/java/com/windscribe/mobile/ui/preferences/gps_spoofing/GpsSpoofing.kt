@@ -57,7 +57,12 @@ private enum class GpsStep {
 }
 
 @Composable
-fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
+fun GpsSpoofing(viewModel: AppStartActivityViewModel) {
+    GpsSpoofingContent(onEnableGpsSpoofing = viewModel::enableGpsSpoofing)
+}
+
+@Composable
+fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
     val navController = LocalNavController.current
     var currentStep by remember { mutableStateOf(GpsStep.Start) }
     val context = LocalContext.current
@@ -84,9 +89,7 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                                 }
                         }
 
-                        else -> {
-                            Unit
-                        }
+                        else -> {}
                     }
                 }
             }
@@ -179,7 +182,7 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                 hideCancel = true,
                 backgroundColor = AppColors.neonGreen.copy(alpha = 0.25f),
                 onAccept = {
-                    viewModel?.enableGpsSpoofing()
+                    onEnableGpsSpoofing()
                     navController.popBackStack()
                 },
                 onCancel = {
@@ -294,6 +297,6 @@ private fun Dialog(
 @Composable
 fun GpsSpoofingPreview() {
     PreviewWithNav {
-        GpsSpoofing()
+        GpsSpoofingContent()
     }
 }

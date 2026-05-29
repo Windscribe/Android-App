@@ -18,15 +18,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.SwitchItemView
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -42,16 +43,47 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.constants.FeatureExplainer
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 
+/**
+ * Snapshot of the network-options UI state. Hoisted so the stateless [NetworkOptionsContent]
+ * never touches [NetworkOptionsViewModel] — previews feed it directly.
+ */
+data class NetworkOptionsState(
+    val autoSecureEnabled: Boolean = false,
+    val currentNetwork: NetworkInfo? = null,
+    val allNetworks: List<NetworkInfo> = emptyList(),
+)
+
+/**
+ * Stateful entry point. Owns the [NetworkOptionsViewModel], collects its flows, then delegates
+ * rendering to [NetworkOptionsContent].
+ */
 @Composable
-fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
+fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel = hiltViewModel<NetworkOptionsViewModelImpl>()) {
+    val autoSecureEnabled by viewModel.autoSecureEnabled.collectAsState()
+    val currentNetwork by viewModel.currentNetwork.collectAsState()
+    val allNetworks by viewModel.allNetworks.collectAsState()
+
+    NetworkOptionsContent(
+        state =
+            NetworkOptionsState(
+                autoSecureEnabled = autoSecureEnabled,
+                currentNetwork = currentNetwork,
+                allNetworks = allNetworks,
+            ),
+        onAutoSecureChanged = viewModel::onAutoSecureChanged,
+    )
+}
+
+/**
+ * Stateless network-options UI. Everything it needs is passed in, so it renders identically in
+ * the app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun NetworkOptionsContent(
+    state: NetworkOptionsState,
+    onAutoSecureChanged: () -> Unit,
+) {
     val navController = LocalNavController.current
-    val autoSecureEnabled by viewModel?.autoSecureEnabled?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val currentNetwork by viewModel?.currentNetwork?.collectAsState() ?: remember {
-        mutableStateOf(
-            null,
-        )
-    }
     PreferenceBackground {
         Column(
             modifier =
@@ -67,18 +99,19 @@ fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
                 title = R.string.auto_secure_new_networks,
                 icon = com.windscribe.mobile.R.drawable.ic_wifi,
                 description = R.string.auto_secure_new_networks_description,
-                autoSecureEnabled,
+                state.autoSecureEnabled,
                 explainer = FeatureExplainer.NETWORK_OPTIONS,
                 onSelect = {
-                    viewModel?.onAutoSecureChanged()
+                    onAutoSecureChanged()
                 },
             )
+            val currentNetwork = state.currentNetwork
             if (currentNetwork != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                CurrentNetwork(currentNetwork!!)
+                CurrentNetwork(currentNetwork)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            OtherNetworks(viewModel)
+            OtherNetworks(state.allNetworks)
         }
     }
 }
@@ -140,12 +173,7 @@ private fun Network(networkInfo: NetworkInfo) {
 }
 
 @Composable
-private fun OtherNetworks(viewModel: NetworkOptionsViewModel?) {
-    val allNetworks by viewModel?.allNetworks?.collectAsState() ?: remember {
-        mutableStateOf(
-            emptyList(),
-        )
-    }
+private fun OtherNetworks(allNetworks: List<NetworkInfo>) {
     if (allNetworks.isNotEmpty()) {
         Column {
             Text(
@@ -166,10 +194,33 @@ private fun OtherNetworks(viewModel: NetworkOptionsViewModel?) {
     }
 }
 
+/**
+ * Feeds representative [NetworkOptionsState] values into the preview.
+ */
+private class NetworkOptionsStateProvider : PreviewParameterProvider<NetworkOptionsState> {
+    override val values =
+        sequenceOf(
+            NetworkOptionsState(autoSecureEnabled = false),
+            NetworkOptionsState(
+                autoSecureEnabled = true,
+                currentNetwork = NetworkInfo("Home WiFi", true, false, "wstunnel", "443"),
+                allNetworks =
+                    listOf(
+                        NetworkInfo("Office WiFi", false, false, "wstunnel", "443"),
+                    ),
+            ),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun NetworkOptionsScreenPreview() {
+private fun NetworkOptionsContentPreview(
+    @PreviewParameter(NetworkOptionsStateProvider::class) state: NetworkOptionsState,
+) {
     PreviewWithNav {
-        NetworkOptionsScreen()
+        NetworkOptionsContent(
+            state = state,
+            onAutoSecureChanged = {},
+        )
     }
 }

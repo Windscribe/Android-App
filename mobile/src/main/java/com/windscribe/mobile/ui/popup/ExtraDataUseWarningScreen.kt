@@ -36,9 +36,35 @@ import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
+/**
+ * Stateful entry point. The [AppStartActivityViewModel] is activity-scoped, so it is passed in
+ * rather than resolved via `hiltViewModel()`. Side effects are wired here and rendering is
+ * delegated to [ExtraDataUseWarningContent].
+ */
 @Composable
-fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
+fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel) {
     val navController = LocalNavController.current
+    ExtraDataUseWarningContent(
+        onUnderstandClick = {
+            viewmodel.protocolInformation
+            viewmodel.enableDecoyTraffic()
+            navController.popBackStack()
+        },
+        onCancelClick = {
+            navController.popBackStack()
+        },
+    )
+}
+
+/**
+ * Stateless UI. Everything it needs is passed in, so it renders identically in the app and in
+ * `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun ExtraDataUseWarningContent(
+    onUnderstandClick: () -> Unit,
+    onCancelClick: () -> Unit,
+) {
     PreferenceBackground {
         Column(
             modifier =
@@ -105,20 +131,14 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
             NextButton(
                 text = stringResource(com.windscribe.vpn.R.string.i_understand),
                 enabled = true,
-                onClick = {
-                    viewmodel?.protocolInformation
-                    viewmodel?.enableDecoyTraffic()
-                    navController.popBackStack()
-                },
+                onClick = onUnderstandClick,
                 modifier =
                     Modifier
                         .fillMaxWidth()
                         .padding(top = 32.dp),
             )
             Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = {
-                navController.popBackStack()
-            }) {
+            TextButton(onClick = onCancelClick) {
                 Text(
                     stringResource(id = com.windscribe.vpn.R.string.cancel),
                     style = font16,
@@ -133,6 +153,9 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
 @MultiDevicePreview
 fun ExtraDataUseWarningScreenPreview() {
     PreviewWithNav {
-        ExtraDataUseWarningScreen()
+        ExtraDataUseWarningContent(
+            onUnderstandClick = {},
+            onCancelClick = {},
+        )
     }
 }

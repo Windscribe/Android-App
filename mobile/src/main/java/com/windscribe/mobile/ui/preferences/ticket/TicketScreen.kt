@@ -35,8 +35,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.DropDownNoDescription
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -52,19 +55,47 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.api.response.QueryType
 
+class TicketActions(
+    val onQueryTypeSelected: (QueryType) -> Unit = {},
+    val onEmailChanged: (String) -> Unit = {},
+    val onSubjectChanged: (String) -> Unit = {},
+    val onMessageChanged: (String) -> Unit = {},
+    val onSendTicketClicked: () -> Unit = {},
+)
+
 @Composable
-fun TicketScreen(viewModel: TicketViewModel? = null) {
+fun TicketScreen(viewModel: TicketViewModel = hiltViewModel<TicketViewModelImpl>()) {
+    val submitTicketState by viewModel.submitTicketState.collectAsState()
+    val isButtonEnabled by viewModel.buttonEnabled.collectAsState()
+    val email by viewModel.email.collectAsState()
+    TicketContent(
+        submitTicketState = submitTicketState,
+        isButtonEnabled = isButtonEnabled,
+        email = email,
+        actions =
+            TicketActions(
+                onQueryTypeSelected = viewModel::onQueryTypeSelected,
+                onEmailChanged = viewModel::onEmailChanged,
+                onSubjectChanged = viewModel::onSubjectChanged,
+                onMessageChanged = viewModel::onMessageChanged,
+                onSendTicketClicked = viewModel::onSendTicketClicked,
+            ),
+    )
+}
+
+@Composable
+fun TicketContent(
+    submitTicketState: SubmitTicketState,
+    isButtonEnabled: Boolean,
+    email: String,
+    actions: TicketActions,
+) {
     val navController = LocalNavController.current
     val selectedKey by remember { mutableStateOf(QueryType.Account) }
     val queryTypes =
         QueryType.entries.map {
             DropDownStringItem(it.name, it.name)
         }
-    val submitTicketState by viewModel?.submitTicketState?.collectAsState()
-        ?: remember { mutableStateOf(SubmitTicketState.Idle) }
-    val isButtonEnabled by viewModel?.buttonEnabled?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val email by viewModel?.email?.collectAsState() ?: remember { mutableStateOf("") }
 
     PreferenceBackground {
         Column(
@@ -91,7 +122,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                     queryTypes,
                     selectedItemKey = selectedKey.name,
                 ) {
-                    viewModel?.onQueryTypeSelected(QueryType.valueOf(it.key))
+                    actions.onQueryTypeSelected(QueryType.valueOf(it.key))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -100,7 +131,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                     hint = stringResource(R.string.email),
                     modifier = Modifier.fillMaxWidth(),
                     defaultValue = email,
-                    onValueChange = { viewModel?.onEmailChanged(it) },
+                    onValueChange = { actions.onEmailChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -108,7 +139,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                 TextField(
                     hint = stringResource(R.string.subject),
                     modifier = Modifier.fillMaxWidth(),
-                    onValueChange = { viewModel?.onSubjectChanged(it) },
+                    onValueChange = { actions.onSubjectChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -121,7 +152,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                             .height(120.dp),
                     singleLine = false,
                     height = 120.dp,
-                    onValueChange = { viewModel?.onMessageChanged(it) },
+                    onValueChange = { actions.onMessageChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -130,7 +161,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                     text = stringResource(R.string.send),
                     enabled = isButtonEnabled,
                 ) {
-                    viewModel?.onSendTicketClicked()
+                    actions.onSendTicketClicked()
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -139,24 +170,22 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
         if (submitTicketState is SubmitTicketState.Loading) {
             PreferenceProgressBar(true)
         }
-        HandleState(viewModel)
+        HandleState(submitTicketState)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HandleState(viewModel: TicketViewModel?) {
-    val submitTicketState by viewModel?.submitTicketState?.collectAsState()
-        ?: remember { mutableStateOf(SubmitTicketState.Idle) }
+private fun HandleState(submitTicketState: SubmitTicketState) {
     val showDialog = remember { mutableStateOf(false) }
     val message =
         when (submitTicketState) {
             is SubmitTicketState.Success -> {
-                (submitTicketState as SubmitTicketState.Success).message
+                submitTicketState.message
             }
 
             is SubmitTicketState.Error -> {
-                (submitTicketState as SubmitTicketState.Error).message
+                submitTicketState.message
             }
 
             else -> {
@@ -246,10 +275,26 @@ private fun TextField(
     }
 }
 
+private class TicketStateProvider : PreviewParameterProvider<SubmitTicketState> {
+    override val values =
+        sequenceOf(
+            SubmitTicketState.Idle,
+            SubmitTicketState.Loading,
+            SubmitTicketState.Error("Failed to submit ticket."),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun TicketScreenPreview() {
+private fun TicketContentPreview(
+    @PreviewParameter(TicketStateProvider::class) submitTicketState: SubmitTicketState,
+) {
     PreviewWithNav {
-        TicketScreen()
+        TicketContent(
+            submitTicketState = submitTicketState,
+            isButtonEnabled = submitTicketState is SubmitTicketState.Idle,
+            email = "",
+            actions = TicketActions(),
+        )
     }
 }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -32,6 +31,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivityViewModel
@@ -47,14 +48,72 @@ import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import kotlinx.coroutines.delay
 
+/**
+ * Stateful entry point. The [AppStartActivityViewModel] is activity-scoped (it carries the
+ * connection callbacks and protocol list set by the hosting activity), so it is passed in rather
+ * than resolved via `hiltViewModel()`. The countdown, navigation guard and side effects are
+ * wired here and rendering is delegated to [ConnectionChangeContent].
+ */
 @Composable
 fun ConnectionChangeScreen(
-    appStartActivityViewModel: AppStartActivityViewModel? = null,
+    appStartActivityViewModel: AppStartActivityViewModel,
     protocolFailed: Boolean,
 ) {
     val navController = LocalNavController.current
     var isNavigating by remember { mutableStateOf(false) }
-    val lazyListState = rememberLazyListState()
+    var countdown by remember { mutableIntStateOf(10) }
+    val protocols = appStartActivityViewModel.protocolInformationList ?: emptyList()
+
+    LaunchedEffect(protocolFailed) {
+        if (protocolFailed) {
+            while (countdown > 0 && !isNavigating) {
+                delay(1000)
+                countdown--
+            }
+            val nextUpProtocol = appStartActivityViewModel.protocolInformationList?.firstOrNull()
+            if (nextUpProtocol != null && !isNavigating) {
+                isNavigating = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onProtocolSelect(nextUpProtocol)
+                navController.popBackStack()
+            }
+        }
+    }
+
+    ConnectionChangeContent(
+        protocolFailed = protocolFailed,
+        protocols = protocols,
+        countdown = countdown,
+        cancelEnabled = !isNavigating,
+        onProtocolSelected = { protocol ->
+            if (!isNavigating) {
+                isNavigating = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onProtocolSelect(protocol)
+                navController.popBackStack()
+            }
+        },
+        onCancelClick = {
+            if (!isNavigating) {
+                isNavigating = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onCancel()
+                navController.popBackStack()
+            }
+        },
+    )
+}
+
+/**
+ * Stateless UI. Everything it needs is passed in, so it renders identically in the app and in
+ * `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun ConnectionChangeContent(
+    protocolFailed: Boolean,
+    protocols: List<ProtocolInformation>,
+    countdown: Int,
+    cancelEnabled: Boolean,
+    onProtocolSelected: (ProtocolInformation) -> Unit,
+    onCancelClick: () -> Unit,
+) {
     val icon =
         if (protocolFailed) {
             R.drawable.ic_attention_icon
@@ -76,21 +135,6 @@ fun ConnectionChangeScreen(
         } else {
             stringResource(com.windscribe.vpn.R.string.protocol_change_description)
         }
-    var countdown by remember { mutableIntStateOf(10) }
-    LaunchedEffect(protocolFailed) {
-        if (protocolFailed) {
-            while (countdown > 0 && !isNavigating) {
-                delay(1000)
-                countdown--
-            }
-            val nextUpProtocol = appStartActivityViewModel?.protocolInformationList?.firstOrNull()
-            if (nextUpProtocol != null && !isNavigating) {
-                isNavigating = true
-                appStartActivityViewModel.autoConnectionModeCallback?.onProtocolSelect(nextUpProtocol)
-                navController.popBackStack()
-            }
-        }
-    }
     val scrollState: ScrollState = rememberScrollState()
 
     Box(
@@ -136,25 +180,15 @@ fun ConnectionChangeScreen(
                 modifier = Modifier.padding(horizontal = 8.dp),
             )
             Spacer(modifier = Modifier.padding(top = 8.dp))
-            for (i in appStartActivityViewModel?.protocolInformationList ?: emptyList()) {
+            for (i in protocols) {
                 ProtocolItemView(timeleft = countdown, i, onSelected = {
-                    if (!isNavigating) {
-                        isNavigating = true
-                        appStartActivityViewModel?.autoConnectionModeCallback?.onProtocolSelect(i)
-                        navController.popBackStack()
-                    }
+                    onProtocolSelected(i)
                 })
             }
 
             TextButton(
-                onClick = {
-                    if (!isNavigating) {
-                        isNavigating = true
-                        appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
-                        navController.popBackStack()
-                    }
-                },
-                enabled = !isNavigating,
+                onClick = onCancelClick,
+                enabled = cancelEnabled,
             ) {
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),
@@ -175,50 +209,58 @@ fun ConnectionChangeScreen(
                     .statusBarsPadding()
                     .size(32.dp)
                     .clickable {
-                        if (!isNavigating) {
-                            isNavigating = true
-                            appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
-                            navController.popBackStack()
-                        }
+                        onCancelClick()
                     },
             colorFilter = ColorFilter.tint(AppColors.white),
         )
     }
 }
 
+private class ConnectionChangeProvider : PreviewParameterProvider<List<ProtocolInformation>> {
+    override val values =
+        sequenceOf(
+            listOf(
+                ProtocolInformation(
+                    PreferencesKeyConstants.PROTO_IKev2,
+                    PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
+                    "IKEv2",
+                    ProtocolConnectionStatus.Connected,
+                ),
+                ProtocolInformation(
+                    PreferencesKeyConstants.PROTO_UDP,
+                    PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
+                    "UDP",
+                    ProtocolConnectionStatus.NextUp,
+                ),
+                ProtocolInformation(
+                    PreferencesKeyConstants.PROTO_TCP,
+                    PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
+                    "TCP",
+                    ProtocolConnectionStatus.Failed,
+                ),
+                ProtocolInformation(
+                    PreferencesKeyConstants.PROTO_WS_TUNNEL,
+                    PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
+                    "WSTunnel",
+                    ProtocolConnectionStatus.Disconnected,
+                ),
+            ),
+        )
+}
+
 @MultiDevicePreview
 @Composable
-fun ConnectionChangeScreenPreview() {
+fun ConnectionChangeScreenPreview(
+    @PreviewParameter(ConnectionChangeProvider::class) protocols: List<ProtocolInformation>,
+) {
     PreviewWithNav {
-        val protocol1 =
-            ProtocolInformation(
-                PreferencesKeyConstants.PROTO_IKev2,
-                PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
-                stringResource(com.windscribe.vpn.R.string.iKEV2_description),
-                ProtocolConnectionStatus.Connected,
-            )
-        val protocol2 =
-            ProtocolInformation(
-                PreferencesKeyConstants.PROTO_UDP,
-                PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
-                stringResource(com.windscribe.vpn.R.string.Udp_description),
-                ProtocolConnectionStatus.NextUp,
-            )
-        val protocol3 =
-            ProtocolInformation(
-                PreferencesKeyConstants.PROTO_TCP,
-                PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
-                stringResource(com.windscribe.vpn.R.string.Tcp_description),
-                ProtocolConnectionStatus.Failed,
-            )
-        val protocol4 =
-            ProtocolInformation(
-                PreferencesKeyConstants.PROTO_WS_TUNNEL,
-                PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
-                stringResource(com.windscribe.vpn.R.string.WSTunnel_description),
-                ProtocolConnectionStatus.Disconnected,
-            )
-        val protocols = listOf(protocol1, protocol2, protocol3, protocol4)
-        ConnectionChangeScreen(protocolFailed = false)
+        ConnectionChangeContent(
+            protocolFailed = false,
+            protocols = protocols,
+            countdown = 10,
+            cancelEnabled = true,
+            onProtocolSelected = {},
+            onCancelClick = {},
+        )
     }
 }

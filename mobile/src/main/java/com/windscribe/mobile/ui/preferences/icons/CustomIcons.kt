@@ -35,9 +35,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -50,8 +54,6 @@ import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.constants.ExtraConstants
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 // UI Constants
 private object CustomIconsConstants {
@@ -68,21 +70,55 @@ private object CustomIconsConstants {
     const val BACKGROUND_ALPHA = 0.05f
 }
 
+/**
+ * Callbacks the custom-icons UI can raise. Hoisted out of the composables so the stateless
+ * [CustomIconsContent] never needs to know about [CustomIconsViewModel].
+ */
+class CustomIconsActions(
+    val onIconSelected: (AppIcon) -> Unit = {},
+    val onConfirmIconChange: () -> Unit = {},
+    val onDismissDialog: () -> Unit = {},
+)
+
 @Composable
-fun CustomIconsScreen(viewModel: CustomIconsViewModel?) {
+fun CustomIconsScreen(viewModel: CustomIconsViewModel = hiltViewModel<CustomIconsViewModelImpl>()) {
+    val icons by viewModel.icons.collectAsState()
+    val showDialog by viewModel.showConfirmDialog.collectAsState()
+
+    CustomIconsContent(
+        icons = icons,
+        showDialog = showDialog,
+        actions =
+            CustomIconsActions(
+                onIconSelected = viewModel::selectIcon,
+                onConfirmIconChange = viewModel::confirmIconChange,
+                onDismissDialog = viewModel::dismissDialog,
+            ),
+    )
+}
+
+@Composable
+fun CustomIconsContent(
+    icons: Map<String, AppIcon>,
+    showDialog: AppIcon?,
+    actions: CustomIconsActions,
+) {
     val navController = LocalNavController.current
-    val showDialog by viewModel?.showConfirmDialog?.collectAsState() ?: return
 
     PreferenceBackground {
-        AppIconView(viewModel, navController)
+        AppIconView(
+            icons = icons,
+            navController = navController,
+            onIconSelected = actions.onIconSelected,
+        )
     }
 
     // Show confirmation dialog
     showDialog?.let { appIcon ->
         IconChangeConfirmDialog(
             iconName = appIcon.name,
-            onConfirm = { viewModel.confirmIconChange() },
-            onDismiss = { viewModel.dismissDialog() },
+            onConfirm = actions.onConfirmIconChange,
+            onDismiss = actions.onDismissDialog,
         )
     }
 }
@@ -143,9 +179,9 @@ private fun IconChangeConfirmDialog(
 @Composable
 private fun AppIconItemSection(
     category: AppIconCategory,
-    viewModel: CustomIconsViewModel? = null,
+    icons: Map<String, AppIcon>,
+    onIconSelected: (AppIcon) -> Unit,
 ) {
-    val icons by viewModel?.icons?.collectAsState() ?: return
     val filteredIcons by remember(icons, category) {
         derivedStateOf {
             icons.values.filter { it.category == category }
@@ -176,7 +212,7 @@ private fun AppIconItemSection(
                 icon = item,
                 isFirst = index == 0,
                 isLast = index == filteredIcons.lastIndex,
-                onClick = { viewModel.selectIcon(item) },
+                onClick = { onIconSelected(item) },
             )
             if (index < filteredIcons.lastIndex) {
                 Spacer(modifier = Modifier.height(CustomIconsConstants.ITEM_DIVIDER_HEIGHT))
@@ -265,8 +301,9 @@ private fun AppIconItem(
 
 @Composable
 private fun AppIconView(
-    viewModel: CustomIconsViewModel? = null,
-    navController: androidx.navigation.NavController? = null,
+    icons: Map<String, AppIcon>,
+    navController: NavController,
+    onIconSelected: (AppIcon) -> Unit,
 ) {
     Column(
         modifier =
@@ -276,44 +313,42 @@ private fun AppIconView(
                     vertical = CustomIconsConstants.VERTICAL_PADDING,
                 ).navigationBarsPadding(),
     ) {
-        navController?.let {
-            PreferencesNavBar(stringResource(com.windscribe.vpn.R.string.app_icon)) {
-                it.popBackStack()
-            }
+        PreferencesNavBar(stringResource(com.windscribe.vpn.R.string.app_icon)) {
+            navController.popBackStack()
         }
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(CustomIconsConstants.TOP_SPACER_HEIGHT))
-            AppIconItemSection(AppIconCategory.Discreet, viewModel)
+            AppIconItemSection(AppIconCategory.Discreet, icons, onIconSelected)
             Spacer(modifier = Modifier.height(CustomIconsConstants.CATEGORY_SPACING))
-            AppIconItemSection(AppIconCategory.Windscribe, viewModel)
+            AppIconItemSection(AppIconCategory.Windscribe, icons, onIconSelected)
             Spacer(modifier = Modifier.height(CustomIconsConstants.CATEGORY_SPACING))
-            AppIconItemSection(AppIconCategory.Other, viewModel)
+            AppIconItemSection(AppIconCategory.Other, icons, onIconSelected)
         }
     }
 }
 
+private class CustomIconsStateProvider : PreviewParameterProvider<AppIcon?> {
+    override val values =
+        sequenceOf(
+            null,
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun CustomIconScreenPreview() {
+private fun CustomIconScreenPreview(
+    @PreviewParameter(CustomIconsStateProvider::class) showDialog: AppIcon?,
+) {
     val context = LocalContext.current
-    val viewModel =
-        object : CustomIconsViewModel() {
-            override val icons: StateFlow<Map<String, AppIcon>>
-                get() = MutableStateFlow(previewIcons(context))
-
-            override val showConfirmDialog: StateFlow<AppIcon?>
-                get() = MutableStateFlow(null)
-
-            override fun selectIcon(appIcon: AppIcon) {}
-
-            override fun confirmIconChange() {}
-
-            override fun dismissDialog() {}
-        }
+    val icons = previewIcons(context)
     PreviewWithNav {
-        CustomIconsScreen(viewModel)
+        CustomIconsContent(
+            icons = icons,
+            showDialog = showDialog,
+            actions = CustomIconsActions(),
+        )
     }
 }
 

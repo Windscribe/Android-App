@@ -35,12 +35,49 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font24
 
+/**
+ * Stateful entry point. The [AppStartActivityViewModel] is activity-scoped (it carries the
+ * connection callbacks set by the hosting activity), so it is passed in rather than resolved
+ * via `hiltViewModel()`. The single-shot click guards and side effects are wired here and
+ * rendering is delegated to [ManualModeFailedContent].
+ */
 @Composable
-fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel? = null) {
+fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel) {
     val navController = LocalNavController.current
     var isSwitchToAutoClicked by remember { mutableStateOf(false) }
     var isCancelClicked by remember { mutableStateOf(false) }
 
+    ManualModeFailedContent(
+        switchToAutoEnabled = !isSwitchToAutoClicked,
+        cancelEnabled = !isCancelClicked,
+        onSwitchToAutoClick = {
+            if (!isSwitchToAutoClicked && !isCancelClicked) {
+                isSwitchToAutoClicked = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onSwitchToAutoMode()
+                navController.popBackStack()
+            }
+        },
+        onCancelClick = {
+            if (!isSwitchToAutoClicked && !isCancelClicked) {
+                isCancelClicked = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onCancel()
+                navController.popBackStack()
+            }
+        },
+    )
+}
+
+/**
+ * Stateless UI. Everything it needs is passed in, so it renders identically in the app and in
+ * `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun ManualModeFailedContent(
+    switchToAutoEnabled: Boolean,
+    cancelEnabled: Boolean,
+    onSwitchToAutoClick: () -> Unit,
+    onCancelClick: () -> Unit,
+) {
     Box(
         modifier =
             Modifier
@@ -84,23 +121,13 @@ fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel?
             NextButton(
                 Modifier,
                 text = stringResource(com.windscribe.vpn.R.string.switch_to_auto),
-                enabled = !isSwitchToAutoClicked,
+                enabled = switchToAutoEnabled,
             ) {
-                if (!isSwitchToAutoClicked && !isCancelClicked) {
-                    isSwitchToAutoClicked = true
-                    appStartActivityViewModel?.autoConnectionModeCallback?.onSwitchToAutoMode()
-                    navController.popBackStack()
-                }
+                onSwitchToAutoClick()
             }
             TextButton(
-                onClick = {
-                    if (!isSwitchToAutoClicked && !isCancelClicked) {
-                        isCancelClicked = true
-                        appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
-                        navController.popBackStack()
-                    }
-                },
-                enabled = !isCancelClicked,
+                onClick = onCancelClick,
+                enabled = cancelEnabled,
             ) {
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),
@@ -116,6 +143,11 @@ fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel?
 @Composable
 fun ManualModeFailedScreenPreview() {
     PreviewWithNav {
-        ManualModeFailedScreen()
+        ManualModeFailedContent(
+            switchToAutoEnabled = true,
+            cancelEnabled = true,
+            onSwitchToAutoClick = {},
+            onCancelClick = {},
+        )
     }
 }

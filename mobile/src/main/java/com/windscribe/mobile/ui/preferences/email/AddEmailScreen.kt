@@ -11,14 +11,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.AuthTextField
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -31,25 +32,47 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
 
 @Composable
-fun AddEmailScreen(viewModel: EmailViewModel? = null) {
+fun AddEmailScreen(viewModel: EmailViewModel = hiltViewModel<EmailViewModelImpl>()) {
+    val error by viewModel.error.collectAsState()
+    val showProgress by viewModel.showProgress.collectAsState()
+    val exit by viewModel.exit.collectAsState()
+    AddEmailContent(
+        error = error,
+        showProgress = showProgress,
+        exit = exit,
+        onEmailChanged = viewModel::onEmailChanged,
+        onAddEmailClicked = viewModel::addEmail,
+    )
+}
+
+@Composable
+fun AddEmailContent(
+    error: ToastMessage?,
+    showProgress: Boolean,
+    exit: Boolean,
+    onEmailChanged: (String) -> Unit = {},
+    onAddEmailClicked: () -> Unit = {},
+) {
     val navController = LocalNavController.current
-    val error by viewModel?.error?.collectAsState() ?: remember { mutableStateOf(null) }
-    val showProgress by viewModel?.showProgress?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val exit by viewModel?.exit?.collectAsState() ?: remember { mutableStateOf(false) }
     LaunchedEffect(exit) {
         if (exit) {
             navController.popBackStack()
         }
     }
     val errorMessage =
-        if (error is ToastMessage.Raw) {
-            (error as ToastMessage.Raw).message
-        } else if (error is ToastMessage.Localized) {
-            val resourceID = (error as ToastMessage.Localized).message
-            stringResource(resourceID)
-        } else {
-            ""
+        when (error) {
+            is ToastMessage.Raw -> {
+                error.message
+            }
+
+            is ToastMessage.Localized -> {
+                val resourceID = error.message
+                stringResource(resourceID)
+            }
+
+            else -> {
+                ""
+            }
         }
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
@@ -62,7 +85,7 @@ fun AddEmailScreen(viewModel: EmailViewModel? = null) {
                 stringResource(com.windscribe.vpn.R.string.email),
                 autofillType = ContentType.EmailAddress,
                 onValueChange = {
-                    viewModel?.onEmailChanged(it)
+                    onEmailChanged(it)
                 },
             )
             if (error != null) {
@@ -85,7 +108,7 @@ fun AddEmailScreen(viewModel: EmailViewModel? = null) {
                 stringResource(com.windscribe.vpn.R.string.add_email),
                 true,
                 onClick = {
-                    viewModel?.addEmail()
+                    onAddEmailClicked()
                 },
             )
         }
@@ -93,10 +116,24 @@ fun AddEmailScreen(viewModel: EmailViewModel? = null) {
     }
 }
 
+private class AddEmailStateProvider : PreviewParameterProvider<ToastMessage?> {
+    override val values =
+        sequenceOf(
+            null,
+            ToastMessage.Raw("Something went wrong"),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-fun AddEmailScreenPreview() {
+fun AddEmailContentPreview(
+    @PreviewParameter(AddEmailStateProvider::class) error: ToastMessage?,
+) {
     PreviewWithNav {
-        AddEmailScreen()
+        AddEmailContent(
+            error = error,
+            showProgress = false,
+            exit = false,
+        )
     }
 }

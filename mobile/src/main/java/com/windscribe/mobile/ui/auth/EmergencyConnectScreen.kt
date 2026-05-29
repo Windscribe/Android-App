@@ -18,35 +18,58 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
-import com.windscribe.mobile.ui.home.HandleToast
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font24
 
+/**
+ * Stateful entry point. Owns the [EmergencyConnectViewModal], collects its flows and wires up
+ * the error toast side effect, then delegates rendering to [EmergencyConnectContent].
+ */
 @Composable
-fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal? = null) {
-    val uiState by viewModel?.uiState?.collectAsState() ?: remember {
-        mutableStateOf(
-            EmergencyConnectUIState.Disconnected,
-        )
+fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsState()
+    val connectionProgressText by viewModel.connectionProgressText.collectAsState()
+    val error by viewModel.error.collectAsState(initial = "")
+    val activity = LocalNavController.current.context as AppStartActivity
+    LaunchedEffect(error) {
+        if (error.isNotEmpty()) {
+            Toast.makeText(activity, error, Toast.LENGTH_LONG).show()
+        }
     }
-    val connectionProgressText by viewModel?.connectionProgressText?.collectAsState()
-        ?: remember { mutableStateOf("") }
+    EmergencyConnectContent(
+        uiState = uiState,
+        connectionProgressText = connectionProgressText,
+        onConnectClick = viewModel::connectButtonClick,
+    )
+}
+
+/**
+ * Stateless emergency-connect UI. Everything it needs is passed in, so it renders identically in
+ * the app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun EmergencyConnectContent(
+    uiState: EmergencyConnectUIState,
+    connectionProgressText: String,
+    onConnectClick: () -> Unit = {},
+) {
     AppBackground {
         EmergencyConnectCloseIcon(
             modifier =
@@ -78,22 +101,9 @@ fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal? = null) {
                 EmergencyConnectProgressBar(uiState, connectionProgressText)
             }
             Spacer(modifier = Modifier.height(24.dp))
-            EmergencyConnectButton(uiState) { viewModel?.connectButtonClick() }
+            EmergencyConnectButton(uiState, onConnectClick)
             Spacer(modifier = Modifier.height(16.dp))
             EmergencyConnectCancelButton()
-        }
-        HandleToast(viewModel)
-    }
-}
-
-@Composable
-private fun HandleToast(viewModel: EmergencyConnectViewModal?) {
-    if (viewModel == null) return
-    val error by viewModel.error.collectAsState(initial = "")
-    val activity = LocalNavController.current.context as AppStartActivity
-    LaunchedEffect(error) {
-        if (error.isNotEmpty()) {
-            Toast.makeText(activity, error, Toast.LENGTH_LONG).show()
         }
     }
 }
@@ -202,10 +212,28 @@ fun EmergencyConnectCancelButton() {
     }
 }
 
+/**
+ * Feeds representative [EmergencyConnectUIState] values into the preview. The renderer draws
+ * [EmergencyConnectContent] once per value.
+ */
+private class EmergencyConnectStateProvider : PreviewParameterProvider<EmergencyConnectUIState> {
+    override val values =
+        sequenceOf(
+            EmergencyConnectUIState.Disconnected,
+            EmergencyConnectUIState.Connecting,
+            EmergencyConnectUIState.Connected,
+        )
+}
+
 @Composable
 @MultiDevicePreview
-fun EmergencyConnectScreenPreview() {
+private fun EmergencyConnectContentPreview(
+    @PreviewParameter(EmergencyConnectStateProvider::class) uiState: EmergencyConnectUIState,
+) {
     PreviewWithNav {
-        EmergencyConnectScreen()
+        EmergencyConnectContent(
+            uiState = uiState,
+            connectionProgressText = "Resolving e-connect domain..",
+        )
     }
 }

@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -59,18 +60,21 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AnimatedIPAddress
@@ -78,8 +82,12 @@ import com.windscribe.mobile.ui.common.AppConnectButton
 import com.windscribe.mobile.ui.common.LocationImage
 import com.windscribe.mobile.ui.common.fitsInOneLine
 import com.windscribe.mobile.ui.connection.BridgeApiViewModel
+import com.windscribe.mobile.ui.connection.BridgeApiViewModelImpl
 import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.connection.ConnectionViewmodelImpl
+import com.windscribe.mobile.ui.connection.LocationBackground
+import com.windscribe.mobile.ui.connection.LocationInfo
 import com.windscribe.mobile.ui.connection.LocationInfoState
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.ForceStatusBarIcons
@@ -91,34 +99,30 @@ import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
+import com.windscribe.mobile.ui.serverlist.ConfigViewmodelImpl
 import com.windscribe.mobile.ui.serverlist.SearchServerList
 import com.windscribe.mobile.ui.serverlist.ServerListScreen
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
+import com.windscribe.mobile.ui.serverlist.ServerViewModelImpl
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font26
 import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
+import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
-    serverViewModel: ServerViewModel?,
-    connectionViewmodel: ConnectionViewmodel?,
-    configViewmodel: ConfigViewmodel?,
-    homeViewmodel: HomeViewmodel?,
-    bridgeApiViewModel: BridgeApiViewModel?,
+    serverViewModel: ServerViewModel = hiltViewModel<ServerViewModelImpl>(),
+    connectionViewmodel: ConnectionViewmodel = hiltViewModel<ConnectionViewmodelImpl>(),
+    configViewmodel: ConfigViewmodel = hiltViewModel<ConfigViewmodelImpl>(),
+    homeViewmodel: HomeViewmodel = hiltViewModel<HomeViewmodelImpl>(),
+    bridgeApiViewModel: BridgeApiViewModel = hiltViewModel<BridgeApiViewModelImpl>(),
 ) {
-    if (serverViewModel == null ||
-        connectionViewmodel == null ||
-        configViewmodel == null ||
-        homeViewmodel == null ||
-        bridgeApiViewModel == null
-    ) {
-        return
-    }
     HandleToast(connectionViewmodel)
     HandleGoto(connectionViewmodel, homeViewmodel, bridgeApiViewModel)
     CompactUI(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel, bridgeApiViewModel)
@@ -278,9 +282,9 @@ private fun navigateWithData(
 }
 
 @Composable
-fun HandleToast(connectionViewmodel: ConnectionViewmodel?) {
+fun HandleToast(connectionViewmodel: ConnectionViewmodel) {
     val context = LocalContext.current
-    val toastMessage by connectionViewmodel?.toastMessage?.collectAsState() ?: return
+    val toastMessage by connectionViewmodel.toastMessage.collectAsState()
     LaunchedEffect(toastMessage) {
         when (toastMessage) {
             is ToastMessage.Localized -> {
@@ -361,11 +365,30 @@ private fun CompactUI(
     }
 }
 
-@SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
     val state by connectionViewmodel.connectionUIState.collectAsState()
     val isDecoyTrafficEnabled by connectionViewmodel.isDecoyTrafficEnabled.collectAsState()
+    val protocolTweaksEnabled by connectionViewmodel.isProtocolTweaksEnabled.collectAsState()
+    val preferredProtocolEnabled by connectionViewmodel.isPreferredProtocolEnabled.collectAsState()
+    ConnectionStatusSheetContent(
+        state = state,
+        isDecoyTrafficEnabled = isDecoyTrafficEnabled,
+        isProtocolTweaksEnabled = protocolTweaksEnabled,
+        isPreferredProtocolEnabled = preferredProtocolEnabled,
+        onProtocolChangeClick = { connectionViewmodel.onProtocolChangeClick() },
+    )
+}
+
+@SuppressLint("UnrememberedMutableInteractionSource")
+@Composable
+private fun ConnectionStatusSheetContent(
+    state: ConnectionUIState,
+    isDecoyTrafficEnabled: Boolean,
+    isProtocolTweaksEnabled: Boolean,
+    isPreferredProtocolEnabled: Boolean,
+    onProtocolChangeClick: () -> Unit,
+) {
     val containerColor =
         when (state) {
             is ConnectionUIState.Connected -> AppColors.mintGreen
@@ -376,13 +399,12 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         ConnectionStatus(state)
-        val protocolTweaksEnabled by connectionViewmodel.isProtocolTweaksEnabled.collectAsState()
         val showDecoyTraffic = state is ConnectionUIState.Connected && isDecoyTrafficEnabled
 
         // Add initial spacing
-        Spacer(modifier = Modifier.width(if (protocolTweaksEnabled || showDecoyTraffic) 4.dp else 12.dp))
+        Spacer(modifier = Modifier.width(if (isProtocolTweaksEnabled || showDecoyTraffic) 4.dp else 12.dp))
 
-        if (protocolTweaksEnabled) {
+        if (isProtocolTweaksEnabled) {
             Image(
                 painter =
                     painterResource(
@@ -416,8 +438,7 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
             color = containerColor,
         )
         Spacer(modifier = Modifier.width(4.dp))
-        val preferredProtocolEnabled by connectionViewmodel.isPreferredProtocolEnabled.collectAsState()
-        if (preferredProtocolEnabled) {
+        if (isPreferredProtocolEnabled) {
             Image(
                 painter =
                     painterResource(
@@ -442,7 +463,7 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
                 Modifier
                     .size(24.dp)
                     .hapticClickable {
-                        connectionViewmodel.onProtocolChangeClick()
+                        onProtocolChangeClick()
                     }.testTag("protocol_switcher"),
             contentScale = ContentScale.None,
             colorFilter = ColorFilter.tint(containerColor.copy(alpha = 0.4f)),
@@ -453,15 +474,27 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
 @Composable
 private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
     val state by connectionViewmodel.connectionUIState.collectAsState()
-    val locationInfo = (state.locationInfo as? LocationInfoState.Success)?.locationInfo
-    val nodeName = locationInfo?.nodeName ?: ""
-    val nickname = locationInfo?.nickName ?: ""
+    LocationNameContent(
+        locationInfo = state.locationInfo,
+        onSingleLineComputed = { isSingleLine ->
+            connectionViewmodel.setIsSingleLineLocationName(isSingleLine)
+        },
+    )
+}
+
+@Composable
+private fun LocationNameContent(
+    locationInfo: LocationInfoState?,
+    onSingleLineComputed: (Boolean) -> Unit,
+) {
+    val info = (locationInfo as? LocationInfoState.Success)?.locationInfo
+    val nodeName = info?.nodeName ?: ""
+    val nickname = info?.nickName ?: ""
     val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
+    val screenWidthDp = LocalWindowInfo.current.containerSize.width
     val maxWidthPx = with(density) { screenWidthDp.dp.toPx() }
     val isSingleLine = fitsInOneLine("$nodeName $nickname", 26.0f, maxWidthPx, density)
-    connectionViewmodel.setIsSingleLineLocationName(isSingleLine)
+    onSingleLineComputed(isSingleLine)
     if (isSingleLine) {
         Row {
             Text(
@@ -664,9 +697,14 @@ private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
 }
 
 @Composable
-private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
-    val state by connectionViewmodel?.connectionUIState?.collectAsState() ?: return
-    if (state is ConnectionUIState.Connected) {
+private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel) {
+    val state by connectionViewmodel.connectionUIState.collectAsState()
+    ConnectedBackgroundContent(connectionUIState = state)
+}
+
+@Composable
+private fun ConnectedBackgroundContent(connectionUIState: ConnectionUIState) {
+    if (connectionUIState is ConnectionUIState.Connected) {
         Box(
             modifier =
                 Modifier
@@ -693,15 +731,34 @@ private fun Header(
 ) {
     val navController = LocalNavController.current
     val state by connectionViewmodel.connectionUIState.collectAsState()
+    val userState by homeViewmodel.userState.collectAsState()
+    val newsfeedCount by connectionViewmodel.newFeedCount.collectAsState()
+    HeaderContent(
+        connectionUIState = state,
+        userState = userState,
+        newsfeedCount = newsfeedCount,
+        onMainMenuClick = { homeViewmodel.onMainMenuClick() },
+        onNewsfeedClick = { navController.navigate(Screen.Newsfeed.route) },
+    )
+}
+
+@Composable
+private fun HeaderContent(
+    connectionUIState: ConnectionUIState,
+    userState: UserState,
+    newsfeedCount: Int,
+    onMainMenuClick: () -> Unit,
+    onNewsfeedClick: () -> Unit,
+) {
     val leftHeaderAsset =
-        if (state is ConnectionUIState.Connected) {
+        if (connectionUIState is ConnectionUIState.Connected) {
             R.drawable.header_left
         } else {
             R.drawable.header_left_deep
         }
 
     val rigtHeaderAsset =
-        if (state is ConnectionUIState.Connected) {
+        if (connectionUIState is ConnectionUIState.Connected) {
             R.drawable.header_right
         } else {
             R.drawable.header_right_deep
@@ -760,7 +817,7 @@ private fun Header(
                     Modifier
                         .testTag("main_menu_button")
                         .hapticClickable {
-                            homeViewmodel.onMainMenuClick()
+                            onMainMenuClick()
                         },
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -772,11 +829,10 @@ private fun Header(
                         .testTag("newsfeed_open")
                         .height(18.dp)
                         .clickable {
-                            navController.navigate(Screen.Newsfeed.route)
+                            onNewsfeedClick()
                         },
                 contentScale = ContentScale.FillHeight,
             )
-            val userState by homeViewmodel.userState.collectAsState()
             if (userState is UserState.Pro) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Image(
@@ -785,13 +841,12 @@ private fun Header(
                     modifier =
                         Modifier
                             .clickable {
-                                navController.navigate(Screen.Newsfeed.route)
+                                onNewsfeedClick()
                             },
                     contentScale = ContentScale.FillHeight,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
             }
-            val newsfeedCount by connectionViewmodel.newFeedCount.collectAsState()
             if (newsfeedCount > 0) {
                 Box(
                     modifier =
@@ -824,6 +879,36 @@ private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
     val context = LocalContext.current
     val ipContextMenuState by bridgeApiViewModel.ipContextMenuState.collectAsState()
     val hasPinnedIp by bridgeApiViewModel.hasPinnedIp.collectAsState()
+
+    IPContextMenuContent(
+        ipContextMenuState = ipContextMenuState,
+        hasPinnedIp = hasPinnedIp,
+        onPinIPClick = {
+            bridgeApiViewModel.onPinIPClick(
+                onSuccess = { _, message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                },
+            )
+        },
+        onRotateIpClick = {
+            bridgeApiViewModel.onRotateIpClick(
+                onSuccess = { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                },
+            )
+        },
+        onCloseClick = { bridgeApiViewModel.setContextMenuState(false) },
+    )
+}
+
+@Composable
+private fun IPContextMenuContent(
+    ipContextMenuState: Pair<Boolean, Offset>,
+    hasPinnedIp: Boolean,
+    onPinIPClick: () -> Unit,
+    onRotateIpClick: () -> Unit,
+    onCloseClick: () -> Unit,
+) {
     val density = LocalDensity.current
     val menuWidth = 80.dp
 
@@ -861,29 +946,17 @@ private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
                 IPMenuItem(
                     icon = if (hasPinnedIp) R.drawable.ic_fav_selected else R.drawable.ic_fav,
                     contentDescription = if (hasPinnedIp) "Marked as Favourite" else "Mark as Favourite",
-                    onClick = {
-                        bridgeApiViewModel.onPinIPClick(
-                            onSuccess = { isPinned, message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                            },
-                        )
-                    },
+                    onClick = onPinIPClick,
                 )
                 IPMenuItem(
                     icon = R.drawable.refresh,
                     contentDescription = "Refresh IP",
-                    onClick = {
-                        bridgeApiViewModel.onRotateIpClick(
-                            onSuccess = { message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                            },
-                        )
-                    },
+                    onClick = onRotateIpClick,
                 )
                 IPMenuItem(
                     icon = R.drawable.ic_search_location_close,
                     contentDescription = "Close Menu",
-                    onClick = { bridgeApiViewModel.setContextMenuState(false) },
+                    onClick = onCloseClick,
                 )
             }
         }
@@ -949,10 +1022,59 @@ private fun Dots(modifier: Modifier) {
     }
 }
 
+private val previewProtocol =
+    ProtocolInformation(
+        protocol = "WireGuard",
+        port = "443",
+        description = "",
+        type = ProtocolConnectionStatus.Connected,
+    )
+
+private val previewLocation =
+    LocationInfoState.Success(
+        LocationInfo(
+            country = "United States",
+            nodeName = "New York",
+            nickName = "Liberty",
+            locationBackground = LocationBackground.Flag(R.drawable.dummy_flag),
+        ),
+    )
+
+/**
+ * Connected vs disconnected status sheet, so the preview shows the green "ON" pill with the
+ * protocol/port label and the grey "OFF" variant side by side.
+ */
+private class ConnectionStateProvider : PreviewParameterProvider<ConnectionUIState> {
+    override val values =
+        sequenceOf(
+            ConnectionUIState.Connected(previewProtocol, previewLocation),
+            ConnectionUIState.Disconnected(previewProtocol, previewLocation),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun HomeScreenPreview() {
+private fun ConnectionStatusSheetContentPreview(
+    @PreviewParameter(ConnectionStateProvider::class) state: ConnectionUIState,
+) {
     PreviewWithNav {
-        HomeScreen(null, null, null, null, null)
+        ConnectionStatusSheetContent(
+            state = state,
+            isDecoyTrafficEnabled = true,
+            isProtocolTweaksEnabled = true,
+            isPreferredProtocolEnabled = true,
+            onProtocolChangeClick = {},
+        )
+    }
+}
+
+@Composable
+@MultiDevicePreview
+private fun LocationNameContentPreview() {
+    PreviewWithNav {
+        LocationNameContent(
+            locationInfo = previewLocation,
+            onSingleLineComputed = {},
+        )
     }
 }

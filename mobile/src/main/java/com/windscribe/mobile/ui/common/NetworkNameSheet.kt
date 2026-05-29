@@ -67,6 +67,7 @@ fun RowScope.NetworkNameSheet(
 ) {
     val activity = LocalActivity.current as AppStartActivity
     val networkInfo by connectionViewmodel.networkInfoState.collectAsState()
+    val hideNetworkName by homeViewmodel.hideNetworkName.collectAsState()
     var showPermissionRequest by remember { mutableStateOf(false) }
     val navController = LocalNavController.current
     if (showPermissionRequest) {
@@ -94,6 +95,21 @@ fun RowScope.NetworkNameSheet(
             }
         }
     }
+    NetworkNameSheetContent(
+        networkInfo = networkInfo,
+        hideNetworkName = hideNetworkName,
+        onHideNetworkNameClick = { homeViewmodel.onHideNetworkNameClick() },
+        onOpenNetworkDetails = { showPermissionRequest = true },
+    )
+}
+
+@Composable
+fun RowScope.NetworkNameSheetContent(
+    networkInfo: NetworkInfoState,
+    hideNetworkName: Boolean,
+    onHideNetworkNameClick: () -> Unit,
+    onOpenNetworkDetails: () -> Unit,
+) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start, modifier = Modifier.weight(1.0f)) {
         Image(
             painter =
@@ -108,8 +124,6 @@ fun RowScope.NetworkNameSheet(
             modifier = Modifier.padding(start = 12.dp, end = 16.dp),
         )
 
-        val hideNetworkName by homeViewmodel.hideNetworkName.collectAsState()
-
         Box(
             modifier =
                 Modifier
@@ -117,10 +131,10 @@ fun RowScope.NetworkNameSheet(
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onDoubleTap = {
-                                homeViewmodel.onHideNetworkNameClick()
+                                onHideNetworkNameClick()
                             },
                             onTap = {
-                                showPermissionRequest = true
+                                onOpenNetworkDetails()
                             },
                         )
                     },
@@ -165,7 +179,7 @@ fun RowScope.NetworkNameSheet(
             modifier =
                 Modifier
                     .size(24.dp)
-                    .hapticClickable { showPermissionRequest = true },
+                    .hapticClickable { onOpenNetworkDetails() },
             contentScale = ContentScale.None,
         )
     }

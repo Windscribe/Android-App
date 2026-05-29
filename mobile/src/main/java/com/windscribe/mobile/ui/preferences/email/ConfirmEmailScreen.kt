@@ -15,14 +15,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
@@ -37,27 +38,34 @@ import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @Composable
-fun ConfirmEmailScreen(viewModel: EmailViewModel? = null) {
+fun ConfirmEmailScreen(viewModel: EmailViewModel = hiltViewModel<EmailViewModelImpl>()) {
+    val error by viewModel.error.collectAsState()
+    val showProgress by viewModel.showProgress.collectAsState()
+    val exit by viewModel.exit.collectAsState()
+    val pro by viewModel.pro.collectAsState()
+    ConfirmEmailContent(
+        error = error,
+        showProgress = showProgress,
+        exit = exit,
+        pro = pro,
+        onResendConfirmation = viewModel::resendConfirmation,
+    )
+}
+
+@Composable
+fun ConfirmEmailContent(
+    error: ToastMessage?,
+    showProgress: Boolean,
+    exit: Boolean,
+    pro: Boolean,
+    onResendConfirmation: () -> Unit = {},
+) {
     val navController = LocalNavController.current
-    val error by viewModel?.error?.collectAsState() ?: remember { mutableStateOf(null) }
-    val showProgress by viewModel?.showProgress?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val exit by viewModel?.exit?.collectAsState() ?: remember { mutableStateOf(false) }
-    val pro by viewModel?.pro?.collectAsState() ?: remember { mutableStateOf(false) }
     LaunchedEffect(exit) {
         if (exit) {
             navController.popBackStack()
         }
     }
-    val errorMessage =
-        if (error is ToastMessage.Raw) {
-            (error as ToastMessage.Raw).message
-        } else if (error is ToastMessage.Localized) {
-            val resourceID = (error as ToastMessage.Localized).message
-            stringResource(resourceID)
-        } else {
-            ""
-        }
     PreferenceBackground {
         Column(
             modifier =
@@ -103,7 +111,7 @@ fun ConfirmEmailScreen(viewModel: EmailViewModel? = null) {
                 text = stringResource(com.windscribe.vpn.R.string.resend_verification_email),
                 enabled = true,
                 onClick = {
-                    viewModel?.resendConfirmation()
+                    onResendConfirmation()
                 },
                 modifier =
                     Modifier
@@ -136,10 +144,21 @@ fun ConfirmEmailScreen(viewModel: EmailViewModel? = null) {
     }
 }
 
+private class ConfirmEmailStateProvider : PreviewParameterProvider<Boolean> {
+    override val values = sequenceOf(false, true)
+}
+
 @Composable
 @MultiDevicePreview
-fun ConfirmEmailScreenPreview() {
+fun ConfirmEmailContentPreview(
+    @PreviewParameter(ConfirmEmailStateProvider::class) pro: Boolean,
+) {
     PreviewWithNav {
-        ConfirmEmailScreen()
+        ConfirmEmailContent(
+            error = null,
+            showProgress = false,
+            exit = false,
+            pro = pro,
+        )
     }
 }

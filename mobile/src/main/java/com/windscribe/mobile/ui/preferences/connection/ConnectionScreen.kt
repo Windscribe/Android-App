@@ -53,7 +53,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.DescriptionWithLearnMore
@@ -82,21 +85,154 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.FeatureExplainer
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isAppSelectedInMockLocationList
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isDevModeOn
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
+/**
+ * Callbacks the connection-preferences UI can raise. Hoisted out of the composables so the
+ * stateless [ConnectionContent] never needs to know about [ConnectionViewModel] — previews supply
+ * no-op lambdas.
+ */
+class ConnectionActions(
+    val onAutoConnectToggleClicked: () -> Unit = {},
+    val onAllowLanToggleClicked: () -> Unit = {},
+    val onStartOnBootToggleClicked: () -> Unit = {},
+    val onGPSSpoofingToggleClicked: () -> Unit = {},
+    val onDecoyTrafficToggleClicked: () -> Unit = {},
+    val onFakeTrafficVolumeSelected: (DropDownStringItem) -> Unit = {},
+    val onIpStackEgressModeSelected: (DropDownStringItem) -> Unit = {},
+    val onModeSelected: (String) -> Unit = {},
+    val onProtocolSelected: (DropDownStringItem) -> Unit = {},
+    val onPortSelected: (DropDownStringItem) -> Unit = {},
+    val onDNSModeSelected: (String) -> Unit = {},
+    val onCustomDNSAddressChanged: (String) -> Unit = {},
+    val onSaveCustomDNSAddress: () -> Unit = {},
+    val onPacketSizeModeSelected: (Boolean) -> Unit = {},
+    val onPacketSizedChanged: (Int) -> Unit = {},
+    val onPacketSizeSaved: () -> Unit = {},
+    val onAutoDetectClicked: () -> Unit = {},
+)
+
+/**
+ * Immutable snapshot of all [ConnectionViewModel] state the UI renders. Bundled so the stateless
+ * [ConnectionContent] takes a single state object plus [ConnectionActions].
+ */
+data class ConnectionUiState(
+    val autoConnect: Boolean = false,
+    val allowLan: Boolean = false,
+    val startOnBoot: Boolean = false,
+    val gpsSpoofing: Boolean = false,
+    val decoyTraffic: Boolean = false,
+    val trafficMultiplier: String = "",
+    val trafficMultipliers: List<DropDownStringItem> = emptyList(),
+    val potentialDataUse: String = "",
+    val ipStackEgressMode: String = "auto",
+    val ipStackEgressModes: List<DropDownStringItem> = emptyList(),
+    val mode: String = CONNECTION_MODE_AUTO,
+    val protocols: List<DropDownStringItem> = listOf(DropDownStringItem("IKEv2")),
+    val ports: List<DropDownStringItem> = listOf(DropDownStringItem("500")),
+    val selectedProtocol: String = "IKEv2",
+    val selectedPort: String = "500",
+    val dnsMode: String = DNS_MODE_CUSTOM,
+    val customDnsAddress: String = "1.1.1.1",
+    val packetSizeAuto: Boolean = true,
+    val packetSize: Int = 1500,
+    val autoDetecting: Boolean = false,
+)
+
+/**
+ * Stateful entry point. Owns the [ConnectionViewModel], collects its flows and wires the
+ * preference refresh, then delegates rendering to [ConnectionContent].
+ */
 @Composable
-fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
-    val navController = LocalNavController.current
-    val autoConnect by viewModel?.autoConnect?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val allowLan by viewModel?.allowLan?.collectAsState() ?: remember { mutableStateOf(false) }
-    val startOnBoot by viewModel?.startOnBoot?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val gpsSpoofing by viewModel?.gpsSpoofing?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val context = LocalContext.current
+fun ConnectionScreen(viewModel: ConnectionViewModel = hiltViewModel<ConnectionViewModelImpl>()) {
+    val autoConnect by viewModel.autoConnect.collectAsState()
+    val allowLan by viewModel.allowLan.collectAsState()
+    val startOnBoot by viewModel.startOnBoot.collectAsState()
+    val gpsSpoofing by viewModel.gpsSpoofing.collectAsState()
+    val decoyTraffic by viewModel.decoyTraffic.collectAsState()
+    val trafficMultiplier by viewModel.trafficMultiplier.collectAsState()
+    val trafficMultipliers by viewModel.trafficMultipliers.collectAsState()
+    val potentialDataUse by viewModel.potentialDataUse.collectAsState()
+    val ipStackEgressMode by viewModel.ipStackEgressMode.collectAsState()
+    val ipStackEgressModes by viewModel.ipStackEgressModes.collectAsState()
+    val mode by viewModel.mode.collectAsState()
+    val protocols by viewModel.protocols.collectAsState()
+    val ports by viewModel.ports.collectAsState()
+    val selectedProtocol by viewModel.selectedProtocol.collectAsState()
+    val selectedPort by viewModel.selectedPort.collectAsState()
+    val dnsMode by viewModel.dnsMode.collectAsState()
+    val customDnsAddress by viewModel.customDnsAddress.collectAsState()
+    val packetSizeAuto by viewModel.packetSizeAuto.collectAsState()
+    val packetSize by viewModel.packetSize.collectAsState()
+    val autoDetecting by viewModel.autoDetecting.collectAsState()
+
     LaunchedEffect(Unit) {
-        viewModel?.refreshPreferences()
+        viewModel.refreshPreferences()
     }
+
+    val state =
+        ConnectionUiState(
+            autoConnect = autoConnect,
+            allowLan = allowLan,
+            startOnBoot = startOnBoot,
+            gpsSpoofing = gpsSpoofing,
+            decoyTraffic = decoyTraffic,
+            trafficMultiplier = trafficMultiplier,
+            trafficMultipliers = trafficMultipliers,
+            potentialDataUse = potentialDataUse,
+            ipStackEgressMode = ipStackEgressMode,
+            ipStackEgressModes = ipStackEgressModes,
+            mode = mode,
+            protocols = protocols,
+            ports = ports,
+            selectedProtocol = selectedProtocol,
+            selectedPort = selectedPort,
+            dnsMode = dnsMode,
+            customDnsAddress = customDnsAddress,
+            packetSizeAuto = packetSizeAuto,
+            packetSize = packetSize,
+            autoDetecting = autoDetecting,
+        )
+
+    ConnectionContent(
+        state = state,
+        toastMessage = viewModel.toastMessage,
+        actions =
+            ConnectionActions(
+                onAutoConnectToggleClicked = viewModel::onAutoConnectToggleClicked,
+                onAllowLanToggleClicked = viewModel::onAllowLanToggleClicked,
+                onStartOnBootToggleClicked = viewModel::onStartOnBootToggleClicked,
+                onGPSSpoofingToggleClicked = viewModel::onGPSSpoofingToggleClicked,
+                onDecoyTrafficToggleClicked = viewModel::onDecoyTrafficToggleClicked,
+                onFakeTrafficVolumeSelected = viewModel::onFakeTrafficVolumeSelected,
+                onIpStackEgressModeSelected = viewModel::onIpStackEgressModeSelected,
+                onModeSelected = viewModel::onModeSelected,
+                onProtocolSelected = viewModel::onProtocolSelected,
+                onPortSelected = viewModel::onPortSelected,
+                onDNSModeSelected = viewModel::onDNSModeSelected,
+                onCustomDNSAddressChanged = viewModel::onCustomDNSAddressChanged,
+                onSaveCustomDNSAddress = viewModel::saveCustomDNSAddress,
+                onPacketSizeModeSelected = viewModel::onPacketSizeModeSelected,
+                onPacketSizedChanged = viewModel::onPacketSizedChanged,
+                onPacketSizeSaved = viewModel::onPacketSizeSaved,
+                onAutoDetectClicked = viewModel::onAutoDetectClicked,
+            ),
+    )
+}
+
+/**
+ * Stateless connection-preferences UI. Everything it needs is passed in, so it renders identically
+ * in the app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun ConnectionContent(
+    state: ConnectionUiState,
+    toastMessage: Flow<ToastMessage>,
+    actions: ConnectionActions,
+) {
+    val navController = LocalNavController.current
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
@@ -132,43 +268,43 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                     title = R.string.auto_connect,
                     icon = com.windscribe.mobile.R.drawable.auto_connect,
                     description = R.string.auto_connect_explainer,
-                    autoConnect,
-                    onSelect = { viewModel?.onAutoConnectToggleClicked() },
+                    state.autoConnect,
+                    onSelect = { actions.onAutoConnectToggleClicked() },
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                ConnectionMode(viewModel)
+                ConnectionMode(state, toastMessage, actions)
                 Spacer(modifier = Modifier.height(16.dp))
-                PacketSize(viewModel)
+                PacketSize(state, actions)
                 Spacer(modifier = Modifier.height(16.dp))
-                IPVersionMode(viewModel)
+                IPVersionMode(state, actions)
                 Spacer(modifier = Modifier.height(16.dp))
-                CustomDNS(viewModel)
+                CustomDNS(state, actions)
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
                     title = R.string.lan_by_pass,
                     icon = com.windscribe.mobile.R.drawable.ic_lan_icon,
                     description = R.string.allow_lan_description,
-                    allowLan,
+                    state.allowLan,
                     explainer = FeatureExplainer.ALLOW_LAN,
-                    onSelect = { viewModel?.onAllowLanToggleClicked() },
+                    onSelect = { actions.onAllowLanToggleClicked() },
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
                     title = R.string.start_on_boot,
                     icon = com.windscribe.mobile.R.drawable.ic_auto_connect_boot,
                     description = R.string.auto_connect_on_boot_description,
-                    startOnBoot,
-                    onSelect = { viewModel?.onStartOnBootToggleClicked() },
+                    state.startOnBoot,
+                    onSelect = { actions.onStartOnBootToggleClicked() },
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
                     title = R.string.gps_spoofing,
                     icon = com.windscribe.mobile.R.drawable.ic_gps_spoof_icon,
                     description = R.string.gps_spoofing_description,
-                    gpsSpoofing,
+                    state.gpsSpoofing,
                     explainer = FeatureExplainer.GPS_SPOOFING,
                     onSelect = {
-                        if (gpsSpoofing.not() &&
+                        if (state.gpsSpoofing.not() &&
                             (
                                 !isDevModeOn(context) ||
                                     !isAppSelectedInMockLocationList(
@@ -178,34 +314,24 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                         ) {
                             navController.navigate(Screen.GpsSpoofing.route)
                         } else {
-                            viewModel?.onGPSSpoofingToggleClicked()
+                            actions.onGPSSpoofingToggleClicked()
                         }
                     },
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                DecoyTrafficMode(viewModel)
+                DecoyTrafficMode(state, actions)
             }
         }
     }
 }
 
 @Composable
-private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
+private fun DecoyTrafficMode(
+    state: ConnectionUiState,
+    actions: ConnectionActions,
+) {
     val navController = LocalNavController.current
-    val decoyTraffic by viewModel?.decoyTraffic?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val multiplier by viewModel?.trafficMultiplier?.collectAsState() ?: remember {
-        mutableStateOf(
-            DropDownStringItem(""),
-        )
-    }
-    val multipliers by viewModel?.trafficMultipliers?.collectAsState() ?: remember {
-        mutableStateOf(
-            emptyList<DropDownStringItem>(),
-        )
-    }
-    val potentialDataUse by viewModel?.potentialDataUse?.collectAsState()
-        ?: remember { mutableStateOf("") }
+    val decoyTraffic = state.decoyTraffic
     val shape =
         if (decoyTraffic) {
             RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
@@ -224,7 +350,7 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
                 if (decoyTraffic.not()) {
                     navController.navigate(Screen.ExtraDataUseWarning.route)
                 } else {
-                    viewModel?.onDecoyTrafficToggleClicked()
+                    actions.onDecoyTrafficToggleClicked()
                 }
             },
         )
@@ -232,11 +358,11 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
             Spacer(modifier = Modifier.height(1.dp))
             CustomDropDown(
                 R.string.fake_traffic_volume,
-                multipliers,
-                multiplier.toString(),
+                state.trafficMultipliers,
+                state.trafficMultiplier,
                 shape = RoundedCornerShape(0.dp),
             ) {
-                viewModel?.onFakeTrafficVolumeSelected(it)
+                actions.onFakeTrafficVolumeSelected(it)
             }
             Spacer(modifier = Modifier.height(1.dp))
             Row(
@@ -256,7 +382,7 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = potentialDataUse,
+                    text = state.potentialDataUse,
                     style = font16,
                     color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 )
@@ -266,10 +392,10 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
 }
 
 @Composable
-private fun IPVersionMode(viewModel: ConnectionViewModel?) {
-    val ipStackEgressModes by viewModel?.ipStackEgressModes?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
-    val ipStackEgressMode by viewModel?.ipStackEgressMode?.collectAsState() ?: remember { mutableStateOf("auto") }
-
+private fun IPVersionMode(
+    state: ConnectionUiState,
+    actions: ConnectionActions,
+) {
     Column {
         // Header with title and description only (no mode selector on right)
         Column(
@@ -301,22 +427,13 @@ private fun IPVersionMode(viewModel: ConnectionViewModel?) {
         Spacer(modifier = Modifier.height(1.dp))
         CustomDropDown(
             R.string.egress,
-            ipStackEgressModes,
-            ipStackEgressMode,
+            state.ipStackEgressModes,
+            state.ipStackEgressMode,
             shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
         ) {
-            viewModel?.onIpStackEgressModeSelected(it)
+            actions.onIpStackEgressModeSelected(it)
         }
         // Future: Ingress dropdown (hidden for now)
-        // Spacer(modifier = Modifier.height(1.dp))
-        // CustomDropDown(
-        //     R.string.ingress,
-        //     ipStackIngressModes,
-        //     ipStackIngressMode,
-        //     shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
-        // ) {
-        //     viewModel?.onIpStackIngressModeSelected(it)
-        // }
     }
 }
 
@@ -371,27 +488,12 @@ private fun ConnectionItem(
 }
 
 @Composable
-private fun ConnectionMode(viewModel: ConnectionViewModel?) {
-    val protocols by viewModel?.protocols?.collectAsState() ?: remember {
-        mutableStateOf(
-            listOf(
-                DropDownStringItem("IKEv2"),
-            ),
-        )
-    }
-    val ports by viewModel?.ports?.collectAsState() ?: remember {
-        mutableStateOf(
-            listOf(
-                DropDownStringItem("500"),
-            ),
-        )
-    }
-    val selectedProtocol by viewModel?.selectedProtocol?.collectAsState()
-        ?: remember { mutableStateOf("IKEv2") }
-    val selectedPort by viewModel?.selectedPort?.collectAsState()
-        ?: remember { mutableStateOf("500") }
-    val mode by viewModel?.mode?.collectAsState()
-        ?: remember { mutableStateOf(CONNECTION_MODE_AUTO) }
+private fun ConnectionMode(
+    state: ConnectionUiState,
+    toastMessage: Flow<ToastMessage>,
+    actions: ConnectionActions,
+) {
+    val mode = state.mode
     val shape =
         if (mode == CONNECTION_MODE_MANUAL) {
             RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
@@ -413,38 +515,41 @@ private fun ConnectionMode(viewModel: ConnectionViewModel?) {
             mode,
             explainer = FeatureExplainer.CONNECTION_MODE,
             onModeSelected = {
-                viewModel?.onModeSelected(it)
+                actions.onModeSelected(it)
             },
         )
         if (mode == CONNECTION_MODE_MANUAL) {
             Spacer(modifier = Modifier.height(1.dp))
             CustomDropDown(
                 R.string.protocol,
-                protocols,
-                selectedProtocol,
+                state.protocols,
+                state.selectedProtocol,
                 onSelect = {
-                    viewModel?.onProtocolSelected(it)
+                    actions.onProtocolSelected(it)
                 },
                 shape = RoundedCornerShape(0.dp),
             )
             Spacer(modifier = Modifier.height(1.dp))
             CustomDropDown(
                 R.string.port,
-                ports,
-                selectedPort,
+                state.ports,
+                state.selectedPort,
                 onSelect = {
-                    viewModel?.onPortSelected(it)
+                    actions.onPortSelected(it)
                 },
                 shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
             )
         }
     }
-    HandleToast(viewModel)
+    HandleToast(toastMessage)
 }
 
 @Composable
-private fun CustomDNS(viewModel: ConnectionViewModel?) {
-    val mode by viewModel?.dnsMode?.collectAsState() ?: remember { mutableStateOf(DNS_MODE_CUSTOM) }
+private fun CustomDNS(
+    state: ConnectionUiState,
+    actions: ConnectionActions,
+) {
+    val mode = state.dnsMode
     val shape =
         if (mode == DNS_MODE_CUSTOM) {
             RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
@@ -466,20 +571,22 @@ private fun CustomDNS(viewModel: ConnectionViewModel?) {
             mode,
             explainer = FeatureExplainer.CUSTOM_DNS_MODE,
             onModeSelected = {
-                viewModel?.onDNSModeSelected(it)
+                actions.onDNSModeSelected(it)
             },
         )
         if (mode == DNS_MODE_CUSTOM) {
             Spacer(modifier = Modifier.height(1.dp))
-            CustomDNSAddress(viewModel)
+            CustomDNSAddress(state, actions)
         }
     }
 }
 
 @Composable
-private fun CustomDNSAddress(viewModel: ConnectionViewModel?) {
-    val address by viewModel?.customDnsAddress?.collectAsState()
-        ?: remember { mutableStateOf("1.1.1.1") }
+private fun CustomDNSAddress(
+    state: ConnectionUiState,
+    actions: ConnectionActions,
+) {
+    val address = state.customDnsAddress
     var enabled by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -528,7 +635,7 @@ private fun CustomDNSAddress(viewModel: ConnectionViewModel?) {
                         ),
                 ),
             onValueChange = {
-                viewModel?.onCustomDNSAddressChanged(it)
+                actions.onCustomDNSAddressChanged(it)
             },
         )
         if (enabled) {
@@ -571,7 +678,7 @@ private fun CustomDNSAddress(viewModel: ConnectionViewModel?) {
                     ) {
                         if (enabled) {
                             enabled = false
-                            viewModel?.saveCustomDNSAddress()
+                            actions.onSaveCustomDNSAddress()
                             focusManager.clearFocus()
                         } else {
                             enabled = true
@@ -583,17 +690,16 @@ private fun CustomDNSAddress(viewModel: ConnectionViewModel?) {
 }
 
 @Composable
-private fun HandleToast(viewModel: ConnectionViewModel?) {
+private fun HandleToast(toastMessage: Flow<ToastMessage>) {
     val context = LocalContext.current
-    val toastMessage by viewModel?.toastMessage?.collectAsState("")
-        ?: remember { mutableStateOf("") }
-    LaunchedEffect(toastMessage) {
-        when (toastMessage) {
+    val message by toastMessage.collectAsState(null)
+    LaunchedEffect(message) {
+        when (val current = message) {
             is ToastMessage.Raw -> {
                 Toast
                     .makeText(
                         context,
-                        (toastMessage as ToastMessage.Raw).message,
+                        current.message,
                         Toast.LENGTH_SHORT,
                     ).show()
             }
@@ -602,29 +708,29 @@ private fun HandleToast(viewModel: ConnectionViewModel?) {
                 Toast
                     .makeText(
                         context,
-                        (toastMessage as ToastMessage.Localized).message,
+                        current.message,
                         Toast.LENGTH_SHORT,
                     ).show()
             }
+
+            else -> {}
         }
     }
 }
 
 @Composable
-private fun AutoPacketSize(viewModel: ConnectionViewModel?) {
-    val packetSize by viewModel?.packetSize?.collectAsState()
-        ?: remember { mutableStateOf(1500) }
+private fun AutoPacketSize(
+    state: ConnectionUiState,
+    actions: ConnectionActions,
+) {
+    val packetSize = state.packetSize
     var enabled by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     var text by remember { mutableStateOf(packetSize.toString()) }
     val activity = LocalActivity.current as? AppStartActivity
     val showToast = remember { mutableStateOf(false) }
-    val autoDetecting by viewModel?.autoDetecting?.collectAsState() ?: remember {
-        mutableStateOf(
-            false,
-        )
-    }
+    val autoDetecting = state.autoDetecting
     LaunchedEffect(showToast.value) {
         if (showToast.value) {
             Toast.makeText(activity, "Invalid packet size", Toast.LENGTH_SHORT).show()
@@ -684,7 +790,7 @@ private fun AutoPacketSize(viewModel: ConnectionViewModel?) {
                     text = it
                     val number = it.toIntOrNull()
                     if (number != null && number in 800..2000) {
-                        viewModel?.onPacketSizedChanged(number)
+                        actions.onPacketSizedChanged(number)
                     }
                 }
             },
@@ -707,7 +813,7 @@ private fun AutoPacketSize(viewModel: ConnectionViewModel?) {
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                         ) {
-                            viewModel?.onAutoDetectClicked()
+                            actions.onAutoDetectClicked()
                         }.padding(4.dp),
             )
         }
@@ -735,7 +841,7 @@ private fun AutoPacketSize(viewModel: ConnectionViewModel?) {
                             focusManager.clearFocus()
                             val number = text.toIntOrNull()
                             if (number != null && number in 800..2000) {
-                                viewModel?.onPacketSizeSaved()
+                                actions.onPacketSizeSaved()
                             } else {
                                 showToast.value = true
                             }
@@ -749,8 +855,11 @@ private fun AutoPacketSize(viewModel: ConnectionViewModel?) {
 }
 
 @Composable
-private fun PacketSize(viewModel: ConnectionViewModel?) {
-    val mode by viewModel?.packetSizeAuto?.collectAsState() ?: remember { mutableStateOf(true) }
+private fun PacketSize(
+    state: ConnectionUiState,
+    actions: ConnectionActions,
+) {
+    val mode = state.packetSizeAuto
     val shape =
         if (mode) {
             RoundedCornerShape(size = 16.dp)
@@ -772,12 +881,12 @@ private fun PacketSize(viewModel: ConnectionViewModel?) {
             mode,
             explainer = FeatureExplainer.PACKET_SIZE,
             onModeSelected = {
-                viewModel?.onPacketSizeModeSelected(it)
+                actions.onPacketSizeModeSelected(it)
             },
         )
         if (!mode) {
             Spacer(modifier = Modifier.height(1.dp))
-            AutoPacketSize(viewModel)
+            AutoPacketSize(state, actions)
         }
     }
 }
@@ -925,10 +1034,31 @@ private fun AlwaysOnVPN() {
     }
 }
 
+/**
+ * Feeds representative state into the preview so the renderer draws [ConnectionContent] without a VM.
+ */
+private class ConnectionStateProvider : PreviewParameterProvider<ConnectionUiState> {
+    override val values =
+        sequenceOf(
+            ConnectionUiState(),
+            ConnectionUiState(
+                mode = CONNECTION_MODE_MANUAL,
+                decoyTraffic = true,
+                packetSizeAuto = false,
+            ),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun ConnectionScreenPreview() {
+private fun ConnectionContentPreview(
+    @PreviewParameter(ConnectionStateProvider::class) state: ConnectionUiState,
+) {
     PreviewWithNav {
-        ConnectionScreen()
+        ConnectionContent(
+            state = state,
+            toastMessage = emptyFlow(),
+            actions = ConnectionActions(),
+        )
     }
 }

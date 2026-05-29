@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.preferences.account
 
 import PreferencesNavBar
-import android.content.res.Configuration
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
@@ -51,10 +50,12 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -62,6 +63,7 @@ import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.common.safeStartActivity
 import com.windscribe.mobile.ui.connection.ToastMessage
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
@@ -79,22 +81,68 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.R
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
+/**
+ * Callbacks the account UI can raise. Hoisted out of the composables so the stateless
+ * [AccountContent] never needs to know about [AccountViewModel] — previews supply no-op lambdas.
+ */
+class AccountActions(
+    val onManageAccountClicked: () -> Unit = {},
+    val onResetPasswordClicked: () -> Unit = {},
+    val onVoucherCodeClicked: () -> Unit = {},
+    val onLazyLoginClicked: () -> Unit = {},
+    val onEnterVoucherCode: (String) -> Unit = {},
+    val onEnterLazyLoginCode: (String) -> Unit = {},
+    val onDialogDismiss: () -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [AccountViewModel], collects its flows, then delegates rendering
+ * to [AccountContent].
+ */
 @Composable
-fun AccountScreen(viewModel: AccountViewModel? = null) {
+fun AccountScreen(viewModel: AccountViewModel = hiltViewModel<AccountViewModelImpl>()) {
+    val showProgress by viewModel.showProgress.collectAsState()
+    val isGhostAccount by viewModel.isGhostAccount.collectAsState()
+    val accountState by viewModel.accountState.collectAsState()
+    val isSsoLogin by viewModel.isSsoLogin.collectAsState()
+    AccountContent(
+        showProgress = showProgress,
+        isGhostAccount = isGhostAccount,
+        accountState = accountState,
+        isSsoLogin = isSsoLogin,
+        alertState = viewModel.alertState,
+        goTo = viewModel.goTo,
+        actions =
+            AccountActions(
+                onManageAccountClicked = viewModel::onManageAccountClicked,
+                onResetPasswordClicked = viewModel::onResetPasswordClicked,
+                onVoucherCodeClicked = viewModel::onVoucherCodeClicked,
+                onLazyLoginClicked = viewModel::onLazyLoginClicked,
+                onEnterVoucherCode = viewModel::onEnterVoucherCode,
+                onEnterLazyLoginCode = viewModel::onEnterLazyLoginCode,
+                onDialogDismiss = viewModel::onDialogDismiss,
+            ),
+    )
+}
+
+/**
+ * Stateless account UI. Everything it needs is passed in, so it renders identically in the app and
+ * in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun AccountContent(
+    showProgress: Boolean,
+    isGhostAccount: Boolean,
+    accountState: AccountState,
+    isSsoLogin: Boolean,
+    alertState: Flow<AlertState>,
+    goTo: Flow<AccountGoTo>,
+    actions: AccountActions,
+) {
     val navController = LocalNavController.current
-    val showProgress by viewModel?.showProgress?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val isGhostAccount by viewModel?.isGhostAccount?.collectAsState() ?: remember {
-        mutableStateOf(
-            false,
-        )
-    }
-    val accountState by viewModel?.accountState?.collectAsState() ?: remember {
-        mutableStateOf(AccountState.Loading)
-    }
     val scrollState = rememberScrollState()
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
@@ -111,18 +159,17 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
                     .verticalScroll(scrollState),
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
-                AccountInfo(viewModel)
+                AccountInfo(accountState)
                 Spacer(modifier = Modifier.height(14.dp))
-                PlanInfo(viewModel)
+                PlanInfo(accountState)
                 Spacer(modifier = Modifier.height(14.dp))
                 ActionButton(stringResource(R.string.edit_account)) {
-                    viewModel?.onManageAccountClicked()
+                    actions.onManageAccountClicked()
                 }
-                val isSsoLogin by viewModel?.isSsoLogin?.collectAsState() ?: remember { mutableStateOf(false) }
                 if (isSsoLogin && accountState.emailState is EmailState.Email) {
                     Spacer(modifier = Modifier.height(14.dp))
                     ActionButton(stringResource(R.string.reset_password)) {
-                        viewModel?.onResetPasswordClicked()
+                        actions.onResetPasswordClicked()
                     }
                 }
                 Spacer(modifier = Modifier.height(14.dp))
@@ -135,14 +182,14 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
                         ),
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                VoucherCode(viewModel)
+                VoucherCode(actions.onVoucherCodeClicked)
                 Spacer(modifier = Modifier.height(14.dp))
-                LazyLogin(viewModel)
+                LazyLogin(actions.onLazyLoginClicked)
             }
         }
         PreferenceProgressBar(showProgressBar = showProgress)
-        HandleGoto(viewModel)
-        HandleAlertState(viewModel)
+        HandleGoto(goTo)
+        HandleAlertState(alertState, actions)
     }
 }
 
@@ -176,11 +223,12 @@ private fun GhostAccountState() {
 }
 
 @Composable
-private fun HandleAlertState(viewModel: AccountViewModel?) {
+private fun HandleAlertState(
+    alertStateFlow: Flow<AlertState>,
+    actions: AccountActions,
+) {
     val activity = LocalActivity.current as? AppStartActivity
-    val alertState by viewModel?.alertState?.collectAsState() ?: remember {
-        mutableStateOf(AlertState.None)
-    }
+    val alertState by alertStateFlow.collectAsState(initial = AlertState.None)
     var showVoucherDialog by remember { mutableStateOf(false) }
     var showLazyLoginDialog by remember { mutableStateOf(false) }
     var fullScreenDialogState by remember { mutableStateOf<FullScreenDialogState>(FullScreenDialogState.None) }
@@ -225,25 +273,25 @@ private fun HandleAlertState(viewModel: AccountViewModel?) {
         state = fullScreenDialogState,
         onDismiss = {
             fullScreenDialogState = FullScreenDialogState.None
-            viewModel?.onDialogDismiss()
+            actions.onDialogDismiss()
         },
     )
 
     if (showVoucherDialog) {
         TextFieldDialog(onDismiss = {
             showVoucherDialog = false
-            viewModel?.onDialogDismiss()
+            actions.onDialogDismiss()
         }, onSubmit = {
-            viewModel?.onEnterVoucherCode(it)
+            actions.onEnterVoucherCode(it)
         })
     }
 
     if (showLazyLoginDialog) {
         TextFieldDialog(onDismiss = {
             showLazyLoginDialog = false
-            viewModel?.onDialogDismiss()
+            actions.onDialogDismiss()
         }, onSubmit = {
-            viewModel?.onEnterLazyLoginCode(it)
+            actions.onEnterLazyLoginCode(it)
         }, true)
     }
 }
@@ -398,10 +446,7 @@ private fun TextFieldDialog(
 }
 
 @Composable
-private fun AccountInfo(viewModel: AccountViewModel? = null) {
-    val accountState by viewModel?.accountState?.collectAsState()
-        ?: remember { mutableStateOf(AccountState.Loading) }
-
+private fun AccountInfo(accountState: AccountState) {
     val account = accountState as? AccountState.Account ?: return
 
     val username = account.username
@@ -626,15 +671,12 @@ private fun RowScope.ValueItem(value: String) {
 }
 
 @Composable
-private fun PlanInfo(viewModel: AccountViewModel? = null) {
-    val accountState by viewModel?.accountState?.collectAsState() ?: remember {
-        mutableStateOf(AccountState.Loading)
-    }
+private fun PlanInfo(accountState: AccountState) {
     val activity = LocalActivity.current as? AppStartActivity
     if (accountState !is AccountState.Account) {
         return
     }
-    val type = (accountState as AccountState.Account).type
+    val type = accountState.type
     val plan =
         when (type) {
             is AccountType.Pro, is AccountType.Unlimited -> stringResource(R.string.unlimited_data)
@@ -661,7 +703,7 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
                 RoundedCornerShape(0.dp)
             }
         }
-    val dateType = (accountState as AccountState.Account).dateType
+    val dateType = accountState.dateType
     Column {
         Text(
             stringResource(R.string.plan),
@@ -762,7 +804,7 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    (accountState as AccountState.Account).dataLeft,
+                    accountState.dataLeft,
                     style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
                 )
             }
@@ -812,7 +854,7 @@ private fun ActionButton(
 }
 
 @Composable
-private fun VoucherCode(viewModel: AccountViewModel?) {
+private fun VoucherCode(onVoucherCodeClicked: () -> Unit) {
     Column(
         modifier =
             Modifier
@@ -823,7 +865,7 @@ private fun VoucherCode(viewModel: AccountViewModel?) {
                         ),
                     shape = RoundedCornerShape(size = 12.dp),
                 ).hapticClickable {
-                    viewModel?.onVoucherCodeClicked()
+                    onVoucherCodeClicked()
                 }.padding(vertical = 14.dp, horizontal = 14.dp),
     ) {
         Row {
@@ -854,7 +896,7 @@ private fun VoucherCode(viewModel: AccountViewModel?) {
 }
 
 @Composable
-private fun LazyLogin(viewModel: AccountViewModel?) {
+private fun LazyLogin(onLazyLoginClicked: () -> Unit) {
     Column(
         modifier =
             Modifier
@@ -865,7 +907,7 @@ private fun LazyLogin(viewModel: AccountViewModel?) {
                         ),
                     shape = RoundedCornerShape(size = 12.dp),
                 ).hapticClickable {
-                    viewModel?.onLazyLoginClicked()
+                    onLazyLoginClicked()
                 }.padding(vertical = 14.dp, horizontal = 14.dp),
     ) {
         Row {
@@ -896,13 +938,9 @@ private fun LazyLogin(viewModel: AccountViewModel?) {
 }
 
 @Composable
-private fun HandleGoto(viewModel: AccountViewModel?) {
+private fun HandleGoto(gotoFlow: Flow<AccountGoTo>) {
     val activity = LocalActivity.current as? AppStartActivity
-    val goto by viewModel?.goTo?.collectAsState(initial = AccountGoTo.None) ?: remember {
-        mutableStateOf(
-            AccountGoTo.None,
-        )
-    }
+    val goto by gotoFlow.collectAsState(initial = AccountGoTo.None)
     LaunchedEffect(goto) {
         when (goto) {
             is AccountGoTo.ManageAccount -> {
@@ -931,71 +969,56 @@ private fun HandleGoto(viewModel: AccountViewModel?) {
     }
 }
 
+/**
+ * Feeds representative [AccountState] values into the preview so the renderer draws [AccountContent]
+ * without a VM.
+ */
+private class AccountStateProvider : PreviewParameterProvider<AccountState> {
+    override val values =
+        sequenceOf(
+            AccountState.Account(
+                AccountType.Pro,
+                "CryptoBuddy",
+                EmailState.UnconfirmedEmail("james.monroe@examplepetstore.comjames.monroe@examplepetstore.com"),
+                DateType.Expiry("2323-01-20"),
+            ),
+            AccountState.Account(
+                AccountType.Free("10 GB"),
+                "CryptoBuddy",
+                EmailState.NoEmail,
+                DateType.Reset("2323-01-20"),
+                dataLeft = "10GB",
+            ),
+            AccountState.Account(
+                AccountType.Unlimited,
+                "CryptoBuddy",
+                EmailState.Email("james.monroe@examplepetstore.com"),
+                DateType.Expiry("2323-01-20"),
+            ),
+            AccountState.Account(
+                AccountType.AlcCustom("10 GB"),
+                "CryptoBuddy",
+                EmailState.NoEmail,
+                DateType.Reset("2323-01-20"),
+                dataLeft = "20GB",
+            ),
+        )
+}
+
 @Composable
-private fun AccountScreenPreview(accountState: AccountState) {
+@MultiDevicePreview
+private fun AccountContentPreview(
+    @PreviewParameter(AccountStateProvider::class) accountState: AccountState,
+) {
     PreviewWithNav {
-        val viewModel =
-            object : AccountViewModel() {
-                override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
-                override val accountState: StateFlow<AccountState> = MutableStateFlow(accountState)
-                override val alertState: StateFlow<AlertState> = MutableStateFlow(AlertState.None)
-                override val isGhostAccount: StateFlow<Boolean> = MutableStateFlow(false)
-                override val isSsoLogin: StateFlow<Boolean> = MutableStateFlow(false)
-            }
-        AccountScreen(viewModel)
+        AccountContent(
+            showProgress = false,
+            isGhostAccount = false,
+            accountState = accountState,
+            isSsoLogin = false,
+            alertState = emptyFlow(),
+            goTo = emptyFlow(),
+            actions = AccountActions(),
+        )
     }
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun AccountScreenProPreview() {
-    AccountScreenPreview(
-        AccountState.Account(
-            AccountType.Pro,
-            "CryptoBuddy",
-            EmailState.UnconfirmedEmail("james.monroe@examplepetstore.comjames.monroe@examplepetstore.com"),
-            DateType.Expiry("2323-01-20"),
-        ),
-    )
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun AccountScreenFreePreview() {
-    AccountScreenPreview(
-        AccountState.Account(
-            AccountType.Free("10 GB"),
-            "CryptoBuddy",
-            EmailState.NoEmail,
-            DateType.Reset("2323-01-20"),
-            dataLeft = "10GB",
-        ),
-    )
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun AccountScreenUnconfirmedPreview() {
-    AccountScreenPreview(
-        AccountState.Account(
-            AccountType.Unlimited,
-            "CryptoBuddy",
-            EmailState.Email("james.monroe@examplepetstore.com"),
-            DateType.Expiry("2323-01-20"),
-        ),
-    )
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun AccountScreenAlc() {
-    AccountScreenPreview(
-        AccountState.Account(
-            AccountType.AlcCustom("10 GB"),
-            "CryptoBuddy",
-            EmailState.NoEmail,
-            DateType.Reset("2323-01-20"),
-            dataLeft = "20GB",
-        ),
-    )
 }
