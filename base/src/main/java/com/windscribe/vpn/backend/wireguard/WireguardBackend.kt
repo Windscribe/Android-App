@@ -183,7 +183,7 @@ class WireguardBackend
                         try {
                             backend.setState(testTunnel, UP, content)
                             // Start tunnel health monitoring after connection is established
-                            if (!preferencesHelper.isConnectingToConfigured){
+                            if (!preferencesHelper.isConnectingToConfigured) {
                                 tunnelHealthCheck.start(profile.content)
                             }
                         } catch (e: Exception) {
