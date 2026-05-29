@@ -35,9 +35,9 @@ cache:
     - .gradle/wrapper/
 
 stages:
+  - Maintenance
   - Test
   - Deploy
-  - Maintenance
 
 # ── Templates (extend-only) ──────────────────────────────────────────────────
 
