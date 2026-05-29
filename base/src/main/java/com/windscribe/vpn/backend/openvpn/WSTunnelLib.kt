@@ -12,6 +12,7 @@ class WSTunnelLib {
         tunnelType: Int,
         mtu: Long,
         extraPadding: Boolean,
+        tlsServerName: String,
     )
 
     external fun socketFd(): Int

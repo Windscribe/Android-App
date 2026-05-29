@@ -22,6 +22,7 @@ abstract class AntiCensorshipViewModel : ViewModel() {
     abstract val extraTlsPaddingEnabled: StateFlow<Boolean>
     abstract val serverRoutingModes: StateFlow<List<DropDownStringItem>>
     abstract val selectedServerRouting: StateFlow<String>
+    abstract val tlsServerName: StateFlow<String>
 
     abstract fun onProtocolTweaksModeSelected(mode: String)
 
@@ -30,6 +31,8 @@ abstract class AntiCensorshipViewModel : ViewModel() {
     abstract fun onExtraTlsPaddingToggled()
 
     abstract fun onServerRoutingSelected(mode: String)
+
+    abstract fun onTlsServerNameChanged(value: String)
 
     abstract fun refreshPreferences()
 }
@@ -79,6 +82,9 @@ class AntiCensorshipViewModelImpl
 
         private val _selectedServerRouting = MutableStateFlow(preferencesHelper.serverRoutingMode)
         override val selectedServerRouting: StateFlow<String> = _selectedServerRouting
+
+        private val _tlsServerName = MutableStateFlow(preferencesHelper.tlsServerName)
+        override val tlsServerName: StateFlow<String> = _tlsServerName
 
         init {
             loadAmneziaPresets()
@@ -146,11 +152,19 @@ class AntiCensorshipViewModelImpl
             }
         }
 
+        override fun onTlsServerNameChanged(value: String) {
+            viewModelScope.launch {
+                _tlsServerName.emit(value)
+                preferencesHelper.tlsServerName = value
+            }
+        }
+
         override fun refreshPreferences() {
             viewModelScope.launch {
                 _selectedProtocolTweaksMode.emit(preferencesHelper.protocolTweaksMode)
                 _extraTlsPaddingEnabled.emit(preferencesHelper.extraTlsPaddingEnabled)
                 _selectedServerRouting.emit(preferencesHelper.serverRoutingMode)
+                _tlsServerName.emit(preferencesHelper.tlsServerName)
             }
         }
     }

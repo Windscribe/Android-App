@@ -46,8 +46,8 @@ github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/Windscribe/amneziawg-go v0.2.17-0.20260128224822-ecda464cad7a h1:mwiVxMS4JIoWbj8PMBu/a3EXm+L4Xsv4VQLjevzSu8g=
 github.com/Windscribe/amneziawg-go v0.2.17-0.20260128224822-ecda464cad7a/go.mod h1:nRkPpIzjCxMW8pZKXTRkpqAQVlmFJdVOGkeQSC7wbms=
-github.com/Windscribe/wstunnel v1.0.6 h1:rOIwr40zfv9NpE4H/m4pXDMPH0aCUj39p+x3Ni8iaq0=
-github.com/Windscribe/wstunnel v1.0.6/go.mod h1:VL0Guz2VzWIWr8nruW5UEhUaWFMqF6GCH8CbsRLqLOE=
+github.com/Windscribe/wstunnel v1.0.7 h1:QBfEMew3tx53fHRdA/8SlJutx/1dqllOx8GD5swtW1w=
+github.com/Windscribe/wstunnel v1.0.7/go.mod h1:VL0Guz2VzWIWr8nruW5UEhUaWFMqF6GCH8CbsRLqLOE=
 github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771 h1:NBrYZFWQ+mccHvJg/eBgFGsU/3mgwkBFwI1J6j3dikQ=
 github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771/go.mod h1:TRuYNgKZOeo4OFmQPWLVp7AhisMpNtYeKn4KuCP7Z+E=
 github.com/Windscribe/zerolog v0.0.0-20241206130353-cc6e8ef5397c h1:UqFsxmwiCh/DBvwJB0m7KQ2QFDd6DdUkosznfMppdhE=

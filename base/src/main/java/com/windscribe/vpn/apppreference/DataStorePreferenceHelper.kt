@@ -1177,4 +1177,9 @@ class DataStorePreferenceHelper(
     override var hasAcknowledgedEncryptionWarning: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.ENCRYPTION_WARNING_ACKNOWLEDGED, false) }
         set(value) = setBooleanSync(DataStoreKeys.ENCRYPTION_WARNING_ACKNOWLEDGED, value)
+    override var tlsServerName: String
+        get() = runBlocking { getString(DataStoreKeys.TLS_SERVER_NAME, "") }
+        set(value) {
+            setStringSync(DataStoreKeys.TLS_SERVER_NAME, value)
+        }
 }
