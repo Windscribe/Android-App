@@ -183,7 +183,9 @@ class WireguardBackend
                         try {
                             backend.setState(testTunnel, UP, content)
                             // Start tunnel health monitoring after connection is established
-                            tunnelHealthCheck.start(profile.content)
+                            if (!preferencesHelper.isConnectingToConfigured){
+                                tunnelHealthCheck.start(profile.content)
+                            }
                         } catch (e: Exception) {
                             vpnLogger.error("Exception while setting WireGuard state UP.", e)
                             updateState(VPNState(Disconnected))
