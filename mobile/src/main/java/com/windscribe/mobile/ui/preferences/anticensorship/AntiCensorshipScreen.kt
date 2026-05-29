@@ -28,6 +28,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.PreferenceBackground
+import com.windscribe.mobile.ui.common.StyledTextField
 import com.windscribe.mobile.ui.common.SwitchItemView
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -49,6 +50,7 @@ data class AntiCensorshipState(
     val amneziaPresets: List<DropDownStringItem> = emptyList(),
     val selectedPreset: String = "",
     val extraTlsPaddingEnabled: Boolean = true,
+    val tlsServerName: String = "",
 )
 
 /**
@@ -59,6 +61,7 @@ class AntiCensorshipActions(
     val onAmneziaPresetSelected: (String) -> Unit = {},
     val onServerRoutingSelected: (String) -> Unit = {},
     val onExtraTlsPaddingToggled: () -> Unit = {},
+    val onTlsServerNameChanged: (String) -> Unit = {},
 )
 
 /**
@@ -74,6 +77,7 @@ fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel = hiltViewModel<Anti
     val amneziaPresets by viewModel.amneziaPresets.collectAsState()
     val selectedPreset by viewModel.selectedPreset.collectAsState()
     val extraTlsPaddingEnabled by viewModel.extraTlsPaddingEnabled.collectAsState()
+    val tlsServerName by viewModel.tlsServerName.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.refreshPreferences()
@@ -89,6 +93,7 @@ fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel = hiltViewModel<Anti
                 amneziaPresets = amneziaPresets,
                 selectedPreset = selectedPreset,
                 extraTlsPaddingEnabled = extraTlsPaddingEnabled,
+                tlsServerName = tlsServerName,
             ),
         actions =
             AntiCensorshipActions(
@@ -96,6 +101,7 @@ fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel = hiltViewModel<Anti
                 onAmneziaPresetSelected = viewModel::onAmneziaPresetSelected,
                 onServerRoutingSelected = viewModel::onServerRoutingSelected,
                 onExtraTlsPaddingToggled = viewModel::onExtraTlsPaddingToggled,
+                onTlsServerNameChanged = viewModel::onTlsServerNameChanged,
             ),
     )
 }
@@ -153,6 +159,13 @@ fun AntiCensorshipContent(
                     state.extraTlsPaddingEnabled,
                     actions.onExtraTlsPaddingToggled,
                 )
+
+                // TLS Server Name Section - hidden for now
+                // Spacer(modifier = Modifier.height(16.dp))
+                // TlsServerNameSection(
+                //     state.tlsServerName,
+                //     actions.onTlsServerNameChanged,
+                // )
             }
         }
     }
@@ -255,6 +268,28 @@ private fun ServerRoutingSection(
         ) {
             onServerRoutingSelected(it.key)
         }
+    }
+}
+
+// Hidden for now - kept for easy re-enabling. See AntiCensorshipContent.
+@Suppress("unused")
+@Composable
+private fun TlsServerNameSection(
+    value: String,
+    onTlsServerNameChanged: (String) -> Unit,
+) {
+    Column {
+        Text(
+            text = "TLS Server Name",
+            style = font14,
+            color = MaterialTheme.colorScheme.primaryTextColor,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        StyledTextField(
+            value = value,
+            onValueChange = onTlsServerNameChanged,
+            placeholder = "Enter TLS server name (optional)",
+        )
     }
 }
 

@@ -186,6 +186,7 @@ interface PreferencesHelper {
     var extraTlsPaddingEnabled: Boolean
     val secureStorageEncryptionFlow: StateFlow<Boolean?>
     var hasAcknowledgedEncryptionWarning: Boolean
+    var tlsServerName: String
 }
 
 /**

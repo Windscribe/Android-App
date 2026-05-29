@@ -202,6 +202,7 @@ object DataStoreKeys {
         stringPreferencesKey(PreferencesKeyConstants.SELECTED_UNBLOCK_WG_PARAM)
     val IPV6_MODE = stringPreferencesKey(PreferencesKeyConstants.IPV6_MODE)
     val EXTRA_TLS_PADDING = booleanPreferencesKey(PreferencesKeyConstants.EXTRA_TLS_PADDING)
+    val TLS_SERVER_NAME = stringPreferencesKey(PreferencesKeyConstants.TLS_SERVER_NAME)
 
     // Security
     val ENCRYPTION_WARNING_ACKNOWLEDGED =
