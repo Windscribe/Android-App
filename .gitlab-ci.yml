@@ -248,18 +248,24 @@ GenerateBaselineProfile:
 # Security scans via the shared strix-ci-template.
 strix-scan-mr-diff:
   stage: Test
+  tags:
+    - arm64
   rules:
     - when: manual
       allow_failure: true
 
 strix-scan-quick:
   stage: Test
+  tags:
+    - arm64
   rules:
     - when: manual
       allow_failure: true
 
 strix-scan-standard:
   stage: Test
+  tags:
+    - arm64
   rules:
     - when: manual
       allow_failure: true
