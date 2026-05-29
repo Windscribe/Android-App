@@ -83,6 +83,7 @@ stages:
 # Bare-metal arm64 mac runner
 .metal_arm64:
   stage: Test
+  resource_group: arm64-gradle
   tags:
     - arm64
   before_script:
