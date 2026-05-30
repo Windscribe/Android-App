@@ -12,6 +12,7 @@ import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.UserRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import org.slf4j.LoggerFactory
 
 @HiltWorker
 class NotificationWorker
@@ -22,9 +23,16 @@ class NotificationWorker
         private val notificationRepository: NotificationRepository,
         private val userRepository: UserRepository,
     ) : CoroutineWorker(context, workerParams) {
+        private val logger = LoggerFactory.getLogger("worker")
+
         override suspend fun doWork(): Result {
             if (!userRepository.loggedIn()) return Result.failure()
-            notificationRepository.update()
-            return Result.success()
+            return try {
+                notificationRepository.update()
+                Result.success()
+            } catch (e: Exception) {
+                logger.debug("Failed to update notifications: $e")
+                Result.failure()
+            }
         }
     }
