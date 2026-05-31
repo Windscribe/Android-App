@@ -73,7 +73,7 @@ class VPNConnectionStateManager(
                     wsNetWrapper.withWSNet { wsNet ->
                         wsNet.setIsConnectedToVpnState(isVPNConnected())
                         if (!isVPNConnected()) {
-                            wsNet.bridgeAPI().setConnectedState(false)
+                            wsNetWrapper.safeBridgeAPI()?.setConnectedState(false)
                         }
                     }
                 } else {

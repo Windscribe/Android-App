@@ -90,10 +90,8 @@ class BridgeApiRepository
         private fun observeExtraTlsPaddingStatus() {
             scope.launch {
                 preferencesHelper.extraTlsPaddingEnabledFlow.collect { enabled ->
-                    wsNetWrapper.withWSNet { wsNet ->
-                        wsNet.advancedParameters()?.let { params ->
-                            params.isAPIExtraTLSPadding = enabled
-                        }
+                    wsNetWrapper.safeAdvancedParameters()?.let { params ->
+                        params.isAPIExtraTLSPadding = enabled
                     }
                 }
             }

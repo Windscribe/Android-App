@@ -1,8 +1,9 @@
 package com.windscribe.vpn.wsnet
 
 import com.wsnet.lib.WSNet
+import com.wsnet.lib.WSNetAdvancedParameters
 import com.wsnet.lib.WSNetBridgeAPI
-import com.wsnet.lib.WSNetPingManager
+import com.wsnet.lib.WSNetEmergencyConnect
 import com.wsnet.lib.WSNetServerAPI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Usage:
  * - Call initialize() to set up WSNet (can be called from background thread)
  * - Check isReady. Value or isInitialized() before accessing WSNet
- * - Use safe accessors (safePingManager, safeBridgeAPI, etc.) which return null if not ready
+ * - Use safe accessors (safeBridgeAPI, safeAdvancedParameters, etc.) which return null if not ready
  * - All methods are thread-safe
  */
 class WSNetWrapper {
@@ -27,6 +28,34 @@ class WSNetWrapper {
 
     @Volatile
     private var wsNetInstance: WSNet? = null
+
+    /**
+     * Cached, strongly-held references to the native sub-API peers.
+     *
+     * Each sub-API is a singleton on the native (scapix) side, and the native side keeps only a
+     * JNI *weak* global reference to its Java peer. Calling wsNet.serverAPI()/bridgeAPI() returns
+     * that peer, but if nothing on the Java side holds a strong reference the GC can collect it;
+     * the next native->Java handoff then decodes a stale weak global and ART aborts the process
+     * (SetLongField on the collected "ptr" field).
+     *
+     * Up to 4.1.0 the @Singleton Dagger providers (providesWsNetServerApi / providesBridgeApi)
+     * called wrapper.getServerAPI()/getBridgeAPI() once and held the result for the app lifetime,
+     * so the peer was never collected. The Hilt refactor switched callers to
+     * awaitServerAPI()/awaitBridgeAPI(), which re-fetched on every call and retained nothing,
+     * reintroducing the GC race. Caching the peer here restores that guarantee: fetch once, then
+     * always hand back the same strongly-referenced instance.
+     */
+    @Volatile
+    private var serverAPIInstance: WSNetServerAPI? = null
+
+    @Volatile
+    private var bridgeAPIInstance: WSNetBridgeAPI? = null
+
+    @Volatile
+    private var emergencyConnectInstance: WSNetEmergencyConnect? = null
+
+    @Volatile
+    private var advancedParametersInstance: WSNetAdvancedParameters? = null
 
     /**
      * Observable state indicating if WSNet is fully initialized and ready to use.
@@ -90,17 +119,15 @@ class WSNetWrapper {
         countryOverride: String?,
         isProtocolTweaksEnabled: Boolean,
     ) {
-        withWSNet { wsNet ->
-            try {
-                wsNet.advancedParameters()?.let { params ->
-                    countryOverride?.let { override ->
-                        params.setCountryOverrideValue(override)
-                    }
-                    params.isAPIExtraTLSPadding = isProtocolTweaksEnabled
+        try {
+            safeAdvancedParameters()?.let { params ->
+                countryOverride?.let { override ->
+                    params.setCountryOverrideValue(override)
                 }
-            } catch (e: Exception) {
-                logger.error("Failed to configure advanced parameters: ${e.message}", e)
+                params.isAPIExtraTLSPadding = isProtocolTweaksEnabled
             }
+        } catch (e: Exception) {
+            logger.error("Failed to configure advanced parameters: ${e.message}", e)
         }
     }
 
@@ -117,20 +144,6 @@ class WSNetWrapper {
     fun getInstance(): WSNet? = if (isInitialized()) wsNetInstance else null
 
     /**
-     * Safely get the ping manager, returns null if WSNet is not ready.
-     */
-    fun safePingManager(): WSNetPingManager? {
-        val wsNet = wsNetInstance ?: return null
-        if (!isInitialized()) return null
-        return try {
-            wsNet.pingManager()
-        } catch (e: Exception) {
-            logger.error("Failed to get pingManager: ${e.message}")
-            null
-        }
-    }
-
-    /**
      * Suspend until WSNet is initialized, then return the bridge API.
      * Safe to call from the main thread.
      */
@@ -140,7 +153,7 @@ class WSNetWrapper {
         }
         isReady.first { it }
         val wsNet = wsNetInstance ?: throw IllegalStateException("WSNet not initialized")
-        return wsNet.bridgeAPI()
+        return bridgeAPIInstance ?: wsNet.bridgeAPI().also { bridgeAPIInstance = it }
     }
 
     /**
@@ -150,7 +163,7 @@ class WSNetWrapper {
         val wsNet = wsNetInstance ?: return null
         if (!isInitialized()) return null
         return try {
-            wsNet.bridgeAPI()
+            bridgeAPIInstance ?: wsNet.bridgeAPI().also { bridgeAPIInstance = it }
         } catch (e: Exception) {
             logger.error("Failed to get bridgeAPI: ${e.message}")
             null
@@ -167,7 +180,39 @@ class WSNetWrapper {
         }
         isReady.first { it }
         val wsNet = wsNetInstance ?: throw IllegalStateException("WSNet not initialized")
-        return wsNet.serverAPI()
+        return serverAPIInstance ?: wsNet.serverAPI().also { serverAPIInstance = it }
+    }
+
+    /**
+     * Safely get the emergency connect API, returns null if WSNet is not ready.
+     */
+    fun safeEmergencyConnect(): WSNetEmergencyConnect? {
+        val wsNet = wsNetInstance ?: return null
+        if (!isInitialized()) return null
+        return try {
+            emergencyConnectInstance ?: wsNet
+                .emergencyConnect()
+                .also { emergencyConnectInstance = it }
+        } catch (e: Exception) {
+            logger.error("Failed to get emergencyConnect: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Safely get the advanced parameters, returns null if WSNet is not ready.
+     */
+    fun safeAdvancedParameters(): WSNetAdvancedParameters? {
+        val wsNet = wsNetInstance ?: return null
+        if (!isInitialized()) return null
+        return try {
+            advancedParametersInstance ?: wsNet
+                .advancedParameters()
+                ?.also { advancedParametersInstance = it }
+        } catch (e: Exception) {
+            logger.error("Failed to get advancedParameters: ${e.message}")
+            null
+        }
     }
 
     /**

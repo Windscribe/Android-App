@@ -26,22 +26,25 @@ class EmergencyConnectRepositoryImpl(
         }
         return runCatching {
             suspendCancellableCoroutine { cont ->
-                wsNetWrapper.withWSNet { wsNet ->
+                val emergencyConnect = wsNetWrapper.safeEmergencyConnect()
+                if (emergencyConnect == null) {
+                    cont.resume(emptyList())
+                } else {
                     try {
                         val callback =
-                            wsNet.emergencyConnect().getIpEndpoints { ips ->
+                            emergencyConnect.getIpEndpoints { ips ->
                                 try {
                                     val configs =
                                         ips
                                             .map { ipEndpoint ->
                                                 val proto = if (ipEndpoint.protocol() == 0) "udp" else "tcp"
                                                 OpenVPNConnectionInfo(
-                                                    wsNet.emergencyConnect().ovpnConfig(),
+                                                    emergencyConnect.ovpnConfig(),
                                                     ipEndpoint.ip(),
                                                     ipEndpoint.port().toString(),
                                                     proto,
-                                                    wsNet.emergencyConnect().username(),
-                                                    wsNet.emergencyConnect().password(),
+                                                    emergencyConnect.username(),
+                                                    emergencyConnect.password(),
                                                 )
                                             }.shuffled()
                                     cont.resume(configs)
@@ -55,7 +58,7 @@ class EmergencyConnectRepositoryImpl(
                     } catch (e: Exception) {
                         cont.resume(emptyList())
                     }
-                } ?: cont.resume(emptyList())
+                }
             }
         }
     }
