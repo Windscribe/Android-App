@@ -1,0 +1,21 @@
+appId: com.windscribe.vpn
+---
+# Removes all items from the Favourites tab if any exist.
+# Safe to call even when the fav list is already empty.
+
+- tapOn:
+    id: "tab_fav"
+- assertVisible:
+    id: "server_list_fav"
+
+# Remove up to 10 favourites — each tap optional so it no-ops when list is empty.
+- repeat:
+    times: 10
+    commands:
+      - tapOn:
+          id: "fav_remove_icon"
+          index: 0
+          optional: true
+
+- tapOn:
+    id: "tab_all"

@@ -5,5 +5,6 @@ package com.windscribe.tv.splash
 
 interface SplashView {
     fun navigateToHome()
+
     fun navigateToLogin()
 }

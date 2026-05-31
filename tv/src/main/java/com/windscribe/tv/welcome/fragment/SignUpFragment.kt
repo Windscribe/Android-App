@@ -15,11 +15,13 @@ import androidx.fragment.app.Fragment
 import com.windscribe.tv.R
 import com.windscribe.tv.databinding.FragmentSignUpBinding
 
-class SignUpFragment : Fragment(), WelcomeActivityCallback {
-
+class SignUpFragment :
+    Fragment(),
+    WelcomeActivityCallback {
     private lateinit var binding: FragmentSignUpBinding
     private var isAccountSetUpLayout = false
     private var fragmentCallBack: FragmentCallback? = null
+
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
             fragmentCallBack = activity as FragmentCallback?
@@ -38,13 +40,16 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentSignUpBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         if (isAccountSetUpLayout) {
             binding.title.text = getString(com.windscribe.vpn.R.string.account_set_up)
@@ -67,7 +72,9 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
             binding.back,
             binding.forgotPassword,
             binding.passwordContainer,
-            binding.showPassword, binding.usernameContainer, binding.loginSignUp
+            binding.showPassword,
+            binding.usernameContainer,
+            binding.loginSignUp,
         ).forEach {
             it.setOnFocusChangeListener { _, _ ->
                 resetButtonTextColor()
@@ -86,13 +93,15 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
             if (isAccountSetUpLayout) {
                 fragmentCallBack?.onAccountClaimButtonClick(
                     binding.usernameEdit.text.toString(),
-                    binding.passwordEdit.text.toString(), "", true
+                    binding.passwordEdit.text.toString(),
+                    "",
+                    true,
                 )
             } else {
                 fragmentCallBack?.onAuthSignUpClick(
                     binding.usernameEdit.text.toString(),
                     binding.passwordEdit.text.toString(),
-                    null
+                    null,
                 )
             }
         }
@@ -131,6 +140,7 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
     }
 
     override fun setSecretCode(code: String) {}
+
     override fun setUsernameError(error: String) {
         binding.error.visibility = View.VISIBLE
         binding.error.text = error
@@ -140,9 +150,13 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
         val normalColor = requireActivity().resources.getColor(R.color.colorWhite50)
         val focusColor = requireActivity().resources.getColor(R.color.colorWhite)
         binding.loginSignUp.setTextColor(
-            if (binding.loginSignUp.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
-                R.color.colorWhite50
-            )
+            if (binding.loginSignUp.hasFocus()) {
+                requireActivity().resources.getColor(R.color.colorWhite)
+            } else {
+                requireActivity().resources.getColor(
+                    R.color.colorWhite50,
+                )
+            },
         )
         binding.back.setTextColor(if (binding.back.hasFocus()) focusColor else normalColor)
         binding.forgotPassword.setTextColor(if (binding.forgotPassword.hasFocus()) focusColor else normalColor)

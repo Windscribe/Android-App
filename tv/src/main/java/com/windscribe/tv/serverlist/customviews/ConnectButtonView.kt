@@ -30,7 +30,7 @@ class ConnectButtonView : AppCompatImageView {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         setDimens()
         setState(state)
@@ -44,13 +44,14 @@ class ConnectButtonView : AppCompatImageView {
             gradientDrawable.setStroke(stroke, resources.getColor(R.color.colorWhite20))
             gradientDrawable.setSize(
                 context.resources.getDimension(R.dimen.reg_56).toInt(),
-                context.resources.getDimension(R.dimen.reg_56).toInt()
+                context.resources.getDimension(R.dimen.reg_56).toInt(),
             )
             setImageDrawable(
                 ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_connect_icon_focused,
-                    context.theme
-                )
+                    resources,
+                    R.drawable.ic_connect_icon_focused,
+                    context.theme,
+                ),
             )
             setPadding(0, 0, 0, 0)
             scaleType = ScaleType.FIT_CENTER
@@ -61,7 +62,7 @@ class ConnectButtonView : AppCompatImageView {
             gradientDrawable.cornerRadius = radius.toFloat()
             gradientDrawable.setStroke(stroke, resources.getColor(R.color.colorWhite20))
             setImageDrawable(
-                ResourcesCompat.getDrawable(resources, R.drawable.ic_connect_icon, context.theme)
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_connect_icon, context.theme),
             )
             setPadding(padding, padding, padding, padding)
             scaleType = ScaleType.FIT_CENTER
@@ -77,7 +78,7 @@ class ConnectButtonView : AppCompatImageView {
     override fun onFocusChanged(
         gainFocus: Boolean,
         direction: Int,
-        previouslyFocusedRect: Rect?
+        previouslyFocusedRect: Rect?,
     ) {
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
         setDefaultState()

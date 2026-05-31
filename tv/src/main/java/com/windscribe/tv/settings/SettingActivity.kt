@@ -3,7 +3,6 @@
  */
 package com.windscribe.tv.settings
 
-import android.app.TaskStackBuilder
 import android.content.Intent
 import android.os.Bundle
 import android.transition.Slide
@@ -13,8 +12,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.R
 import com.windscribe.tv.adapter.InstalledAppsAdapter
 import com.windscribe.tv.base.BaseActivity
@@ -22,25 +21,29 @@ import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.confirmemail.ConfirmActivity
 import com.windscribe.tv.customview.CustomDialog
 import com.windscribe.tv.databinding.ActivitySettingBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.moredata.GetMoreDataActivity
 import com.windscribe.tv.serverlist.customviews.State
-import com.windscribe.tv.settings.fragment.*
+import com.windscribe.tv.settings.fragment.AccountFragment
+import com.windscribe.tv.settings.fragment.ConnectionFragment
+import com.windscribe.tv.settings.fragment.DebugFragment
+import com.windscribe.tv.settings.fragment.GeneralFragment
+import com.windscribe.tv.settings.fragment.GhostAccountFragment
 import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeActivity
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class SettingActivity :
     BaseActivity(),
     SettingView,
     SettingsFragmentListener {
-
     @Inject
     lateinit var vpnController: WindVpnController
 
@@ -54,11 +57,13 @@ class SettingActivity :
     private lateinit var binding: ActivitySettingBinding
     private var currentSelectedScreen = 1
     private var fragment: Fragment? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
+        presenter.bind(this, lifecycleScope)
         onActivityLaunch()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_setting)
+        binding = ActivitySettingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         initFragment()
         binding.scrollView.setOnScrollChangeListener { _: NestedScrollView?, _: Int, _: Int, _: Int, _: Int ->
             if (fragment is GeneralFragment) {
@@ -80,9 +85,7 @@ class SettingActivity :
         super.onDestroy()
     }
 
-    override fun getResourceString(id: Int): String {
-        return resources.getString(id)
-    }
+    override fun getResourceString(id: Int): String = resources.getString(id)
 
     override fun goToClaimAccount() {
         val startIntent = WelcomeActivity.getStartIntent(this)
@@ -99,7 +102,7 @@ class SettingActivity :
     override fun gotoLoginRegistrationActivity() {
         val intent = WelcomeActivity.getStartIntent(this)
         intent.addFlags(
-            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK,
         )
         startActivity(intent)
         overridePendingTransition(R.anim.slide_up, R.anim.slide_down)
@@ -253,7 +256,10 @@ class SettingActivity :
         presenter.onConnectionModeManualClicked()
     }
 
-    override fun onPortSelected(protocol: String, port: String) {
+    override fun onPortSelected(
+        protocol: String,
+        port: String,
+    ) {
         presenter.onPortSelected(protocol, port)
     }
 
@@ -295,12 +301,14 @@ class SettingActivity :
     }
 
     override fun reloadApp() {
-        val windscribeIntent = WindscribeActivity.getStartIntent(this).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        val settingsIntent = getStartIntent(this).apply {
-            flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
-        }
+        val windscribeIntent =
+            WindscribeActivity.getStartIntent(this).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+        val settingsIntent =
+            getStartIntent(this).apply {
+                flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+            }
         startActivities(arrayOf(windscribeIntent, settingsIntent))
     }
 
@@ -322,7 +330,11 @@ class SettingActivity :
         (fragment as? ConnectionFragment)?.setServerRoutingMode(mode)
     }
 
-    override fun setupAmneziaPresetAdapter(selectedPresetId: String, presetTitles: List<String>, presetIds: List<String>) {
+    override fun setupAmneziaPresetAdapter(
+        selectedPresetId: String,
+        presetTitles: List<String>,
+        presetIds: List<String>,
+    ) {
         (fragment as? ConnectionFragment)?.setAmneziaPresetAdapter(selectedPresetId, presetTitles, presetIds)
     }
 
@@ -338,7 +350,10 @@ class SettingActivity :
         }
     }
 
-    override fun setDebugLogProgress(progressText: String, error: String) {
+    override fun setDebugLogProgress(
+        progressText: String,
+        error: String,
+    ) {
         if (fragment is DebugFragment) {
             (fragment as DebugFragment).showLoading(progressText, error)
         }
@@ -350,7 +365,10 @@ class SettingActivity :
         }
     }
 
-    override fun setEmailState(state: AccountFragment.Status?, email: String?) {
+    override fun setEmailState(
+        state: AccountFragment.Status?,
+        email: String?,
+    ) {
         if (fragment is AccountFragment) {
             (fragment as AccountFragment).setEmailState(state, email)
         }
@@ -368,7 +386,10 @@ class SettingActivity :
         }
     }
 
-    override fun setResetDate(resetDateLabel: String, resetDate: String) {
+    override fun setResetDate(
+        resetDateLabel: String,
+        resetDate: String,
+    ) {
         if (fragment is AccountFragment) {
             (fragment as AccountFragment).setResetDate(resetDateLabel, resetDate)
         }
@@ -419,7 +440,10 @@ class SettingActivity :
         }
     }
 
-    override fun setupLanguageAdapter(savedLanguage: String, languageList: Array<String>) {
+    override fun setupLanguageAdapter(
+        savedLanguage: String,
+        languageList: Array<String>,
+    ) {
         if (fragment is GeneralFragment) {
             (fragment as GeneralFragment).setLanguageAdapter(savedLanguage, languageList)
         }
@@ -449,13 +473,19 @@ class SettingActivity :
         }
     }
 
-    override fun setupPortMapAdapter(savedPort: String, ports: List<String>) {
+    override fun setupPortMapAdapter(
+        savedPort: String,
+        ports: List<String>,
+    ) {
         if (fragment is ConnectionFragment) {
             (fragment as ConnectionFragment).setPortAdapter(savedPort, ports)
         }
     }
 
-    override fun setupProtocolAdapter(protocol: String, protocols: List<String>) {
+    override fun setupProtocolAdapter(
+        protocol: String,
+        protocols: List<String>,
+    ) {
         if (fragment is ConnectionFragment) {
             (fragment as ConnectionFragment).setProtocolAdapter(protocol, protocols)
         }
@@ -464,7 +494,7 @@ class SettingActivity :
     override fun setupSortAdapter(
         localiseValues: Array<String>,
         selectedItem: String,
-        values: Array<String>
+        values: Array<String>,
     ) {
         if (fragment is GeneralFragment) {
             (fragment as GeneralFragment).setSortAdapter(localiseValues, selectedItem, values)
@@ -497,11 +527,12 @@ class SettingActivity :
             initFragment()
         }
         binding.account.setOnClickListener {
-            currentSelectedScreen = if (presenter.isUserInGhostMode) {
-                5
-            } else {
-                2
-            }
+            currentSelectedScreen =
+                if (presenter.isUserInGhostMode) {
+                    5
+                } else {
+                    2
+                }
             initFragment()
         }
         binding.connection.setOnClickListener {
@@ -530,59 +561,69 @@ class SettingActivity :
         fragment = null
         val currentFragment = supportFragmentManager.findFragmentById(R.id.container)
         when (currentSelectedScreen) {
-            1 -> if (currentFragment !is GeneralFragment) {
-                onContainerHidden(false)
-                TransitionManager.beginDelayedTransition(binding.parent)
-                binding.general.setState(State.TwoState.SELECTED)
-                binding.account.setState(State.TwoState.NOT_SELECTED)
-                binding.connection.setState(State.TwoState.NOT_SELECTED)
-                binding.debugView.setState(State.TwoState.NOT_SELECTED)
-                fragment = GeneralFragment()
-                binding.parent.setCurrentFragment(0)
+            1 -> {
+                if (currentFragment !is GeneralFragment) {
+                    onContainerHidden(false)
+                    TransitionManager.beginDelayedTransition(binding.parent)
+                    binding.general.setState(State.TwoState.SELECTED)
+                    binding.account.setState(State.TwoState.NOT_SELECTED)
+                    binding.connection.setState(State.TwoState.NOT_SELECTED)
+                    binding.debugView.setState(State.TwoState.NOT_SELECTED)
+                    fragment = GeneralFragment()
+                    binding.parent.setCurrentFragment(0)
+                }
             }
 
-            2 -> if (currentFragment !is AccountFragment) {
-                onContainerHidden(false)
-                TransitionManager.beginDelayedTransition(binding.parent)
-                binding.account.setState(State.TwoState.SELECTED)
-                binding.general.setState(State.TwoState.NOT_SELECTED)
-                binding.connection.setState(State.TwoState.NOT_SELECTED)
-                binding.debugView.setState(State.TwoState.NOT_SELECTED)
-                fragment = AccountFragment()
-                binding.parent.setCurrentFragment(1)
+            2 -> {
+                if (currentFragment !is AccountFragment) {
+                    onContainerHidden(false)
+                    TransitionManager.beginDelayedTransition(binding.parent)
+                    binding.account.setState(State.TwoState.SELECTED)
+                    binding.general.setState(State.TwoState.NOT_SELECTED)
+                    binding.connection.setState(State.TwoState.NOT_SELECTED)
+                    binding.debugView.setState(State.TwoState.NOT_SELECTED)
+                    fragment = AccountFragment()
+                    binding.parent.setCurrentFragment(1)
+                }
             }
 
-            3 -> if (currentFragment !is ConnectionFragment) {
-                onContainerHidden(false)
-                TransitionManager.beginDelayedTransition(binding.parent)
-                binding.connection.setState(State.TwoState.SELECTED)
-                binding.general.setState(State.TwoState.NOT_SELECTED)
-                binding.account.setState(State.TwoState.NOT_SELECTED)
-                binding.debugView.setState(State.TwoState.NOT_SELECTED)
-                fragment = ConnectionFragment()
-                binding.parent.setCurrentFragment(2)
+            3 -> {
+                if (currentFragment !is ConnectionFragment) {
+                    onContainerHidden(false)
+                    TransitionManager.beginDelayedTransition(binding.parent)
+                    binding.connection.setState(State.TwoState.SELECTED)
+                    binding.general.setState(State.TwoState.NOT_SELECTED)
+                    binding.account.setState(State.TwoState.NOT_SELECTED)
+                    binding.debugView.setState(State.TwoState.NOT_SELECTED)
+                    fragment = ConnectionFragment()
+                    binding.parent.setCurrentFragment(2)
+                }
             }
 
-            4 -> if (currentFragment !is DebugFragment) {
-                onContainerHidden(false)
-                TransitionManager.beginDelayedTransition(binding.parent)
-                binding.debugView.setState(State.TwoState.SELECTED)
-                binding.general.setState(State.TwoState.NOT_SELECTED)
-                binding.connection.setState(State.TwoState.NOT_SELECTED)
-                binding.account.setState(State.TwoState.NOT_SELECTED)
-                fragment = DebugFragment()
-                binding.parent.setCurrentFragment(3)
+            4 -> {
+                if (currentFragment !is DebugFragment) {
+                    onContainerHidden(false)
+                    TransitionManager.beginDelayedTransition(binding.parent)
+                    binding.debugView.setState(State.TwoState.SELECTED)
+                    binding.general.setState(State.TwoState.NOT_SELECTED)
+                    binding.connection.setState(State.TwoState.NOT_SELECTED)
+                    binding.account.setState(State.TwoState.NOT_SELECTED)
+                    fragment = DebugFragment()
+                    binding.parent.setCurrentFragment(3)
+                }
             }
 
-            5 -> if (currentFragment !is GhostAccountFragment) {
-                onContainerHidden(false)
-                TransitionManager.beginDelayedTransition(binding.parent)
-                binding.account.setState(State.TwoState.SELECTED)
-                binding.general.setState(State.TwoState.NOT_SELECTED)
-                binding.connection.setState(State.TwoState.NOT_SELECTED)
-                binding.debugView.setState(State.TwoState.NOT_SELECTED)
-                fragment = GhostAccountFragment(presenter.isUserPro)
-                binding.parent.setCurrentFragment(5)
+            5 -> {
+                if (currentFragment !is GhostAccountFragment) {
+                    onContainerHidden(false)
+                    TransitionManager.beginDelayedTransition(binding.parent)
+                    binding.account.setState(State.TwoState.SELECTED)
+                    binding.general.setState(State.TwoState.NOT_SELECTED)
+                    binding.connection.setState(State.TwoState.NOT_SELECTED)
+                    binding.debugView.setState(State.TwoState.NOT_SELECTED)
+                    fragment = GhostAccountFragment(presenter.isUserPro)
+                    binding.parent.setCurrentFragment(5)
+                }
             }
         }
         if (supportFragmentManager.isStateSaved) {
@@ -592,14 +633,14 @@ class SettingActivity :
             val slide = Slide()
             slide.duration = 400
             TransitionManager.beginDelayedTransition(binding.parent, slide)
-            supportFragmentManager.beginTransaction().replace(R.id.container, it)
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.container, it)
                 .commitNow()
         }
     }
 
     companion object {
-        fun getStartIntent(windscribeActivity: AppCompatActivity?): Intent {
-            return Intent(windscribeActivity, SettingActivity::class.java)
-        }
+        fun getStartIntent(windscribeActivity: AppCompatActivity?): Intent = Intent(windscribeActivity, SettingActivity::class.java)
     }
 }

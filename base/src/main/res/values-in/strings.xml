@@ -471,7 +471,7 @@ Lokasi terakhir yang dipilih.</string>
     <string name="failed_to_update_robert_rules">Gagal memperbarui aturan Robert.</string>
     <string name="successfully_updated_robert_rules">Berhasil memperbarui aturan Robert.</string>
     <string name="share_app">Bagikan Aplikasi</string>
-    <string name="share_app_description">"%s mengundang Anda untuk bergabung dengan Windscribe. Berikan nama pengguna mereka saat mendaftar dan Anda berdua akan mendapatkan 1gb data gratis yang ditambahkan ke akun Anda. Jika Anda menjadi pro, mereka juga akan menjadi pro!\n%s"</string>
+    <string name="share_app_description">"%1$s mengundang Anda untuk bergabung dengan Windscribe. Berikan nama pengguna mereka saat mendaftar dan Anda berdua akan mendapatkan 1gb data gratis yang ditambahkan ke akun Anda. Jika Anda menjadi pro, mereka juga akan menjadi pro!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Izinkan sepanjang waktu\" Diperlukan Akses Lokasi!</string>
     <string name="enable_location_access">Aktifkan Akses Lokasi</string>
     <string name="location_permission_required">Izin lokasi diperlukan</string>
@@ -604,7 +604,7 @@ Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas
     <string name="ipv6_mode_description">Pilih versi IP mana yang akan digunakan untuk koneksi VPN.</string>
     <string name="ip_stack">Tumpukan IP</string>
     <string name="ip_stack_description">Konfigurasi tumpukan IP untuk koneksi VPN.</string>
-    <string name="egress">Keluar</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Masuk</string>
     <string name="ipv4_only">Hanya IPv4</string>
     <string name="manual_connection_mode_failed_title">Mode koneksi manual gagal</string>
@@ -615,4 +615,7 @@ Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas
     <string name="app_icon">Ikon Aplikasi</string>
     <string name="app_icon_description">Pilih ikon aplikasi yang berbeda untuk privasi yang lebih baik</string>
     <string name="configuration">Konfigurasi</string>
+    <string name="force_upgrade_title">Pembaruan Diperlukan</string>
+    <string name="force_upgrade_message">Versi Windscribe ini tidak lagi didukung. Silakan perbarui untuk terus menggunakan aplikasi.</string>
+    <string name="force_upgrade_message_with_version">Versi Windscribe ini tidak lagi didukung. Silakan perbarui ke %s untuk terus menggunakan aplikasi.</string>
 </resources>

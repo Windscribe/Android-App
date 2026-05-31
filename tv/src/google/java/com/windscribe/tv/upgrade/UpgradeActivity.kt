@@ -7,8 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.amazon.device.iap.model.Product
-import com.amazon.device.iap.model.PurchaseResponse
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams
 import com.android.billingclient.api.ProductDetails
@@ -20,22 +22,34 @@ import com.windscribe.tv.confirmemail.ConfirmActivity
 import com.windscribe.tv.customview.CustomDialog
 import com.windscribe.tv.customview.ErrorFragment
 import com.windscribe.tv.customview.ProgressFragment
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
 import com.windscribe.tv.upgrade.PlansFragment.Companion.newInstance
 import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.billing.*
+import com.windscribe.vpn.billing.AmazonBillingManager
+import com.windscribe.vpn.billing.BillingFragmentCallback
+import com.windscribe.vpn.billing.GoogleBillingManager
+import com.windscribe.vpn.billing.PurchaseState
+import com.windscribe.vpn.billing.WindscribeInAppProduct
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
-import okhttp3.internal.toImmutableList
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
-    enum class BillingType(val value: String) {
-        Google("android"), Amazon("amazon")
+@AndroidEntryPoint
+class UpgradeActivity :
+    BaseActivity(),
+    UpgradeView,
+    BillingFragmentCallback {
+    enum class BillingType(
+        val value: String,
+    ) {
+        Google("android"),
+        Amazon("amazon"),
     }
 
     @Inject
@@ -55,15 +69,17 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     lateinit var googleBillingManager: GoogleBillingManager
     private val logger = LoggerFactory.getLogger("basic")
     private var selectedProductDetails: ProductDetails? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_upgrade)
+        presenter.bind(this, lifecycleScope)
         logger.info("OnCreate: Upgrade Activity")
         showProgressBar("Loading Billing Plans...")
         if (intent.hasExtra(PROMO_EXTRA)) {
-            val pushNotificationAction = intent
-                .getSerializableExtra(PROMO_EXTRA) as PushNotificationAction?
+            val pushNotificationAction =
+                intent
+                    .getSerializableExtra(PROMO_EXTRA) as PushNotificationAction?
             pushNotificationAction?.let {
                 presenter.setPushNotificationAction(it)
             }
@@ -126,7 +142,10 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         }
     }
 
-    override fun onContinuePlanClick(productDetails: ProductDetails, selectedIndex: Int) {
+    override fun onContinuePlanClick(
+        productDetails: ProductDetails,
+        selectedIndex: Int,
+    ) {
         logger.info("User clicked on plan item...")
         selectedProductDetails = productDetails
         val builder = ProductDetailsParams.newBuilder()
@@ -157,7 +176,6 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         }
     }
 
-
     override fun onRestorePurchaseClick() {
         presenter.restorePurchase()
     }
@@ -184,12 +202,15 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         isBillingProcessFinished = processFinished
     }
 
-    override fun setEmailStatus(isEmailAdded: Boolean, isEmailConfirmed: Boolean) {}
+    override fun setEmailStatus(
+        isEmailAdded: Boolean,
+        isEmailConfirmed: Boolean,
+    ) {}
 
     override fun showBillingDialog(
         windscribeInAppProduct: WindscribeInAppProduct,
         isEmailAdded: Boolean,
-        isEmailConfirmed: Boolean
+        isEmailConfirmed: Boolean,
     ) {
         newInstance()
             .add(
@@ -198,7 +219,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
                 R.id.cl_upgrade,
                 false,
                 isEmailAdded,
-                isEmailConfirmed
+                isEmailConfirmed,
             )
     }
 
@@ -215,7 +236,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
                     message,
                     this@UpgradeActivity,
                     R.id.cl_upgrade,
-                    false
+                    false,
                 )
                 supportFragmentManager.executePendingTransactions()
             }
@@ -232,7 +253,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
 
     override fun startPurchaseFlow(
         productDetailsParams: List<ProductDetailsParams>,
-        accountID: String?
+        accountID: String?,
     ) {
         val builder =
             BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParams)
@@ -262,81 +283,75 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         finish()
     }
 
-    private fun initAmazonBillingLifecycleListeners() {
-        amazonBillingManager.onBillingSetUpSuccess?.observe(this) {
-            logger.info("Billing client connected successfully...")
-            presenter.onBillingSetupSuccessful()
+    private fun <T> SharedFlow<T>.collectOnStart(block: (T) -> Unit) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                collect { block(it) }
+            }
         }
-        amazonBillingManager.onProductsResponseSuccess?.observe(
-            this
-        ) { products: Map<String, Product> ->
+    }
+
+    private fun initAmazonBillingLifecycleListeners() {
+        // onBillingSetUpSuccess is a StateFlow seeded with false; only react once it flips to true.
+        amazonBillingManager.onBillingSetUpSuccess.collectOnStart { setUp ->
+            if (setUp) {
+                logger.info("Billing client connected successfully...")
+                presenter.onBillingSetupSuccessful()
+            }
+        }
+        amazonBillingManager.onProductsResponseSuccess.collectOnStart { products ->
             presenter.onProductDataResponse(products)
         }
-        amazonBillingManager.onProductsResponseFailure?.observe(
-            this
-        ) { presenter.onProductResponseFailure() }
-        amazonBillingManager.onPurchaseResponseSuccess?.observe(this) { purchaseResponse: PurchaseResponse ->
-            presenter.onPurchaseResponse(
-                purchaseResponse
-            )
+        amazonBillingManager.onProductsResponseFailure.collectOnStart {
+            presenter.onProductResponseFailure()
         }
-        amazonBillingManager.onPurchaseResponseFailure?.observe(this) { requestStatus: PurchaseResponse.RequestStatus ->
-            presenter.onPurchaseResponseFailure(
-                requestStatus
-            )
+        amazonBillingManager.onPurchaseResponseSuccess.collectOnStart { purchaseResponse ->
+            presenter.onPurchaseResponse(purchaseResponse)
         }
-        amazonBillingManager.onAmazonPurchaseHistorySuccess?.observe(
-            this
-        ) { purchases: List<AmazonPurchase> ->
+        amazonBillingManager.onPurchaseResponseFailure.collectOnStart { requestStatus ->
+            presenter.onPurchaseResponseFailure(requestStatus)
+        }
+        amazonBillingManager.onAmazonPurchaseHistorySuccess.collectOnStart { purchases ->
             presenter.onAmazonPurchaseHistorySuccess(purchases)
         }
-        amazonBillingManager.onAmazonPurchaseHistoryError?.observe(this) { error: String ->
-            presenter.onAmazonPurchaseHistoryError(
-                error
-            )
+        amazonBillingManager.onAmazonPurchaseHistoryError.collectOnStart { error ->
+            presenter.onAmazonPurchaseHistoryError(error)
         }
     }
 
     private fun initBillingLifecycleListeners() {
-        googleBillingManager.onBillingSetUpSuccess?.observe(this) {
+        googleBillingManager.onBillingSetUpSuccess.collectOnStart {
             logger.info("Billing client connected successfully...")
             presenter.onBillingSetupSuccessful()
         }
-        googleBillingManager.onBillingSetupFailure?.observe(this) { code: Int ->
+        googleBillingManager.onBillingSetupFailure.collectOnStart { code ->
             logger.info("Billing client set up failure...")
             presenter.onBillingSetupFailed(code)
         }
-        googleBillingManager.onProductConsumeSuccess?.observe(this) { purchase: Purchase ->
+        googleBillingManager.onProductConsumeSuccess.collectOnStart { purchase ->
             logger.info("Product consumption successful...")
             showToast(resources.getString(com.windscribe.vpn.R.string.purchase_successful))
             presenter.onPurchaseConsumed(purchase)
         }
-        googleBillingManager.onProductConsumeFailure?.observe(
-            this
-        ) { customPurchase: CustomPurchase ->
+        googleBillingManager.onProductConsumeFailure.collectOnStart { customPurchase ->
             logger.debug("Product consumption failed...")
             presenter.onConsumeFailed(
                 customPurchase.responseCode,
-                customPurchase.purchase
+                customPurchase.purchase,
             )
         }
-        googleBillingManager.purchaseUpdateEvent?.observe(
-            this
-        ) { customPurchases: CustomPurchases ->
+        googleBillingManager.purchaseUpdateEvent.collectOnStart { customPurchases ->
             logger.info("Purchase updated...")
             presenter.onPurchaseUpdated(
                 customPurchases.responseCode,
-                customPurchases.purchase
+                customPurchases.purchase,
             )
         }
-        googleBillingManager.querySkuDetailEvent?.observe(
-            this
-        ) { customProductDetails: CustomProductDetails ->
-            presenter
-                .onSkuDetailsReceived(
-                    customProductDetails.billingResult.responseCode,
-                    customProductDetails.productDetails.toImmutableList()
-                )
+        googleBillingManager.querySkuDetailEvent.collectOnStart { customProductDetails ->
+            presenter.onSkuDetailsReceived(
+                customProductDetails.billingResult.responseCode,
+                customProductDetails.productDetails.toList(),
+            )
         }
     }
 
@@ -353,8 +368,6 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
 
     companion object {
         @JvmStatic
-        fun getStartIntent(context: Context): Intent {
-            return Intent(context, UpgradeActivity::class.java)
-        }
+        fun getStartIntent(context: Context): Intent = Intent(context, UpgradeActivity::class.java)
     }
 }

@@ -13,10 +13,16 @@ import com.windscribe.tv.adapter.MenuAdapter.PortHolder
 import com.windscribe.tv.serverlist.customviews.PreferenceItem
 import com.windscribe.tv.serverlist.customviews.State
 
-class MenuAdapter(localiseValues: List<String>, selectedKey: String, keys: List<String>? = null) :
-    RecyclerView.Adapter<PortHolder>() {
-    inner class PortHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class MenuAdapter(
+    localiseValues: List<String>,
+    selectedKey: String,
+    keys: List<String>? = null,
+) : RecyclerView.Adapter<PortHolder>() {
+    inner class PortHolder(
+        itemView: View,
+    ) : RecyclerView.ViewHolder(itemView) {
         private val labelView: PreferenceItem = itemView.findViewById(R.id.label)
+
         fun bind(item: String) {
             labelView.text = item
             var itemKey = item
@@ -41,19 +47,22 @@ class MenuAdapter(localiseValues: List<String>, selectedKey: String, keys: List<
     private var listener: MenuItemSelectListener? = null
     private val localiseValues: List<String>
     private val keys: List<String>?
-    override fun getItemCount(): Int {
-        return localiseValues.size
-    }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
+    override fun getItemCount(): Int = localiseValues.size
 
-    override fun onBindViewHolder(portHolder: PortHolder, i: Int) {
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun onBindViewHolder(
+        portHolder: PortHolder,
+        i: Int,
+    ) {
         portHolder.bind(localiseValues[i])
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): PortHolder {
+    override fun onCreateViewHolder(
+        viewGroup: ViewGroup,
+        i: Int,
+    ): PortHolder {
         val view =
             LayoutInflater.from(viewGroup.context).inflate(R.layout.menu_item, viewGroup, false)
         return PortHolder(view)

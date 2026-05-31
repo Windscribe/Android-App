@@ -6,132 +6,100 @@ package com.windscribe.vpn.services.ping
 
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
-import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.FileDescriptor
 import java.net.Inet6Address
 import java.net.InetAddress
-import java.net.SocketException
-import java.nio.ByteBuffer
 
-open class Ping {
+/**
+ * Sends a single ICMP echo (v4 or v6) and returns the round-trip time.
+ *
+ * The actual ICMP socket calls block, so [run] is suspending and dispatches to
+ * [Dispatchers.IO] internally — callers don't need to wrap it.
+ */
+object Ping {
+    private val ECHO_PAYLOAD = "abcdefghijklmnopqrstuvwabcdefghi".toByteArray()
+    private const val IP_TOS_LOW_DELAY = 0x10
+    private const val ECHO_PORT = 7
+    private const val MSG_DONT_WAIT = 0x40
+    private val POLL_IN = (if (OsConstants.POLLIN == 0) 1 else OsConstants.POLLIN).toShort()
 
-    @Throws(Exception::class)
-    fun run(mDest: InetAddress?, timeoutMs: Int): Long {
-        val type =
-            if (mDest is Inet6Address) EchoPacketBuilder.TYPE_ICMP_V6 else EchoPacketBuilder.TYPE_ICMP_V4
-        val mEchoPacketBuilder = EchoPacketBuilder(
-            type, "abcdefghijklmnopqrstuvwabcdefghi".toByteArray()
-        )
-        val inet: Int
-        val proto: Int
-        if (mDest is Inet6Address) {
-            inet = OsConstants.AF_INET6
-            proto = OsConstants.IPPROTO_ICMPV6
-        } else {
-            inet = OsConstants.AF_INET
-            proto = OsConstants.IPPROTO_ICMP
-        }
-        val fd = socket(inet, proto)
-        return if (fd.valid()) {
-            setLowDelay(fd)
-            val structPollfd = StructPollfd()
-            structPollfd.fd = fd
-            structPollfd.events = Polling
-            val structPollfds = arrayOf(structPollfd)
-            val byteBuffer = mEchoPacketBuilder.build()
-            val buffer = ByteArray(byteBuffer.limit())
-            val start = System.currentTimeMillis()
-            var rc = sendto(fd, byteBuffer, mDest)
-            if (rc >= 0) {
-                rc = poll(structPollfds, timeoutMs)
-                val time = calcLatency(start, System.currentTimeMillis())
-                if (rc >= 0) {
-                    if (structPollfd.revents == Polling) {
-                        structPollfd.revents = 0
-                        rc = recvfrom(fd, buffer)
-                        if (rc < 0) {
-                            close(fd)
-                            throw Exception()
-                        }
-                        close(fd)
-                        time
-                    } else {
-                        close(fd)
-                        throw Exception()
-                    }
-                } else {
-                    close(fd)
-                    throw Exception()
-                }
-            } else {
-                close(fd)
-                throw Exception()
-            }
-        } else {
-            close(fd)
-            throw Exception()
-        }
-    }
-
-    /*
-     * Testability methods
+    /**
+     * Pings [dest] and returns the round-trip time in milliseconds.
+     * Throws if anything fails (socket, send, poll, recv).
      */
-    @Throws(ErrnoException::class)
-    protected fun close(fd: FileDescriptor?) {
-        Os.close(fd)
-    }
+    @Throws(Exception::class)
+    suspend fun run(
+        dest: InetAddress,
+        timeoutMs: Int,
+    ): Long =
+        withContext(Dispatchers.IO) {
+            val isV6 = dest is Inet6Address
+            val type = if (isV6) EchoPacketBuilder.TYPE_ICMP_V6 else EchoPacketBuilder.TYPE_ICMP_V4
+            val inet = if (isV6) OsConstants.AF_INET6 else OsConstants.AF_INET
+            val proto = if (isV6) OsConstants.IPPROTO_ICMPV6 else OsConstants.IPPROTO_ICMP
 
-    @Throws(ErrnoException::class)
-    protected fun poll(structPollfds: Array<StructPollfd>?, mTimeoutMs: Int): Int {
-        return Os.poll(structPollfds, mTimeoutMs)
-    }
+            // Each ping needs a fresh build — EchoPacketBuilder embeds a unique
+            // identifier per call, so the buffer can't be reused.
+            val byteBuffer = EchoPacketBuilder(type, ECHO_PAYLOAD).build()
+            val buffer = ByteArray(byteBuffer.limit())
 
-    @Throws(ErrnoException::class, SocketException::class)
-    protected fun recvfrom(fd: FileDescriptor?, buffer: ByteArray): Int {
-        return Os.recvfrom(fd, buffer, 0, buffer.size, msgDontWait, null)
-    }
+            val fd = Os.socket(inet, OsConstants.SOCK_DGRAM, proto)
+            if (!fd.valid()) {
+                Os.close(fd)
+                throw Exception("Failed to open ICMP socket")
+            }
 
-    @Throws(ErrnoException::class, SocketException::class)
-    protected fun sendto(fd: FileDescriptor?, byteBuffer: ByteBuffer?, mDest: InetAddress?): Int {
-        return Os.sendto(fd, byteBuffer, 0, mDest, ECHO_PORT)
-    }
+            try {
+                setLowDelay(fd)
+                val pollFd =
+                    StructPollfd().apply {
+                        this.fd = fd
+                        events = POLL_IN
+                    }
+                val pollFds = arrayOf(pollFd)
 
-    @Throws(ErrnoException::class)
-    protected fun socket(inet: Int, proto: Int): FileDescriptor {
-        return Os.socket(inet, OsConstants.SOCK_DGRAM, proto)
-    }
+                val start = System.currentTimeMillis()
+                if (Os.sendto(fd, byteBuffer, 0, dest, ECHO_PORT) < 0) {
+                    throw Exception("sendto failed")
+                }
+                if (Os.poll(pollFds, timeoutMs) < 0) {
+                    throw Exception("poll failed")
+                }
+                val time = System.currentTimeMillis() - start
+                if (pollFd.revents != POLL_IN) {
+                    throw Exception("poll returned no data (revents=${pollFd.revents})")
+                }
+                if (Os.recvfrom(fd, buffer, 0, buffer.size, MSG_DONT_WAIT, null) < 0) {
+                    throw Exception("recvfrom failed")
+                }
+                time
+            } finally {
+                Os.close(fd)
+            }
+        }
 
-    private fun calcLatency(startTimestamp: Long, endTimestamp: Long): Long {
-        return endTimestamp - startTimestamp
-    }
-
-    @Throws(ErrnoException::class)
     private fun setLowDelay(fd: FileDescriptor) {
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
-            Os.setsockoptInt(fd, OsConstants.IPPROTO_IP, OsConstants.IP_TOS, ipTosLowDelay)
+            Os.setsockoptInt(fd, OsConstants.IPPROTO_IP, OsConstants.IP_TOS, IP_TOS_LOW_DELAY)
         } else {
+            // Reflectively call setsockoptInt on older API levels where it isn't public.
             try {
-                val method = Os::class.java.getMethod(
+                val method =
+                    Os::class.java.getMethod(
                         "setsockoptInt",
                         FileDescriptor::class.java,
                         Int::class.javaPrimitiveType,
                         Int::class.javaPrimitiveType,
-                        Int::class.javaPrimitiveType
+                        Int::class.javaPrimitiveType,
                     )
-                method.invoke(null, fd, OsConstants.IPPROTO_IP, OsConstants.IP_TOS, ipTosLowDelay)
-            } catch (ignored: Exception) {
+                method.invoke(null, fd, OsConstants.IPPROTO_IP, OsConstants.IP_TOS, IP_TOS_LOW_DELAY)
+            } catch (_: Exception) {
             }
         }
-    }
-
-    companion object {
-
-        private const val ipTosLowDelay = 0x10
-        private const val ECHO_PORT = 7
-        private val Polling = (if (OsConstants.POLLIN == 0) 1 else OsConstants.POLLIN).toShort()
-        private const val msgDontWait = 0x40
     }
 }

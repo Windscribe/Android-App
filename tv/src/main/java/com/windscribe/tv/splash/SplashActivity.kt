@@ -6,23 +6,28 @@ package com.windscribe.tv.splash
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeActivity
+import dagger.hilt.android.AndroidEntryPoint
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @SuppressLint("CustomSplashScreen")
-class SplashActivity : BaseActivity(), SplashView {
+@AndroidEntryPoint
+class SplashActivity :
+    BaseActivity(),
+    SplashView {
     @Inject
     lateinit var presenter: SplashPresenter
     private val logger = LoggerFactory.getLogger("basic")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_splash)
+        presenter.bind(this, lifecycleScope)
         logger.info("OnCreate: Splash Activity")
         presenter.checkNewMigration()
     }

@@ -2,9 +2,7 @@ package com.windscribe.vpn.repository
 
 import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.model.OpenVPNConnectionInfo
-import com.wsnet.lib.WSNet
 import com.windscribe.vpn.wsnet.WSNetWrapper
-import dagger.Lazy
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -15,11 +13,12 @@ interface EmergencyConnectRepository {
 /**
  * Implementation of emergency connect repository.
  */
-class EmergencyConnectRepositoryImpl(private val wsNetWrapper: WSNetWrapper) : EmergencyConnectRepository {
-
+class EmergencyConnectRepositoryImpl(
+    private val wsNetWrapper: WSNetWrapper,
+) : EmergencyConnectRepository {
     /** Get emergency connect profiles.
      * @return
-    List of [OpenVPNConnectionInfo]
+     List of [OpenVPNConnectionInfo]
      */
     override suspend fun getConnectionInfo(): Result<List<OpenVPNConnectionInfo>> {
         if (BuildConfig.DEV) {
@@ -27,33 +26,39 @@ class EmergencyConnectRepositoryImpl(private val wsNetWrapper: WSNetWrapper) : E
         }
         return runCatching {
             suspendCancellableCoroutine { cont ->
-                wsNetWrapper.withWSNet { wsNet ->
+                val emergencyConnect = wsNetWrapper.safeEmergencyConnect()
+                if (emergencyConnect == null) {
+                    cont.resume(emptyList())
+                } else {
                     try {
-                        val callback = wsNet.emergencyConnect().getIpEndpoints { ips ->
-                            try {
-                                val configs = ips.map { ipEndpoint ->
-                                    val proto = if (ipEndpoint.protocol() == 0) "udp" else "tcp"
-                                    OpenVPNConnectionInfo(
-                                        wsNet.emergencyConnect().ovpnConfig(),
-                                            ipEndpoint.ip(),
-                                            ipEndpoint.port().toString(),
-                                            proto,
-                                        wsNet.emergencyConnect().username(),
-                                        wsNet.emergencyConnect().password()
-                                    )
-                                }.shuffled()
-                                cont.resume(configs)
-                            } catch (e: Exception) {
-                                cont.resume(emptyList())
+                        val callback =
+                            emergencyConnect.getIpEndpoints { ips ->
+                                try {
+                                    val configs =
+                                        ips
+                                            .map { ipEndpoint ->
+                                                val proto = if (ipEndpoint.protocol() == 0) "udp" else "tcp"
+                                                OpenVPNConnectionInfo(
+                                                    emergencyConnect.ovpnConfig(),
+                                                    ipEndpoint.ip(),
+                                                    ipEndpoint.port().toString(),
+                                                    proto,
+                                                    emergencyConnect.username(),
+                                                    emergencyConnect.password(),
+                                                )
+                                            }.shuffled()
+                                    cont.resume(configs)
+                                } catch (e: Exception) {
+                                    cont.resume(emptyList())
+                                }
                             }
-                        }
                         cont.invokeOnCancellation {
                             callback.cancel()
                         }
                     } catch (e: Exception) {
                         cont.resume(emptyList())
                     }
-                } ?: cont.resume(emptyList())
+                }
             }
         }
     }

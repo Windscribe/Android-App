@@ -3,4 +3,6 @@
  */
 package com.windscribe.vpn.exceptions
 
-class NoLocationPermissionException(message: String) : WindScribeException(message)
+class NoLocationPermissionException(
+    message: String,
+) : WindScribeException(message)

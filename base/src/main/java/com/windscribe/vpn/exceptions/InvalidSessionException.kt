@@ -3,4 +3,6 @@
  */
 package com.windscribe.vpn.exceptions
 
-class InvalidSessionException(message: String?) : Exception(message)
+class InvalidSessionException(
+    message: String?,
+) : Exception(message)

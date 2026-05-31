@@ -10,14 +10,18 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_UDP
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 
-class ProtocolConfig(var protocol: String, var port: String, val type: Type) {
+class ProtocolConfig(
+    var protocol: String,
+    var port: String,
+    val type: Type,
+) {
     enum class Type {
-        Preferred, Manual, Auto,
+        Preferred,
+        Manual,
+        Auto,
     }
 
-    override fun toString(): String {
-        return "Protocol Config: $protocol:$port"
-    }
+    override fun toString(): String = "Protocol Config: $protocol:$port"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -13,115 +13,121 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_GENERATE_CREDENTIALS
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import dagger.Lazy
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ConnectionDataRepository @Inject constructor(
-    private val preferencesHelper: PreferencesHelper,
-    private val apiCallManager: IApiCallManager,
-    private val autoConnectionManager: Lazy<AutoConnectionManager>
-) {
-    private val logger = LoggerFactory.getLogger("data")
+class ConnectionDataRepository
+    @Inject
+    constructor(
+        private val preferencesHelper: PreferencesHelper,
+        private val apiCallManager: IApiCallManager,
+        private val autoConnectionManager: Lazy<AutoConnectionManager>,
+    ) {
+        private val logger = LoggerFactory.getLogger("data")
 
-    suspend fun update(): Boolean {
-        logger.debug("Starting connection data update...")
+        suspend fun update(): Boolean {
+            logger.debug("Starting connection data update...")
 
-        val result = try {
-            // Step 1: Get server config
-            val serverConfigResult = result<String> {
-                apiCallManager.getServerConfig()
-            }
-            when (serverConfigResult) {
-                is CallResult.Success -> {
-                    preferencesHelper.openVpnServerConfig = serverConfigResult.data
-                }
+            val result =
+                try {
+                    // Step 1: Get server config
+                    val serverConfigResult =
+                        result<String> {
+                            apiCallManager.getServerConfig()
+                        }
+                    when (serverConfigResult) {
+                        is CallResult.Success -> {
+                            preferencesHelper.openVpnServerConfig = serverConfigResult.data
+                        }
 
-                is CallResult.Error -> {
-                    if (serverConfigResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
-                        preferencesHelper.globalUserConnectionPreference = false
-                        appContext.vpnController.disconnectAsync()
+                        is CallResult.Error -> {
+                            if (serverConfigResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
+                                preferencesHelper.globalUserConnectionPreference = false
+                                appContext.vpnController.disconnectAsync()
+                            }
+                            logger.debug("Failed to get server config: ${serverConfigResult.errorMessage}")
+                        }
                     }
-                    logger.debug("Failed to get server config: ${serverConfigResult.errorMessage}")
-                }
-            }
 
-            // Step 2: Get OpenVPN credentials
-            val openVpnCredsResult = result<ServerCredentialsResponse> {
-                apiCallManager.getServerCredentials()
-            }
-            when (openVpnCredsResult) {
-                is CallResult.Success -> {
-                    preferencesHelper.openVpnCredentials = openVpnCredsResult.data
-                }
+                    // Step 2: Get OpenVPN credentials
+                    val openVpnCredsResult =
+                        result<ServerCredentialsResponse> {
+                            apiCallManager.getServerCredentials()
+                        }
+                    when (openVpnCredsResult) {
+                        is CallResult.Success -> {
+                            preferencesHelper.openVpnCredentials = openVpnCredsResult.data
+                        }
 
-                is CallResult.Error -> {
-                    if (openVpnCredsResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
-                        preferencesHelper.globalUserConnectionPreference = false
-                        appContext.vpnController.disconnectAsync()
+                        is CallResult.Error -> {
+                            if (openVpnCredsResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
+                                preferencesHelper.globalUserConnectionPreference = false
+                                appContext.vpnController.disconnectAsync()
+                            }
+                            logger.debug("Failed to get OpenVPN credentials: ${openVpnCredsResult.errorMessage}")
+                        }
                     }
-                    logger.debug("Failed to get OpenVPN credentials: ${openVpnCredsResult.errorMessage}")
-                }
-            }
 
-            // Step 3: Get IKEv2 credentials
-            val ikev2CredsResult = result<ServerCredentialsResponse> {
-                apiCallManager.getServerCredentialsForIKev2()
-            }
-            when (ikev2CredsResult) {
-                is CallResult.Success -> {
-                    preferencesHelper.ikev2Credentials = ikev2CredsResult.data
-                }
+                    // Step 3: Get IKEv2 credentials
+                    val ikev2CredsResult =
+                        result<ServerCredentialsResponse> {
+                            apiCallManager.getServerCredentialsForIKev2()
+                        }
+                    when (ikev2CredsResult) {
+                        is CallResult.Success -> {
+                            preferencesHelper.ikev2Credentials = ikev2CredsResult.data
+                        }
 
-                is CallResult.Error -> {
-                    if (ikev2CredsResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
-                        preferencesHelper.globalUserConnectionPreference = false
-                        appContext.vpnController.disconnectAsync()
+                        is CallResult.Error -> {
+                            if (ikev2CredsResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
+                                preferencesHelper.globalUserConnectionPreference = false
+                                appContext.vpnController.disconnectAsync()
+                            }
+                            logger.debug("Failed to get IKEv2 credentials: ${ikev2CredsResult.errorMessage}")
+                        }
                     }
-                    logger.debug("Failed to get IKEv2 credentials: ${ikev2CredsResult.errorMessage}")
-                }
-            }
 
-            // Step 4: Get port map
-            val portMapResult = result<PortMapResponse> {
-                apiCallManager.getPortMap()
-            }
-            when (portMapResult) {
-                is CallResult.Success -> {
-                    saveSuggestedProtocolPort(portMapResult.data)
-                    preferencesHelper.portMap = Gson().toJson(portMapResult.data)
-                    preferencesHelper.portMapVersion = NetworkKeyConstants.PORT_MAP_VERSION
-                }
+                    // Step 4: Get port map
+                    val portMapResult =
+                        result<PortMapResponse> {
+                            apiCallManager.getPortMap()
+                        }
+                    when (portMapResult) {
+                        is CallResult.Success -> {
+                            saveSuggestedProtocolPort(portMapResult.data)
+                            preferencesHelper.portMap = Gson().toJson(portMapResult.data)
+                            preferencesHelper.portMapVersion = NetworkKeyConstants.PORT_MAP_VERSION
+                        }
 
-                is CallResult.Error -> {
-                    logger.error("Failed to get port map: ${portMapResult.errorMessage}")
-                }
-            }
+                        is CallResult.Error -> {
+                            logger.error("Failed to get port map: ${portMapResult.errorMessage}")
+                        }
+                    }
 
-            CallResult.Success(Unit)
-        } catch (e: Exception) {
-            logger.debug("Connection data update error: ${e.message}")
-            CallResult.Error(-1, e.message ?: "Unknown error")
+                    CallResult.Success(Unit)
+                } catch (e: Exception) {
+                    logger.debug("Connection data update error: ${e.message}")
+                    CallResult.Error(-1, e.message ?: "Unknown error")
+                }
+            return result is CallResult.Success
         }
-        return result is CallResult.Success
+
+        private fun saveSuggestedProtocolPort(portMap: PortMapResponse) {
+            portMap.suggested?.let {
+                preferencesHelper.suggestedProtocol = it.protocol
+                preferencesHelper.suggestedPort = it.port.toString()
+                val indexOfSuggestedProtocol =
+                    autoConnectionManager.get().listOfProtocols.indexOfFirst { proto -> proto.protocol == portMap.suggested.protocol }
+                if (indexOfSuggestedProtocol != 0) {
+                    autoConnectionManager.get().reset()
+                }
+            }
+            if (portMap.suggested == null) {
+                preferencesHelper.suggestedProtocol = null
+                preferencesHelper.suggestedPort = null
+            }
+        }
     }
-
-    private fun saveSuggestedProtocolPort(portMap: PortMapResponse) {
-        portMap.suggested?.let {
-            preferencesHelper.suggestedProtocol = it.protocol
-            preferencesHelper.suggestedPort = it.port.toString()
-            val indexOfSuggestedProtocol =
-                autoConnectionManager.get().listOfProtocols.indexOfFirst { proto -> proto.protocol == portMap.suggested?.protocol }
-            if (indexOfSuggestedProtocol != 0) {
-                autoConnectionManager.get().reset()
-            }
-        }
-        if (portMap.suggested == null) {
-            preferencesHelper.suggestedProtocol = null
-            preferencesHelper.suggestedPort = null
-        }
-    }
-}

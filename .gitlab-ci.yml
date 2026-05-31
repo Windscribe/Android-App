@@ -2,177 +2,270 @@ include:
   - project: 'shared/strix-ci-template'
     file: 'strix-scan.yml'
 
-strix-scan-quick:
-  stage: Test
-strix-scan-standard:
-  stage: Test
-strix-scan-mr-diff:
-  stage: Test
+# Windscribe Android CI/CD. Stages: Test (lint/unit/E2E) → Deploy (Play Store,
+# Nexus, App Sharing). Test jobs run on bare-metal arm64 macs (.metal_arm64);
+# deploy jobs in the Alpine Docker image (.docker_* + .build_with_version).
 
+image: $BASE_CI_IMAGE
 
-#==============================================================================
-# Windscribe Android CI/CD Pipeline
-#==============================================================================
-# This pipeline manages the build, test, and deployment workflow for the
-# Windscribe Android application (mobile and TV variants).
-#
-# Pipeline Stages:
-#   - Test: Run automated tests
-#   - Deploy: Build and deploy to various channels (Play Store, Nexus, etc.)
-#
-# Key Workflows:
-#   1. Internal App Sharing: Quick test URLs from Play Store (auto on develop/main)
-#   2. Staging App Sharing: Staging builds with DEV flag (manual)
-#   3. Play Store Internal Track: Official internal releases (manual)
-#   4. Nexus Public: Public APK distribution (tag-triggered)
-#==============================================================================
-
-image: $CI_REGISTRY_IMAGE
-
-#------------------------------------------------------------------------------
-# Global Variables
-#------------------------------------------------------------------------------
 variables:
-  # Locale Configuration
   LC_ALL: "en_US.UTF-8"
   LANG: "en_US.UTF-8"
-
-  # Git Strategy
   GIT_STRATEGY: clone
-
-  # Build Paths
   CHANGE_LOG_PATH: "${CI_PROJECT_DIR}/fastlane/metadata/android/en-US/changelogs/"
   BUILD_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/build.properties"
-
-  # Signing Configuration
   SIGN_KEY_NAME: "release.jks"
   SIGN_KEY_PATH: "${CI_PROJECT_DIR}/${SIGN_KEY_NAME}"
   SIGN_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/sign.properties"
   GCM_KEY_PATH: "${CI_PROJECT_DIR}/gcm_key.json"
-
-  # Output Paths
   MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/build/outputs/apk/google/release/mobile-google-release.apk"
   TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/google/release/tv-google-release.apk"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  GRADLE_BUILD_CACHE: "$CI_PROJECT_DIR/.gradle/build-cache"
 
-  # Cache Configuration
-  CCACHE_DIR: "${CI_PROJECT_DIR}/.ccache"
-
-#------------------------------------------------------------------------------
-# Cache Configuration
-#------------------------------------------------------------------------------
 cache:
+  key:
+    prefix: gradle
+    files:
+      - gradle/wrapper/gradle-wrapper.properties
+      - gradle/libs.versions.toml
+  policy: pull-push
   paths:
-    - .gradle/wrapper
-    - .gradle/caches
-    - .ccache
+    - .gradle/caches/
+    - .gradle/wrapper/
 
-#------------------------------------------------------------------------------
-# Pipeline Stages
-#------------------------------------------------------------------------------
 stages:
+  - Maintenance
   - Test
   - Deploy
 
-#==============================================================================
-# REUSABLE JOB TEMPLATES
-#==============================================================================
-# These templates eliminate duplication and ensure consistency across jobs.
-# They should never be run directly - only extended by actual jobs.
-#==============================================================================
+# ── Templates (extend-only) ──────────────────────────────────────────────────
 
-#------------------------------------------------------------------------------
-# .base_android_setup
-# Common Android build environment setup used by all build jobs
-#------------------------------------------------------------------------------
-.base_android_setup:
+# MRs targeting develop or main.
+.mr_to_develop_or_main: &mr_to_develop_or_main
+  if: '$CI_PIPELINE_SOURCE == "merge_request_event" && ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main")'
+
+# Toolchain env (toolchain itself is baked into $BASE_CI_IMAGE).
+.docker_android_toolchain:
   before_script:
-    # System packages installation
-    - apk -U upgrade
-    - apk --no-cache add curl flock jq swig
-    - apk --no-cache add git make musl-dev build-base cmake ninja zip unzip perl
-    - apk --no-cache add go=1.21.10-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.19/community
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
 
-    # Fetch secrets from Vault
-    - authToken=$(curl -X POST https://pki.int.windscribe.com:8200/v1/auth/approle/login -d "role_id=$role_id&secret_id=$secret_id" | jq --raw-output '.auth.client_token')
-    - secretData=$(curl -H "X-Vault-Token:$authToken" -X GET https://pki.int.windscribe.com:8200/v1/kv/cicd/client-android)
-
-    # Extract and save configuration files
+# Fetch signing/build secrets from Vault, write to disk.
+.docker_vault_secrets:
+  before_script:
+    - authToken=$(curl -X POST "$VAULT_LOGIN_URL" -d "role_id=$role_id&secret_id=$secret_id" | jq --raw-output '.auth.client_token')
+    - secretData=$(curl -H "X-Vault-Token:$authToken" -X GET "$VAULT_SECRET_URL")
     - echo "$secretData" | jq '.data."sign.properties"' | base64 -d -i > $SIGN_PROPERTIES_PATH
     - echo "$secretData" | jq '.data."build.properties"' | base64 -d -i > $BUILD_PROPERTIES_PATH
     - echo "$secretData" | jq '.data.android_play_store_upload_key' | base64 -d -i > $GCM_KEY_PATH
     - echo "$secretData" | jq '.data.android_play_store_sign_key' | base64 -d -i > $SIGN_KEY_PATH
 
-    # Configure build environment
+# Export VERSION_NAME / NDK once the version is set (not VERSION_CODE — TV adds +1).
+.docker_version_env:
+  before_script:
+    - MOBILE_VERSION_CODE=$(grep -E 'extra\["appVersionCode"\] = ' build.gradle.kts | sed 's/.*= //')
+    - export VERSION_NAME=${MAJOR}.${MINOR}.${MOBILE_VERSION_CODE}
+    - touch ${CHANGE_LOG_PATH}${MOBILE_VERSION_CODE}.txt
+    - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
+
+# Full deploy setup. VERSION_LANE = keepBuildVersion (default) | updateBuildVersion.
+.build_with_version:
+  stage: Deploy
+  variables:
+    VERSION_LANE: keepBuildVersion
+  before_script:
+    - !reference [.docker_android_toolchain, before_script]
+    - !reference [.docker_vault_secrets, before_script]
+    - fastlane "$VERSION_LANE"
+    - !reference [.docker_version_env, before_script]
+
+# Bare-metal arm64 mac runner
+.metal_arm64:
+  stage: Test
+  resource_group: arm64-gradle
+  tags:
+    - arm64
+  before_script:
+    - brew install flock
+    - brew install coreutils
+    - export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
     - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+    - export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$HOME/.maestro/bin:$PATH"
+    - export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
     - chmod +x ./gradlew
 
-    # Install build tools
-    - extras ndk -n 27.2.12479018 -c 3.22.1
-    - extras fastlane || (apk --no-cache add ruby ruby-dev && gem install fastlane --force)
+# ── Test jobs ─────────────────────────────────────────────────────────────────
 
-#------------------------------------------------------------------------------
-# .build_with_version_increment
-# Extends base setup and increments build version from Play Store
-#------------------------------------------------------------------------------
-.build_with_version_increment:
-  extends: .base_android_setup
-  stage: Deploy
-  before_script:
-    - !reference [.base_android_setup, before_script]
+# Kotlin style check.
+Ktlint:
+  extends: .metal_arm64
+  rules:
+    - *mr_to_develop_or_main
+    - when: manual
+      allow_failure: true
 
-    # Increment build version
-    - apk add patch
-    - fastlane updateBuildVersion
+  script:
+    - ./gradlew ktlintCheck --continue
 
-    # Export version variables (don't export VERSION_CODE to allow TV to use +1 logic)
-    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
-    - export VERSION_NAME=${MAJOR}.${MINOR}.${MOBILE_VERSION_CODE}
-    - touch ${CHANGE_LOG_PATH}${MOBILE_VERSION_CODE}.txt
-    - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - "**/build/reports/ktlint/**"
 
-#------------------------------------------------------------------------------
-# .build_with_version_keep
-# Extends base setup and keeps current Play Store build version
-#------------------------------------------------------------------------------
-.build_with_version_keep:
-  extends: .base_android_setup
-  stage: Deploy
-  before_script:
-    - !reference [.base_android_setup, before_script]
+# JVM unit tests
+UnitTests:
+  extends: .metal_arm64
+  rules:
+    - *mr_to_develop_or_main
+    - when: manual
+      allow_failure: true
 
-    # Keep existing build version from Play Store
-    - fastlane keepBuildVersion
+  script:
+    - ./gradlew
+      :base:testGoogleDebugUnitTest
+      :openvpn:testSkeletonDebugUnitTest
+      :wgtunnel:testDebugUnitTest
+      --continue
 
-    # Export version variables (don't export VERSION_CODE to allow TV to use +1 logic)
-    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
-    - export VERSION_NAME=${MAJOR}.${MINOR}.${MOBILE_VERSION_CODE}
-    - touch ${CHANGE_LOG_PATH}${MOBILE_VERSION_CODE}.txt
-    - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - "**/build/reports/tests/**"
+      - "**/build/test-results/**"
+    reports:
+      junit:
+        - "**/build/test-results/test*UnitTest/TEST-*.xml"
 
-#------------------------------------------------------------------------------
-# .minimal_setup
-# Minimal setup for simple jobs (notifications, etc.)
-#------------------------------------------------------------------------------
-.minimal_setup:
-  stage: Deploy
-  before_script:
-    - apk --no-cache add curl
-    - extras fastlane || (apk --no-cache add ruby ruby-dev && gem install fastlane --force)
+# End to end critical flow tests on device.
+E2E tests:
+  extends: .metal_arm64
+  rules:
+    - *mr_to_develop_or_main
+    - when: manual
+      allow_failure: true
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  variables:
+    AVD_NAME: "ws_test_avd"
+    APK_PATH: "maestro-artifacts/mobile-google-debug.apk"
+  script:
+    # DEV=true points login at staging (avoids the production captcha).
+    - export DEV=true
+    - ./gradlew :mobile:assembleGoogleDebug -PabiFilter=arm64-v8a --no-daemon
+    - mkdir -p maestro-artifacts
+    - cp $(find mobile/build/outputs/apk/google/debug -name "*.apk" | head -1) "$APK_PATH"
+    - adb kill-server >/dev/null 2>&1 || true
+    - pkill -f "qemu-system.*-avd $AVD_NAME" || true
+    - adb start-server
+    - nohup emulator -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -no-snapshot -wipe-data -gpu swiftshader_indirect -accel on > emulator.log 2>&1 &
+    - adb wait-for-device
+    - |
+      elapsed=0
+      until test "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1"; do
+        if test "$elapsed" -ge 300; then echo "emulator did not boot within 300s"; tail -50 emulator.log; exit 1; fi
+        sleep 3; elapsed=$((elapsed + 3))
+      done
+    - adb install -r "$APK_PATH"
+    - caffeinate -dimsu ./maestro/run.sh --skip-build
+  after_script:
+    - export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+    - export PATH="$ANDROID_HOME/platform-tools:$PATH"
+    - adb -s emulator-5554 emu kill || true
+    - pkill -f "qemu-system.*-avd $AVD_NAME" || true
+    - mkdir -p maestro-reports
+    - cp -R "$HOME/.maestro/tests" maestro-reports/ 2>/dev/null || true
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - emulator.log
+      - maestro-reports/**
+      - maestro-artifacts/mobile-google-debug.apk
 
-#==============================================================================
-# DEPLOYMENT JOBS
-#==============================================================================
+# ART Baseline generation.
+GenerateBaselineProfile:
+  extends: .metal_arm64
+  rules:
+    - when: manual
+      allow_failure: true
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  variables:
+    AVD_NAME: "ws_test_avd"
+  script:
+    - '[[ -z "${TEST_EMAIL:-}" || -z "${TEST_PASSWORD:-}" ]] && { echo "TEST_EMAIL/TEST_PASSWORD required"; exit 1; } || true'
+    - adb kill-server >/dev/null 2>&1 || true
+    - pkill -f "qemu-system.*-avd $AVD_NAME" || true
+    - adb start-server
+    - nohup emulator -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -no-snapshot -wipe-data -gpu swiftshader_indirect -accel on > emulator.log 2>&1 &
+    - adb wait-for-device
+    - |
+      elapsed=0
+      until test "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1"; do
+        if test "$elapsed" -ge 300; then echo "emulator did not boot within 300s"; tail -50 emulator.log; exit 1; fi
+        sleep 3; elapsed=$((elapsed + 3))
+      done
+    # DEV=true points login at staging; copies profile into mobile/src/googleRelease/.
+    - |
+      DEV=true caffeinate -dimsu ./gradlew :mobile:generateGoogleReleaseBaselineProfile \
+        -PuseConnectedDevices=true \
+        -Pandroid.testInstrumentationRunnerArguments.TEST_EMAIL="$TEST_EMAIL" \
+        -Pandroid.testInstrumentationRunnerArguments.TEST_PASSWORD="$TEST_PASSWORD" \
+        --no-daemon
+    - git diff --stat mobile/src || true
+  after_script:
+    - export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+    - export PATH="$ANDROID_HOME/platform-tools:$PATH"
+    - adb -s emulator-5554 emu kill || true
+    - pkill -f "qemu-system.*-avd $AVD_NAME" || true
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - emulator.log
+      - mobile/src/**/generated/baselineProfiles/**
 
-#------------------------------------------------------------------------------
-# Internal App Sharing Upload (Auto on develop/main)
-#------------------------------------------------------------------------------
-# Purpose: Quick QA builds with shareable URLs from Play Store
-# Trigger: Automatic on successful merge to develop/main branches
-# Output: AAB files uploaded to Internal App Sharing (quick test URLs only)
-# Slack: Notifies with download URLs
-#------------------------------------------------------------------------------
+# Security scans via the shared strix-ci-template.
+strix-scan-mr-diff:
+  stage: Test
+  tags:
+    - arm64
+  rules:
+    - when: manual
+      allow_failure: true
+
+strix-scan-quick:
+  stage: Test
+  tags:
+    - arm64
+  rules:
+    - when: manual
+      allow_failure: true
+
+strix-scan-standard:
+  stage: Test
+  tags:
+    - arm64
+  rules:
+    - when: manual
+      allow_failure: true
+
+# ── Deploy jobs ───────────────────────────────────────────────────────────────
+
+# Internal App Sharing (auto on develop/main).
 InternalAppSharing:
-  extends: .build_with_version_keep
+  extends: .build_with_version
   stage: Deploy
   only:
     refs:
@@ -180,77 +273,47 @@ InternalAppSharing:
       - main
 
   script:
-    # Store version info
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
-
-    # Build and upload to Internal App Sharing ONLY (quick test URLs)
     - fastlane publishToInternalAppSharing
 
   artifacts:
     reports:
       dotenv: build.env
 
-#------------------------------------------------------------------------------
-# Staging App Sharing Upload (Manual trigger with DEV override)
-#------------------------------------------------------------------------------
-# Purpose: Staging environment builds for pre-production testing
-# Trigger: Manual
-# Output: AAB files uploaded to Internal App Sharing (quick test URLs only)
-# Slack: Notifies with staging test URLs
-# Note: Uses DEV flag to override environment settings for staging
-#------------------------------------------------------------------------------
+# Internal App Sharing, staging build (DEV=true). Manual.
 StagingAppSharing:
-  extends: .build_with_version_keep
+  extends: .build_with_version
   stage: Deploy
   when: manual
 
   script:
-    # Set DEV flag for staging environment
     - export DEV=true
-
-    # Store version info
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
-
-    # Build and upload to Internal App Sharing ONLY (quick test URLs)
     - fastlane publishToInternalAppSharing
 
   artifacts:
     reports:
       dotenv: build.env
 
-#------------------------------------------------------------------------------
-# Play Store Internal Track Upload (Manual trigger)
-#------------------------------------------------------------------------------
-# Purpose: Official internal release to Play Store testing track
-# Trigger: Manual
-# Output: AAB files uploaded to Play Store Internal Track
-# Slack: Notifies release team of new version
-#------------------------------------------------------------------------------
+# Play Store internal track (bumps build number). Manual.
 PlayStoreInternal:
-  extends: .build_with_version_increment
+  extends: .build_with_version
   stage: Deploy
   when: manual
+  variables:
+    VERSION_LANE: updateBuildVersion
 
   script:
-    # Store version info
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
-
-    # Build and upload to Play Store Internal Track
     - fastlane publishToPlayStoreInternal
 
   artifacts:
     reports:
       dotenv: build.env
 
-#------------------------------------------------------------------------------
-# Nexus Public Release (Tag-triggered)
-#------------------------------------------------------------------------------
-# Purpose: Production release builds for public distribution
-# Trigger: Automatic on git tags
-# Output: APK files uploaded to Nexus public server
-#------------------------------------------------------------------------------
+# Public APK release to Nexus (tag-triggered).
 NexusPublic:
-  extends: .build_with_version_keep
+  extends: .build_with_version
   stage: Deploy
   only:
     - tags
@@ -258,15 +321,10 @@ NexusPublic:
     - branches
 
   script:
-    # Use private server if DEV flag is set
     - if [ "$DEV" == "true" ]; then NEXUS_SERVER=$NEXUS_SERVER_PRIVATE; fi
-
-    # Store version info
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}
     - echo $NEXUS_SERVER
-
-    # Build and upload APKs
     - fastlane buildReleaseApk
     - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/windscribe-mobile.apk"
     - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/windscribe-tv.apk"
@@ -275,14 +333,8 @@ NexusPublic:
     reports:
       dotenv: build.env
 
-#------------------------------------------------------------------------------
-# Slack Notification (Automatic after Play Store release)
-#------------------------------------------------------------------------------
-# Purpose: Notify team when new version is available on Play Store
-# Trigger: Automatic after PlayStoreInternal job succeeds
-#------------------------------------------------------------------------------
+# Slack release notification (after PlayStoreInternal).
 SlackNotification:
-  extends: .minimal_setup
   stage: Deploy
   when: on_success
   dependencies:
@@ -291,8 +343,7 @@ SlackNotification:
     - PlayStoreInternal
 
   script:
-    # Get mobile version code for changelog
-    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
+    - MOBILE_VERSION_CODE=$(grep -E 'extra\["appVersionCode"\] = ' build.gradle.kts | sed 's/.*= //')
     - export TITLE="Available on Play Store Release $VERSION_NAME"
     - export CHANGE_LOG=$(cat $CHANGE_LOG_PATH${MOBILE_VERSION_CODE}.txt)
     - export SPACE=$'\n\n'
@@ -300,81 +351,62 @@ SlackNotification:
     - export PAYLOAD={\"text\":\"$MESSAGE\"}
     - curl --retry 5 -X POST $SLACK_URL --show-error --fail -d "$PAYLOAD"
 
-#==============================================================================
-# MAINTENANCE JOBS
-#==============================================================================
+# ── Maintenance ───────────────────────────────────────────────────────────────
 
-#------------------------------------------------------------------------------
-# Build Strongswan Libraries (Manual)
-#------------------------------------------------------------------------------
-# Purpose: Rebuild Strongswan native libraries for VPN functionality
-# Trigger: Manual (only when Strongswan needs updating)
-# Output: Compiled native libraries for all Android architectures
-#------------------------------------------------------------------------------
-BuildStrongswan:
-  stage: Deploy
+# Build & push the deploy-stage CI image.
+BuildDeployImage:
+  stage: Maintenance
   when: manual
-  image: ubuntu:22.04
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    # CI_REGISTRY_IMAGE is empty here, so derive the path from CI_REGISTRY + project.
+    - IMAGE="${CI_REGISTRY_IMAGE:-$CI_REGISTRY/$CI_PROJECT_PATH}/android-deploy:latest"
+    - echo "Building $IMAGE"
+    - docker build -f ci/android-deploy.Dockerfile -t "$IMAGE" .
+    - docker push "$IMAGE"
+    - echo "Pushed:$IMAGE"
+
+# Build & push the Strongswan-build CI image.
+BuildStrongswanImage:
+  stage: Maintenance
+  when: manual
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    # CI_REGISTRY_IMAGE is empty here, so derive the path from CI_REGISTRY + project.
+    - IMAGE="${CI_REGISTRY_IMAGE:-$CI_REGISTRY/$CI_PROJECT_PATH}/strongswan-build:latest"
+    - echo "Building $IMAGE"
+    - docker build -f ci/strongswan-build.Dockerfile -t "$IMAGE" .
+    - docker push "$IMAGE"
+    - echo "Pushed:$IMAGE"
+
+# Rebuild Strongswan native libs.
+BuildStrongswan:
+  stage: Maintenance
+  when: manual
+  image: $STRONGSWAN_CI_IMAGE
 
   before_script:
-    # Install system dependencies
-    - apt-get update
-    - DEBIAN_FRONTEND=noninteractive apt-get install -y locales build-essential automake bison flex gettext gperf libtool pkg-config swig jq curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
-
-    # Set locale
-    - locale-gen en_US.UTF-8
-    - export LANG=en_US.UTF-8
-    - export LC_ALL=en_US.UTF-8
-
-    # Set environment variables
     - export ROOT_DIR=$(pwd)
     - export GRADLE_USER_HOME=$(pwd)/.gradle
-    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-    - export PATH=$JAVA_HOME/bin:$PATH
-
-    # Install Gradle
-    - GRADLE_VERSION=8.7
-    - wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip
-    - unzip gradle-${GRADLE_VERSION}-bin.zip -d /opt/gradle
-    - export PATH="/opt/gradle/gradle-${GRADLE_VERSION}/bin:$PATH"
-    - gradle --version
-
-    # Setup Android SDK
-    - mkdir -p /opt/android-sdk/cmdline-tools
-    - cd /opt/android-sdk
-    - wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-    - unzip tools.zip -d cmdline-tools
-    - mv cmdline-tools/cmdline-tools cmdline-tools/latest
-    - export ANDROID_SDK_ROOT=/opt/android-sdk
-    - export ANDROID_HOME=$ANDROID_SDK_ROOT
-    - export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
-
-    # Install Android SDK components
-    - which sdkmanager
-    - sdkmanager --version
-    - sdkmanager --list
-    - yes | sdkmanager --licenses || true
-    - sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;$SS_NDK_VERSION"
-
-    # Set NDK environment variables
-    - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/$SS_NDK_VERSION
-    - export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/$SS_NDK_VERSION
-
-    # Build OpenSSL
-    - mkdir -p /tmp/openssl-src && cd /tmp/openssl-src
-    - wget https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1t.tar.gz
-    - tar -xzf OpenSSL_1_1_1t.tar.gz
-    - export OPENSSL_SRC="$PWD/openssl-OpenSSL_1_1_1t"
 
   script:
-    # Build Strongswan
     - cd "$CI_PROJECT_DIR"
     - rm -rf strongswan-src
     - git clone --branch "$SS_BRANCH" "$SS_REMOTE" strongswan-src
     - chmod +x ./tools/build_strongswan.sh
     - ./tools/build_strongswan.sh "$CI_PROJECT_DIR/strongswan-src" "$OPENSSL_SRC" "$CI_PROJECT_DIR/artifacts"
-
-    # Package artifacts
     - cd "$CI_PROJECT_DIR/artifacts"
     - zip -r strongswan-libs.zip .
 

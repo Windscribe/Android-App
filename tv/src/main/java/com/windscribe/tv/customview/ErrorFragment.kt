@@ -15,9 +15,9 @@ import com.windscribe.tv.R
 import com.windscribe.tv.databinding.FragmentErrorBinding
 
 class ErrorFragment : Fragment() {
-
     private lateinit var binding: FragmentErrorBinding
     private var error: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         error = requireArguments().getString("error")
@@ -26,13 +26,16 @@ class ErrorFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentErrorBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.error.text = error
         binding.closeBtn.requestFocus()
@@ -41,7 +44,12 @@ class ErrorFragment : Fragment() {
         }
     }
 
-    fun add(error: String?, activity: AppCompatActivity, container: Int, addToBackStack: Boolean) {
+    fun add(
+        error: String?,
+        activity: AppCompatActivity,
+        container: Int,
+        addToBackStack: Boolean,
+    ) {
         // Check if activity is still alive before committing fragment
         if (activity.isDestroyed || activity.isFinishing) {
             return
@@ -51,9 +59,10 @@ class ErrorFragment : Fragment() {
         bundle.putString("error", error)
         arguments = bundle
         enterTransition = Slide(Gravity.BOTTOM).addTarget(R.id.error_fragment_container)
-        val transaction = activity.supportFragmentManager
-            .beginTransaction()
-            .add(container, this)
+        val transaction =
+            activity.supportFragmentManager
+                .beginTransaction()
+                .add(container, this)
         if (addToBackStack) {
             transaction.addToBackStack(this.javaClass.name)
         }

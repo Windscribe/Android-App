@@ -51,12 +51,14 @@ class CaptchaFragment : DialogFragment() {
         super.onStart()
         dialog?.window?.setLayout(
             ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.WRAP_CONTENT,
         )
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         binding = DialogCaptchaBinding.inflate(inflater, container, false)
         return binding.root
@@ -73,13 +75,14 @@ class CaptchaFragment : DialogFragment() {
     }
 
     private fun createAsciiArtBitmap(text: String): Bitmap {
-        val paint = Paint().apply {
-            typeface = Typeface.MONOSPACE
-            textSize = 16f
-            color = Color.BLACK
-            isAntiAlias = false
-            letterSpacing = 0.05f
-        }
+        val paint =
+            Paint().apply {
+                typeface = Typeface.MONOSPACE
+                textSize = 16f
+                color = Color.BLACK
+                isAntiAlias = false
+                letterSpacing = 0.05f
+            }
         val lines = text.split("\n").filter { it.isNotEmpty() }
         val testRect = android.graphics.Rect()
         paint.getTextBounds("█", 0, 1, testRect)
@@ -113,7 +116,10 @@ class CaptchaFragment : DialogFragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         username = arguments?.getString("username")
@@ -126,11 +132,12 @@ class CaptchaFragment : DialogFragment() {
         loadCaptcha()
 
         // Update button text based on flow
-        binding.verifyButton.text = if (isSignup) {
-            getString(com.windscribe.vpn.R.string.text_sign_up)
-        } else {
-            getString(com.windscribe.vpn.R.string.text_login)
-        }
+        binding.verifyButton.text =
+            if (isSignup) {
+                getString(com.windscribe.vpn.R.string.text_sign_up)
+            } else {
+                getString(com.windscribe.vpn.R.string.text_login)
+            }
 
         binding.refreshButton.setOnClickListener {
             // Refresh captcha - request new one from presenter
@@ -171,11 +178,20 @@ class CaptchaFragment : DialogFragment() {
                     val captchaSolution = binding.captchaSolution.text.toString()
                     if (isSignup) {
                         fragmentCallBack?.onSignUpButtonClick(
-                            user, pass, email, true, secureToken, captchaSolution
+                            user,
+                            pass,
+                            email,
+                            true,
+                            secureToken,
+                            captchaSolution,
                         )
                     } else {
                         fragmentCallBack?.onLoginButtonClick(
-                            user, pass, "", secureToken, captchaSolution
+                            user,
+                            pass,
+                            "",
+                            secureToken,
+                            captchaSolution,
                         )
                     }
                     dismiss()
@@ -197,7 +213,7 @@ class CaptchaFragment : DialogFragment() {
                 requireActivity().resources.getColor(R.color.colorWhite)
             } else {
                 requireActivity().resources.getColor(R.color.colorWhite50)
-            }
+            },
         )
     }
 
@@ -208,7 +224,7 @@ class CaptchaFragment : DialogFragment() {
             secureToken: String,
             captchaArt: String,
             email: String?,
-            isSignup: Boolean
+            isSignup: Boolean,
         ): CaptchaFragment {
             val fragment = CaptchaFragment()
             val bundle = Bundle()

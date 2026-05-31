@@ -81,10 +81,6 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
-        <service
-            android:name=".bootreceiver.BootSessionService"
-            android:exported="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <service
             android:foregroundServiceType="specialUse"

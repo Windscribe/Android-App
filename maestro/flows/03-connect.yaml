@@ -1,0 +1,18 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+---
+# Connects, verifies tunnel is up, disconnects.
+
+- launchApp:
+    clearState: false
+
+- runFlow: ../subflows/connect.yaml
+
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000

@@ -25,20 +25,19 @@ class CdLib {
         logPath: String,
         hostName: String,
         lanIp: String,
-        macAddress: String
+        macAddress: String,
     )
-    external fun stopCd(restart: Boolean, pin: Int): Int
+
+    external fun stopCd(
+        restart: Boolean,
+        pin: Int,
+    ): Int
+
     external fun isCdRunning(): Boolean
 
-    fun getHostName(): String {
-        return deviceInfo.deviceHostName ?: ""
-    }
+    fun getHostName(): String = deviceInfo.deviceHostName ?: ""
 
-    fun getLanIP(): String {
-        return deviceInfo.deviceLanIp ?: ""
-    }
+    fun getLanIP(): String = deviceInfo.deviceLanIp ?: ""
 
-    fun getMacAddress(): String {
-        return deviceInfo.deviceMacAddress ?: ""
-    }
+    fun getMacAddress(): String = deviceInfo.deviceMacAddress ?: ""
 }

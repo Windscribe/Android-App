@@ -1,0 +1,12 @@
+appId: com.windscribe.vpn
+tags:
+  - smoke
+---
+# Smoke test: app starts and shows the start/login screen.
+# No login, no network. Validates the Maestro+app+selector pipeline.
+- launchApp:
+    clearState: true
+- assertVisible: "Automatically Secure any Network"
+- assertVisible: "Log In"
+- assertVisible: "Sign Up"
+- assertVisible: "Continue with Google"

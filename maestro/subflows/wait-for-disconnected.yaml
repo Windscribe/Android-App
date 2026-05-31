@@ -1,0 +1,18 @@
+appId: com.windscribe.vpn
+---
+# Waits up to ~20s for connection_status_disconnected, dismissing intermittent
+# popups while waiting.
+- repeat:
+    while:
+      notVisible:
+        id: "connection_status_disconnected"
+    times: 4
+    commands:
+      - runFlow: ./dismiss-popups.yaml
+      - extendedWaitUntil:
+          visible:
+            id: "connection_status_disconnected"
+          timeout: 5000
+          optional: true
+- assertVisible:
+    id: "connection_status_disconnected"

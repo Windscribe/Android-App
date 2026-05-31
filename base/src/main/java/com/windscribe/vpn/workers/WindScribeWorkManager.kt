@@ -5,15 +5,31 @@
 package com.windscribe.vpn.workers
 
 import android.content.Context
-import androidx.work.*
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
 import androidx.work.Constraints.Builder
+import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy.REPLACE
+import androidx.work.ExistingWorkPolicy
+import androidx.work.ListenableWorker
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.workers.worker.BootWorker
+import com.windscribe.vpn.workers.worker.CredentialsWorker
+import com.windscribe.vpn.workers.worker.LatencyWorker
+import com.windscribe.vpn.workers.worker.NotificationWorker
+import com.windscribe.vpn.workers.worker.RobertSyncWorker
+import com.windscribe.vpn.workers.worker.ServerListWorker
+import com.windscribe.vpn.workers.worker.SessionWorker
+import com.windscribe.vpn.workers.worker.StaticIpWorker
+import com.windscribe.vpn.workers.worker.UnblockWgParamsWorker
 import com.windscribe.vpn.wsnet.WSNetWrapper
-import com.windscribe.vpn.workers.worker.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -21,7 +37,10 @@ import kotlinx.coroutines.launch
 import okio.ByteString.Companion.encodeUtf8
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.*
+import java.util.concurrent.TimeUnit.DAYS
+import java.util.concurrent.TimeUnit.HOURS
+import java.util.concurrent.TimeUnit.MINUTES
+import java.util.concurrent.TimeUnit.SECONDS
 import javax.inject.Singleton
 import kotlin.jvm.java
 
@@ -36,7 +55,7 @@ class WindScribeWorkManager(
     val preferencesHelper: PreferencesHelper,
     private val checkUpdateRepository: CheckUpdateRepository,
     private val wsNetWrapper: WSNetWrapper,
-    private val deviceStateManager: DeviceStateManager
+    private val deviceStateManager: DeviceStateManager,
 ) {
     private var foregroundSessionUpdateJob: Job? = null
     private var logger = LoggerFactory.getLogger("worker")
@@ -64,52 +83,97 @@ class WindScribeWorkManager(
         updateSession()
         WorkManager.getInstance(context).enqueue(createOneTimeWorkerRequest(UnblockWgParamsWorker::class.java))
         // Hourly
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_HOURLY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, HOURS))
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(SESSION_HOURLY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, HOURS))
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniquePeriodicWork(
+                NOTIFICATION_HOURLY_WORKER_KEY,
+                REPLACE,
+                createPeriodicWorkerRequest(NotificationWorker::class.java, HOURS),
+            )
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniquePeriodicWork(SESSION_HOURLY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, HOURS))
         // Every day
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, DAYS))
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(SESSION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, DAYS))
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(UNBLOCK_WG_PARAMS_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(UnblockWgParamsWorker::class.java, DAYS))
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniquePeriodicWork(
+                NOTIFICATION_DAY_WORKER_KEY,
+                REPLACE,
+                createPeriodicWorkerRequest(NotificationWorker::class.java, DAYS),
+            )
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniquePeriodicWork(SESSION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, DAYS))
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniquePeriodicWork(
+                UNBLOCK_WG_PARAMS_WORKER_KEY,
+                REPLACE,
+                createPeriodicWorkerRequest(UnblockWgParamsWorker::class.java, DAYS),
+            )
         checkUpdateRepository.checkForUpdate()
         keepSessionUpdated()
     }
 
     fun onAppMovedToForeground() {
         if (preferencesHelper.sessionHash == null) return
-        WorkManager.getInstance(context).enqueueUniqueWork(SERVER_LIST_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java))
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniqueWork(SERVER_LIST_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java))
         keepSessionUpdated()
     }
 
-    private fun keepSessionUpdated(){
-        foregroundSessionUpdateJob = scope.launch {
-            while (true) {
-                delay(1000 * 60)
-                WorkManager.getInstance(context).enqueueUniqueWork(SESSION_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java))
+    private fun keepSessionUpdated() {
+        foregroundSessionUpdateJob =
+            scope.launch {
+                while (true) {
+                    delay(1000 * 60)
+                    WorkManager
+                        .getInstance(
+                            context,
+                        ).enqueueUniqueWork(
+                            SESSION_WORKER_KEY,
+                            ExistingWorkPolicy.REPLACE,
+                            createOneTimeWorkerRequest(SessionWorker::class.java),
+                        )
+                }
             }
-        }
     }
 
     fun onAppMovedToBackground() {
         foregroundSessionUpdateJob?.cancel()
     }
 
-    fun createOneTimeWorkerRequest(workerClass: Class<out ListenableWorker>, data: Data = Data.EMPTY): OneTimeWorkRequest {
-        return OneTimeWorkRequest.Builder(workerClass)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, 10, SECONDS)
-                .setInputData(data)
-                .setConstraints(constraints)
-                .build()
-    }
+    fun createOneTimeWorkerRequest(
+        workerClass: Class<out ListenableWorker>,
+        data: Data = Data.EMPTY,
+    ): OneTimeWorkRequest =
+        OneTimeWorkRequest
+            .Builder(workerClass)
+            .setBackoffCriteria(BackoffPolicy.LINEAR, 10, SECONDS)
+            .setInputData(data)
+            .setConstraints(constraints)
+            .build()
 
-    private fun createPeriodicWorkerRequest(workerClass: Class<out ListenableWorker>, timeUnit: TimeUnit, data: Data = Data.EMPTY): PeriodicWorkRequest {
-        return PeriodicWorkRequest.Builder(workerClass, 1, timeUnit)
-                .addTag(workerClass.name.encodeUtf8().hex())
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, MINUTES)
-                .setInputData(data)
-                .setInitialDelay(1, timeUnit)
-                .setConstraints(constraints)
-                .build()
-    }
+    private fun createPeriodicWorkerRequest(
+        workerClass: Class<out ListenableWorker>,
+        timeUnit: TimeUnit,
+        data: Data = Data.EMPTY,
+    ): PeriodicWorkRequest =
+        PeriodicWorkRequest
+            .Builder(workerClass, 1, timeUnit)
+            .addTag(workerClass.name.encodeUtf8().hex())
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, MINUTES)
+            .setInputData(data)
+            .setInitialDelay(1, timeUnit)
+            .setConstraints(constraints)
+            .build()
 
     /**
      * Called when robert rules changes.
@@ -120,18 +184,39 @@ class WindScribeWorkManager(
     }
 
     fun updateServerList() {
-        WorkManager.getInstance(context).enqueueUniqueWork(SERVER_LIST_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(ServerListWorker::class.java))
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniqueWork(
+                SERVER_LIST_WORKER_KEY,
+                ExistingWorkPolicy.REPLACE,
+                createOneTimeWorkerRequest(ServerListWorker::class.java),
+            )
     }
 
     fun updateCredentialsUpdate() {
-        WorkManager.getInstance(context).enqueueUniqueWork(CREDENTIALS_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(CredentialsWorker::class.java))
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniqueWork(
+                CREDENTIALS_WORKER_KEY,
+                ExistingWorkPolicy.REPLACE,
+                createOneTimeWorkerRequest(CredentialsWorker::class.java),
+            )
+    }
+
+    fun connectOnBoot() {
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniqueWork(BOOT_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(BootWorker::class.java))
     }
 
     fun updateStaticIpList() {
         WorkManager.getInstance(context).enqueueUniqueWork(
             STATIC_IP_WORKER_KEY,
             ExistingWorkPolicy.REPLACE,
-            createOneTimeWorkerRequest(StaticIpWorker::class.java)
+            createOneTimeWorkerRequest(StaticIpWorker::class.java),
         )
     }
 
@@ -139,24 +224,34 @@ class WindScribeWorkManager(
         WorkManager.getInstance(context).enqueueUniqueWork(
             NOTIFICATION_WORKER_KEY,
             ExistingWorkPolicy.REPLACE,
-            createOneTimeWorkerRequest(NotificationWorker::class.java)
+            createOneTimeWorkerRequest(NotificationWorker::class.java),
         )
     }
 
     fun updateNodeLatencies() {
         WorkManager.getInstance(context).enqueueUniqueWork(
-            LATENCY_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(
-                LatencyWorker::class.java
-            )
+            LATENCY_WORKER_KEY,
+            ExistingWorkPolicy.REPLACE,
+            createOneTimeWorkerRequest(
+                LatencyWorker::class.java,
+            ),
         )
     }
 
     fun updateSession(inputData: Data = Data.EMPTY) {
-        WorkManager.getInstance(context).enqueueUniqueWork(SESSION_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java, inputData))
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniqueWork(
+                SESSION_WORKER_KEY,
+                ExistingWorkPolicy.REPLACE,
+                createOneTimeWorkerRequest(SessionWorker::class.java, inputData),
+            )
     }
 
     private val constraints: Constraints
-        get() = Builder()
+        get() =
+            Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
@@ -170,6 +265,7 @@ class WindScribeWorkManager(
         const val SERVER_LIST_WORKER_KEY = "com.windscribe.vpn.server_list"
         const val STATIC_IP_WORKER_KEY = "com.windscribe.vpn.static_ip"
         const val CREDENTIALS_WORKER_KEY = "com.windscribe.vpn.credentials"
+        const val BOOT_WORKER_KEY = "com.windscribe.vpn.boot"
         const val PENDING_GOGGLE_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingGoogleReceipts"
         const val PENDING_AMAZON_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingAmazonReceipts"
         const val LATENCY_WORKER_KEY = "com.windscribe.vpn.latencyWorker"

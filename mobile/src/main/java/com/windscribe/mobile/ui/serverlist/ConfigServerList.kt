@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
@@ -46,25 +47,36 @@ import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 fun ConfigServerList(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
-    configViewmodel: ConfigViewmodel
+    configViewmodel: ConfigViewmodel,
 ) {
     val state by viewModel.configListState.collectAsState()
     val context = LocalContext.current
 
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? -> uri?.let { configViewmodel.loadConfigFile(context, it) } }
+    val filePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+        ) { uri: Uri? -> uri?.let { configViewmodel.loadConfigFile(context, it) } }
 
-    when (state) {
-        is ListState.Loading -> ProgressIndicator()
-        is ListState.Error -> ErrorView(filePickerLauncher)
-        is ListState.Success -> SuccessView(
-            (state as ListState.Success).data,
-            filePickerLauncher,
-            viewModel,
-            connectionViewModel,
-            configViewmodel
-        )
+    Box(modifier = Modifier.testTag("server_list_config").fillMaxSize()) {
+        when (state) {
+            is ListState.Loading -> {
+                ProgressIndicator()
+            }
+
+            is ListState.Error -> {
+                ErrorView(filePickerLauncher)
+            }
+
+            is ListState.Success -> {
+                SuccessView(
+                    (state as ListState.Success).data,
+                    filePickerLauncher,
+                    viewModel,
+                    connectionViewModel,
+                    configViewmodel,
+                )
+            }
+        }
     }
 }
 
@@ -75,16 +87,17 @@ private fun ErrorView(filePickerLauncher: ManagedActivityResultLauncher<Array<St
             imageVector = Icons.Default.Add,
             tint = MaterialTheme.colorScheme.serverListSecondaryColor,
             contentDescription = "",
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .clickable { filePickerLauncher.launch(arrayOf("*/*")) }
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .clickable { filePickerLauncher.launch(arrayOf("*/*")) },
         )
         Text(
             "Error loading config server list",
             style = font16,
             color = MaterialTheme.colorScheme.serverListSecondaryColor,
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center),
         )
     }
 }
@@ -105,19 +118,21 @@ private fun SuccessView(
             AddButtonWithDetails(
                 com.windscribe.vpn.R.string.add_vpn_config,
                 com.windscribe.vpn.R.string.no_custom_configs,
-                R.drawable.ic_location_config
+                R.drawable.ic_location_config,
             ) {
                 filePickerLauncher.launch(arrayOf("*/*"))
             }
         } else {
-            Column(Modifier
-                .fillMaxSize()) {
+            Column(
+                Modifier
+                    .fillMaxSize(),
+            ) {
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,
                     onRefresh = {
                         viewModel.refresh(ServerListType.Config)
                     },
-                    modifier = Modifier.weight(1.0f)
+                    modifier = Modifier.weight(1.0f),
                 ) {
                     LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
                         item {
@@ -125,7 +140,7 @@ private fun SuccessView(
                                 text = stringResource(com.windscribe.vpn.R.string.custom_configs),
                                 style = font12,
                                 color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
-                                modifier = Modifier.padding(start = 0.dp, top = 16.dp)
+                                modifier = Modifier.padding(start = 0.dp, top = 16.dp),
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                         }
@@ -146,10 +161,11 @@ private fun SuccessView(
 private fun ProgressIndicator() {
     Box(modifier = Modifier.fillMaxSize()) {
         CircularProgressIndicator(
-            modifier = Modifier
-                .size(48.dp)
-                .align(Alignment.Center),
-            color = AppColors.white
+            modifier =
+                Modifier
+                    .size(48.dp)
+                    .align(Alignment.Center),
+            color = AppColors.white,
         )
     }
 }

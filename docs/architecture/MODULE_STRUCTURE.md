@@ -44,7 +44,7 @@ The Windscribe Android app is organized into a multi-module architecture with cl
 
 **Purpose**: All business logic, state management, data persistence, and VPN orchestration.
 
-**Size**: ~85% Kotlin, 15% Java (legacy data models)
+**Size**: 100% Kotlin
 
 **Responsibility**: Acts as the "brain" of the application. Contains all core functionality that both mobile and TV UIs consume.
 
@@ -336,7 +336,7 @@ class AppPreferencesImpl @Inject constructor(
 
 **Architecture**: MVVM with Compose
 
-**Size**: ~95% Kotlin, 5% Java (billing interfaces for Google Play variant)
+**Size**: 100% Kotlin
 
 ### Structure
 
@@ -350,9 +350,7 @@ mobile/src/main/java/com/windscribe/mobile/
 │   └── ... (all Compose screens)
 ├── nav/
 │   ├── Screen.kt                  # Route definitions
-│   └── NavigationStack.kt         # NavHost setup
-├── di/
-│   └── ComposeModule.kt           # ViewModel factories
+│   └── NavigationStack.kt         # NavHost setup; resolves @HiltViewModels via hiltViewModel()
 └── viewmodel/
     ├── HomeViewModel.kt
     ├── LocationsViewModel.kt
@@ -387,7 +385,8 @@ fun NavigationStack() {
 
 **State Management**:
 ```kotlin
-class HomeViewModel(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val serverListRepository: ServerListRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow<HomeState>(HomeState.Loading)
@@ -419,7 +418,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
 
 **Architecture**: MVP with XML layouts
 
-**UI Framework**: XML + Data Binding
+**UI Framework**: XML + View Binding
 
 ### Structure
 
@@ -749,17 +748,12 @@ mobile/
 
 ---
 
-## Module Migration Status
+## Language
 
-| Module | Kotlin % | Java % | Target |
-|--------|----------|--------|--------|
-| tv | 100% | 0% | ✅ Complete |
-| mobile | 95% | 5% | 99% (billing interfaces) |
-| base | 85% | 15% | 95% (data models) |
-| common | 100% | 0% | ✅ Complete |
-| test | 100% | 0% | ✅ Complete |
+`base`, `mobile`, `tv`, `common`, and `test` are 100% Kotlin. The only Java is in the vendored
+native VPN backend modules (`openvpn`, `strongswan`, `wgtunnel`), which are upstream-sourced.
 
-**Migration Rule**: ALL new code MUST be in Kotlin. No new Java files allowed.
+ALL new code is Kotlin. No new Java files.
 
 ---
 

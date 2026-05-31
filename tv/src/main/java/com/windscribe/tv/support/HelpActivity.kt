@@ -18,8 +18,6 @@ class HelpActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun getStartIntent(context: Context): Intent {
-            return Intent(context, HelpActivity::class.java)
-        }
+        fun getStartIntent(context: Context): Intent = Intent(context, HelpActivity::class.java)
     }
 }

@@ -19,21 +19,23 @@ import com.windscribe.mobile.ui.theme.font12
 fun ActionButtonLighter(
     modifier: Modifier = Modifier,
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(38.dp)
-            .padding(horizontal = 16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.neonGreen.copy(alpha = 0.05f),
-            contentColor = AppColors.neonGreen,
-            disabledContainerColor = AppColors.neonGreen.copy(alpha = 0.05f),
-            disabledContentColor = AppColors.neonGreen
-        ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(38.dp)
+                .padding(horizontal = 16.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = AppColors.neonGreen.copy(alpha = 0.05f),
+                contentColor = AppColors.neonGreen,
+                disabledContainerColor = AppColors.neonGreen.copy(alpha = 0.05f),
+                disabledContentColor = AppColors.neonGreen,
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {

@@ -1,6 +1,11 @@
 /*
  * Copyright (c) 2021 Windscribe Limited.
  */
+
+// EncryptedSharedPreferences/MasterKey are deprecated in androidx.security-crypto with no stable
+// drop-in replacement; keeping them avoids re-encrypting existing users' stored credentials.
+@file:Suppress("DEPRECATION")
+
 package com.windscribe.vpn.apppreference
 
 import android.content.SharedPreferences
@@ -14,14 +19,18 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.security.GeneralSecurityException
 
-class SecurePreferences(private val app: Windscribe) {
+class SecurePreferences(
+    private val app: Windscribe,
+) {
     private val logger = LoggerFactory.getLogger("secure_prefs")
     private val secureSharedPrefsFile = "windscribe_secure_prefs"
     private val fallbackSharedPrefsFile = "windscribe_unsecured_preferences"
     private val _encryptionAvailable = MutableStateFlow<Boolean?>(null)
     val encryptionAvailable: StateFlow<Boolean?> = _encryptionAvailable.asStateFlow()
+
     // DEBUG: Set to true to force encryption failure for testing
     private val FORCE_ENCRYPTION_FAILURE = false
+
     // Lazy initialization - only creates prefs on first access
     private val sharedPreferences: SharedPreferences by lazy {
         if (FORCE_ENCRYPTION_FAILURE) {
@@ -33,16 +42,19 @@ class SecurePreferences(private val app: Windscribe) {
         }
 
         try {
-            val masterKey = MasterKey.Builder(app.applicationContext)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
-            val prefs = EncryptedSharedPreferences.create(
-                app.applicationContext,
-                secureSharedPrefsFile,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
+            val masterKey =
+                MasterKey
+                    .Builder(app.applicationContext)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build()
+            val prefs =
+                EncryptedSharedPreferences.create(
+                    app.applicationContext,
+                    secureSharedPrefsFile,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                )
             _encryptionAvailable.value = true
             logger.info("Encrypted storage initialized successfully")
             prefs
@@ -68,11 +80,15 @@ class SecurePreferences(private val app: Windscribe) {
         sharedPreferences.edit().clear().apply()
     }
 
-    fun getString(key: String, defaultValue: String?): String? {
-        return sharedPreferences.getString(key, defaultValue)
-    }
+    fun getString(
+        key: String,
+        defaultValue: String?,
+    ): String? = sharedPreferences.getString(key, defaultValue)
 
-    fun putStringSync(key: String, value: String?) {
-        sharedPreferences.edit().putString(key, value).commit()  // SYNC - blocks until saved
+    fun putStringSync(
+        key: String,
+        value: String?,
+    ) {
+        sharedPreferences.edit().putString(key, value).commit()
     }
 }

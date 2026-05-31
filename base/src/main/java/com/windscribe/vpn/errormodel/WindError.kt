@@ -8,6 +8,7 @@ import java.io.StringWriter
 
 class WindError private constructor() {
     private val sw = StringWriter()
+
     fun convertErrorToString(e: Exception): String {
         e.printStackTrace(PrintWriter(sw))
         return if (sw.toString().length > 2000) {

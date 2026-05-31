@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class UnblockWgResponse(
     @SerializedName("params")
-    val params: List<UnblockWgParams>
+    val params: List<UnblockWgParams>,
 )
 
 data class UnblockWgParams(
@@ -42,5 +42,5 @@ data class UnblockWgParams(
     @SerializedName("I4")
     val i4: String?,
     @SerializedName("I5")
-    val i5: String?
+    val i5: String?,
 )

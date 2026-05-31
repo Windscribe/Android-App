@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PopupNotificationDao {
-
     @Query("SELECT * FROM notification_table WHERE user_name =:userName")
     fun getPopupNotificationAsFlow(userName: String): Flow<List<PopupNotificationTable>>
 

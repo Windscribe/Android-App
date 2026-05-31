@@ -7,21 +7,22 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import com.windscribe.tv.R
 import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.databinding.ActivityGetMoreDataBinding
 import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.tv.welcome.WelcomeActivity
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class GetMoreDataActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityGetMoreDataBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         applyAppLocale()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_get_more_data)
+        binding = ActivityGetMoreDataBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         setupUI()
     }
 
@@ -49,13 +50,10 @@ class GetMoreDataActivity : AppCompatActivity() {
                 binding.getPro.setTextColor(resources.getColor(R.color.colorWhite50))
             }
         }
-
     }
 
     companion object {
         @JvmStatic
-        fun getStartIntent(context: Context?): Intent {
-            return Intent(context, GetMoreDataActivity::class.java)
-        }
+        fun getStartIntent(context: Context?): Intent = Intent(context, GetMoreDataActivity::class.java)
     }
 }

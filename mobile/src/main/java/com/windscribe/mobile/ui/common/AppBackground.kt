@@ -16,12 +16,15 @@ import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 @Composable
 fun AppBackground(content: @Composable BoxScope.() -> Unit) {
     ForceStatusBarIcons()
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .focusable()
-        .clickable {}
-        .background(AppColors.charcoalBlue)
-        .focusable(true)) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .focusable()
+                .clickable {}
+                .background(AppColors.charcoalBlue)
+                .focusable(true),
+    ) {
         content()
     }
 }
@@ -29,12 +32,15 @@ fun AppBackground(content: @Composable BoxScope.() -> Unit) {
 @Composable
 fun PreferenceBackground(content: @Composable BoxScope.() -> Unit) {
     ForceStatusBarIcons()
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .focusable()
-        .clickable {}
-        .background(MaterialTheme.colorScheme.preferencesBackgroundColor)
-        .focusable(true)) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .focusable()
+                .clickable {}
+                .background(MaterialTheme.colorScheme.preferencesBackgroundColor)
+                .focusable(true),
+    ) {
         content()
     }
 }

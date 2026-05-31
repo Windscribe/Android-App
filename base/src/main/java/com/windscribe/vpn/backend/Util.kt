@@ -9,12 +9,12 @@ import android.content.Context
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.commonutils.ThreadSafeList
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.serverlist.entity.Server
 import com.wireguard.config.BadConfigException
@@ -29,7 +29,6 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Reader
 import java.io.StringReader
-
 
 object Util {
     const val LAST_SELECTED_LOCATION = "last_selected_location.vp"
@@ -50,8 +49,8 @@ object Util {
         return null
     }
 
-    suspend fun getSavedLocationAsync(): LastSelectedLocation {
-        return try {
+    suspend fun getSavedLocationAsync(): LastSelectedLocation =
+        try {
             ObjectInputStream(Windscribe.appContext.openFileInput(LAST_SELECTED_LOCATION)).use {
                 val obj = it.readObject()
                 if (obj is LastSelectedLocation) {
@@ -63,7 +62,6 @@ object Util {
         } catch (ignored: FileNotFoundException) {
             throw WindScribeException("No saved location")
         }
-    }
 
     inline fun <reified T> getProfile(): T? {
         try {
@@ -80,12 +78,13 @@ object Util {
     }
 
     fun saveSelectedLocation(selectedLocation: LastSelectedLocation) {
-        val vpnFile = ObjectOutputStream(
-            Windscribe.appContext.openFileOutput(
-                LAST_SELECTED_LOCATION,
-                Activity.MODE_PRIVATE
+        val vpnFile =
+            ObjectOutputStream(
+                Windscribe.appContext.openFileOutput(
+                    LAST_SELECTED_LOCATION,
+                    Activity.MODE_PRIVATE,
+                ),
             )
-        )
         vpnFile.writeObject(selectedLocation)
         vpnFile.flush()
         vpnFile.close()
@@ -97,12 +96,13 @@ object Util {
     }
 
     fun saveProfile(profile: Any): String {
-        val vpnFile = ObjectOutputStream(
-            Windscribe.appContext.openFileOutput(
-                VPN_PROFILE_NAME,
-                Activity.MODE_PRIVATE
+        val vpnFile =
+            ObjectOutputStream(
+                Windscribe.appContext.openFileOutput(
+                    VPN_PROFILE_NAME,
+                    Activity.MODE_PRIVATE,
+                ),
             )
-        )
         vpnFile.writeObject(profile)
         vpnFile.flush()
         vpnFile.close()
@@ -132,11 +132,12 @@ object Util {
     }
 
     fun getProtocolInformationFromOpenVPNConfig(content: String): ProtocolInformation {
-        val protocolInformation = buildProtocolInformation(
-            null,
-            PreferencesKeyConstants.PROTO_UDP,
-            "443"
-        )
+        val protocolInformation =
+            buildProtocolInformation(
+                null,
+                PreferencesKeyConstants.PROTO_UDP,
+                "443",
+            )
         val serverConfigLines = content.split(System.getProperty("line.separator")).toTypedArray()
         for (serverConfigLine in serverConfigLines) {
             if (serverConfigLine.contains("remote")) {
@@ -191,52 +192,59 @@ object Util {
     }
 
     fun getAppSupportedProtocolList(suggestedProtocol: Pair<String, String>? = null): ThreadSafeList<ProtocolInformation> {
-        val protocol1 = ProtocolInformation(
-            PreferencesKeyConstants.PROTO_IKev2,
-            PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
-            appContext.getString(R.string.iKEV2_description),
-            ProtocolConnectionStatus.Disconnected
-        )
-        val protocol2 = ProtocolInformation(
-            PreferencesKeyConstants.PROTO_UDP,
-            PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
-            appContext.getString(R.string.Udp_description),
-            ProtocolConnectionStatus.Disconnected
-        )
-        val protocol3 = ProtocolInformation(
-            PreferencesKeyConstants.PROTO_TCP,
-            PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
-            appContext.getString(R.string.Tcp_description),
-            ProtocolConnectionStatus.Disconnected
-        )
-        val protocol4 = ProtocolInformation(
-            PreferencesKeyConstants.PROTO_STEALTH,
-            PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT,
-            appContext.getString(R.string.Stealth_description),
-            ProtocolConnectionStatus.Disconnected
-        )
-        val protocol5 = ProtocolInformation(
-            PROTO_WIRE_GUARD,
-            PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
-            appContext.getString(R.string.Wireguard_description),
-            ProtocolConnectionStatus.Disconnected
-        )
-        val protocol6 = ProtocolInformation(
-            PreferencesKeyConstants.PROTO_WS_TUNNEL,
-            PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT,
-            appContext.getString(R.string.WSTunnel_description),
-            ProtocolConnectionStatus.Disconnected
-        )
-        val supportedProtocoList =  ThreadSafeList<ProtocolInformation>().apply {
-            add(protocol5)
-            add(protocol1)
-            add(protocol2)
-            add(protocol3)
-            add(protocol4)
-            add(protocol6)
-        }
+        val protocol1 =
+            ProtocolInformation(
+                PreferencesKeyConstants.PROTO_IKev2,
+                PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
+                appContext.getString(R.string.iKEV2_description),
+                ProtocolConnectionStatus.Disconnected,
+            )
+        val protocol2 =
+            ProtocolInformation(
+                PreferencesKeyConstants.PROTO_UDP,
+                PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
+                appContext.getString(R.string.Udp_description),
+                ProtocolConnectionStatus.Disconnected,
+            )
+        val protocol3 =
+            ProtocolInformation(
+                PreferencesKeyConstants.PROTO_TCP,
+                PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
+                appContext.getString(R.string.Tcp_description),
+                ProtocolConnectionStatus.Disconnected,
+            )
+        val protocol4 =
+            ProtocolInformation(
+                PreferencesKeyConstants.PROTO_STEALTH,
+                PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT,
+                appContext.getString(R.string.Stealth_description),
+                ProtocolConnectionStatus.Disconnected,
+            )
+        val protocol5 =
+            ProtocolInformation(
+                PROTO_WIRE_GUARD,
+                PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
+                appContext.getString(R.string.Wireguard_description),
+                ProtocolConnectionStatus.Disconnected,
+            )
+        val protocol6 =
+            ProtocolInformation(
+                PreferencesKeyConstants.PROTO_WS_TUNNEL,
+                PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT,
+                appContext.getString(R.string.WSTunnel_description),
+                ProtocolConnectionStatus.Disconnected,
+            )
+        val supportedProtocoList =
+            ThreadSafeList<ProtocolInformation>().apply {
+                add(protocol5)
+                add(protocol1)
+                add(protocol2)
+                add(protocol3)
+                add(protocol4)
+                add(protocol6)
+            }
         val suggestedProtocolFromApp = supportedProtocoList.firstOrNull { it.protocol == suggestedProtocol?.first }
-        if(suggestedProtocolFromApp != null && suggestedProtocol != null){
+        if (suggestedProtocolFromApp != null && suggestedProtocol != null) {
             val index = supportedProtocoList.indexOfFirst { it.protocol == suggestedProtocol.first }
             supportedProtocoList.removeAt(index)
             suggestedProtocolFromApp.port = suggestedProtocol.second
@@ -248,7 +256,7 @@ object Util {
     fun buildProtocolInformation(
         protocolInformationList: List<ProtocolInformation>?,
         protocol: String,
-        port: String
+        port: String,
     ): ProtocolInformation {
         val list = protocolInformationList ?: getAppSupportedProtocolList()
         return list.firstOrNull { it.protocol == protocol }?.apply {
@@ -257,8 +265,8 @@ object Util {
         } ?: getAppSupportedProtocolList().first()
     }
 
-    fun getProtocolLabel(protocol: String): String {
-        return when (protocol) {
+    fun getProtocolLabel(protocol: String): String =
+        when (protocol) {
             PreferencesKeyConstants.PROTO_IKev2 -> "IKEv2"
             PreferencesKeyConstants.PROTO_UDP -> "UDP"
             PreferencesKeyConstants.PROTO_TCP -> "TCP"
@@ -267,12 +275,15 @@ object Util {
             PreferencesKeyConstants.PROTO_WS_TUNNEL -> "WStunnel"
             else -> "IKEv2"
         }
-    }
 
     /**
      * @return Random node index based on weight ignoring the last attempted node.
      */
-    fun getRandomNode(lastUsedIndex: Int, attempt: Int, nodes: List<Server>): Int {
+    fun getRandomNode(
+        lastUsedIndex: Int,
+        attempt: Int,
+        nodes: List<Server>,
+    ): Int {
         if (nodes.size == 1) {
             return 0
         }

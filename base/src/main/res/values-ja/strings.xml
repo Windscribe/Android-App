@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">R.O.B.E.R.T. ルールの更新に失敗しました。</string>
     <string name="successfully_updated_robert_rules">R.O.B.E.R.T. ルールが正常に更新されました。</string>
     <string name="share_app">アプリの共有</string>
-    <string name="share_app_description">"%s は Windscribe に招待しています。サインアップ時にユーザー名を入力すると、両方とも1GBの無料データがアカウントに追加されます。あなたがプロプランを契約すると、招待した方もプロを利用できます!\n%s"</string>
+    <string name="share_app_description">"%1$s は Windscribe に招待しています。サインアップ時にユーザー名を入力すると、両方とも1GBの無料データがアカウントに追加されます。あなたがプロプランを契約すると、招待した方もプロを利用できます!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">「常に許可する」位置情報へのアクセスが必要です!</string>
     <string name="enable_location_access">位置情報アクセスの有効化</string>
     <string name="location_permission_required">ロケーション許可が必要</string>
@@ -604,7 +604,7 @@
     <string name="ipv6_mode_description">VPN接続に使用するIPバージョンを選択してください。</string>
     <string name="ip_stack">IPスタック</string>
     <string name="ip_stack_description">VPN接続用のIPスタックを構成します。</string>
-    <string name="egress">エグレス</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">イングレス</string>
     <string name="ipv4_only">IPv4のみ</string>
     <string name="manual_connection_mode_failed_title">手動接続モードが失敗しました</string>
@@ -615,4 +615,7 @@
     <string name="app_icon">アプリアイコン</string>
     <string name="app_icon_description">さらなるプライバシーのために別のアプリアイコンを選択</string>
     <string name="configuration">構成</string>
+    <string name="force_upgrade_title">アップデートが必要です</string>
+    <string name="force_upgrade_message">このバージョンのWindscribeはサポートされていません。アプリを引き続きご利用いただくにはアップデートしてください。</string>
+    <string name="force_upgrade_message_with_version">このバージョンのWindscribeはサポートされていません。アプリを引き続きご利用いただくには %s にアップデートしてください。</string>
 </resources>

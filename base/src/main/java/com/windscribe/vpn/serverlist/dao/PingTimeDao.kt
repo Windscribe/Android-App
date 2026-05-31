@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class PingTimeDao {
-
     @Query("Select * from PingTime")
     abstract suspend fun getAllPingsAsync(): List<PingTime>
 
@@ -45,7 +44,10 @@ abstract class PingTimeDao {
     abstract suspend fun getLowestPingForFreeUserAsync(pro: Boolean): Int
 
     @Query("Select ping_id from PingTime where ping_time =:pingTime and isPro=:pro")
-    abstract suspend fun getFreePingIdFromTimeAsync(pro: Boolean, pingTime: Int): Int
+    abstract suspend fun getFreePingIdFromTimeAsync(
+        pro: Boolean,
+        pingTime: Int,
+    ): Int
 
     @Query("Select ping_id from PingTime where ping_time =:pingTime")
     abstract suspend fun getPingIdFromTimeAsync(pingTime: Int): Int

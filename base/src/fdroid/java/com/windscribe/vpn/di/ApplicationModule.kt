@@ -14,35 +14,29 @@ import com.windscribe.vpn.services.sso.GoogleSignInManagerImpl
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-/**
- * Application module provides production dependencies
- * In future plan is break this module in to smaller modules
- * to ease swapping of modules for testing.
- * */
 @Module
-class ApplicationModule(override var windscribeApp: Windscribe) : BaseApplicationModule() {
+@InstallIn(SingletonComponent::class)
+object ApplicationModule {
     @Provides
     @Singleton
-    fun provideReceiptValidator(manager: WindScribeWorkManager): ReceiptValidator {
-        return ReceiptValidator(windscribeApp, null, null)
-    }
-    @Provides
-    @Singleton
-    fun providesFirebaseManager(): FirebaseManager {
-        return FirebaseManagerImpl(windscribeApp)
-    }
+    fun provideReceiptValidator(
+        app: Windscribe,
+        manager: WindScribeWorkManager,
+    ): ReceiptValidator = ReceiptValidator(app, null, null)
 
     @Provides
     @Singleton
-    fun provideAndroidIdentity(): AndroidDeviceIdentity {
-        return AndroidDeviceIdentityImpl()
-    }
+    fun providesFirebaseManager(app: Windscribe): FirebaseManager = FirebaseManagerImpl(app)
 
     @Provides
     @Singleton
-    fun providesGoogleSignInManager(): GoogleSignInManager {
-        return GoogleSignInManagerImpl(windscribeApp)
-    }
+    fun provideAndroidIdentity(): AndroidDeviceIdentity = AndroidDeviceIdentityImpl()
+
+    @Provides
+    @Singleton
+    fun providesGoogleSignInManager(app: Windscribe): GoogleSignInManager = GoogleSignInManagerImpl(app)
 }

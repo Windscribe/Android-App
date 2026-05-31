@@ -2,186 +2,187 @@ default_platform(:android)
 
 desc "Runs tests"
 lane :test do
-gradle(task: "test")
+  gradle(task: "test")
 end
 
-  desc "Pull Build number from play store, increment and update gradle."
-  lane :updateBuildVersion do
-     code = google_play_track_version_codes(package_name: ENV['PACKAGE_NAME'],track: "internal")
-
-     # Handle case where only one build exists (mobile only)
-     if code.length >= 2
-       # Both mobile and TV builds exist
-       mobile_version = code[1] + 1
-       tv_version = mobile_version + 1
-     else
-       # Only mobile build exists
-       mobile_version = (code[0] || 0) + 1
-       tv_version = mobile_version + 1
-     end
-
-     # Update root build.gradle appVersionCode (mobile uses this directly, TV adds +1)
-     gradle_file = File.read("../build.gradle")
-     gradle_file.gsub!(/appVersionCode = \d+/, "appVersionCode = #{mobile_version}")
-     File.write("../build.gradle", gradle_file)
-
-     UI.success("✅ Updated appVersionCode to #{mobile_version} (TV will be #{tv_version})")
-  end
-
-   desc "Pull Build number from play store and update gradle with same."
-    lane :keepBuildVersion do
-       code = google_play_track_version_codes(package_name: ENV['PACKAGE_NAME'],track: "internal")
-
-       # Handle case where only one build exists (mobile only)
-       if code.length >= 2
-         # Both mobile and TV builds exist
-         mobile_version = code[0]
-         tv_version = code[1]
-       else
-         # Only mobile build exists
-         mobile_version = code[0] || 0
-         tv_version = mobile_version + 1
-       end
-
-       # Update root build.gradle appVersionCode (mobile uses this directly, TV adds +1)
-       gradle_file = File.read("../build.gradle")
-       gradle_file.gsub!(/appVersionCode = \d+/, "appVersionCode = #{mobile_version}")
-       File.write("../build.gradle", gradle_file)
-
-       UI.success("✅ Kept appVersionCode at #{mobile_version} (TV will be #{tv_version})")
-    end
-
-  desc "Build and sign"
-  lane :buildAndSign do |options|
-    gradle(
-    task: options[:task],
-    flavor: "google",
-    build_type: "Release",
-    print_command: false
- )
- end
-
- desc "Build debug apk"
-   lane :buildAndDebug do
-     gradle(task: "assemble",
-     flavor: "google",
-     build_type: "Debug",
-     print_command: false
+desc "Pull Build number from play store, increment and update gradle."
+lane :updateBuildVersion do
+  code = google_play_track_version_codes(
+    package_name: ENV['PACKAGE_NAME'],
+    track: "internal"
   )
+
+  if code.length >= 2
+    mobile_version = code[1] + 1
+    tv_version = mobile_version + 1
+  else
+    mobile_version = (code[0] || 0) + 1
+    tv_version = mobile_version + 1
   end
 
-  desc "Upload to Play Store Internal Testing Track (official release channel)"
-  lane :publishToPlayStoreInternal do
-    buildAndSign(task:"clean bundle")
+  gradle_file = File.read("../build.gradle.kts")
+  gradle_file.gsub!(
+    /extra\["appVersionCode"\] = \d+/,
+    "extra[\"appVersionCode\"] = #{mobile_version}"
+  )
+  File.write("../build.gradle.kts", gradle_file)
 
-    # Upload to Play Store Internal testing track
-    supply(
-      version_name: ENV['VERSION_NAME'],
-      track: "internal",
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS],
-      mapping_paths: [
-        "mobile/build/outputs/mapping/googleRelease/mapping.txt",
-        "tv/build/outputs/mapping/googleRelease/mapping.txt"
-      ]
-    )
+  UI.success("✅ Updated appVersionCode to #{mobile_version} (TV will be #{tv_version})")
+end
 
-    UI.success("✅ Published to Play Store Internal testing track")
+desc "Pull Build number from play store and keep same."
+lane :keepBuildVersion do
+  code = google_play_track_version_codes(
+    package_name: ENV['PACKAGE_NAME'],
+    track: "internal"
+  )
 
-    # Send Slack notification for Play Store release
-    if ENV['SLACK_URL']
-      # Get mobile version code from build.gradle
-      mobile_version_code = File.read("../build.gradle").match(/appVersionCode = (\d+)/)[1]
-      changelog_content = ""
-      changelog_file = "#{ENV['CHANGE_LOG_PATH']}#{mobile_version_code}.txt"
-
-      if File.exist?(changelog_file)
-        changelog_content = File.read(changelog_file)
-      end
-
-      slack(
-        message: "🚀 New version available on Play Store Internal Track",
-        slack_url: ENV['SLACK_URL'],
-        payload: {
-          "Version" => ENV['VERSION_NAME'],
-          "Track" => "Internal",
-          "Changelog" => changelog_content.empty? ? "No changelog provided" : changelog_content
-        },
-        default_payloads: [:git_branch, :git_author],
-        success: true
-      )
-    end
+  if code.length >= 2
+    mobile_version = code[0]
+    tv_version = code[1]
+  else
+    mobile_version = code[0] || 0
+    tv_version = mobile_version + 1
   end
 
-  desc "Upload to Internal App Sharing (quick test URLs for QA)"
-  lane :publishToInternalAppSharing do
-    buildAndSign(task:"clean mobile:bundle tv:bundle")
+  gradle_file = File.read("../build.gradle.kts")
+  gradle_file.gsub!(
+    /extra\["appVersionCode"\] = \d+/,
+    "extra[\"appVersionCode\"] = #{mobile_version}"
+  )
+  File.write("../build.gradle.kts", gradle_file)
 
-    # Upload Mobile to Internal App Sharing
-    mobile_share_url = upload_to_play_store_internal_app_sharing(
-      package_name: ENV['PACKAGE_NAME'],
-      aab: "mobile/build/outputs/bundle/googleRelease/mobile-google-release.aab"
-    )
+  UI.success("✅ Kept appVersionCode at #{mobile_version} (TV will be #{tv_version})")
+end
 
-    UI.success("📱 Mobile uploaded: #{mobile_share_url}")
+# -------------------------------------------------
+# FIXED CORE BUILD LANE (IMPORTANT)
+# -------------------------------------------------
+desc "Build and sign"
+lane :buildAndSign do |options|
+  gradle(
+    task: options[:task],
+    print_command: false
+  )
+end
 
-    # Small delay to ensure uploads are processed separately
-    sleep(2)
+desc "Build debug apk"
+lane :buildAndDebug do
+  gradle(
+    task: "mobile:assembleGoogleDebug tv:assembleGoogleDebug",
+    print_command: false
+  )
+end
 
-    # Upload TV to Internal App Sharing
-    tv_share_url = upload_to_play_store_internal_app_sharing(
-      package_name: ENV['PACKAGE_NAME'],
-      aab: "tv/build/outputs/bundle/googleRelease/tv-google-release.aab"
-    )
+# -------------------------------------------------
+# PLAY STORE INTERNAL TRACK
+# -------------------------------------------------
+desc "Upload to Play Store Internal Testing Track (official release channel)"
+lane :publishToPlayStoreInternal do
+  buildAndSign(task: "mobile:bundleGoogleRelease tv:bundleGoogleRelease")
 
-    UI.success("📺 TV uploaded: #{tv_share_url}")
+  supply(
+    version_name: ENV['VERSION_NAME'],
+    track: "internal",
+    skip_upload_metadata: true,
+    skip_upload_images: true,
+    skip_upload_screenshots: true,
+    aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS],
+    mapping_paths: [
+      "mobile/build/outputs/mapping/googleRelease/mapping.txt",
+      "tv/build/outputs/mapping/googleRelease/mapping.txt"
+    ]
+  )
 
-    # Print Internal App Sharing URLs
-    UI.success("✅ Internal App Sharing URLs (quick share):")
-    UI.success("📱 Mobile: #{mobile_share_url}")
-    UI.success("📺 TV: #{tv_share_url}")
+  UI.success("✅ Published to Play Store Internal testing track")
 
-    # Send Slack notification with quick test URLs
-    if ENV['SLACK_URL']
-      # Get last 5 commits
-      commit_messages = changelog_from_git_commits(
-        commits_count: 5,
-        pretty: "• %s",
-        merge_commit_filtering: "exclude_merges"
-      )
+  if ENV['SLACK_URL']
+    mobile_version_code = File.read("../build.gradle.kts")
+      .match(/extra\["appVersionCode"\] = (\d+)/)[1]
 
-      # Build payload with MR/Issue info if available
-      payload_data = {
+    changelog_file = "#{ENV['CHANGE_LOG_PATH']}#{mobile_version_code}.txt"
+    changelog_content = File.exist?(changelog_file) ? File.read(changelog_file) : ""
+
+    slack(
+      message: "🚀 New version available on Play Store Internal Track",
+      slack_url: ENV['SLACK_URL'],
+      payload: {
         "Version" => ENV['VERSION_NAME'],
-        "📱 Mobile URL" => mobile_share_url,
-        "📺 TV URL" => tv_share_url,
-        "Recent Commits" => commit_messages
-      }
-
-      # Add MR info if available (triggered by merge)
-      if ENV['CI_MERGE_REQUEST_IID']
-        mr_url = "#{ENV['CI_PROJECT_URL']}/-/merge_requests/#{ENV['CI_MERGE_REQUEST_IID']}"
-        payload_data["Merge Request"] = "<#{mr_url}|!#{ENV['CI_MERGE_REQUEST_IID']} - #{ENV['CI_MERGE_REQUEST_TITLE']}>"
-      end
-
-      # Add pipeline info
-      if ENV['CI_PIPELINE_URL']
-        payload_data["Pipeline"] = "<#{ENV['CI_PIPELINE_URL']}|##{ENV['CI_PIPELINE_IID']}>"
-      end
-
-      slack(
-        message: "📦 New build available for testing (Internal App Sharing)",
-        slack_url: ENV['SLACK_URL'],
-        payload: payload_data,
-        default_payloads: [:git_branch, :git_author],
-        success: true
-      )
-    end
+        "Track" => "Internal",
+        "Changelog" => changelog_content.empty? ? "No changelog provided" : changelog_content
+      },
+      default_payloads: [:git_branch, :git_author],
+      success: true
+    )
   end
+end
 
- desc "Build Signed Apks for all modules."
- lane :buildReleaseApk do
-  buildAndSign(task:"mobile:assemble tv:assemble")
- end
+# -------------------------------------------------
+# INTERNAL APP SHARING
+# -------------------------------------------------
+desc "Upload to Internal App Sharing (quick test URLs for QA)"
+lane :publishToInternalAppSharing do
+  buildAndSign(task: "mobile:bundleGoogleRelease tv:bundleGoogleRelease")
+
+  mobile_share_url = upload_to_play_store_internal_app_sharing(
+    package_name: ENV['PACKAGE_NAME'],
+    aab: "mobile/build/outputs/bundle/googleRelease/mobile-google-release.aab"
+  )
+
+  UI.success("📱 Mobile uploaded: #{mobile_share_url}")
+
+  sleep(2)
+
+  tv_share_url = upload_to_play_store_internal_app_sharing(
+    package_name: ENV['PACKAGE_NAME'],
+    aab: "tv/build/outputs/bundle/googleRelease/tv-google-release.aab"
+  )
+
+  UI.success("📺 TV uploaded: #{tv_share_url}")
+
+  UI.success("📦 Internal App Sharing URLs")
+  UI.success("📱 Mobile: #{mobile_share_url}")
+  UI.success("📺 TV: #{tv_share_url}")
+
+  if ENV['SLACK_URL']
+    commit_messages = changelog_from_git_commits(
+      commits_count: 5,
+      pretty: "• %s",
+      merge_commit_filtering: "exclude_merges"
+    )
+
+    payload_data = {
+      "Version" => ENV['VERSION_NAME'],
+      "📱 Mobile URL" => mobile_share_url,
+      "📺 TV URL" => tv_share_url,
+      "Recent Commits" => commit_messages
+    }
+
+    if ENV['CI_MERGE_REQUEST_IID']
+      mr_url = "#{ENV['CI_PROJECT_URL']}/-/merge_requests/#{ENV['CI_MERGE_REQUEST_IID']}"
+      payload_data["Merge Request"] =
+        "<#{mr_url}|!#{ENV['CI_MERGE_REQUEST_IID']} - #{ENV['CI_MERGE_REQUEST_TITLE']}>"
+    end
+
+    if ENV['CI_PIPELINE_URL']
+      payload_data["Pipeline"] =
+        "<#{ENV['CI_PIPELINE_URL']}|##{ENV['CI_PIPELINE_IID']}>"
+    end
+
+    slack(
+      message: "📦 New build available for testing (Internal App Sharing)",
+      slack_url: ENV['SLACK_URL'],
+      payload: payload_data,
+      default_payloads: [:git_branch, :git_author],
+      success: true
+    )
+  end
+end
+
+# -------------------------------------------------
+# APK BUILD
+# -------------------------------------------------
+desc "Build Signed Apks for all modules."
+lane :buildReleaseApk do
+  buildAndSign(task: "mobile:assembleGoogleRelease tv:assembleGoogleRelease")
+end

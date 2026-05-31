@@ -50,18 +50,20 @@ import java.io.File
 fun AllProtocolFailedDialogScreen() {
     val navController = LocalNavController.current
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.deepBlue),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(AppColors.deepBlue),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .padding(32.dp)
-                .statusBarsPadding()
-                .navigationBarsPadding()
+            modifier =
+                Modifier
+                    .padding(32.dp)
+                    .statusBarsPadding()
+                    .navigationBarsPadding(),
         ) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Spacer(modifier = Modifier.weight(1f))
@@ -69,9 +71,10 @@ fun AllProtocolFailedDialogScreen() {
                     painter = painterResource(R.drawable.ic_close),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable { navController.popBackStack() }
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clickable { navController.popBackStack() },
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -79,7 +82,7 @@ fun AllProtocolFailedDialogScreen() {
                 painter = painterResource(R.drawable.ic_attention_icon),
                 contentDescription = "Attention",
                 colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 16.dp),
             )
 
             Text(
@@ -87,7 +90,7 @@ fun AllProtocolFailedDialogScreen() {
                 style = font24,
                 color = Color.White,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
             )
 
             Text(
@@ -95,23 +98,24 @@ fun AllProtocolFailedDialogScreen() {
                 style = font16,
                 color = Color.White,
                 textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .widthIn(max = 400.dp)
-                    .padding(bottom = 16.dp)
+                modifier =
+                    Modifier
+                        .widthIn(max = 400.dp)
+                        .padding(bottom = 16.dp),
             )
             Spacer(modifier = Modifier.weight(1f))
             NextButton(
                 modifier = Modifier.width(400.dp),
                 text = stringResource(com.windscribe.vpn.R.string.export_log),
                 enabled = true,
-                onClick = { exportLog(navController.context, navController) }
+                onClick = { exportLog(navController.context, navController) },
             )
             Spacer(modifier = Modifier.height(16.dp))
             NextButton(
                 modifier = Modifier.width(400.dp),
                 text = stringResource(com.windscribe.vpn.R.string.contact_support),
                 enabled = true,
-                onClick = { contactSupport(navController.context, navController) }
+                onClick = { contactSupport(navController.context, navController) },
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -120,50 +124,60 @@ fun AllProtocolFailedDialogScreen() {
                 Text(
                     text = stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
-                    color = Color.White
+                    color = Color.White,
                 )
             }
         }
     }
 }
 
-fun contactSupport(context: Context, navController: NavController) {
-    val emailIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "message/rfc822"
-        putExtra(Intent.EXTRA_EMAIL, arrayOf("helpdesk@windscribe.com"))
-        putExtra(Intent.EXTRA_SUBJECT, "Restrictive Network Detected")
-        putExtra(Intent.EXTRA_TEXT, "Please find the attached debug log.")
-        val logFile = File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
-        if (logFile.exists()) {
-            val fileUri: Uri = FileProvider.getUriForFile(
-                context,
-                "com.windscribe.vpn.provider",
-                logFile
-            )
-            putExtra(Intent.EXTRA_STREAM, fileUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+fun contactSupport(
+    context: Context,
+    navController: NavController,
+) {
+    val emailIntent =
+        Intent(Intent.ACTION_SEND).apply {
+            type = "message/rfc822"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("helpdesk@windscribe.com"))
+            putExtra(Intent.EXTRA_SUBJECT, "Restrictive Network Detected")
+            putExtra(Intent.EXTRA_TEXT, "Please find the attached debug log.")
+            val logFile = File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
+            if (logFile.exists()) {
+                val fileUri: Uri =
+                    FileProvider.getUriForFile(
+                        context,
+                        "com.windscribe.vpn.provider",
+                        logFile,
+                    )
+                putExtra(Intent.EXTRA_STREAM, fileUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
         }
-    }
     val chooser = Intent.createChooser(emailIntent, "Select Email Provider")
     if (emailIntent.resolveActivity(context.packageManager) != null) {
         context.startActivity(chooser)
     }
-    navController?.popBackStack()
+    navController.popBackStack()
 }
 
-fun exportLog(context: Context, navController: NavController) {
+fun exportLog(
+    context: Context,
+    navController: NavController,
+) {
     val logFile = File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
     if (logFile.exists()) {
-        val fileUri: Uri = FileProvider.getUriForFile(
-            context,
-            "com.windscribe.vpn.provider",
-            logFile
-        )
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_STREAM, fileUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
+        val fileUri: Uri =
+            FileProvider.getUriForFile(
+                context,
+                "com.windscribe.vpn.provider",
+                logFile,
+            )
+        val shareIntent =
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_STREAM, fileUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
         val chooser = Intent.createChooser(shareIntent, "Export Log File")
         if (shareIntent.resolveActivity(context.packageManager) != null) {
             context.startActivity(chooser)

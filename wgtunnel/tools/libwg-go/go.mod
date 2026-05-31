@@ -12,7 +12,7 @@ replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket
 
 require (
 	github.com/Control-D-Inc/ctrld v1.4.10-0.20260503214925-368044446917
-	github.com/Windscribe/wstunnel v1.0.6
+	github.com/Windscribe/wstunnel v1.0.7
 	github.com/amnezia-vpn/amneziawg-go v0.2.16
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/sys v0.35.0

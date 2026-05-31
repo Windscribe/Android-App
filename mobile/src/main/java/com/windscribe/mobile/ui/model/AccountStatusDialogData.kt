@@ -7,5 +7,5 @@ data class AccountStatusDialogData(
     val showSecondaryButton: Boolean,
     val secondaryText: String,
     val showPrimaryButton: Boolean,
-    val primaryText: String
+    val primaryText: String,
 ) : java.io.Serializable

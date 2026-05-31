@@ -7,7 +7,6 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -58,17 +57,22 @@ fun StyledTextFieldWithUpload(
     placeholder: String = "",
     isError: Boolean = false,
     onUploadClick: () -> Unit = {},
-    imeAction: ImeAction = ImeAction.Done
+    imeAction: ImeAction = ImeAction.Done,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     // Define colors based on state
-    val borderColor = when {
-        isError -> Color(0xFFFF7F7F) // Red border for error state
-        isFocused -> AppColors.white // White border for active/focused state
-        else -> AppColors.white.copy(alpha = 0.1f) // Gray border for default state
-    }
+    val borderColor =
+        when {
+            isError -> Color(0xFFFF7F7F)
+
+            // Red border for error state
+            isFocused -> AppColors.white
+
+            // White border for active/focused state
+            else -> AppColors.white.copy(alpha = 0.1f) // Gray border for default state
+        }
 
     val textColor = if (isError) Color(0xFFFF7F7F) else AppColors.white
     val placeholderColor = if (isError) Color(0xFFFF7F7F) else Color(0xFF898F9D)
@@ -82,72 +86,76 @@ fun StyledTextFieldWithUpload(
                     text = placeholder,
                     style = font16,
                     color = placeholderColor,
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Start,
                 )
             },
             singleLine = true,
             shape = RoundedCornerShape(9.dp),
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.None,
-                autoCorrectEnabled = false,
-                imeAction = imeAction,
-                keyboardType = KeyboardType.Text
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false,
+                    imeAction = imeAction,
+                    keyboardType = KeyboardType.Text,
+                ),
             trailingIcon = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(end = 4.dp)
+                    modifier = Modifier.padding(end = 4.dp),
                 ) {
                     // Upload button
                     IconButton(
                         onClick = onUploadClick,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_upload),
                             contentDescription = "Upload",
                             tint = AppColors.white.copy(alpha = 0.7f),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         )
                     }
                 }
             },
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = textColor,
-                unfocusedTextColor = textColor,
-                disabledTextColor = textColor,
-                errorTextColor = textColor,
-                unfocusedContainerColor = AppColors.white.copy(alpha = 0.05f),
-                focusedContainerColor = AppColors.white.copy(alpha = 0.05f),
-                disabledContainerColor = AppColors.white.copy(alpha = 0.05f),
-                errorContainerColor = AppColors.white.copy(alpha = 0.05f),
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                cursorColor = AppColors.white,
-                selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                    handleColor = AppColors.white,
-                    backgroundColor = AppColors.white.copy(alpha = 0.3f)
-                )
-            ),
-            modifier = modifier
-                .fillMaxWidth()
-                .background(
-                    color = AppColors.white.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(9.dp)
-                )
-                .border(
-                    width = 1.dp,
-                    color = borderColor,
-                    shape = RoundedCornerShape(9.dp)
+            colors =
+                TextFieldDefaults.colors(
+                    focusedTextColor = textColor,
+                    unfocusedTextColor = textColor,
+                    disabledTextColor = textColor,
+                    errorTextColor = textColor,
+                    unfocusedContainerColor = AppColors.white.copy(alpha = 0.05f),
+                    focusedContainerColor = AppColors.white.copy(alpha = 0.05f),
+                    disabledContainerColor = AppColors.white.copy(alpha = 0.05f),
+                    errorContainerColor = AppColors.white.copy(alpha = 0.05f),
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    cursorColor = AppColors.white,
+                    selectionColors =
+                        androidx.compose.foundation.text.selection.TextSelectionColors(
+                            handleColor = AppColors.white,
+                            backgroundColor = AppColors.white.copy(alpha = 0.3f),
+                        ),
                 ),
-            textStyle = font16.copy(
-                color = textColor,
-                textAlign = TextAlign.Start,
-                lineHeight = 20.sp
-            ),
-            interactionSource = interactionSource
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = AppColors.white.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(9.dp),
+                    ).border(
+                        width = 1.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(9.dp),
+                    ),
+            textStyle =
+                font16.copy(
+                    color = textColor,
+                    textAlign = TextAlign.Start,
+                    lineHeight = 20.sp,
+                ),
+            interactionSource = interactionSource,
         )
     }
 }

@@ -20,21 +20,23 @@ fun NextButton(
     modifier: Modifier = Modifier,
     text: String,
     enabled: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(48.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (enabled) AppColors.neonGreen else AppColors.white,
-            contentColor = if (enabled) AppColors.deepBlue else AppColors.green,
-            disabledContainerColor = AppColors.white,
-            disabledContentColor = AppColors.green
-        ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(48.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = if (enabled) AppColors.neonGreen else AppColors.white,
+                contentColor = if (enabled) AppColors.deepBlue else AppColors.green,
+                disabledContainerColor = AppColors.white,
+                disabledContentColor = AppColors.green,
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {
@@ -50,7 +52,7 @@ fun NextButton(
 fun NextButtonEnabledPreview() {
     NextButton(
         text = "Next",
-        enabled = true
+        enabled = true,
     ) { }
 }
 
@@ -59,6 +61,6 @@ fun NextButtonEnabledPreview() {
 fun NextButtonDisabledPreview() {
     NextButton(
         text = "Next",
-        enabled = false
+        enabled = false,
     ) { }
 }

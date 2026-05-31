@@ -13,7 +13,8 @@ import com.windscribe.tv.R
 
 class ConnectButtonGlow : AppCompatImageView {
     private enum class State {
-        Increasing, Decreasing
+        Increasing,
+        Decreasing,
     }
 
     private var currentState = State.Decreasing
@@ -36,7 +37,7 @@ class ConnectButtonGlow : AppCompatImageView {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         setUp()
     }

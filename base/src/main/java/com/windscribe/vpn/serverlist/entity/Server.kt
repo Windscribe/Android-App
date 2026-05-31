@@ -15,7 +15,7 @@ import com.google.gson.annotations.SerializedName
 @Keep
 @Entity(
     tableName = "Server",
-    indices = [Index(value = ["server_id"], unique = true)]
+    indices = [Index(value = ["server_id"], unique = true)],
 )
 data class Server(
     @SerializedName("id")
@@ -23,44 +23,36 @@ data class Server(
     @PrimaryKey
     @ColumnInfo(name = "server_id")
     val id: Int,
-
     @SerializedName("hostname")
     @Expose
     @ColumnInfo(name = "hostname")
     val hostname: String,
-
     @SerializedName("ip")
     @Expose
     @ColumnInfo(name = "ip")
     val ip: String,
-
     @SerializedName("ip2")
     @Expose
     @ColumnInfo(name = "ip2")
     val ip2: String,
-
     @SerializedName("ip3")
     @Expose
     @ColumnInfo(name = "ip3")
     val ip3: String,
-
     @SerializedName("datacenter_id")
     @Expose
     @ColumnInfo(name = "datacenter_id")
     val datacenterId: Int,
-
     @SerializedName("weight")
     @Expose
     @ColumnInfo(name = "weight")
     val weight: Int,
-
     @SerializedName("health")
     @Expose
     @ColumnInfo(name = "health")
     val health: Int,
-
     @SerializedName("ipv6")
     @Expose
     @ColumnInfo(name = "ipv6", defaultValue = "0")
-    val ipv6: Int = 0
+    val ipv6: Int = 0,
 )

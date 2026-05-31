@@ -14,25 +14,48 @@ class SessionErrorHandler private constructor() {
         val instance = SessionErrorHandler()
     }
 
-    fun getErrorMessage(apiErrorResponse: ApiErrorResponse): String {
-        return when (apiErrorResponse.errorCode) {
-            NetworkErrorCodes.ERROR_2FA_REQUIRED -> appContext.resources.getString(R.string.fa_required_error)
-            NetworkErrorCodes.ERROR_INVALID_2FA -> appContext.resources.getString(R.string.fa_invalid_error)
-            NetworkErrorCodes.ERROR_RESPONSE_ARGUMENT_INVALID -> appContext.resources.getString(
-                R.string.password_too_short
-            )
-            else -> apiErrorResponse.errorMessage
-        }
-    }
+    fun getErrorMessage(apiErrorResponse: ApiErrorResponse): String =
+        when (apiErrorResponse.errorCode) {
+            NetworkErrorCodes.ERROR_2FA_REQUIRED -> {
+                appContext.resources.getString(R.string.fa_required_error)
+            }
 
-    fun getErrorMessage(errorCode: Int, error: String): String {
-        return when (errorCode) {
-            NetworkErrorCodes.ERROR_2FA_REQUIRED -> appContext.resources.getString(R.string.fa_required_error)
-            NetworkErrorCodes.ERROR_INVALID_2FA -> appContext.resources.getString(R.string.fa_invalid_error)
-            NetworkErrorCodes.ERROR_RESPONSE_ARGUMENT_INVALID -> appContext.resources.getString(
-                R.string.password_too_short
-            )
-            else -> error
+            NetworkErrorCodes.ERROR_INVALID_2FA -> {
+                appContext.resources.getString(R.string.fa_invalid_error)
+            }
+
+            NetworkErrorCodes.ERROR_RESPONSE_ARGUMENT_INVALID -> {
+                appContext.resources.getString(
+                    R.string.password_too_short,
+                )
+            }
+
+            else -> {
+                apiErrorResponse.errorMessage ?: ""
+            }
         }
-    }
+
+    fun getErrorMessage(
+        errorCode: Int,
+        error: String,
+    ): String =
+        when (errorCode) {
+            NetworkErrorCodes.ERROR_2FA_REQUIRED -> {
+                appContext.resources.getString(R.string.fa_required_error)
+            }
+
+            NetworkErrorCodes.ERROR_INVALID_2FA -> {
+                appContext.resources.getString(R.string.fa_invalid_error)
+            }
+
+            NetworkErrorCodes.ERROR_RESPONSE_ARGUMENT_INVALID -> {
+                appContext.resources.getString(
+                    R.string.password_too_short,
+                )
+            }
+
+            else -> {
+                error
+            }
+        }
 }

@@ -476,7 +476,7 @@
     <string name="failed_to_update_robert_rules">Αποτυχία ενημέρωσης κανόνων Robert.</string>
     <string name="successfully_updated_robert_rules">Οι κανόνες Robert ενημερώθηκαν επιτυχώς.</string>
     <string name="share_app">Κοινοποιήστε την εφαρμογή</string>
-    <string name="share_app_description">"%s σας προσκαλεί να συμμετάσχετε στο Windscribe. Δώστε το όνομα χρήστη τους κατά την εγγραφή και οι δύο σας θα λάβετε 1gb δωρεάν δεδομένων στους λογαριασμούς σας. Αν γίνετε Pro, θα γίνουν και αυτοί Pro!\n%s"</string>
+    <string name="share_app_description">"%1$s σας προσκαλεί να συμμετάσχετε στο Windscribe. Δώστε το όνομα χρήστη τους κατά την εγγραφή και οι δύο σας θα λάβετε 1gb δωρεάν δεδομένων στους λογαριασμούς σας. Αν γίνετε Pro, θα γίνουν και αυτοί Pro!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">Απαιτείται πρόσβαση στην Τοποθεσία "Να επιτρέπεται συνεχώς"!</string>
     <string name="enable_location_access">Ενεργοποίηση πρόσβασης στην Τοποθεσία</string>
     <string name="location_permission_required">Απαιτείται άδεια τοποθεσίας</string>
@@ -605,7 +605,7 @@
     <string name="ipv6_mode_description">Επιλέξτε ποια έκδοση IP θα χρησιμοποιηθεί για συνδέσεις VPN.</string>
     <string name="ip_stack">Στοίβα IP</string>
     <string name="ip_stack_description">Διαμορφώστε τη στοίβα IP για συνδέσεις VPN.</string>
-    <string name="egress">Έξοδος</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Είσοδος</string>
     <string name="ipv4_only">Μόνο IPv4</string>
     <string name="manual_connection_mode_failed_title">Αποτυχία χειροκίνητης λειτουργίας σύνδεσης</string>

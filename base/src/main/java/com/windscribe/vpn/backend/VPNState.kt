@@ -5,26 +5,41 @@
 package com.windscribe.vpn.backend
 
 import com.windscribe.vpn.autoconnection.ProtocolInformation
-import java.util.*
+import java.util.UUID
 
 class VPNState(
     val status: Status,
     var error: Error? = null,
     val ip: String? = null,
     var protocolInformation: ProtocolInformation? = null,
-    var connectionId: UUID? = null
+    var connectionId: UUID? = null,
 ) {
     enum class Status {
-        Connecting, Connected, Disconnected, Disconnecting, RequiresUserInput, ProtocolSwitch, UnsecuredNetwork, InvalidSession
+        Connecting,
+        Connected,
+        Disconnected,
+        Disconnecting,
+        RequiresUserInput,
+        ProtocolSwitch,
+        UnsecuredNetwork,
+        InvalidSession,
     }
 
     enum class ErrorType {
-        UserReconnect, UserDisconnect, AuthenticationError, WireguardAuthenticationError, GenericError, TimeoutError, WireguardApiError, ConnectivityTestFailed, BrokenTunnel
+        UserReconnect,
+        UserDisconnect,
+        AuthenticationError,
+        WireguardAuthenticationError,
+        GenericError,
+        TimeoutError,
+        WireguardApiError,
+        ConnectivityTestFailed,
+        BrokenTunnel,
     }
 
     data class Error(
         val error: ErrorType,
         val message: String = "Unknown",
-        val showError: Boolean = false
+        val showError: Boolean = false,
     )
 }

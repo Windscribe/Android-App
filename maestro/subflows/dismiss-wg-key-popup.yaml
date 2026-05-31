@@ -1,0 +1,10 @@
+appId: com.windscribe.vpn
+---
+# Dismisses the "You have reached your limit of WireGuard keys" dialog.
+# Source: base/src/main/java/com/windscribe/vpn/alert/ForegroundAlert.kt :: showRetryDialog
+# Buttons are Cancel | OK; tapping OK retries and deletes the oldest key.
+# This dialog only shows up when the account has reached its registered key limit.
+# Tap is marked optional so the flow continues silently when the dialog isn't shown.
+- tapOn:
+    text: "OK"
+    optional: true

@@ -475,7 +475,7 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="failed_to_update_robert_rules">Die R.O.B.E.R.T-Regeln konnten nicht aktualisiert werden.</string>
     <string name="successfully_updated_robert_rules">Die R. O. B. E. R. T-Regeln wurden erfolgreich aktualisiert.</string>
     <string name="share_app">App teilen</string>
-    <string name="share_app_description">"%s lädt dich ein, sich Windscribe anzuschließen. Gib bei der Anmeldung ihren Benutzernamen an und ihr erhaltet beide 1 GB kostenlose Daten, die euren Konten hinzugefügt werden. Wenn du zum Pro Abonnement wechselst, bekommen sie es auch!\n%s"</string>
+    <string name="share_app_description">"%1$s lädt dich ein, sich Windscribe anzuschließen. Gib bei der Anmeldung ihren Benutzernamen an und ihr erhaltet beide 1 GB kostenlose Daten, die euren Konten hinzugefügt werden. Wenn du zum Pro Abonnement wechselst, bekommen sie es auch!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Immer erlauben\" Standortzugriff erforderlich!</string>
     <string name="enable_location_access">Aktivieren des Standortzugriffs</string>
     <string name="location_permission_required">Standortgenehmigung erforderlich</string>
@@ -608,7 +608,7 @@ Ihre Standortdaten bleiben auf Ihrem Gerät und werden ausschließlich für die 
     <string name="ipv6_mode_description">Wählen Sie, welche IP-Version für VPN-Verbindungen verwendet werden soll.</string>
     <string name="ip_stack">IP-Stack</string>
     <string name="ip_stack_description">Konfigurieren Sie den IP-Stack für VPN-Verbindungen.</string>
-    <string name="egress">Ausgang</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Eingang</string>
     <string name="ipv4_only">Nur IPv4</string>
     <string name="manual_connection_mode_failed_title">Manueller Verbindungsmodus fehlgeschlagen</string>
@@ -619,4 +619,7 @@ Ihre Standortdaten bleiben auf Ihrem Gerät und werden ausschließlich für die 
     <string name="app_icon">App-Symbol</string>
     <string name="app_icon_description">Wählen Sie ein anderes App-Symbol für noch mehr Privatsphäre</string>
     <string name="configuration">Konfiguration</string>
+    <string name="force_upgrade_title">Update erforderlich</string>
+    <string name="force_upgrade_message">Diese Version von Windscribe wird nicht mehr unterstützt. Bitte aktualisieren Sie, um die App weiter zu nutzen.</string>
+    <string name="force_upgrade_message_with_version">Diese Version von Windscribe wird nicht mehr unterstützt. Bitte aktualisieren Sie auf %s, um die App weiter zu nutzen.</string>
 </resources>

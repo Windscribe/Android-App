@@ -25,10 +25,20 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
-enum class LocationTypeInt() {
-    City, Static, Custom
+enum class LocationTypeInt {
+    City,
+    Static,
+    Custom,
 }
-class DynamicShortcutManager(private val context: Context, private val scope: CoroutineScope, private val vpnStateManager: VPNConnectionStateManager, private val locationRepository: LocationRepository, private val db: LocalDbInterface, private val serverListRepository: ServerListRepository) {
+
+class DynamicShortcutManager(
+    private val context: Context,
+    private val scope: CoroutineScope,
+    private val vpnStateManager: VPNConnectionStateManager,
+    private val locationRepository: LocationRepository,
+    private val db: LocalDbInterface,
+    private val serverListRepository: ServerListRepository,
+) {
     companion object {
         const val QUICK_CONNECT_ID = "ws_quick_connect"
         const val QUICK_CONNECT_ACTION = "ws_quick_connect_action"
@@ -51,7 +61,8 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
     private fun listenForVPNState() {
         scope.launch {
             vpnStateManager.state.collectLatest {
-                val intent = Intent(context, VPNPermissionActivity::class.java)
+                val intent =
+                    Intent(context, VPNPermissionActivity::class.java)
                         .setAction(Intent.ACTION_MAIN)
                         .addCategory(Intent.CATEGORY_LAUNCHER)
                         .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -75,8 +86,14 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         }
     }
 
-    private fun addShortcut(text: String, icon: Int, intent: Intent?) {
-        val shortcutBuilder = ShortcutInfoCompat.Builder(context, QUICK_CONNECT_ID)
+    private fun addShortcut(
+        text: String,
+        icon: Int,
+        intent: Intent?,
+    ) {
+        val shortcutBuilder =
+            ShortcutInfoCompat
+                .Builder(context, QUICK_CONNECT_ID)
                 .setShortLabel(text)
                 .setIcon(IconCompat.createWithResource(context, icon))
                 .setRank(1)
@@ -93,36 +110,43 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun listenForSelectedLocationChange() {
         scope.launch {
-            locationRepository.selectedCity.mapLatest { id ->
-                return@mapLatest getLastSelectedLocation(id)
-            }.mapNotNull { it }.collectLatest {
-                if (it.isSuccess) {
-                    addRecentShortcut(it.getOrThrow().first, it.getOrThrow().second)
+            locationRepository.selectedCity
+                .mapLatest { id ->
+                    return@mapLatest getLastSelectedLocation(id)
+                }.mapNotNull { it }
+                .collectLatest {
+                    if (it.isSuccess) {
+                        addRecentShortcut(it.getOrThrow().first, it.getOrThrow().second)
+                    }
                 }
-            }
         }
     }
 
-    private suspend fun getLastSelectedLocation(id: Int): Result<Pair<LastSelectedLocation, LocationTypeInt>> {
-        return runCatching {
+    private suspend fun getLastSelectedLocation(id: Int): Result<Pair<LastSelectedLocation, LocationTypeInt>> =
+        runCatching {
             when (WindUtilities.getSourceTypeBlocking()) {
                 SelectedLocationType.CityLocation -> {
                     val datacenterAndLocation = db.getDatacenterAndLocation(id) ?: throw Exception("Datacenter not found")
                     Pair(
                         LastSelectedLocation(
                             datacenterAndLocation.datacenter.id,
-                            serverListRepository.getCustomCityName(datacenterAndLocation.datacenter.id) ?: datacenterAndLocation.datacenter.nodeName,
-                            serverListRepository.getCustomCityNickName(datacenterAndLocation.datacenter.id) ?: datacenterAndLocation.datacenter.nickName,
-                            datacenterAndLocation.location.countryCode,
-                        ), LocationTypeInt.City
+                            serverListRepository.getCustomCityName(datacenterAndLocation.datacenter.id)
+                                ?: datacenterAndLocation.datacenter.nodeName
+                                ?: "",
+                            serverListRepository.getCustomCityNickName(datacenterAndLocation.datacenter.id)
+                                ?: datacenterAndLocation.datacenter.nickName
+                                ?: "",
+                            datacenterAndLocation.location?.countryCode,
+                        ),
+                        LocationTypeInt.City,
                     )
                 }
 
                 SelectedLocationType.StaticIp -> {
                     val staticRegion = db.getStaticRegionByIDAsync(id) ?: throw Exception("Static region not found")
                     Pair(
-                        LastSelectedLocation(id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode),
-                        LocationTypeInt.Static
+                        LastSelectedLocation(id, staticRegion.cityName ?: "", staticRegion.staticIp ?: "", staticRegion.countryCode),
+                        LocationTypeInt.Static,
                     )
                 }
 
@@ -132,53 +156,64 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                 }
             }
         }
-    }
 
     @SuppressLint("RestrictedApi")
-    private fun addRecentShortcut(selectedLocation: LastSelectedLocation, locationTypeInt: LocationTypeInt) {
-        val recentShortcuts = ShortcutManagerCompat.getDynamicShortcuts(context)
+    private fun addRecentShortcut(
+        selectedLocation: LastSelectedLocation,
+        locationTypeInt: LocationTypeInt,
+    ) {
+        val recentShortcuts =
+            ShortcutManagerCompat
+                .getDynamicShortcuts(context)
                 .filter { it.id.startsWith("ws_recent") }
         val shortcutID = "ws_recent_${selectedLocation.cityId}"
-        val intent = Intent(context, VPNPermissionActivity::class.java).apply {
-            action = Intent.ACTION_MAIN
-            addCategory(Intent.CATEGORY_LAUNCHER)
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-            putExtra(QUICK_CONNECT_ACTION_KEY, RECENT_CONNECT_ACTION)
-            putExtra(RECENT_CONNECT_ID, selectedLocation.cityId)
-            putExtra(RECENT_LOCATION_TYPE_INT, locationTypeInt.ordinal)
-        }
-        val latestShortcut = ShortcutInfoCompat.Builder(context, shortcutID)
+        val intent =
+            Intent(context, VPNPermissionActivity::class.java).apply {
+                action = Intent.ACTION_MAIN
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                putExtra(QUICK_CONNECT_ACTION_KEY, RECENT_CONNECT_ACTION)
+                putExtra(RECENT_CONNECT_ID, selectedLocation.cityId)
+                putExtra(RECENT_LOCATION_TYPE_INT, locationTypeInt.ordinal)
+            }
+        val latestShortcut =
+            ShortcutInfoCompat
+                .Builder(context, shortcutID)
                 .setShortLabel("${selectedLocation.nodeName} ${selectedLocation.nickName}")
                 .setIcon(IconCompat.createWithResource(context, FlagIconResource.getSmallFlag(selectedLocation.countryCode)))
-                .setExtras(PersistableBundle().apply {
-                    this.putString(RECENT_COUNTRY_CODE_KEY, selectedLocation.countryCode)
-                    this.putLong(RECENT_DATE_KEY, System.currentTimeMillis())
-                    this.putInt(RECENT_LOCATION_TYPE_INT, locationTypeInt.ordinal)
-                })
-                .setIntent(intent)
+                .setExtras(
+                    PersistableBundle().apply {
+                        this.putString(RECENT_COUNTRY_CODE_KEY, selectedLocation.countryCode)
+                        this.putLong(RECENT_DATE_KEY, System.currentTimeMillis())
+                        this.putInt(RECENT_LOCATION_TYPE_INT, locationTypeInt.ordinal)
+                    },
+                ).setIntent(intent)
                 .build()
         val shortcutsToAdd = recentShortcuts.toMutableList()
         shortcutsToAdd.add(0, latestShortcut)
-        shortcutsToAdd.distinctBy { it.shortLabel }.sortedByDescending {
-            it.extras?.getLong(RECENT_DATE_KEY) ?: System.currentTimeMillis()
-        }.forEachIndexed { index, v ->
-            val countryCode = v.extras?.getString(RECENT_COUNTRY_CODE_KEY)
-            if (index > 2) {
-                logger.debug("Removing shortcut - ${v.shortLabel} at index $index")
-                removeShortCut(v.id)
-                return
+        shortcutsToAdd
+            .distinctBy { it.shortLabel }
+            .sortedByDescending {
+                it.extras?.getLong(RECENT_DATE_KEY) ?: System.currentTimeMillis()
+            }.forEachIndexed { index, v ->
+                val countryCode = v.extras?.getString(RECENT_COUNTRY_CODE_KEY)
+                if (index > 2) {
+                    logger.debug("Removing shortcut - ${v.shortLabel} at index $index")
+                    removeShortCut(v.id)
+                    return
+                }
+                val updated =
+                    ShortcutInfoCompat
+                        .Builder(context, v.id)
+                        .setShortLabel("${v.shortLabel}")
+                        .setIcon(IconCompat.createWithResource(context, FlagIconResource.getSmallFlag(countryCode)))
+                        .setIntent(v.intent)
+                        .setExtras(v.extras ?: PersistableBundle.EMPTY)
+                        .setRank(index + 2)
+                        .build()
+                val ignored = ShortcutManagerCompat.pushDynamicShortcut(context, updated)
             }
-            val updated = ShortcutInfoCompat.Builder(context, v.id)
-                    .setShortLabel("${v.shortLabel}")
-                    .setIcon(IconCompat.createWithResource(context, FlagIconResource.getSmallFlag(countryCode)))
-                    .setIntent(v.intent)
-                    .setExtras(v.extras ?: PersistableBundle.EMPTY)
-                    .setRank(index + 2)
-                    .build()
-            val ignored = ShortcutManagerCompat.pushDynamicShortcut(context, updated)
-        }
     }
-
 
     private fun removeShortCut(id: String) {
         ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id))

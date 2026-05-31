@@ -9,8 +9,12 @@ import androidx.appcompat.app.AlertDialog
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 
-
-fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: () -> Unit, title: String = appContext.getString(R.string.error)) {
+fun showRetryDialog(
+    message: String,
+    retryCallBack: () -> Unit,
+    cancelCallBack: () -> Unit,
+    title: String = appContext.getString(R.string.error),
+) {
     var autoDismiss = true
     safeDialog {
         val builder = createDialogBuilder(it, message, title)
@@ -26,11 +30,11 @@ fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: 
         with(builder) {
             setPositiveButton(
                 appContext.getString(R.string.ok),
-                DialogInterface.OnClickListener(function = listener)
+                DialogInterface.OnClickListener(function = listener),
             )
             setNegativeButton(
                 appContext.getString(R.string.cancel),
-                DialogInterface.OnClickListener(function = listener)
+                DialogInterface.OnClickListener(function = listener),
             )
             setOnCancelListener { cancelCallBack() }
             setOnDismissListener {
@@ -46,7 +50,7 @@ fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: 
 fun createDialogBuilder(
     activity: Activity,
     message: String,
-    title: String = appContext.getString(R.string.error)
+    title: String = appContext.getString(R.string.error),
 ): AlertDialog.Builder {
     val builder = AlertDialog.Builder(activity, R.style.AlertDialog)
     val view: View = LayoutInflater.from(activity).inflate(R.layout.alert_dialog_view, null)
@@ -56,18 +60,22 @@ fun createDialogBuilder(
     return builder
 }
 
-fun showAlertDialog(message: String, callBack: () -> Unit) {
+fun showAlertDialog(
+    message: String,
+    callBack: () -> Unit,
+) {
     safeDialog {
         val builder = createDialogBuilder(it, message)
         val listener = { dialog: DialogInterface, which: Int ->
             dialog.dismiss()
-            if (which == AlertDialog.BUTTON_POSITIVE)
+            if (which == AlertDialog.BUTTON_POSITIVE) {
                 callBack()
+            }
         }
         with(builder) {
             setPositiveButton(
                 appContext.getString(R.string.ok),
-                DialogInterface.OnClickListener(function = listener)
+                DialogInterface.OnClickListener(function = listener),
             )
             show()
         }
@@ -83,7 +91,7 @@ fun showErrorDialog(message: String) {
         with(builder) {
             setNeutralButton(
                 appContext.getString(R.string.ok),
-                DialogInterface.OnClickListener(function = listener)
+                DialogInterface.OnClickListener(function = listener),
             )
             show()
         }
@@ -95,7 +103,7 @@ fun showAlertDialog(
     message: String,
     positionButtonLabel: String = appContext.getString(R.string.ok),
     negativeButtonLabel: String = appContext.getString(R.string.cancel),
-    retryCallBack: () -> Unit
+    retryCallBack: () -> Unit,
 ) {
     safeDialog {
         val builder = createDialogBuilder(it, message, title)
@@ -108,18 +116,22 @@ fun showAlertDialog(
         with(builder) {
             setPositiveButton(
                 positionButtonLabel,
-                DialogInterface.OnClickListener(function = listener)
+                DialogInterface.OnClickListener(function = listener),
             )
             setNegativeButton(
                 negativeButtonLabel,
-                DialogInterface.OnClickListener(function = listener)
+                DialogInterface.OnClickListener(function = listener),
             )
             show()
         }
     }
 }
 
-fun showErrorDialog(activity: Activity, message: String, callBack: () -> Unit) {
+fun showErrorDialog(
+    activity: Activity,
+    message: String,
+    callBack: () -> Unit,
+) {
     val builder = createDialogBuilder(activity, message)
     activity.let {
         it.runOnUiThread {
@@ -135,7 +147,7 @@ fun showErrorDialog(activity: Activity, message: String, callBack: () -> Unit) {
             with(builder) {
                 setNeutralButton(
                     appContext.getString(R.string.ok),
-                    DialogInterface.OnClickListener(function = listener)
+                    DialogInterface.OnClickListener(function = listener),
                 )
                 show()
             }

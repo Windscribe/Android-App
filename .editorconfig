@@ -1,0 +1,13 @@
+root = true
+
+[*.{kt,kts}]
+# Flags @Composable functions and test methods (e.g. fun My_Test()) as non-camelCase. Mostly false positives.
+ktlint_standard_function-naming = disabled
+# Flags constants and serialized/DB field names that intentionally aren't camelCase.
+ktlint_standard_property-naming = disabled
+# Flags idiomatic StateFlow/SharedFlow `_backing` properties as violations.
+ktlint_standard_backing-property-naming = disabled
+# Compose feature packages use underscores (network_options, split_tunnel, gps_spoofing); renaming dirs + all imports isn't worth it.
+ktlint_standard_package-name = disabled
+# Cosmetic file-vs-class name matching; renaming files for it adds churn with no real benefit.
+ktlint_standard_filename = disabled

@@ -7,9 +7,7 @@ import com.google.gson.annotations.SerializedName
 @Keep
 data class SsoResponse(
     @SerializedName("session_auth_hash") @Expose val sessionAuth: String,
-    @SerializedName("is_new_user") @Expose val isUser: Boolean
+    @SerializedName("is_new_user") @Expose val isUser: Boolean,
 ) {
-    override fun toString(): String {
-        return "SsoResponse(sessionAuth=[REDACTED], isUser=$isUser)"
-    }
+    override fun toString(): String = "SsoResponse(sessionAuth=[REDACTED], isUser=$isUser)"
 }

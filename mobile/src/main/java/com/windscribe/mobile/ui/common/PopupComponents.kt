@@ -36,7 +36,6 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font18
 import com.windscribe.mobile.ui.theme.font22
-import com.windscribe.mobile.ui.theme.font24
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.mobile.ui.theme.serverListBackgroundColor
 
@@ -49,15 +48,16 @@ fun PopupContainer(content: @Composable (ColumnScope.() -> Unit)) {
             .background(color = MaterialTheme.colorScheme.serverListBackgroundColor)
             .clickable { },
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(274.dp)
-                .verticalScroll(scrollState),
-            content = content
+            modifier =
+                Modifier
+                    .fillMaxHeight()
+                    .width(274.dp)
+                    .verticalScroll(scrollState),
+            content = content,
         )
     }
 }
@@ -66,21 +66,23 @@ fun PopupContainer(content: @Composable (ColumnScope.() -> Unit)) {
 fun PopupPrimaryActionButton(
     modifier: Modifier = Modifier,
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
         enabled = true,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(48.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.actionGreen,
-            contentColor = AppColors.midnightNavy,
-            disabledContainerColor = AppColors.white,
-            disabledContentColor = AppColors.green
-        ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(48.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = AppColors.actionGreen,
+                contentColor = AppColors.midnightNavy,
+                disabledContainerColor = AppColors.white,
+                disabledContentColor = AppColors.green,
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {
@@ -95,21 +97,23 @@ fun PopupPrimaryActionButton(
 fun PopupSecondaryActionButton(
     modifier: Modifier = Modifier,
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
         enabled = true,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(48.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = .10f),
-            contentColor = MaterialTheme.colorScheme.primaryTextColor,
-            disabledContainerColor = AppColors.white,
-            disabledContentColor = AppColors.green
-        ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(48.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = .10f),
+                contentColor = MaterialTheme.colorScheme.primaryTextColor,
+                disabledContainerColor = AppColors.white,
+                disabledContentColor = AppColors.green,
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {
@@ -125,8 +129,9 @@ fun PopupHeroImage(resourceId: Int) {
     Image(
         painter = painterResource(id = resourceId),
         contentDescription = "Garry Image",
-        modifier = Modifier
-            .size(width = 274.dp, height = 217.dp)
+        modifier =
+            Modifier
+                .size(width = 274.dp, height = 217.dp),
     )
 }
 
@@ -136,7 +141,7 @@ fun PopupTitle(text: String) {
         text = text,
         style = font22,
         color = MaterialTheme.colorScheme.primaryTextColor,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
     )
 }
 
@@ -147,7 +152,7 @@ fun PopupDescription(text: String) {
         style = font16,
         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = .50f),
         textAlign = TextAlign.Center,
-        modifier = Modifier.padding(horizontal = 8.dp)
+        modifier = Modifier.padding(horizontal = 8.dp),
     )
 }
 
@@ -159,11 +164,11 @@ fun PopupHeroImagePreview() {
 
 @Preview(
     name = "Light Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_NO
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Preview(
     name = "Dark Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
 fun PopupTitlePreview() {
@@ -172,11 +177,11 @@ fun PopupTitlePreview() {
 
 @Preview(
     name = "Light Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_NO
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Preview(
     name = "Dark Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
 fun PopupDescriptionPreview() {
@@ -185,33 +190,32 @@ fun PopupDescriptionPreview() {
 
 @Preview(
     name = "Light Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_NO
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Preview(
     name = "Dark Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
 fun PopupPrimaryActionButtonPreview() {
     PopupPrimaryActionButton(
         text = stringResource(com.windscribe.vpn.R.string.check_status),
-        onClick = {}
+        onClick = {},
     )
 }
 
-
 @Preview(
     name = "Light Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_NO
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Preview(
     name = "Dark Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
 fun PopupSecondaryActionButtonPreview() {
     PopupSecondaryActionButton(
         text = stringResource(com.windscribe.vpn.R.string.back),
-        onClick = {}
+        onClick = {},
     )
 }

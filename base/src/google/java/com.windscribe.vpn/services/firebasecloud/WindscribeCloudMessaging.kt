@@ -10,20 +10,17 @@ import com.google.firebase.messaging.RemoteMessage
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.utils.WindVpnController
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class WindscribeCloudMessaging : FirebaseMessagingService() {
-
     @Inject
     lateinit var vpnController: WindVpnController
     private val logger: Logger = LoggerFactory.getLogger("fcm")
-    override fun onCreate() {
-        super.onCreate()
-        appContext.applicationComponent.inject(this)
-    }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -37,6 +34,7 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
                     logger.info("Received Account downgrade notification, scheduling service task...")
                     appContext.workManager.updateSession()
                 }
+
                 USER_EXPIRED -> {
                     logger.info("Received Account expired notification, scheduling service task...")
                     with(vpnController) {
@@ -46,6 +44,7 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
                         }
                     }
                 }
+
                 PROMO -> {
                     logger.info("Received Promo notification , Launching upgrade Activity.")
                     val pushNotificationAction = payloadToPushNotificationAction(payload)
@@ -64,19 +63,18 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
         }
     }
 
-    private fun payloadToPushNotificationAction(payload: Map<String, String>): PushNotificationAction? {
-        return payload["pcpid"]?.let {
+    private fun payloadToPushNotificationAction(payload: Map<String, String>): PushNotificationAction? =
+        payload["pcpid"]?.let {
             payload["type"]?.let { it1 ->
                 payload["promo_code"]?.let { it2 ->
                     PushNotificationAction(
-                            pcpID = it,
-                            type = it1,
-                            promoCode = it2
+                        pcpID = it,
+                        type = it1,
+                        promoCode = it2,
                     )
                 }
             }
         }
-    }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -84,7 +82,6 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
     }
 
     companion object {
-
         const val USER_DOWNGRADED = "user_downgraded"
         const val USER_EXPIRED = "user_expired"
         const val PROMO = "promo"

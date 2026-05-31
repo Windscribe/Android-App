@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">فشل تحديث قواعد روبرت.</string>
     <string name="successfully_updated_robert_rules">تم تحديث قواعد روبرت بنجاح.</string>
     <string name="share_app">مشاركة التطبيق</string>
-    <string name="share_app_description">"٪s يدعوك للانضمام إلى Windscribe. أدخل اسم المستخدم الخاص بهم عند التسجيل وستحصل على 1 غيغابايت من البيانات المجانية المضافة إلى حساباتك. إذا أصبحت محترفا ، فسوف يصبحون محترفين أيضا!\n٪s "</string>
+    <string name="share_app_description">"%1$s يدعوك للانضمام إلى Windscribe. أدخل اسم المستخدم الخاص بهم عند التسجيل وستحصل على 1 غيغابايت من البيانات المجانية المضافة إلى حساباتك. إذا أصبحت محترفا ، فسوف يصبحون محترفين أيضا!\n%2$s "</string>
     <string name="allow_all_the_time_location_access_required">\"السماح طوال الوقت\" الوصول إلى الموقع مطلوب!</string>
     <string name="enable_location_access">تمكين الوصول إلى الموقع</string>
     <string name="location_permission_required">إذن الموقع مطلوب</string>
@@ -604,7 +604,7 @@
     <string name="ipv6_mode_description">اختر إصدار IP الذي سيتم استخدامه لاتصالات VPN.</string>
     <string name="ip_stack">مكدس IP</string>
     <string name="ip_stack_description">تكوين مكدس IP لاتصالات VPN.</string>
-    <string name="egress">الخروج</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">الدخول</string>
     <string name="ipv4_only">IPv4 فقط</string>
     <string name="manual_connection_mode_failed_title">فشل وضع الاتصال اليدوي</string>
@@ -615,4 +615,7 @@
     <string name="app_icon">أيقونة التطبيق</string>
     <string name="app_icon_description">اختر أيقونة تطبيق مختلفة لمزيد من الخصوصية</string>
     <string name="configuration">التكوين</string>
+    <string name="force_upgrade_title">التحديث مطلوب</string>
+    <string name="force_upgrade_message">إصدار Windscribe هذا لم يعد مدعوماً. يرجى التحديث للاستمرار في استخدام التطبيق.</string>
+    <string name="force_upgrade_message_with_version">إصدار Windscribe هذا لم يعد مدعوماً. يرجى التحديث إلى %s للاستمرار في استخدام التطبيق.</string>
 </resources>

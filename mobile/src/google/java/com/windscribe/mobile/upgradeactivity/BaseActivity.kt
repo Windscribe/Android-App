@@ -4,25 +4,22 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.PixelFormat
-import android.graphics.Rect
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.toColorInt
-import com.windscribe.mobile.R
-import com.windscribe.mobile.di.ActivityComponent
-import com.windscribe.mobile.di.ActivityModule
+import androidx.core.net.toUri
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class BaseActivity : AppCompatActivity() {
     val coldLoad = AtomicBoolean()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setWindow()
@@ -34,71 +31,40 @@ abstract class BaseActivity : AppCompatActivity() {
         // Set a new pixel format for the window to use for rendering
         val window = window
         window.setFormat(PixelFormat.RGBA_8888)
-        var boundingRect: List<Rect> = ArrayList()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val displayCutout = getWindow().decorView.rootWindowInsets.displayCutout
-            if (displayCutout != null) {
-                boundingRect = displayCutout.boundingRects
-            }
-        }
-    }
-
-    open fun setTheme(context: Context) {
-        val savedThem = Windscribe.Companion.appContext.preference.selectedTheme
-        if (savedThem == PreferencesKeyConstants.DARK_THEME) {
-            context.setTheme(R.style.DarkTheme)
-        } else {
-            context.setTheme(R.style.LightTheme)
-        }
     }
 
     open fun setWindow() {
-        val isDark = Windscribe.appContext.preference.selectedTheme == PreferencesKeyConstants.DARK_THEME
-        val navigationBarStyle = if (isDark) {
-            SystemBarStyle.dark("#0B0F16".toColorInt())
-        } else {
-            SystemBarStyle.light("#FFFFFF".toColorInt(), "#0B0F16".toColorInt())
-        }
+        val isDark =
+            Windscribe.appContext.preference.selectedTheme == PreferencesKeyConstants.DARK_THEME
+        val navigationBarStyle =
+            if (isDark) {
+                SystemBarStyle.dark("#0B0F16".toColorInt())
+            } else {
+                SystemBarStyle.light("#FFFFFF".toColorInt(), "#0B0F16".toColorInt())
+            }
         enableEdgeToEdge(navigationBarStyle = navigationBarStyle)
     }
 
-    fun openURLInBrowser(urlToOpen: String?) {
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(urlToOpen))
+    fun openURLInBrowser(urlToOpen: String) {
+        val browserIntent = Intent(Intent.ACTION_VIEW, urlToOpen.toUri())
         if (browserIntent.resolveActivity(packageManager) != null) {
             startActivity(browserIntent)
         } else {
-            Toast.makeText(
-                this,
-                "No available browser found to open the desired url!",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast
+                .makeText(
+                    this,
+                    "No available browser found to open the desired url!",
+                    Toast.LENGTH_SHORT,
+                ).show()
         }
     }
 
-    protected fun setActivityModule(activityModule: ActivityModule?): ActivityComponent {
-        return com.windscribe.mobile.di.DaggerActivityComponent.builder()
-            .activityModule(activityModule)
-            .applicationComponent(
-                Windscribe.Companion.appContext
-                    .applicationComponent
-            ).build()
-    }
-
-    protected fun setContentLayout(setTheme: Boolean = true) {
-        if (setTheme) {
-            setTheme(this)
-        }
-        setLanguage()
-        coldLoad.set(true)
-    }
-
-    fun setLanguage() {
-        val newLocale = Windscribe.Companion.appContext.getSavedLocale()
+    override fun attachBaseContext(newBase: Context) {
+        val newLocale = appContext.getSavedLocale()
         Locale.setDefault(newLocale)
-        val config = Configuration(baseContext.resources.configuration)
-        config.locale = newLocale
+        val config = Configuration(newBase.resources.configuration)
+        config.setLocale(newLocale)
         config.fontScale = 1.0f
-        Windscribe.Companion.appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
-        resources.updateConfiguration(config, baseContext.resources.displayMetrics)
+        super.attachBaseContext(newBase.createConfigurationContext(config))
     }
 }

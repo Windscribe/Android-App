@@ -35,8 +35,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.DropDownNoDescription
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -47,30 +50,59 @@ import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.popup.FullScreenDialog
-import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.api.response.QueryType
 
+class TicketActions(
+    val onQueryTypeSelected: (QueryType) -> Unit = {},
+    val onEmailChanged: (String) -> Unit = {},
+    val onSubjectChanged: (String) -> Unit = {},
+    val onMessageChanged: (String) -> Unit = {},
+    val onSendTicketClicked: () -> Unit = {},
+)
+
 @Composable
-fun TicketScreen(viewModel: TicketViewModel? = null) {
+fun TicketScreen(viewModel: TicketViewModel = hiltViewModel<TicketViewModelImpl>()) {
+    val submitTicketState by viewModel.submitTicketState.collectAsState()
+    val isButtonEnabled by viewModel.buttonEnabled.collectAsState()
+    val email by viewModel.email.collectAsState()
+    TicketContent(
+        submitTicketState = submitTicketState,
+        isButtonEnabled = isButtonEnabled,
+        email = email,
+        actions =
+            TicketActions(
+                onQueryTypeSelected = viewModel::onQueryTypeSelected,
+                onEmailChanged = viewModel::onEmailChanged,
+                onSubjectChanged = viewModel::onSubjectChanged,
+                onMessageChanged = viewModel::onMessageChanged,
+                onSendTicketClicked = viewModel::onSendTicketClicked,
+            ),
+    )
+}
+
+@Composable
+fun TicketContent(
+    submitTicketState: SubmitTicketState,
+    isButtonEnabled: Boolean,
+    email: String,
+    actions: TicketActions,
+) {
     val navController = LocalNavController.current
     val selectedKey by remember { mutableStateOf(QueryType.Account) }
-    val queryTypes = QueryType.entries.map {
-        DropDownStringItem(it.name, it.name)
-    }
-    val submitTicketState by viewModel?.submitTicketState?.collectAsState()
-        ?: remember { mutableStateOf(SubmitTicketState.Idle) }
-    val isButtonEnabled by viewModel?.buttonEnabled?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val email by viewModel?.email?.collectAsState() ?: remember { mutableStateOf("") }
+    val queryTypes =
+        QueryType.entries.map {
+            DropDownStringItem(it.name, it.name)
+        }
 
     PreferenceBackground {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
         ) {
             PreferencesNavBar(stringResource(R.string.contact_humans)) {
                 navController.popBackStack()
@@ -79,17 +111,18 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
             ScreenDescription(stringResource(R.string.how_to_send_ticket))
             Spacer(modifier = Modifier.height(16.dp))
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .imePadding()
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
             ) {
                 DropDownNoDescription(
                     R.string.category,
                     queryTypes,
-                    selectedItemKey = selectedKey.name
+                    selectedItemKey = selectedKey.name,
                 ) {
-                    viewModel?.onQueryTypeSelected(QueryType.valueOf(it.key))
+                    actions.onQueryTypeSelected(QueryType.valueOf(it.key))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -98,7 +131,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                     hint = stringResource(R.string.email),
                     modifier = Modifier.fillMaxWidth(),
                     defaultValue = email,
-                    onValueChange = { viewModel?.onEmailChanged(it) }
+                    onValueChange = { actions.onEmailChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -106,28 +139,29 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                 TextField(
                     hint = stringResource(R.string.subject),
                     modifier = Modifier.fillMaxWidth(),
-                    onValueChange = { viewModel?.onSubjectChanged(it) }
+                    onValueChange = { actions.onSubjectChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextField(
                     hint = stringResource(R.string.what_is_the_issue),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
                     singleLine = false,
                     height = 120.dp,
-                    onValueChange = { viewModel?.onMessageChanged(it) }
+                    onValueChange = { actions.onMessageChanged(it) },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 NextButton(
                     text = stringResource(R.string.send),
-                    enabled = isButtonEnabled
+                    enabled = isButtonEnabled,
                 ) {
-                    viewModel?.onSendTicketClicked()
+                    actions.onSendTicketClicked()
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -136,29 +170,28 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
         if (submitTicketState is SubmitTicketState.Loading) {
             PreferenceProgressBar(true)
         }
-        HandleState(viewModel)
+        HandleState(submitTicketState)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HandleState(viewModel: TicketViewModel?) {
-    val submitTicketState by viewModel?.submitTicketState?.collectAsState()
-        ?: remember { mutableStateOf(SubmitTicketState.Idle) }
+private fun HandleState(submitTicketState: SubmitTicketState) {
     val showDialog = remember { mutableStateOf(false) }
-    val message = when (submitTicketState) {
-        is SubmitTicketState.Success -> {
-            (submitTicketState as SubmitTicketState.Success).message
-        }
+    val message =
+        when (submitTicketState) {
+            is SubmitTicketState.Success -> {
+                submitTicketState.message
+            }
 
-        is SubmitTicketState.Error -> {
-            (submitTicketState as SubmitTicketState.Error).message
-        }
+            is SubmitTicketState.Error -> {
+                submitTicketState.message
+            }
 
-        else -> {
-            ""
+            else -> {
+                ""
+            }
         }
-    }
     LaunchedEffect(submitTicketState) {
         if (submitTicketState is SubmitTicketState.Success || submitTicketState is SubmitTicketState.Error) {
             showDialog.value = true
@@ -205,44 +238,63 @@ private fun TextField(
                 },
                 singleLine = singleLine,
                 shape = RoundedCornerShape(9.dp),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
-                    imeAction = ImeAction.Done
-                ),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = contentColor,
-                    unfocusedTextColor = contentColor,
-                    disabledTextColor = contentColor,
-                    unfocusedContainerColor = containerColor,
-                    focusedContainerColor = containerColor,
-                    disabledContainerColor = containerColor,
-                    errorContainerColor = containerColor,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.primaryTextColor,
-                    disabledIndicatorColor = Color.Transparent,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = MaterialTheme.colorScheme.primaryTextColor,
-                        backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f)
-                    )
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        autoCorrectEnabled = false,
+                        imeAction = ImeAction.Done,
+                    ),
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedTextColor = contentColor,
+                        unfocusedTextColor = contentColor,
+                        disabledTextColor = contentColor,
+                        unfocusedContainerColor = containerColor,
+                        focusedContainerColor = containerColor,
+                        disabledContainerColor = containerColor,
+                        errorContainerColor = containerColor,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = Color.Transparent,
+                        cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                        disabledIndicatorColor = Color.Transparent,
+                        selectionColors =
+                            androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                                backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f),
+                            ),
+                    ),
                 visualTransformation = VisualTransformation.None,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(height),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(height),
                 textStyle = font16.copy(color = contentColor, textAlign = TextAlign.Start),
             )
         }
     }
 }
 
+private class TicketStateProvider : PreviewParameterProvider<SubmitTicketState> {
+    override val values =
+        sequenceOf(
+            SubmitTicketState.Idle,
+            SubmitTicketState.Loading,
+            SubmitTicketState.Error("Failed to submit ticket."),
+        )
+}
 
 @Composable
 @MultiDevicePreview
-private fun TicketScreenPreview() {
+private fun TicketContentPreview(
+    @PreviewParameter(TicketStateProvider::class) submitTicketState: SubmitTicketState,
+) {
     PreviewWithNav {
-        TicketScreen()
+        TicketContent(
+            submitTicketState = submitTicketState,
+            isButtonEnabled = submitTicketState is SubmitTicketState.Idle,
+            email = "",
+            actions = TicketActions(),
+        )
     }
 }

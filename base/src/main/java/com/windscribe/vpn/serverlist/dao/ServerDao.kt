@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class ServerDao {
-
     @Insert(onConflict = REPLACE)
     abstract suspend fun addAll(servers: List<Server>)
 

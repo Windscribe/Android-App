@@ -6,7 +6,6 @@ package com.windscribe.vpn.backend.openvpn
 
 import android.content.Intent
 import android.net.VpnService
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
@@ -17,6 +16,7 @@ import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.AndroidEntryPoint
 import de.blinkt.openvpn.VpnProfile
 import de.blinkt.openvpn.core.ConnectionStatus
 import de.blinkt.openvpn.core.OpenVPNService
@@ -25,8 +25,10 @@ import de.blinkt.openvpn.core.VpnStatus.StateListener
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-class OpenVPNWrapperService : OpenVPNService(), StateListener {
-
+@AndroidEntryPoint
+class OpenVPNWrapperService :
+    OpenVPNService(),
+    StateListener {
     @Inject
     lateinit var windNotificationBuilder: WindNotificationBuilder
 
@@ -50,24 +52,27 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     override fun onCreate() {
         logger.debug("OpenVPNWrapperService onCreate()")
         startForegroundImmediately(NotificationConstants.SERVICE_NOTIFICATION_ID)
-        Windscribe.appContext.serviceComponent.inject(this)
+        super.onCreate()
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            Connecting
+            Connecting,
         )
-        super.onCreate()
         openVPNBackend.serviceCreated(this)
         VpnStatus.addStateListener(this)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         if (intent == null || intent.action == VpnService.SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
             startForegroundSafely(
                 windNotificationBuilder,
                 NotificationConstants.SERVICE_NOTIFICATION_ID,
-                Connecting
+                Connecting,
             )
             shortcutStateManager.connect()
             stopSelf()
@@ -76,18 +81,14 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            Connecting
+            Connecting,
         )
         return super.onStartCommand(intent, flags, startId)
     }
 
-    override fun getProfile(): VpnProfile? {
-        return Util.getProfile<VpnProfile>()
-    }
+    override fun getProfile(): VpnProfile? = Util.getProfile<VpnProfile>()
 
-    override fun onProcessRestore(): Boolean {
-        return preferencesHelper.globalUserConnectionPreference
-    }
+    override fun onProcessRestore(): Boolean = preferencesHelper.globalUserConnectionPreference
 
     override fun onDestroy() {
         logger.debug("OpenVPNWrapperService onDestroy()")
@@ -97,16 +98,14 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
         super.onDestroy()
     }
 
-    override fun protect(socket: Int): Boolean {
-        return super.protect(socket)
-    }
+    override fun protect(socket: Int): Boolean = super.protect(socket)
 
     override fun updateState(
         state: String?,
         logmessage: String?,
         localizedResId: Int,
         level: ConnectionStatus?,
-        intent: Intent?
+        intent: Intent?,
     ) {
         level?.let { status ->
             logger.debug("OpenVPN state changed: $status")

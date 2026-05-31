@@ -31,6 +31,7 @@ class ConnectionFragment : Fragment() {
     private lateinit var binding: FragmentConnectionBinding
     private var listener: SettingsFragmentListener? = null
     private var selectedProtocol: String? = null
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val activity: SettingActivity
@@ -47,13 +48,16 @@ class ConnectionFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentConnectionBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         listener?.onFragmentReady(this)
         binding.showSystemApps.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
@@ -149,49 +153,66 @@ class ConnectionFragment : Fragment() {
         }
     }
 
-    fun setPortAdapter(savedPort: String, ports: List<String>) {
+    fun setPortAdapter(
+        savedPort: String,
+        ports: List<String>,
+    ) {
         val portAdapter = MenuAdapter(ports, savedPort)
-        portAdapter.setListener(object : MenuItemSelectListener {
-            override fun onItemSelected(selectedItemKey: String?) {
-                selectedProtocol?.let { protocol ->
-                    selectedItemKey?.let {
-                        listener?.onPortSelected(
-                            protocol, selectedItemKey
-                        )
+        portAdapter.setListener(
+            object : MenuItemSelectListener {
+                override fun onItemSelected(selectedItemKey: String?) {
+                    selectedProtocol?.let { protocol ->
+                        selectedItemKey?.let {
+                            listener?.onPortSelected(
+                                protocol,
+                                selectedItemKey,
+                            )
+                        }
                     }
                 }
-            }
-        })
+            },
+        )
         binding.portList.setNumRows(1)
         binding.portList.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
         binding.portList.adapter = portAdapter
     }
 
-    fun setAmneziaPresetAdapter(selectedPresetId: String, presetTitles: List<String>, presetIds: List<String>) {
+    fun setAmneziaPresetAdapter(
+        selectedPresetId: String,
+        presetTitles: List<String>,
+        presetIds: List<String>,
+    ) {
         val presetAdapter = MenuAdapter(presetTitles, selectedPresetId, presetIds)
-        presetAdapter.setListener(object : MenuItemSelectListener {
-            override fun onItemSelected(selectedItemKey: String?) {
-                selectedItemKey?.let {
-                    listener?.onAmneziaPresetSelected(selectedItemKey)
+        presetAdapter.setListener(
+            object : MenuItemSelectListener {
+                override fun onItemSelected(selectedItemKey: String?) {
+                    selectedItemKey?.let {
+                        listener?.onAmneziaPresetSelected(selectedItemKey)
+                    }
                 }
-            }
-        })
+            },
+        )
         binding.amneziaPresetItems.setNumRows(1)
         binding.amneziaPresetItems.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
         binding.amneziaPresetItems.adapter = presetAdapter
     }
 
-    fun setProtocolAdapter(savedProtocol: String, protocols: List<String>) {
+    fun setProtocolAdapter(
+        savedProtocol: String,
+        protocols: List<String>,
+    ) {
         selectedProtocol = savedProtocol
         val protocolAdapter = MenuAdapter(protocols, savedProtocol)
-        protocolAdapter.setListener(object : MenuItemSelectListener {
-            override fun onItemSelected(selectedItemKey: String?) {
-                selectedProtocol = selectedItemKey
-                selectedItemKey?.let {
-                    listener?.onProtocolSelected(selectedItemKey)
+        protocolAdapter.setListener(
+            object : MenuItemSelectListener {
+                override fun onItemSelected(selectedItemKey: String?) {
+                    selectedProtocol = selectedItemKey
+                    selectedItemKey?.let {
+                        listener?.onProtocolSelected(selectedItemKey)
+                    }
                 }
-            }
-        })
+            },
+        )
         binding.protocolList.setNumRows(1)
         binding.protocolList.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
         binding.protocolList.adapter = protocolAdapter
@@ -334,12 +355,14 @@ class ConnectionFragment : Fragment() {
                 TransitionManager.beginDelayedTransition(binding.connectionParent)
                 binding.protocolTweaksPresetView.visibility = View.GONE
             }
+
             com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL -> {
                 binding.protocolTweaksManual.setState(State.MenuButtonState.Selected)
                 binding.protocolTweaksAuto.setState(State.MenuButtonState.NotSelected)
                 binding.protocolTweaksDisabled.setState(State.MenuButtonState.NotSelected)
                 binding.protocolTweaksPresetView.visibility = View.VISIBLE
             }
+
             com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED -> {
                 binding.protocolTweaksDisabled.setState(State.MenuButtonState.Selected)
                 binding.protocolTweaksAuto.setState(State.MenuButtonState.NotSelected)
@@ -367,11 +390,13 @@ class ConnectionFragment : Fragment() {
                 binding.serverRoutingRegular.setState(State.MenuButtonState.NotSelected)
                 binding.serverRoutingAlternate.setState(State.MenuButtonState.NotSelected)
             }
+
             com.windscribe.vpn.apppreference.PreferencesKeyConstants.SERVER_ROUTING_REGULAR -> {
                 binding.serverRoutingRegular.setState(State.MenuButtonState.Selected)
                 binding.serverRoutingAuto.setState(State.MenuButtonState.NotSelected)
                 binding.serverRoutingAlternate.setState(State.MenuButtonState.NotSelected)
             }
+
             com.windscribe.vpn.apppreference.PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE -> {
                 binding.serverRoutingAlternate.setState(State.MenuButtonState.Selected)
                 binding.serverRoutingAuto.setState(State.MenuButtonState.NotSelected)

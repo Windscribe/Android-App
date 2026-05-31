@@ -486,7 +486,6 @@ adb logcat | grep -E "(VpnBackend|WindVpnController)"
 
 ## References
 
-- [CLAUDE.md](../../CLAUDE.md) — Auto-secure whitelist summary
 - [AGENTS.md](../../AGENTS.md) — Architecture overview
 - [DeviceStateManager.kt](../../base/src/main/java/com/windscribe/vpn/state/DeviceStateManager.kt) — Implementation
 - [WindVpnController.kt](../../base/src/main/java/com/windscribe/vpn/backend/utils/WindVpnController.kt) — Disconnect logic

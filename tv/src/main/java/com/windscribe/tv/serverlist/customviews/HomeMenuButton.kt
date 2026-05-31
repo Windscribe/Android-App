@@ -28,7 +28,7 @@ class HomeMenuButton : AppCompatImageView {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         setDimens()
         setState()
@@ -38,18 +38,32 @@ class HomeMenuButton : AppCompatImageView {
         if (hasFocus()) {
             setImageDrawable(null)
             when (id) {
-                R.id.btn_settings -> background = ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_settings_icon_focused,
-                    context.theme
-                )
-                R.id.btn_notifications -> background = ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_notification_icon_focused,
-                    context.theme
-                )
-                R.id.btn_help -> background = ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_help_icon_focused,
-                    context.theme
-                )
+                R.id.btn_settings -> {
+                    background =
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_settings_icon_focused,
+                            context.theme,
+                        )
+                }
+
+                R.id.btn_notifications -> {
+                    background =
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_notification_icon_focused,
+                            context.theme,
+                        )
+                }
+
+                R.id.btn_help -> {
+                    background =
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_help_icon_focused,
+                            context.theme,
+                        )
+                }
             }
         } else {
             val gradientDrawable = GradientDrawable()
@@ -59,24 +73,35 @@ class HomeMenuButton : AppCompatImageView {
             gradientDrawable.setStroke(stroke, resources.getColor(R.color.colorWhite20))
             background = gradientDrawable
             when (id) {
-                R.id.btn_settings -> setImageDrawable(
-                    ResourcesCompat.getDrawable(
-                        resources, R.drawable.ic_settings_icon,
-                        context.theme
+                R.id.btn_settings -> {
+                    setImageDrawable(
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_settings_icon,
+                            context.theme,
+                        ),
                     )
-                )
-                R.id.btn_notifications -> setImageDrawable(
-                    ResourcesCompat.getDrawable(
-                        resources, R.drawable.ic_notification_icon,
-                        context.theme
+                }
+
+                R.id.btn_notifications -> {
+                    setImageDrawable(
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_notification_icon,
+                            context.theme,
+                        ),
                     )
-                )
-                R.id.btn_help -> setImageDrawable(
-                    ResourcesCompat.getDrawable(
-                        resources, R.drawable.ic_help_icon,
-                        context.theme
+                }
+
+                R.id.btn_help -> {
+                    setImageDrawable(
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_help_icon,
+                            context.theme,
+                        ),
                     )
-                )
+                }
             }
         }
     }
@@ -84,7 +109,7 @@ class HomeMenuButton : AppCompatImageView {
     override fun onFocusChanged(
         gainFocus: Boolean,
         direction: Int,
-        previouslyFocusedRect: Rect?
+        previouslyFocusedRect: Rect?,
     ) {
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
         setState()

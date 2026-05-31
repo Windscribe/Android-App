@@ -35,26 +35,29 @@ import com.windscribe.vpn.R as BaseR
 fun EncryptionWarningDialog(onAcknowledge: () -> Unit) {
     Dialog(
         onDismissRequest = { }, // Force user to acknowledge
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
-        )
+        properties =
+            DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false,
+                usePlatformDefaultWidth = false,
+            ),
     ) {
         val scrollState = rememberScrollState()
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.serverListBackgroundColor),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.serverListBackgroundColor),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(274.dp)
-                    .verticalScroll(scrollState)
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .width(274.dp)
+                        .verticalScroll(scrollState),
             ) {
                 Spacer(modifier = Modifier.weight(1f))
 
@@ -62,7 +65,7 @@ fun EncryptionWarningDialog(onAcknowledge: () -> Unit) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_attention_icon),
                     contentDescription = "Security Warning",
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
                 )
 
                 Spacer(modifier = Modifier.height(25.dp))
@@ -72,7 +75,7 @@ fun EncryptionWarningDialog(onAcknowledge: () -> Unit) {
                     text = stringResource(id = BaseR.string.security_notice),
                     style = font16,
                     color = MaterialTheme.colorScheme.primaryTextColor,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -83,7 +86,7 @@ fun EncryptionWarningDialog(onAcknowledge: () -> Unit) {
                     style = font16,
                     color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp),
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -91,7 +94,7 @@ fun EncryptionWarningDialog(onAcknowledge: () -> Unit) {
                 // Acknowledge button
                 PopupSecondaryActionButton(
                     text = stringResource(id = BaseR.string.i_understand),
-                    onClick = onAcknowledge
+                    onClick = onAcknowledge,
                 )
 
                 Spacer(modifier = Modifier.weight(1f))

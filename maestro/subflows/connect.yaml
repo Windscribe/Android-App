@@ -1,0 +1,15 @@
+appId: com.windscribe.vpn
+---
+# Connects to VPN and asserts connected state.
+# Caller is responsible for disconnecting.
+#
+# All popups that can race in during connect (OS VPN consent, wg-key-limit,
+# preferred-protocol, battery-optimization) are handled by wait-for-connected,
+# which polls and sweeps each loop until connection_status_connected appears.
+
+- assertVisible:
+    id: "home_connect_button"
+- tapOn:
+    id: "home_connect_button"
+- runFlow: dismiss-wg-key-popup.yaml
+- runFlow: wait-for-connected.yaml

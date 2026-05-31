@@ -1,0 +1,11 @@
+appId: com.windscribe.vpn
+---
+# Disconnects. Called by run.sh after capturing IP_AFTER.
+# No launchApp — app is still running from 10-ip-check.yaml.
+
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000

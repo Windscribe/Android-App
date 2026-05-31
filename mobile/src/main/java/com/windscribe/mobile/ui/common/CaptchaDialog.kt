@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -71,11 +70,11 @@ private fun decodeBase64ToBitmap(base64: String): Bitmap? {
 fun CaptchaDebugDialog(
     captchaRequest: CaptchaRequest,
     onCancel: () -> Unit,
-    onSolutionSubmit: (Float, Map<String, List<Float>>) -> Unit
+    onSolutionSubmit: (Float, Map<String, List<Float>>) -> Unit,
 ) {
     Dialog(
         onDismissRequest = onCancel,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -93,7 +92,7 @@ fun CaptchaDebugDialog(
 fun CaptchaDebugView(
     captcha: CaptchaRequest,
     onSolutionSubmit: (Float, Map<String, List<Float>>) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     val captchaBackground = decodeBase64ToBitmap(captcha.background)
     val slider = decodeBase64ToBitmap(captcha.slider)
@@ -111,23 +110,23 @@ fun CaptchaDebugView(
     val screenWidthDp = configuration.screenWidthDp.dp
     val availableWidthDp = screenWidthDp - totalPaddingDp
     val availableWidthPx = with(density) { availableWidthDp.toPx() }
-    
+
     // Calculate image sizing
     val originalWidth = captchaBackground.width.toFloat()
     val originalHeight = captchaBackground.height.toFloat()
     val aspectRatio = originalWidth / originalHeight
-    
-    val (finalWidth, finalHeight, scaleFactor) = if (originalWidth > availableWidthPx) {
-        // Image is larger than available space, resize to fit
-        val newWidth = availableWidthPx
-        val newHeight = newWidth / aspectRatio
-        val scale = newWidth / originalWidth
-        Triple(newWidth.toInt(), newHeight.toInt(), scale)
-    } else {
-        // Image fits, use original size
-        Triple(originalWidth.toInt(), originalHeight.toInt(), 1f)
-    }
-    
+
+    val (finalWidth, finalHeight, scaleFactor) =
+        if (originalWidth > availableWidthPx) {
+            // Image is larger than available space, resize to fit
+            val newWidth = availableWidthPx
+            val newHeight = newWidth / aspectRatio
+            val scale = newWidth / originalWidth
+            Triple(newWidth.toInt(), newHeight.toInt(), scale)
+        } else {
+            // Image fits, use original size
+            Triple(originalWidth.toInt(), originalHeight.toInt(), 1f)
+        }
 
     // Initialize slider position with scaling applied
     val sliderPositionX = remember { mutableFloatStateOf(0f) }
@@ -141,7 +140,7 @@ fun CaptchaDebugView(
     val sliderBitmap = slider.asImageBitmap()
     val scaledSliderWidth = (slider.width * scaleFactor).toInt()
     val scaledSliderHeight = (slider.height * scaleFactor).toInt()
-    
+
     fun submit() {
         // Convert scaled position back to original image coordinates for API
         val originalXOffset = sliderPositionX.floatValue / scaleFactor
@@ -157,12 +156,12 @@ fun CaptchaDebugView(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)
+        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
     ) {
         Text(
             stringResource(com.windscribe.vpn.R.string.complete_puzzle_to_continue),
             color = Color.White,
-            style = font18.copy(fontWeight = FontWeight.Medium)
+            style = font18.copy(fontWeight = FontWeight.Medium),
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -170,94 +169,101 @@ fun CaptchaDebugView(
             style = font12.copy(fontWeight = FontWeight.Normal),
             textAlign = TextAlign.Center,
             color = AppColors.white.copy(alpha = 0.50f),
-            modifier = Modifier.width(150.dp)
+            modifier = Modifier.width(150.dp),
         )
         Spacer(modifier = Modifier.height(24.dp))
         Box {
             Box(
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = AppColors.white.copy(alpha = 0.05f),
-                        shape = shape
-                    )
-                    .clip(shape)
-                    .background(Color.Transparent)
-                    .padding(1.dp)
+                modifier =
+                    Modifier
+                        .border(
+                            width = 1.dp,
+                            color = AppColors.white.copy(alpha = 0.05f),
+                            shape = shape,
+                        ).clip(shape)
+                        .background(Color.Transparent)
+                        .padding(1.dp),
             ) {
                 Image(
                     bitmap = backgroundBitmap,
                     contentDescription = "Captcha Background",
-                    modifier = with(density) {
-                        Modifier
-                            .height(backgroundSize.value.height.toDp())
-                            .width(backgroundSize.value.width.toDp())
-                    },
-                    contentScale = ContentScale.FillBounds
+                    modifier =
+                        with(density) {
+                            Modifier
+                                .height(backgroundSize.value.height.toDp())
+                                .width(backgroundSize.value.width.toDp())
+                        },
+                    contentScale = ContentScale.FillBounds,
                 )
             }
 
             // Draggable slider
             Box(
-                modifier = with(density) {
-                    Modifier
-                        .offset(x = sliderPositionX.floatValue.toDp(), y = sliderPositionY.floatValue.toDp())
-                        .size(scaledSliderWidth.toDp(), scaledSliderHeight.toDp())
-                        .pointerInput(Unit) {
-                            detectDragGestures(
-                                onDrag = { change, dragAmount ->
-                                    change.consume()
-                                    val newX = (sliderPositionX.floatValue + dragAmount.x).coerceIn(
-                                        0f,
-                                        backgroundSize.value.width - scaledSliderWidth.toFloat()
-                                    )
-                                    val newY = (sliderPositionY.floatValue + dragAmount.y).coerceIn(
-                                        0f,
-                                        backgroundSize.value.height - scaledSliderHeight.toFloat()
-                                    )
-                                    val newPoint = Pair(newX, newY - (initialY.floatValue * scaleFactor))
-                                    
-                                    // Only add point if it's at least 0.5 pixels away from the last recorded point
-                                    val shouldRecord = if (dragHistory.isEmpty()) {
-                                        true
-                                    } else {
-                                        val lastPoint = dragHistory.last()
-                                        val distance = kotlin.math.sqrt(
-                                            (newPoint.first - lastPoint.first) * (newPoint.first - lastPoint.first) +
-                                            (newPoint.second - lastPoint.second) * (newPoint.second - lastPoint.second)
-                                        )
-                                        distance >= 0.5f
-                                    }
-                                    
-                                    if (shouldRecord) {
-                                        dragHistory.add(newPoint)
-                                        if (dragHistory.size > 50) {
-                                            dragHistory.removeAt(0)
+                modifier =
+                    with(density) {
+                        Modifier
+                            .offset(x = sliderPositionX.floatValue.toDp(), y = sliderPositionY.floatValue.toDp())
+                            .size(scaledSliderWidth.toDp(), scaledSliderHeight.toDp())
+                            .pointerInput(Unit) {
+                                detectDragGestures(
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        val newX =
+                                            (sliderPositionX.floatValue + dragAmount.x).coerceIn(
+                                                0f,
+                                                backgroundSize.value.width - scaledSliderWidth.toFloat(),
+                                            )
+                                        val newY =
+                                            (sliderPositionY.floatValue + dragAmount.y).coerceIn(
+                                                0f,
+                                                backgroundSize.value.height - scaledSliderHeight.toFloat(),
+                                            )
+                                        val newPoint = Pair(newX, newY - (initialY.floatValue * scaleFactor))
+
+                                        // Only add point if it's at least 0.5 pixels away from the last recorded point
+                                        val shouldRecord =
+                                            if (dragHistory.isEmpty()) {
+                                                true
+                                            } else {
+                                                val lastPoint = dragHistory.last()
+                                                val distance =
+                                                    kotlin.math.sqrt(
+                                                        (newPoint.first - lastPoint.first) * (newPoint.first - lastPoint.first) +
+                                                            (newPoint.second - lastPoint.second) * (newPoint.second - lastPoint.second),
+                                                    )
+                                                distance >= 0.5f
+                                            }
+
+                                        if (shouldRecord) {
+                                            dragHistory.add(newPoint)
+                                            if (dragHistory.size > 50) {
+                                                dragHistory.removeAt(0)
+                                            }
                                         }
-                                    }
-                                    sliderPositionX.floatValue = newX
-                                    sliderPositionY.floatValue = newY
-                                    dragJob?.cancel()
-                                },
-                                onDragEnd = {
-                                    dragJob?.cancel()
-                                    dragJob = coroutineScope.launch {
-                                        delay(700)
-                                        submit()
-                                    }
-                                },
-                                onDragStart = {
-                                    dragJob?.cancel()
-                                }
-                            )
-                        }
-                }
+                                        sliderPositionX.floatValue = newX
+                                        sliderPositionY.floatValue = newY
+                                        dragJob?.cancel()
+                                    },
+                                    onDragEnd = {
+                                        dragJob?.cancel()
+                                        dragJob =
+                                            coroutineScope.launch {
+                                                delay(700)
+                                                submit()
+                                            }
+                                    },
+                                    onDragStart = {
+                                        dragJob?.cancel()
+                                    },
+                                )
+                            }
+                    },
             ) {
                 Image(
                     bitmap = sliderBitmap,
                     contentDescription = "Captcha Slider",
                     contentScale = ContentScale.FillBounds,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }

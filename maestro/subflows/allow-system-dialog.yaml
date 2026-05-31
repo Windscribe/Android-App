@@ -1,0 +1,8 @@
+appId: com.windscribe.vpn
+---
+# Dismisses Android system permission/consent dialogs by tapping any visible
+# "Allow" / "ALLOW" / "OK" button. Used by config.yaml as an onFlowStart hook
+# so flows do not need to handle these explicitly.
+- tapOn:
+    text: "ALLOW|Allow|OK"
+    optional: true

@@ -10,96 +10,102 @@ import com.windscribe.vpn.api.response.BillingPlanResponse.BillingPlans
 import com.windscribe.vpn.api.response.PushNotificationAction
 
 open class WindscribeInAppProduct(
-        private val billingPlans: List<BillingPlans>,
-        private val pushNotificationAction: PushNotificationAction?
+    private val billingPlans: List<BillingPlans>,
+    private val pushNotificationAction: PushNotificationAction?,
 ) {
-
-    fun getSkus(): List<String> {
-        return billingPlans.map {
-            it.extId
+    fun getSkus(): List<String> =
+        billingPlans.map {
+            it.extId ?: ""
         }
-    }
 
-    open fun getPrice(sku: String): String? {
-        return billingPlans.first {
-            it.extId == sku
-        }.planPrice
-    }
+    open fun getPrice(sku: String): String? =
+        billingPlans
+            .first {
+                it.extId == sku
+            }.planPrice
 
-    open fun getOriginalPrice(sku: String): String? {
-        return billingPlans.first {
-            it.extId == sku
-        }.originalPrice
-    }
+    open fun getOriginalPrice(sku: String): String? =
+        billingPlans
+            .first {
+                it.extId == sku
+            }.originalPrice
 
+    fun getMonthlyPlan(): String? =
+        billingPlans
+            .firstOrNull {
+                it.duration == 1
+            }?.extId
 
-    fun getMonthlyPlan(): String? {
-        return billingPlans.firstOrNull {
-            it.duration == 1
-        }?.extId
-    }
+    fun getYearlyPlan(): String? =
+        billingPlans
+            .firstOrNull {
+                it.duration == 12
+            }?.extId
 
-    fun getYearlyPlan(): String? {
-        return billingPlans.firstOrNull {
-            it.duration == 12
-        }?.extId
-    }
+    fun getPromoPlan(): String? =
+        billingPlans
+            .firstOrNull {
+                it.discount > 0
+            }?.extId
 
-    fun getPromoPlan(): String? {
-        return billingPlans.firstOrNull {
-            it.discount > 0
-        }?.extId
-    }
     fun getPlanDuration(sku: String): String {
-        val numberOfMonths = billingPlans.first {
-            it.extId == sku
-        }.duration
+        val numberOfMonths =
+            billingPlans
+                .first {
+                    it.extId == sku
+                }.duration
         return when (numberOfMonths) {
-            1 -> "month"
-            12 -> "year"
+            1 -> {
+                "month"
+            }
+
+            12 -> {
+                "year"
+            }
+
             else -> {
                 "$numberOfMonths months"
             }
         }
     }
 
-    fun isPromo(): Boolean {
-        return billingPlans.firstOrNull { it.discount > 0 } != null
-    }
+    fun isPromo(): Boolean = billingPlans.firstOrNull { it.discount > 0 } != null
 
     fun getDiscountLabel(sku: String): String {
-        val discount = billingPlans.first {
-            it.extId == sku
-        }.discount
+        val discount =
+            billingPlans
+                .first {
+                    it.extId == sku
+                }.discount
         return "Save $discount%"
     }
 
-    fun getUsdPrice(sku: String): String {
-        return billingPlans.first {
-            it.extId == sku
-        }.planPrice
-    }
+    fun getUsdPrice(sku: String): String =
+        billingPlans
+            .first {
+                it.extId == sku
+            }.planPrice ?: ""
 
     fun getPromoStickerLabel(sku: String): String {
-        val plan = billingPlans.first {
-            it.extId == sku
-        }
-        return plan.planName
+        val plan =
+            billingPlans.first {
+                it.extId == sku
+            }
+        return plan.planName ?: ""
     }
 
-    fun getPlanName(sku: String): CharSequence? {
-        return billingPlans.first {
-            it.extId == sku
-        }.planName
-    }
+    fun getPlanName(sku: String): CharSequence? =
+        billingPlans
+            .first {
+                it.extId == sku
+            }.planName
 }
 
 data class GoogleProducts(
     val productDetailsList: List<ProductDetails>,
     val billingPlans: List<BillingPlans>,
-    var pushNotificationAction: PushNotificationAction?
+    var pushNotificationAction: PushNotificationAction?,
 ) : WindscribeInAppProduct(billingPlans, pushNotificationAction) {
-
     override fun getPrice(sku: String): String? {
         val product = productDetailsList.firstOrNull { it.productId == sku }
         val subDetail = product?.subscriptionOfferDetails
@@ -114,28 +120,29 @@ data class GoogleProducts(
         return null
     }
 
-    fun getSkuDetails(sku: String): ProductDetails {
-        return productDetailsList.first {
+    fun getSkuDetails(sku: String): ProductDetails =
+        productDetailsList.first {
             it.productId == sku
         }
-    }
 }
 
 data class AmazonProducts(
-        val products: Map<String, Product>,
-        val billingPlans: List<BillingPlans>,
-        var pushNotificationAction: PushNotificationAction?
+    val products: Map<String, Product>,
+    val billingPlans: List<BillingPlans>,
+    var pushNotificationAction: PushNotificationAction?,
 ) : WindscribeInAppProduct(billingPlans, pushNotificationAction) {
+    override fun getPrice(sku: String): String? =
+        products
+            .filter {
+                it.value.sku == sku
+            }.values
+            .first()
+            .price
 
-    override fun getPrice(sku: String): String? {
-        return products.filter {
-            it.value.sku == sku
-        }.values.first().price
-    }
-
-    fun getProduct(sku: String): Product {
-        return products.filter {
-            it.value.sku == sku
-        }.values.first()
-    }
+    fun getProduct(sku: String): Product =
+        products
+            .filter {
+                it.value.sku == sku
+            }.values
+            .first()
 }

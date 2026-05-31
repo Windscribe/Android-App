@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.UserLoginResponse
@@ -19,6 +20,7 @@ import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.getNetworkError
 import com.windscribe.vpn.services.FirebaseManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,277 +34,228 @@ import javax.inject.Inject
 
 sealed class LoginState {
     object Idle : LoginState()
-    data class LoggingIn(val message: String) : LoginState()
-    data class Captcha(val request: CaptchaRequest) : LoginState()
+
+    data class LoggingIn(
+        val message: String,
+    ) : LoginState()
+
+    data class Captcha(
+        val request: CaptchaRequest,
+    ) : LoginState()
+
     object Success : LoginState()
-    data class Error(val errorType: AuthError) : LoginState()
+
+    data class Error(
+        val errorType: AuthError,
+    ) : LoginState()
 }
 
 data class CaptchaRequest(
     val background: String,
     val top: Int,
     val slider: String,
-    val secureToken: String
+    val secureToken: String,
 )
 
 data class CaptchaSolution(
     val leftOffset: Float,
     val trail: Map<String, List<Float>>,
-    val token: String
+    val token: String,
 )
 
-class LoginViewModel @Inject constructor(
-    private val apiCallManager: IApiCallManager,
-    private val preferenceHelper: PreferencesHelper,
-    private val firebaseManager: FirebaseManager,
-    private val userRepository: UserRepository
-) : ViewModel() {
+@HiltViewModel
+class LoginViewModel
+    @Inject
+    constructor(
+        private val apiCallManager: IApiCallManager,
+        private val preferenceHelper: PreferencesHelper,
+        private val firebaseManager: FirebaseManager,
+        private val userRepository: UserRepository,
+    ) : ViewModel() {
+        private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
+        val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
-    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
-    val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
+        private val _loginButtonEnabled = MutableStateFlow(false)
+        val loginButtonEnabled: StateFlow<Boolean> = _loginButtonEnabled.asStateFlow()
 
-    private val _loginButtonEnabled = MutableStateFlow(false)
-    val loginButtonEnabled: StateFlow<Boolean> = _loginButtonEnabled.asStateFlow()
+        private val _twoFactorEnabled = MutableStateFlow(false)
+        val twoFactorEnabled: StateFlow<Boolean> = _twoFactorEnabled.asStateFlow()
 
-    private val _twoFactorEnabled = MutableStateFlow(false)
-    val twoFactorEnabled: StateFlow<Boolean> = _twoFactorEnabled.asStateFlow()
+        private val _selectedAuthType = MutableStateFlow(AuthType.STANDARD)
+        val selectedAuthType: StateFlow<AuthType> = _selectedAuthType.asStateFlow()
 
-    private val _selectedAuthType = MutableStateFlow(AuthType.STANDARD)
-    val selectedAuthType: StateFlow<AuthType> = _selectedAuthType.asStateFlow()
+        private val _accountHashDisplay = MutableStateFlow("")
+        val accountHashDisplay: StateFlow<String> = _accountHashDisplay.asStateFlow()
 
-    private val _accountHashDisplay = MutableStateFlow("")
-    val accountHashDisplay: StateFlow<String> = _accountHashDisplay.asStateFlow()
+        private val _triggerFilePicker = MutableSharedFlow<Boolean>(replay = 0)
+        val triggerFilePicker: SharedFlow<Boolean> = _triggerFilePicker
 
-    private val _triggerFilePicker = MutableSharedFlow<Boolean>(replay = 0)
-    val triggerFilePicker: SharedFlow<Boolean> = _triggerFilePicker
+        private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>(replay = 0)
 
-    private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>(replay = 0)
+        val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
 
-    val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
+        private val _showTwoFactorInfoDialog = MutableStateFlow(false)
+        val showTwoFactorInfoDialog: StateFlow<Boolean> = _showTwoFactorInfoDialog.asStateFlow()
 
-    private val _showTwoFactorInfoDialog = MutableStateFlow(false)
-    val showTwoFactorInfoDialog: StateFlow<Boolean> = _showTwoFactorInfoDialog.asStateFlow()
+        private var username = ""
+        private var password = ""
+        private var twoFactorCode = ""
+        private var accountHash = ""
+        private val logger = LoggerFactory.getLogger("LoginScreen")
 
-    private var username = ""
-    private var password = ""
-    private var twoFactorCode = ""
-    private var accountHash = ""
-    private val logger = LoggerFactory.getLogger("LoginScreen")
+        fun onUsernameChanged(username: String) {
+            this.username = username
+            validateInput()
+        }
 
-    fun onUsernameChanged(username: String) {
-        this.username = username
-        validateInput()
-    }
+        fun onPasswordChanged(password: String) {
+            this.password = password
+            validateInput()
+        }
 
-    fun onPasswordChanged(password: String) {
-        this.password = password
-        validateInput()
-    }
+        fun onTwoFactorChanged(twoFactorCode: String) {
+            this.twoFactorCode = twoFactorCode
+        }
 
-    fun onTwoFactorChanged(twoFactorCode: String) {
-        this.twoFactorCode = twoFactorCode
-    }
-
-    fun onAuthTypeChanged(authType: AuthType) {
-        viewModelScope.launch {
-            _selectedAuthType.emit(authType)
-            updateState(LoginState.Idle)
-            _loginButtonEnabled.emit(false)
-            if (authType == AuthType.STANDARD) {
-                validateInput()
-            } else {
-                validateHashedInput()
+        fun onAuthTypeChanged(authType: AuthType) {
+            viewModelScope.launch {
+                _selectedAuthType.emit(authType)
+                updateState(LoginState.Idle)
+                _loginButtonEnabled.emit(false)
+                if (authType == AuthType.STANDARD) {
+                    validateInput()
+                } else {
+                    validateHashedInput()
+                }
             }
         }
-    }
 
-    fun onAccountHashChanged(hash: String) {
-        this.accountHash = hash
-        viewModelScope.launch {
-            _accountHashDisplay.emit(hash)
+        fun onAccountHashChanged(hash: String) {
+            this.accountHash = hash
+            viewModelScope.launch {
+                _accountHashDisplay.emit(hash)
+            }
+            validateHashedInput()
         }
-        validateHashedInput()
-    }
 
-    private fun validateHashedInput() {
-        viewModelScope.launch {
+        private fun validateHashedInput() {
+            viewModelScope.launch {
+                updateState(LoginState.Idle)
+                _loginButtonEnabled.emit(accountHash.length >= 2)
+            }
+        }
+
+        fun onCaptchaSolutionReceived(solution: CaptchaSolution) {
+            viewModelScope.launch(Dispatchers.IO) {
+                updateState(LoginState.LoggingIn("Logging in..."))
+                _loginButtonEnabled.emit(false)
+                loginWithCaptcha(solution)
+            }
+        }
+
+        fun dismissCaptcha() {
             updateState(LoginState.Idle)
-            _loginButtonEnabled.emit(accountHash.length >= 2)
+            validateInput()
         }
-    }
 
-    fun onCaptchaSolutionReceived(solution: CaptchaSolution) {
-        viewModelScope.launch(Dispatchers.IO) {
-            updateState(LoginState.LoggingIn("Logging in..."))
-            _loginButtonEnabled.emit(false)
-            loginWithCaptcha(solution)
+        fun onTwoFactorHintClicked() {
+            viewModelScope.launch {
+                _showTwoFactorInfoDialog.emit(true)
+            }
         }
-    }
 
-    fun dismissCaptcha() {
-        updateState(LoginState.Idle)
-        validateInput()
-    }
-
-    fun onTwoFactorHintClicked() {
-        viewModelScope.launch {
-            _showTwoFactorInfoDialog.emit(true)
+        fun dismissTwoFactorInfoDialog() {
+            viewModelScope.launch {
+                _showTwoFactorInfoDialog.emit(false)
+            }
         }
-    }
 
-    fun dismissTwoFactorInfoDialog() {
-        viewModelScope.launch {
-            _showTwoFactorInfoDialog.emit(false)
+        fun onUploadHashClick() {
+            viewModelScope.launch {
+                _triggerFilePicker.emit(true)
+            }
         }
-    }
 
-    fun onUploadHashClick() {
-        viewModelScope.launch {
-            _triggerFilePicker.emit(true)
-        }
-    }
-
-    fun onFileSelected(context: Context, uri: Uri) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val inputStream = context.contentResolver.openInputStream(uri)
-                if (inputStream != null) {
-                    val hash = HashUtils.sha256FromInputStream(inputStream)
-                    accountHash = hash
-                    withContext(Dispatchers.Main) {
-                        _accountHashDisplay.emit(hash)
-                        validateHashedInput()
+        fun onFileSelected(
+            context: Context,
+            uri: Uri,
+        ) {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    if (inputStream != null) {
+                        val hash = HashUtils.sha256FromInputStream(inputStream)
+                        accountHash = hash
+                        withContext(Dispatchers.Main) {
+                            _accountHashDisplay.emit(hash)
+                            validateHashedInput()
+                        }
+                        logger.info("Generated hash from file: ${hash.take(20)}...")
+                    } else {
+                        logger.error("Failed to open input stream for file")
                     }
-                    logger.info("Generated hash from file: ${hash.take(20)}...")
-                } else {
-                    logger.error("Failed to open input stream for file")
+                } catch (e: Exception) {
+                    logger.error("Error hashing file: ${e.message}")
                 }
-            } catch (e: Exception) {
-                logger.error("Error hashing file: ${e.message}")
             }
         }
-    }
 
-    fun loginButtonClick() {
-        if (_loginState.value is LoginState.LoggingIn) return
+        fun loginButtonClick() {
+            if (_loginState.value is LoginState.LoggingIn) return
 
-        viewModelScope.launch {
-            updateState(LoginState.LoggingIn("Logging in..."))
-            _loginButtonEnabled.emit(false)
+            viewModelScope.launch {
+                updateState(LoginState.LoggingIn("Logging in..."))
+                _loginButtonEnabled.emit(false)
 
-            if (!WindUtilities.isOnline()) {
-                logger.info("User is not connected to the internet.")
-                _loginButtonEnabled.emit(true)
-                updateState(LoginState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
-                return@launch
-            }
-
-            // For hashed login, use the hash as both username and password
-            if (_selectedAuthType.value == AuthType.HASHED) {
-                username = accountHash
-                password = accountHash
-            }
-
-            startLoginProcess()
-        }
-    }
-
-
-    private fun isValidUsername() = username.length >= 2
-    private fun isValidPassword() = password.length >= 2
-
-    private fun validateInput() {
-        viewModelScope.launch {
-            updateState(LoginState.Idle)
-            _loginButtonEnabled.emit(isValidUsername() && isValidPassword())
-        }
-    }
-
-    private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
-        val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
-        val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
-        val result = result<UserLoginResponse> {
-            apiCallManager.logUserIn(
-                username.trim(),
-                password.trim(),
-                twoFactorCode.trim(),
-                captchaSolution.token,
-                "${captchaSolution.leftOffset}",
-                trailX,
-                trailY
-            )
-        }
-        when (result) {
-            is CallResult.Error -> {
-                val networkError = getNetworkError(result.code)
-                if (networkError != null) {
-                    handleNetworkError(networkError)
-                } else {
+                if (!WindUtilities.isOnline()) {
+                    logger.info("User is not connected to the internet.")
                     _loginButtonEnabled.emit(true)
-                    handleApiError(result.code, result.errorMessage)
+                    updateState(LoginState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
+                    return@launch
                 }
-            }
 
-            is CallResult.Success -> {
-                logger.info("User signup in successfully.")
-                handleSuccessfulLogin(result.data.sessionAuthHash)
+                // For hashed login, use the hash as both username and password
+                if (_selectedAuthType.value == AuthType.HASHED) {
+                    username = accountHash
+                    password = accountHash
+                }
+
+                startLoginProcess()
             }
         }
-    }
 
-    private suspend fun startLoginProcess() {
-        logger.info("Trying to log in with provided credentials...")
-        val authResult = result<AuthToken> { apiCallManager.authTokenLogin(username, false) }
-        when (authResult) {
-            is CallResult.Error -> {
-                val networkError = getNetworkError(authResult.code)
-                if (networkError != null) {
-                    handleNetworkError(networkError)
-                } else {
-                    logger.info("Error login: ${authResult.errorMessage}")
-                    _loginButtonEnabled.emit(true)
-                    handleApiError(authResult.code, authResult.errorMessage)
-                }
-            }
+        private fun isValidUsername() = username.length >= 2
 
-            is CallResult.Success -> {
-                logger.info("Received auth token successfully")
-                handleAuthToken(authResult.data)
+        private fun isValidPassword() = password.length >= 2
+
+        private fun validateInput() {
+            viewModelScope.launch {
+                updateState(LoginState.Idle)
+                _loginButtonEnabled.emit(isValidUsername() && isValidPassword())
             }
         }
-    }
 
-    private suspend fun handleAuthToken(authToken: AuthToken) {
-        val captcha = authToken.captcha
-        val token = authToken.token
-        if (captcha != null) {
-            logger.info("Received captcha: ${captcha.top}")
-            val request = CaptchaRequest(
-                captcha.background!!,
-                captcha.top!!,
-                captcha.slider!!,
-                token
-            )
-            updateState(LoginState.Captcha(request))
-        } else {
-            val result = result<UserLoginResponse> {
-                apiCallManager.logUserIn(
-                    username.trim(),
-                    password.trim(),
-                    twoFactorCode.trim(),
-                    token,
-                    null,
-                    floatArrayOf(),
-                    floatArrayOf()
-                )
-            }
+        private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
+            val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
+            val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
+            val result =
+                result<UserLoginResponse> {
+                    apiCallManager.logUserIn(
+                        username.trim(),
+                        password.trim(),
+                        twoFactorCode.trim(),
+                        captchaSolution.token,
+                        "${captchaSolution.leftOffset}",
+                        trailX,
+                        trailY,
+                    )
+                }
             when (result) {
                 is CallResult.Error -> {
                     val networkError = getNetworkError(result.code)
                     if (networkError != null) {
                         handleNetworkError(networkError)
                     } else {
-                        logger.info("Error login: ${result.errorMessage}")
                         _loginButtonEnabled.emit(true)
                         handleApiError(result.code, result.errorMessage)
                     }
@@ -310,102 +263,177 @@ class LoginViewModel @Inject constructor(
 
                 is CallResult.Success -> {
                     logger.info("User signup in successfully.")
-                    handleSuccessfulLogin(result.data.sessionAuthHash)
+                    handleSuccessfulLogin(result.data.sessionAuthHash ?: "")
                 }
             }
         }
-    }
 
-    private fun handleSuccessfulLogin(sessionAuthHash: String) {
-        preferenceHelper.sessionHash = sessionAuthHash
-        firebaseManager.getFirebaseToken { firebaseToken ->
-            viewModelScope.launch(Dispatchers.IO) {
-                userRepository.prepareDashboard(firebaseToken).collect {
-                    when (it) {
-                        is UserDataState.Error -> {
-                            preferenceHelper.sessionHash = null
-                            updateState(
-                                LoginState.Error(
-                                    AuthError.InputError(it.error)
+        private suspend fun startLoginProcess() {
+            logger.info("Trying to log in with provided credentials...")
+            if (BuildConfig.DEV) {
+                logger.info("DEV build: skipping auth-token step to bypass captcha for E2E tests.")
+                handleAuthToken(AuthToken(token = "", captcha = null))
+                return
+            }
+            val authResult = result<AuthToken> { apiCallManager.authTokenLogin(username, false) }
+            when (authResult) {
+                is CallResult.Error -> {
+                    val networkError = getNetworkError(authResult.code)
+                    if (networkError != null) {
+                        handleNetworkError(networkError)
+                    } else {
+                        logger.info("Error login: ${authResult.errorMessage}")
+                        _loginButtonEnabled.emit(true)
+                        handleApiError(authResult.code, authResult.errorMessage)
+                    }
+                }
+
+                is CallResult.Success -> {
+                    logger.info("Received auth token successfully")
+                    handleAuthToken(authResult.data)
+                }
+            }
+        }
+
+        private suspend fun handleAuthToken(authToken: AuthToken) {
+            val captcha = authToken.captcha
+            val token = authToken.token
+            if (captcha != null) {
+                logger.info("Received captcha: ${captcha.top}")
+                val request =
+                    CaptchaRequest(
+                        captcha.background!!,
+                        captcha.top!!,
+                        captcha.slider!!,
+                        token,
+                    )
+                updateState(LoginState.Captcha(request))
+            } else {
+                val result =
+                    result<UserLoginResponse> {
+                        apiCallManager.logUserIn(
+                            username.trim(),
+                            password.trim(),
+                            twoFactorCode.trim(),
+                            token,
+                            null,
+                            floatArrayOf(),
+                            floatArrayOf(),
+                        )
+                    }
+                when (result) {
+                    is CallResult.Error -> {
+                        val networkError = getNetworkError(result.code)
+                        if (networkError != null) {
+                            handleNetworkError(networkError)
+                        } else {
+                            logger.info("Error login: ${result.errorMessage}")
+                            _loginButtonEnabled.emit(true)
+                            handleApiError(result.code, result.errorMessage)
+                        }
+                    }
+
+                    is CallResult.Success -> {
+                        logger.info("User signup in successfully.")
+                        handleSuccessfulLogin(result.data.sessionAuthHash ?: "")
+                    }
+                }
+            }
+        }
+
+        private fun handleSuccessfulLogin(sessionAuthHash: String) {
+            preferenceHelper.sessionHash = sessionAuthHash
+            firebaseManager.getFirebaseToken { firebaseToken ->
+                viewModelScope.launch(Dispatchers.IO) {
+                    userRepository.prepareDashboard(firebaseToken).collect {
+                        when (it) {
+                            is UserDataState.Error -> {
+                                preferenceHelper.sessionHash = null
+                                updateState(
+                                    LoginState.Error(
+                                        AuthError.InputError(it.error),
+                                    ),
                                 )
-                            )
-                        }
+                            }
 
-                        is UserDataState.Loading -> {
-                            updateState(LoginState.LoggingIn(it.status))
-                        }
+                            is UserDataState.Loading -> {
+                                updateState(LoginState.LoggingIn(it.status))
+                            }
 
-                        is UserDataState.Success -> {
-                            updateState(LoginState.Success)
+                            is UserDataState.Success -> {
+                                updateState(LoginState.Success)
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
+        private fun handleNetworkError(failure: ApiFailure) {
+            when (failure) {
+                ApiFailure.AllFallbackFailed -> {
+                    updateState(LoginState.Idle)
+                    viewModelScope.launch {
+                        _showAllBackupFailedDialog.emit(true)
+                    }
+                }
 
-    private fun handleNetworkError(failure: ApiFailure) {
-        when (failure) {
-            ApiFailure.AllFallbackFailed -> {
-                updateState(LoginState.Idle)
-                viewModelScope.launch {
-                    _showAllBackupFailedDialog.emit(true)
+                ApiFailure.IncorrectJsonError -> {
+                    updateState(LoginState.Error(AuthError.InputError("Incorrect JSON response received from server.")))
+                }
+
+                ApiFailure.Network -> {
+                    updateState(LoginState.Error(AuthError.InputError("Network error, unable to connect to server.")))
+                }
+
+                ApiFailure.NoNetwork -> {
+                    updateState(LoginState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
                 }
             }
-
-            ApiFailure.IncorrectJsonError -> {
-                updateState(LoginState.Error(AuthError.InputError("Incorrect JSON response received from server.")))
-            }
-
-            ApiFailure.Network -> {
-                updateState(LoginState.Error(AuthError.InputError("Network error, unable to connect to server.")))
-            }
-
-            ApiFailure.NoNetwork -> {
-                updateState(LoginState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
-            }
         }
-    }
 
-    private suspend fun handleApiError(errorCode: Int, error: String) {
-        logger.debug("Error code: $errorCode, Error: $error")
-        val errorMessage = SessionErrorHandler.instance.getErrorMessage(errorCode, error)
+        private suspend fun handleApiError(
+            errorCode: Int,
+            error: String,
+        ) {
+            logger.debug("Error code: $errorCode, Error: $error")
+            val errorMessage = SessionErrorHandler.instance.getErrorMessage(errorCode, error)
 
-        when (errorCode) {
-            NetworkErrorCodes.ERROR_2FA_REQUIRED, NetworkErrorCodes.ERROR_INVALID_2FA -> {
-                _twoFactorEnabled.emit(true)
-                updateState(
-                    LoginState.Error(
-                        AuthError.InputError(
-                            errorMessage,
-                            listOf(AuthInputFields.TwoFactor)
-                        )
+            when (errorCode) {
+                NetworkErrorCodes.ERROR_2FA_REQUIRED, NetworkErrorCodes.ERROR_INVALID_2FA -> {
+                    _twoFactorEnabled.emit(true)
+                    updateState(
+                        LoginState.Error(
+                            AuthError.InputError(
+                                errorMessage,
+                                listOf(AuthInputFields.TwoFactor),
+                            ),
+                        ),
                     )
-                )
-            }
+                }
 
-            else -> updateState(
-                LoginState.Error(
-                    AuthError.InputError(
-                        errorMessage,
-                        listOf(AuthInputFields.Username, AuthInputFields.Password)
+                else -> {
+                    updateState(
+                        LoginState.Error(
+                            AuthError.InputError(
+                                errorMessage,
+                                listOf(AuthInputFields.Username, AuthInputFields.Password),
+                            ),
+                        ),
                     )
-                )
-            )
+                }
+            }
+        }
+
+        private fun updateState(state: LoginState) {
+            viewModelScope.launch {
+                _loginState.emit(state)
+            }
+        }
+
+        fun clearDialog() {
+            viewModelScope.launch {
+                _showAllBackupFailedDialog.emit(false)
+            }
         }
     }
-
-    private fun updateState(state: LoginState) {
-        viewModelScope.launch {
-            _loginState.emit(state)
-        }
-    }
-
-    fun clearDialog() {
-        viewModelScope.launch {
-            _showAllBackupFailedDialog.emit(false)
-        }
-    }
-}
-

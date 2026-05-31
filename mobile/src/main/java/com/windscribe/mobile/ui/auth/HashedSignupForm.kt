@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -69,7 +68,7 @@ fun HashedSignupForm(
     onUploadHash: () -> Unit = {},
     onDownloadHash: () -> Unit = {},
     onCopyHash: () -> Unit = {},
-    onLearnMoreClick: () -> Unit = {}
+    onLearnMoreClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -78,92 +77,99 @@ fun HashedSignupForm(
         val descriptionText = stringResource(com.windscribe.vpn.R.string.account_hash_description)
         val learnMoreText = stringResource(com.windscribe.vpn.R.string.learn_more)
 
-        val annotatedString = buildAnnotatedString {
-            withStyle(
-                style = SpanStyle(
-                    color = AppColors.grayText,
-                    fontWeight = FontWeight.Medium
-                )
-            ) {
-                append(descriptionText)
-                append(" ")
-            }
-            withLink(
-                LinkAnnotation.Clickable(
-                    tag = "learn_more",
-                    linkInteractionListener = {
-                        onLearnMoreClick()
-                    }
-                )
-            ) {
+        val annotatedString =
+            buildAnnotatedString {
                 withStyle(
-                    style = SpanStyle(
-                        color = AppColors.grayText,
-                        fontWeight = FontWeight.Medium,
-                        textDecoration = TextDecoration.Underline
-                    )
+                    style =
+                        SpanStyle(
+                            color = AppColors.grayText,
+                            fontWeight = FontWeight.Medium,
+                        ),
                 ) {
-                    append(learnMoreText)
+                    append(descriptionText)
+                    append(" ")
+                }
+                withLink(
+                    LinkAnnotation.Clickable(
+                        tag = "learn_more",
+                        linkInteractionListener = {
+                            onLearnMoreClick()
+                        },
+                    ),
+                ) {
+                    withStyle(
+                        style =
+                            SpanStyle(
+                                color = AppColors.grayText,
+                                fontWeight = FontWeight.Medium,
+                                textDecoration = TextDecoration.Underline,
+                            ),
+                    ) {
+                        append(learnMoreText)
+                    }
                 }
             }
-        }
 
         Text(
             text = annotatedString,
-            style = font16.copy(
-                lineHeight = font16.fontSize * 1.5f,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier.fillMaxWidth()
+            style =
+                font16.copy(
+                    lineHeight = font16.fontSize * 1.5f,
+                    textAlign = TextAlign.Start,
+                ),
+            modifier = Modifier.fillMaxWidth(),
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Account Hash Display Box
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = AppColors.white.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .drawBehind {
-                    val stroke = Stroke(
-                        width = 2.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(
-                            intervals = floatArrayOf(10f, 10f),
-                            phase = 0f
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = AppColors.white.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(8.dp),
+                    ).drawBehind {
+                        val stroke =
+                            Stroke(
+                                width = 2.dp.toPx(),
+                                pathEffect =
+                                    PathEffect.dashPathEffect(
+                                        intervals = floatArrayOf(10f, 10f),
+                                        phase = 0f,
+                                    ),
+                            )
+                        drawRoundRect(
+                            color = AppColors.white,
+                            style = stroke,
+                            cornerRadius = CornerRadius(8.dp.toPx()),
                         )
-                    )
-                    drawRoundRect(
-                        color = AppColors.white,
-                        style = stroke,
-                        cornerRadius = CornerRadius(8.dp.toPx())
-                    )
-                }
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
+                    }.padding(16.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            val displayHash = if (accountHash.isNotEmpty()) {
-                if (accountHash.length > 20) {
-                    accountHash.substring(0, 20) + "\n" + accountHash.substring(20)
+            val displayHash =
+                if (accountHash.isNotEmpty()) {
+                    if (accountHash.length > 20) {
+                        accountHash.substring(0, 20) + "\n" + accountHash.substring(20)
+                    } else {
+                        accountHash
+                    }
                 } else {
-                    accountHash
+                    "0x513b5d56ae30109e\n8cea7d7924ef15e0"
                 }
-            } else {
-                "0x513b5d56ae30109e\n8cea7d7924ef15e0"
-            }
 
             Text(
                 text = displayHash,
-                style = font16.copy(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    lineHeight = 24.sp,
-                    textAlign = TextAlign.Center
-                ),
+                style =
+                    font16.copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        lineHeight = 24.sp,
+                        textAlign = TextAlign.Center,
+                    ),
                 color = AppColors.white,
-                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
             )
         }
 
@@ -172,22 +178,22 @@ fun HashedSignupForm(
         // Action buttons row
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             ActionButton(
                 iconRes = R.drawable.ic_refresh,
                 contentDescription = "Regenerate hash",
-                onClick = onRegenerateHash
+                onClick = onRegenerateHash,
             )
             ActionButton(
                 iconRes = R.drawable.ic_upload,
                 contentDescription = "Upload hash",
-                onClick = onUploadHash
+                onClick = onUploadHash,
             )
             ActionButton(
                 iconRes = R.drawable.ic_download,
                 contentDescription = "Download hash",
-                onClick = onDownloadHash
+                onClick = onDownloadHash,
             )
             ActionButton(
                 iconRes = R.drawable.ic_copy,
@@ -195,7 +201,7 @@ fun HashedSignupForm(
                 onClick = {
                     onCopyHash()
                     copyToClipboard(context, accountHash)
-                }
+                },
             )
         }
 
@@ -203,14 +209,14 @@ fun HashedSignupForm(
 
         // Voucher Code - Expandable Section
         ExpandableSection(
-            text = stringResource(com.windscribe.vpn.R.string.got_voucher_code)
+            text = stringResource(com.windscribe.vpn.R.string.got_voucher_code),
         ) {
             Spacer(modifier = Modifier.height(8.dp))
             com.windscribe.mobile.ui.common.StyledTextField(
                 value = voucher,
                 onValueChange = onVoucherChange,
                 placeholder = stringResource(com.windscribe.vpn.R.string.voucher_code),
-                imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                imeAction = androidx.compose.ui.text.input.ImeAction.Done,
             )
         }
 
@@ -218,33 +224,35 @@ fun HashedSignupForm(
 
         // Backup confirmation checkbox
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = AppColors.white.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = AppColors.white.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(8.dp),
+                    ).padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Checkbox(
                 checked = isBackupConfirmed,
                 onCheckedChange = onBackupConfirmedChanged,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = AppColors.neonGreen,
-                    uncheckedColor = AppColors.white.copy(alpha = 0.5f),
-                    checkmarkColor = AppColors.green
-                ),
-                modifier = Modifier.size(24.dp)
+                colors =
+                    CheckboxDefaults.colors(
+                        checkedColor = AppColors.neonGreen,
+                        uncheckedColor = AppColors.white.copy(alpha = 0.5f),
+                        checkmarkColor = AppColors.green,
+                    ),
+                modifier = Modifier.size(24.dp),
             )
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.account_hash_backup_confirmation),
-                style = font12.copy(
-                    lineHeight = font12.fontSize * 1.5f
-                ),
+                style =
+                    font12.copy(
+                        lineHeight = font12.fontSize * 1.5f,
+                    ),
                 textAlign = TextAlign.Start,
-                color = AppColors.white.copy(alpha = 0.8f)
+                color = AppColors.white.copy(alpha = 0.8f),
             )
         }
     }
@@ -253,50 +261,53 @@ fun HashedSignupForm(
 @Composable
 private fun ExpandableSection(
     text: String,
-    content: @Composable () -> Unit = {}
+    content: @Composable () -> Unit = {},
 ) {
     val expanded = remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val rotation by animateFloatAsState(
         if (expanded.value) 180f else 0f,
-        label = "expandIconRotation"
+        label = "expandIconRotation",
     )
 
     Column {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = text,
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = AppColors.white
+                color = AppColors.white,
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 OptionalBadge()
                 Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = ripple(bounded = false, color = Color.White),
-                            onClick = { expanded.value = !expanded.value }
-                        ),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = ripple(bounded = false, color = Color.White),
+                                onClick = { expanded.value = !expanded.value },
+                            ),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_expand),
                         contentDescription = null,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .rotate(rotation),
-                        colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
+                        modifier =
+                            Modifier
+                                .size(24.dp)
+                                .rotate(rotation),
+                        colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f)),
                     )
                 }
             }
@@ -310,17 +321,17 @@ private fun ExpandableSection(
 @Composable
 private fun OptionalBadge() {
     Box(
-        modifier = Modifier
-            .background(
-                color = AppColors.white.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(100.dp)
-            )
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+        modifier =
+            Modifier
+                .background(
+                    color = AppColors.white.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(100.dp),
+                ).padding(horizontal = 8.dp, vertical = 2.dp),
     ) {
         Text(
             text = stringResource(com.windscribe.vpn.R.string.optional),
             style = font12.copy(fontWeight = FontWeight.Medium),
-            color = AppColors.white.copy(alpha = 0.6f)
+            color = AppColors.white.copy(alpha = 0.6f),
         )
     }
 }
@@ -329,33 +340,38 @@ private fun OptionalBadge() {
 private fun ActionButton(
     iconRes: Int,
     contentDescription: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .size(width = 79.5.dp, height = 48.dp)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        AppColors.white.copy(alpha = 0.1f),
-                        AppColors.white.copy(alpha = 0.05f)
-                    )
-                ),
-                shape = RoundedCornerShape(100.dp)
-            )
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .size(width = 79.5.dp, height = 48.dp)
+                .background(
+                    brush =
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    AppColors.white.copy(alpha = 0.1f),
+                                    AppColors.white.copy(alpha = 0.05f),
+                                ),
+                        ),
+                    shape = RoundedCornerShape(100.dp),
+                ).clickable { onClick() },
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             painter = painterResource(id = iconRes),
             contentDescription = contentDescription,
             tint = AppColors.white,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp),
         )
     }
 }
 
-private fun copyToClipboard(context: Context, text: String) {
+private fun copyToClipboard(
+    context: Context,
+    text: String,
+) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText("Account Hash", text)
     clipboard.setPrimaryClip(clip)

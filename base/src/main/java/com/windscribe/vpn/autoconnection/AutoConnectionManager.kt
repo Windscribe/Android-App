@@ -9,12 +9,12 @@ import com.windscribe.vpn.alert.showErrorDialog
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.encoding.encoders.Base64
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
@@ -24,16 +24,19 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.File
@@ -51,10 +54,12 @@ class AutoConnectionManager(
     private val connectionDataRepository: ConnectionDataRepository,
     private val localDbInterface: LocalDbInterface,
     private val apiManager: IApiCallManager,
-    private val preferencesHelper: PreferencesHelper
+    private val preferencesHelper: PreferencesHelper,
 ) {
-
     private var continuation: CancellableContinuation<Boolean>? = null
+
+    @Volatile
+    private var attemptJob: Job? = null
     private val logger = LoggerFactory.getLogger("vpn")
     var listOfProtocols = ThreadSafeList<ProtocolInformation>()
     private var manualProtocol: ProtocolInformation? = null
@@ -70,18 +75,20 @@ class AutoConnectionManager(
             vpnConnectionStateManager.get().state.collectLatest { vpnState ->
                 vpnState.protocolInformation?.let { protocolInformation ->
                     if (vpnState.status == VPNState.Status.Disconnected) {
-                        listOfProtocols.firstOrNull {
-                            it.protocol == protocolInformation.protocol && it.port == protocolInformation.port
-                        }?.type = ProtocolConnectionStatus.Disconnected
+                        listOfProtocols
+                            .firstOrNull {
+                                it.protocol == protocolInformation.protocol && it.port == protocolInformation.port
+                            }?.type = ProtocolConnectionStatus.Disconnected
                     }
                     if (vpnState.status == VPNState.Status.Connected) {
-                        listOfProtocols.firstOrNull {
-                            it.protocol == protocolInformation.protocol && it.port == protocolInformation.port
-                        }?.let { it ->
-                            listOfProtocols.firstOrNull { it.type == ProtocolConnectionStatus.Connected }?.type =
-                                ProtocolConnectionStatus.Disconnected
-                            it.type = ProtocolConnectionStatus.Connected
-                        }
+                        listOfProtocols
+                            .firstOrNull {
+                                it.protocol == protocolInformation.protocol && it.port == protocolInformation.port
+                            }?.let { it ->
+                                listOfProtocols.firstOrNull { it.type == ProtocolConnectionStatus.Connected }?.type =
+                                    ProtocolConnectionStatus.Disconnected
+                                it.type = ProtocolConnectionStatus.Connected
+                            }
                     }
                 }
             }
@@ -91,14 +98,15 @@ class AutoConnectionManager(
         scope.launch {
             networkInfoManager.networkInfo.collectLatest { networkInfo ->
                 if (isEnabled) return@collectLatest
-                listOfProtocols.firstOrNull {
-                    it.protocol == networkInfo?.protocol
-                }?.let { protocolInfo ->
-                    networkInfo?.let { info ->
-                        preferredProtocol = Pair(info.networkName, protocolInfo)
-                        reset()
+                listOfProtocols
+                    .firstOrNull {
+                        it.protocol == networkInfo?.protocol
+                    }?.let { protocolInfo ->
+                        networkInfo?.let { info ->
+                            preferredProtocol = Pair(info.networkName, protocolInfo)
+                            reset()
+                        }
                     }
-                }
             }
         }
     }
@@ -121,145 +129,175 @@ class AutoConnectionManager(
 
     private fun connectionAttempt(
         attempt: Int = 0,
-        protocolInformation: ProtocolInformation? = null
+        protocolInformation: ProtocolInformation? = null,
     ): VPNState {
-        return runBlocking {
-            val newConnectionId = UUID.randomUUID()
-            vpnController.get().connect(
-                connectionId = newConnectionId,
-                protocolInformation = protocolInformation,
-                attempt = attempt
-            )
-            val vpnState = vpnConnectionStateManager.get().state
-                .first {
-                    if (it.connectionId == newConnectionId) {
-                        if (it.error?.error == VPNState.ErrorType.AuthenticationError) {
-                            logger.debug("Updating user auth credentials.")
-                            if (connectionDataRepository.update()) {
-                                logger.debug("Auth updated successfully.")
-                                vpnController.get().connect(
-                                    connectionId = newConnectionId,
-                                    protocolInformation = protocolInformation,
-                                    attempt = attempt
-                                )
-                                return@first false
+        attemptJob?.cancel()
+        return try {
+            runBlocking {
+                attemptJob = coroutineContext[Job]
+                val newConnectionId = UUID.randomUUID()
+                vpnController.get().connect(
+                    connectionId = newConnectionId,
+                    protocolInformation = protocolInformation,
+                    attempt = attempt,
+                )
+                val vpnState =
+                    vpnConnectionStateManager
+                        .get()
+                        .state
+                        .first {
+                            if (it.connectionId == newConnectionId) {
+                                if (it.error?.error == VPNState.ErrorType.AuthenticationError) {
+                                    logger.debug("Updating user auth credentials.")
+                                    if (connectionDataRepository.update()) {
+                                        logger.debug("Auth updated successfully.")
+                                        vpnController.get().connect(
+                                            connectionId = newConnectionId,
+                                            protocolInformation = protocolInformation,
+                                            attempt = attempt,
+                                        )
+                                        return@first false
+                                    } else {
+                                        logger.debug("Failed to updated auth params.")
+                                        return@first true
+                                    }
+                                } else if (it.error?.error == VPNState.ErrorType.WireguardAuthenticationError) {
+                                    logger.debug("Trying wireguard with force init.")
+                                    vpnController.get().connect(
+                                        connectionId = newConnectionId,
+                                        protocolInformation = protocolInformation,
+                                        attempt = attempt,
+                                    )
+                                    return@first false
+                                } else if (it.error?.error == VPNState.ErrorType.UserReconnect) {
+                                    return@first false
+                                } else {
+                                    it.status != VPNState.Status.Connecting
+                                }
                             } else {
-                                logger.debug("Failed to updated auth params.")
-                                return@first true
+                                false
                             }
-                        } else if (it.error?.error == VPNState.ErrorType.WireguardAuthenticationError) {
-                            logger.debug("Trying wireguard with force init.")
-                            vpnController.get().connect(
-                                connectionId = newConnectionId,
-                                protocolInformation = protocolInformation,
-                                attempt = attempt
-                            )
-                            return@first false
-                        } else if (it.error?.error == VPNState.ErrorType.UserReconnect) {
-                            return@first false
-                        } else {
-                            it.status != VPNState.Status.Connecting
                         }
+
+                // Check if we should retry with different node (only in auto mode)
+                val isAutoMode = preferencesHelper.connectionMode == PreferencesKeyConstants.CONNECTION_MODE_AUTO
+                val shouldRetryNode =
+                    attempt == 0 &&
+                        isAutoMode &&
+                        vpnState.error?.error in
+                        listOf(
+                            VPNState.ErrorType.TimeoutError,
+                            VPNState.ErrorType.ConnectivityTestFailed,
+                            VPNState.ErrorType.AuthenticationError,
+                        ) &&
+                        vpnState.status == VPNState.Status.Disconnected
+
+                if (shouldRetryNode) {
+                    logger.info("Retrying with different node for error: ${vpnState.error?.error}")
+                    return@runBlocking connectionAttempt(
+                        attempt = 1,
+                        protocolInformation = protocolInformation,
+                    )
+                }
+                vpnState
+            }
+        } catch (_: CancellationException) {
+            logger.debug("Connection attempt cancelled by a newer attempt.")
+            VPNState(
+                status = VPNState.Status.Disconnected,
+                error = VPNState.Error(error = VPNState.ErrorType.UserDisconnect),
+            )
+        } finally {
+            if (attemptJob?.isActive != true) attemptJob = null
+        }
+    }
+
+    suspend fun connectInForeground() =
+        withContext(Dispatchers.IO) {
+            suspendCancellableCoroutine<Boolean> { it ->
+                stop()
+                this@AutoConnectionManager.continuation = it
+                isEnabled = true
+                val connectionResult = connectionAttempt()
+                if (connectionResult.status == VPNState.Status.Connected) {
+                    isEnabled = false
+                    stop()
+                } else if (connectionResult.error?.showError == true) {
+                    connectionResult.error?.message?.let { message -> showErrorDialog(message = message) }
+                    isEnabled = false
+                    stop()
+                } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+                    logger.debug("user disconnect.")
+                    isEnabled = false
+                    stop()
+                }
+                if (WindUtilities.isOnline().not() && isEnabled) {
+                    logger.debug("No internet detected. existing.")
+                    stop()
+                }
+                if (isEnabled) {
+                    // Check if we should show manual mode failure dialog for specific errors
+                    val shouldShowManualModeDialog =
+                        connectionResult.error?.error in
+                            listOf(
+                                VPNState.ErrorType.TimeoutError,
+                                VPNState.ErrorType.ConnectivityTestFailed,
+                                VPNState.ErrorType.AuthenticationError,
+                            ) &&
+                            preferencesHelper.connectionMode != PreferencesKeyConstants.CONNECTION_MODE_AUTO
+
+                    if (shouldShowManualModeDialog) {
+                        logger.debug("Manual mode connection failed. Showing switch to auto dialog.")
+                        showManualModeFailedDialog()
                     } else {
-                        false
+                        logger.debug("Engaging auto connect.")
+                        listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
+                            ProtocolConnectionStatus.Failed
+                        engageAutomaticMode()
                     }
                 }
-
-            // Check if we should retry with different node (only in auto mode)
-            val isAutoMode = preferencesHelper.connectionMode == PreferencesKeyConstants.CONNECTION_MODE_AUTO
-            val shouldRetryNode = attempt == 0 &&
-                isAutoMode &&
-                vpnState.error?.error in listOf(
-                    VPNState.ErrorType.TimeoutError,
-                    VPNState.ErrorType.ConnectivityTestFailed,
-                    VPNState.ErrorType.AuthenticationError
-                ) &&
-                vpnState.status == VPNState.Status.Disconnected
-
-            if (shouldRetryNode) {
-                logger.info("Retrying with different node for error: ${vpnState.error?.error}")
-                return@runBlocking connectionAttempt(
-                    attempt = 1,
-                    protocolInformation = protocolInformation
-                )
-            }
-
-            vpnState
-        }
-    }
-
-    suspend fun connectInForeground() = suspendCancellableCoroutine<Boolean> { it ->
-        stop()
-        this.continuation = it
-        isEnabled = true
-        val connectionResult = connectionAttempt()
-        if (connectionResult.status == VPNState.Status.Connected) {
-            isEnabled = false
-            stop()
-        } else if (connectionResult.error?.showError == true) {
-            connectionResult.error?.message?.let { message -> showErrorDialog(message = message) }
-            isEnabled = false
-            stop()
-        } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
-            logger.debug("user disconnect.")
-            isEnabled = false
-            stop()
-        }
-        if (WindUtilities.isOnline().not() && isEnabled) {
-            logger.debug("No internet detected. existing.")
-            stop()
-        }
-        if (isEnabled) {
-            // Check if we should show manual mode failure dialog for specific errors
-            val shouldShowManualModeDialog = connectionResult.error?.error in listOf(
-                VPNState.ErrorType.TimeoutError,
-                VPNState.ErrorType.ConnectivityTestFailed,
-                VPNState.ErrorType.AuthenticationError
-            ) && preferencesHelper.connectionMode != PreferencesKeyConstants.CONNECTION_MODE_AUTO
-
-            if (shouldShowManualModeDialog) {
-                logger.debug("Manual mode connection failed. Showing switch to auto dialog.")
-                showManualModeFailedDialog()
-            } else {
-                logger.debug("Engaging auto connect.")
-                listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
-                    ProtocolConnectionStatus.Failed
-                engageAutomaticMode()
             }
         }
-    }
 
-    suspend fun changeProtocolInForeground() = suspendCancellableCoroutine<Boolean> { it ->
-        isEnabled = true
-        this.continuation = it
-        if (isEnabled) {
-            if (WindUtilities.isOnline().not()) {
-                logger.debug("No internet detected. existing.")
-                stop()
-            } else {
-                logger.debug("Engaging auto connect.")
-                if (vpnConnectionStateManager.get().state.value.status == VPNState.Status.Connected) {
-                    listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
-                        ProtocolConnectionStatus.Connected
+    suspend fun changeProtocolInForeground() =
+        withContext(Dispatchers.IO) {
+            suspendCancellableCoroutine<Boolean> { it ->
+                isEnabled = true
+                this@AutoConnectionManager.continuation = it
+                if (isEnabled) {
+                    if (WindUtilities.isOnline().not()) {
+                        logger.debug("No internet detected. existing.")
+                        stop()
+                    } else {
+                        logger.debug("Engaging auto connect.")
+                        if (vpnConnectionStateManager
+                                .get()
+                                .state.value.status == VPNState.Status.Connected
+                        ) {
+                            listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
+                                ProtocolConnectionStatus.Connected
+                        }
+                        engageConnectionChangeMode()
+                    }
                 }
-                engageConnectionChangeMode()
             }
         }
-    }
 
     private fun reloadProtocols(): ThreadSafeList<ProtocolInformation> {
-        var appSupportedProtocolOrder = if (listOfProtocols.size > 0) {
-            listOfProtocols
-        } else {
-            if (preferencesHelper.isSuggested()){
-                Util.getAppSupportedProtocolList(preferencesHelper.getDefaultProtoInfo())
+        var appSupportedProtocolOrder =
+            if (listOfProtocols.size > 0) {
+                listOfProtocols
             } else {
-                Util.getAppSupportedProtocolList()
+                if (preferencesHelper.isSuggested()) {
+                    Util.getAppSupportedProtocolList(preferencesHelper.getDefaultProtoInfo())
+                } else {
+                    Util.getAppSupportedProtocolList()
+                }
             }
-        }
         if (preferencesHelper.connectionMode != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
             setupManualProtocol(
-                preferencesHelper.savedProtocol, appSupportedProtocolOrder
+                preferencesHelper.savedProtocol,
+                appSupportedProtocolOrder,
             )
         } else {
             manualProtocol = null
@@ -273,7 +311,8 @@ class AutoConnectionManager(
         preferredProtocol?.second?.let {
             appSupportedProtocolOrder = moveProtocolToTop(it, appSupportedProtocolOrder)
         }
-        appSupportedProtocolOrder.filter { it.type == ProtocolConnectionStatus.NextUp }
+        appSupportedProtocolOrder
+            .filter { it.type == ProtocolConnectionStatus.NextUp }
             .forEachIterable { it.type = ProtocolConnectionStatus.Disconnected }
         appSupportedProtocolOrder[0].type = ProtocolConnectionStatus.NextUp
         val protocolLog =
@@ -293,10 +332,10 @@ class AutoConnectionManager(
             }
         }
     }
-    
+
     private fun moveProtocolToTop(
         protocolInformation: ProtocolInformation,
-        appSupportedProtocolOrder: ThreadSafeList<ProtocolInformation>
+        appSupportedProtocolOrder: ThreadSafeList<ProtocolInformation>,
     ): ThreadSafeList<ProtocolInformation> {
         val index =
             appSupportedProtocolOrder.indexOfFirst { it.protocol == protocolInformation.protocol }
@@ -307,33 +346,36 @@ class AutoConnectionManager(
 
     private fun setupManualProtocol(
         protocol: String,
-        appSupportedProtocolOrder: List<ProtocolInformation>
+        appSupportedProtocolOrder: List<ProtocolInformation>,
     ) {
-        val port: String = when (protocol) {
-            PreferencesKeyConstants.PROTO_IKev2 -> preferencesHelper.iKEv2Port
-            PreferencesKeyConstants.PROTO_UDP -> preferencesHelper.savedUDPPort
-            PreferencesKeyConstants.PROTO_TCP -> preferencesHelper.savedTCPPort
-            PreferencesKeyConstants.PROTO_STEALTH -> preferencesHelper.savedSTEALTHPort
-            PreferencesKeyConstants.PROTO_WIRE_GUARD -> preferencesHelper.wireGuardPort
-            PreferencesKeyConstants.PROTO_WS_TUNNEL -> preferencesHelper.savedWSTunnelPort
-            else -> PreferencesKeyConstants.DEFAULT_IKEV2_PORT
-        }
-        manualProtocol = appSupportedProtocolOrder.firstOrNull {
-            it.protocol == preferencesHelper.savedProtocol
-        }
+        val port: String =
+            when (protocol) {
+                PreferencesKeyConstants.PROTO_IKev2 -> preferencesHelper.iKEv2Port
+                PreferencesKeyConstants.PROTO_UDP -> preferencesHelper.savedUDPPort
+                PreferencesKeyConstants.PROTO_TCP -> preferencesHelper.savedTCPPort
+                PreferencesKeyConstants.PROTO_STEALTH -> preferencesHelper.savedSTEALTHPort
+                PreferencesKeyConstants.PROTO_WIRE_GUARD -> preferencesHelper.wireGuardPort
+                PreferencesKeyConstants.PROTO_WS_TUNNEL -> preferencesHelper.savedWSTunnelPort
+                else -> PreferencesKeyConstants.DEFAULT_IKEV2_PORT
+            }
+        manualProtocol =
+            appSupportedProtocolOrder.firstOrNull {
+                it.protocol == preferencesHelper.savedProtocol
+            }
         manualProtocol?.port = port
     }
 
     private fun setupPreferredProtocol(
         networkInfo: NetworkInfo,
-        appSupportedProtocolOrder: List<ProtocolInformation>
+        appSupportedProtocolOrder: List<ProtocolInformation>,
     ) {
         preferredProtocol = Pair(networkInfo.networkName, null)
         if (networkInfo.isPreferredOn) {
-            val protocol = appSupportedProtocolOrder.firstOrNull {
-                it.protocol == networkInfo.protocol
-            }
-            protocol?.port = networkInfo.port
+            val protocol =
+                appSupportedProtocolOrder.firstOrNull {
+                    it.protocol == networkInfo.protocol
+                }
+            networkInfo.port?.let { protocol?.port = it }
             protocol?.let {
                 preferredProtocol = Pair(networkInfo.networkName, protocol)
             }
@@ -356,7 +398,7 @@ class AutoConnectionManager(
 
                 showConnectionFailureDialog(
                     listOfProtocols,
-                    retry = { engageAutomaticMode() }
+                    retry = { engageAutomaticMode() },
                 )
             } else {
                 logger.debug("Showing all protocol failed dialog.")
@@ -367,7 +409,8 @@ class AutoConnectionManager(
     }
 
     private fun engageConnectionChangeMode() {
-        listOfProtocols.filter { it.type == ProtocolConnectionStatus.NextUp }
+        listOfProtocols
+            .filter { it.type == ProtocolConnectionStatus.NextUp }
             .forEachIterable { it.type = ProtocolConnectionStatus.Disconnected }
 
         // Create a temporary display list with connected protocol at top for UI
@@ -386,24 +429,28 @@ class AutoConnectionManager(
 
         showConnectionChangeDialog(
             displayList,
-            retry = { engageAutomaticMode() })
+            retry = { engageAutomaticMode() },
+        )
     }
 
     private fun showAllProtocolFailedDialog() {
-        val launched = appContext.applicationInterface.launchFragment(
-            emptyList(),
-            FragmentType.AllProtocolFailed,
-            autoConnectionModeCallback = object : AutoConnectionModeCallback {
-                override fun onCancel() {
-                    logger.debug("Cancel clicked existing auto connect.")
-                    stop()
-                }
+        val launched =
+            appContext.applicationInterface.launchFragment(
+                emptyList(),
+                FragmentType.AllProtocolFailed,
+                autoConnectionModeCallback =
+                    object : AutoConnectionModeCallback {
+                        override fun onCancel() {
+                            logger.debug("Cancel clicked existing auto connect.")
+                            stop()
+                        }
 
-                override fun onSendLogClicked() {
-                    logger.debug("Send log clicked.")
-                    sendLog()
-                }
-            })
+                        override fun onSendLogClicked() {
+                            logger.debug("Send log clicked.")
+                            sendLog()
+                        }
+                    },
+            )
         if (launched.not()) {
             logger.debug("App is in background. existing auto connect.")
             stop()
@@ -420,6 +467,7 @@ class AutoConnectionManager(
                             dismissDialog()
                             stop()
                         }
+
                         is CallResult.Success -> {
                             dismissDialog()
                             contactSupport()
@@ -434,11 +482,17 @@ class AutoConnectionManager(
         return try {
             var logLine: String?
             val debugFilePath = appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
-            val logFile = Windscribe.appContext.resources.getString(
-                R.string.log_file_header,
-                Build.VERSION.SDK_INT, Build.BRAND, Build.DEVICE, Build.MODEL, Build.MANUFACTURER,
-                Build.VERSION.RELEASE, WindUtilities.getVersionCode()
-            )
+            val logFile =
+                Windscribe.appContext.resources.getString(
+                    R.string.log_file_header,
+                    Build.VERSION.SDK_INT,
+                    Build.BRAND,
+                    Build.DEVICE,
+                    Build.MODEL,
+                    Build.MANUFACTURER,
+                    Build.VERSION.RELEASE,
+                    WindUtilities.getVersionCode(),
+                )
             val builder = StringBuilder()
             builder.append(logFile)
             val file = File(debugFilePath)
@@ -456,29 +510,33 @@ class AutoConnectionManager(
     }
 
     private fun dismissDialog() {
-        val dialog = appContext.activeActivity?.supportFragmentManager?.fragments?.firstOrNull {
-            it is DialogFragment
-        } as? DialogFragment
+        val dialog =
+            appContext.activeActivity?.supportFragmentManager?.fragments?.firstOrNull {
+                it is DialogFragment
+            } as? DialogFragment
         dialog?.dismiss()
         appContext.applicationInterface.cancelDialog()
     }
 
     private fun contactSupport() {
         logger.debug("Showing contact support dialog.")
-        val launched = appContext.applicationInterface.launchFragment(
-            emptyList(),
-            FragmentType.DebugLogSent,
-            autoConnectionModeCallback = object : AutoConnectionModeCallback {
-                override fun onCancel() {
-                    logger.debug("Cancel clicked existing auto connect.")
-                    stop()
-                }
+        val launched =
+            appContext.applicationInterface.launchFragment(
+                emptyList(),
+                FragmentType.DebugLogSent,
+                autoConnectionModeCallback =
+                    object : AutoConnectionModeCallback {
+                        override fun onCancel() {
+                            logger.debug("Cancel clicked existing auto connect.")
+                            stop()
+                        }
 
-                override fun onContactSupportClick() {
-                    stop()
-                    logger.debug("On contact support clicked existing auto connect.")
-                }
-            })
+                        override fun onContactSupportClick() {
+                            stop()
+                            logger.debug("On contact support clicked existing auto connect.")
+                        }
+                    },
+            )
         if (launched.not()) {
             logger.debug("App is in background. existing auto connect.")
             stop()
@@ -494,20 +552,23 @@ class AutoConnectionManager(
         val netWorkName = networkInfoManager.networkInfo.value?.networkName
         if (netWorkName != null) {
             logger.debug("Showing set as preferred protocol dialog.")
-            val launched = appContext.applicationInterface.launchFragment(
-                emptyList(),
-                FragmentType.SetupAsPreferredProtocol,
-                autoConnectionModeCallback = object : AutoConnectionModeCallback {
-                    override fun onCancel() {
-                        logger.debug("Cancel clicked existing auto connect.")
-                        stop()
-                    }
+            val launched =
+                appContext.applicationInterface.launchFragment(
+                    emptyList(),
+                    FragmentType.SetupAsPreferredProtocol,
+                    autoConnectionModeCallback =
+                        object : AutoConnectionModeCallback {
+                            override fun onCancel() {
+                                logger.debug("Cancel clicked existing auto connect.")
+                                stop()
+                            }
 
-                    override fun onSetAsPreferredClicked() {
-                        setProtocolAsPreferred(protocolInformation)
-                    }
-                }, protocolInformation
-            )
+                            override fun onSetAsPreferredClicked() {
+                                setProtocolAsPreferred(protocolInformation)
+                            }
+                        },
+                    protocolInformation,
+                )
             if (launched.not()) {
                 logger.debug("App is in background. existing auto connect.")
                 stop()
@@ -537,60 +598,73 @@ class AutoConnectionManager(
 
     private fun showConnectionFailureDialog(
         protocolInformation: List<ProtocolInformation>,
-        retry: () -> Unit
+        retry: () -> Unit,
     ) {
-        val launched = appContext.applicationInterface.launchFragment(
-            protocolInformation,
-            FragmentType.ConnectionFailure,
-            autoConnectionModeCallback = object : AutoConnectionModeCallback {
-                override fun onCancel() {
-                    listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
-                            ProtocolConnectionStatus.NextUp
-                    listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.let {
-                        moveProtocolToTop(it, listOfProtocols)
-                    }
-                    logger.debug("Cancel clicked existing auto connect.")
-                    isEnabled = false
-                }
+        val launched =
+            appContext.applicationInterface.launchFragment(
+                protocolInformation,
+                FragmentType.ConnectionFailure,
+                autoConnectionModeCallback =
+                    object : AutoConnectionModeCallback {
+                        override fun onCancel() {
+                            listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
+                                ProtocolConnectionStatus.NextUp
+                            listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.let {
+                                moveProtocolToTop(it, listOfProtocols)
+                            }
+                            logger.debug("Cancel clicked existing auto connect.")
+                            isEnabled = false
+                        }
 
-                override fun onProtocolSelect(protocolInformation: ProtocolInformation) {
-                    logger.debug("Next selected protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                    if (WindUtilities.isOnline().not()) {
-                        logger.debug("No internet detected. existing.")
-                        stop()
-                    }
-                    if (isEnabled) {
-                        continuation?.let {
-                            CoroutineScope(it.context).launch {
-                                val connectionResult =
-                                    connectionAttempt(protocolInformation = protocolInformation)
-                                listOfProtocols.firstOrNull {
-                                    it.type == ProtocolConnectionStatus.NextUp
-                                }?.type = ProtocolConnectionStatus.Disconnected
-                                if (connectionResult.status == VPNState.Status.Connected) {
-                                    listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
-                                        ProtocolConnectionStatus.Connected
-                                    logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                                    if ((networkInfoManager.networkInfo.value?.port != protocolInformation.port && networkInfoManager.networkInfo.value?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo.value?.isPreferredOn == false) {
-                                        saveNetworkForFutureUse(protocolInformation)
+                        override fun onProtocolSelect(protocolInformation: ProtocolInformation) {
+                            logger.debug("Next selected protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
+                            if (WindUtilities.isOnline().not()) {
+                                logger.debug("No internet detected. existing.")
+                                stop()
+                            }
+                            if (isEnabled) {
+                                continuation?.let {
+                                    CoroutineScope(it.context).launch {
+                                        val connectionResult =
+                                            connectionAttempt(protocolInformation = protocolInformation)
+                                        listOfProtocols
+                                            .firstOrNull {
+                                                it.type == ProtocolConnectionStatus.NextUp
+                                            }?.type = ProtocolConnectionStatus.Disconnected
+                                        if (connectionResult.status == VPNState.Status.Connected) {
+                                            listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
+                                                ProtocolConnectionStatus.Connected
+                                            logger.debug(
+                                                "Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}",
+                                            )
+                                            if ((
+                                                    networkInfoManager.networkInfo.value?.port != protocolInformation.port &&
+                                                        networkInfoManager.networkInfo.value?.protocol != protocolInformation.protocol
+                                                ) ||
+                                                networkInfoManager.networkInfo.value?.isPreferredOn == false
+                                            ) {
+                                                saveNetworkForFutureUse(protocolInformation)
+                                            }
+                                        } else if (connectionResult.error?.showError == true) {
+                                            showErrorDialog(connectionResult.error?.message ?: "")
+                                            stop()
+                                        } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+                                            isEnabled = false
+                                            stop()
+                                        } else {
+                                            listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
+                                                ProtocolConnectionStatus.Failed
+                                            logger.debug(
+                                                "Auto connect failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}",
+                                            )
+                                            retry()
+                                        }
                                     }
-                                } else if (connectionResult.error?.showError == true) {
-                                    showErrorDialog(connectionResult.error?.message ?: "")
-                                    stop()
-                                } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
-                                    isEnabled = false
-                                    stop()
-                                } else {
-                                    listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
-                                        ProtocolConnectionStatus.Failed
-                                    logger.debug("Auto connect failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}")
-                                    retry()
                                 }
                             }
                         }
-                    }
-                }
-            })
+                    },
+            )
         if (launched.not()) {
             logger.debug("App is in background. existing auto connect.")
             stop()
@@ -599,57 +673,69 @@ class AutoConnectionManager(
 
     private fun showConnectionChangeDialog(
         protocolInformation: List<ProtocolInformation>,
-        retry: () -> Unit
+        retry: () -> Unit,
     ) {
-        val launched = appContext.applicationInterface.launchFragment(
-            protocolInformation,
-            FragmentType.ConnectionChange,
-            autoConnectionModeCallback = object : AutoConnectionModeCallback {
-                override fun onCancel() {
-                    logger.debug("Cancel clicked existing auto connect.")
-                    stop()
-                }
+        val launched =
+            appContext.applicationInterface.launchFragment(
+                protocolInformation,
+                FragmentType.ConnectionChange,
+                autoConnectionModeCallback =
+                    object : AutoConnectionModeCallback {
+                        override fun onCancel() {
+                            logger.debug("Cancel clicked existing auto connect.")
+                            stop()
+                        }
 
-                override fun onProtocolSelect(protocolInformation: ProtocolInformation) {
-                    logger.debug("User changed protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
+                        override fun onProtocolSelect(protocolInformation: ProtocolInformation) {
+                            logger.debug("User changed protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
 
-                    if (isEnabled) {
-                        continuation?.let {
-                            CoroutineScope(it.context).launch {
-                                delay(300)
-                                if (WindUtilities.isOnline().not()) {
-                                    logger.debug("No internet detected. existing.")
-                                    stop()
-                                }
-                                var connectionResult =
-                                    connectionAttempt(protocolInformation = protocolInformation)
-                                if (connectionResult.error?.error == VPNState.ErrorType.AuthenticationError) {
-                                    connectionResult = connectionAttempt(1, protocolInformation)
-                                }
-                                if (connectionResult.status == VPNState.Status.Connected) {
-                                    listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
-                                        ProtocolConnectionStatus.Connected
-                                    logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                                    if ((networkInfoManager.networkInfo.value?.port != protocolInformation.port && networkInfoManager.networkInfo.value?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo.value?.isPreferredOn == false) {
-                                        saveNetworkForFutureUse(protocolInformation)
+                            if (isEnabled) {
+                                continuation?.let {
+                                    CoroutineScope(it.context).launch {
+                                        delay(300)
+                                        if (WindUtilities.isOnline().not()) {
+                                            logger.debug("No internet detected. existing.")
+                                            stop()
+                                        }
+                                        var connectionResult =
+                                            connectionAttempt(protocolInformation = protocolInformation)
+                                        if (connectionResult.error?.error == VPNState.ErrorType.AuthenticationError) {
+                                            connectionResult = connectionAttempt(1, protocolInformation)
+                                        }
+                                        if (connectionResult.status == VPNState.Status.Connected) {
+                                            listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
+                                                ProtocolConnectionStatus.Connected
+                                            logger.debug(
+                                                "Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}",
+                                            )
+                                            if ((
+                                                    networkInfoManager.networkInfo.value?.port != protocolInformation.port &&
+                                                        networkInfoManager.networkInfo.value?.protocol != protocolInformation.protocol
+                                                ) ||
+                                                networkInfoManager.networkInfo.value?.isPreferredOn == false
+                                            ) {
+                                                saveNetworkForFutureUse(protocolInformation)
+                                            }
+                                        } else if (connectionResult.error?.showError == true) {
+                                            connectionResult.error?.message?.let { showErrorDialog(it) }
+                                            stop()
+                                        } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+                                            isEnabled = false
+                                            stop()
+                                        } else {
+                                            listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
+                                                ProtocolConnectionStatus.Failed
+                                            logger.debug(
+                                                "Protocol change failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}",
+                                            )
+                                            retry()
+                                        }
                                     }
-                                } else if (connectionResult.error?.showError == true) {
-                                    connectionResult.error?.message?.let { showErrorDialog(it) }
-                                    stop()
-                                } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
-                                    isEnabled = false
-                                    stop()
-                                } else {
-                                    listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
-                                        ProtocolConnectionStatus.Failed
-                                    logger.debug("Protocol change failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}")
-                                    retry()
                                 }
                             }
                         }
-                    }
-                }
-            })
+                    },
+            )
         if (launched.not()) {
             logger.info("App is in background. existing auto connect.")
             stop()
@@ -667,27 +753,30 @@ class AutoConnectionManager(
     }
 
     private fun showManualModeFailedDialog() {
-        val launched = appContext.applicationInterface.launchFragment(
-            emptyList(),
-            FragmentType.ManualModeFailed,
-            autoConnectionModeCallback = object : AutoConnectionModeCallback {
-                override fun onCancel() {
-                    logger.debug("User cancelled manual mode switch. Stopping auto connect.")
-                    stop()
-                }
+        val launched =
+            appContext.applicationInterface.launchFragment(
+                emptyList(),
+                FragmentType.ManualModeFailed,
+                autoConnectionModeCallback =
+                    object : AutoConnectionModeCallback {
+                        override fun onCancel() {
+                            logger.debug("User cancelled manual mode switch. Stopping auto connect.")
+                            stop()
+                        }
 
-                override fun onSwitchToAutoMode() {
-                    logger.debug("User switched to auto mode.")
-                    // Switch to auto mode
-                    preferencesHelper.connectionMode = PreferencesKeyConstants.CONNECTION_MODE_AUTO
-                    reset()
-                    listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
-                        ProtocolConnectionStatus.Failed
-                    scope.launch {
-                        connectInForeground()
-                    }
-                }
-            })
+                        override fun onSwitchToAutoMode() {
+                            logger.debug("User switched to auto mode.")
+                            // Switch to auto mode
+                            preferencesHelper.connectionMode = PreferencesKeyConstants.CONNECTION_MODE_AUTO
+                            reset()
+                            listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
+                                ProtocolConnectionStatus.Failed
+                            scope.launch {
+                                connectInForeground()
+                            }
+                        }
+                    },
+            )
         if (launched.not()) {
             logger.debug("App is in background. Stopping auto connect.")
             stop()

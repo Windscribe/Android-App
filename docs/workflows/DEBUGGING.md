@@ -193,7 +193,7 @@ cmake.dir=/Users/username/Library/Android/sdk/cmake/3.22.1
 
 **Common Causes**:
 - **Stale cache** — `./gradlew clean`
-- **Dagger graph issue** — Rebuild project
+- **Hilt graph issue** — check `@Module`/`@InstallIn`, missing bindings, or KSP output; rebuild project
 - **Kotlin version mismatch** — Check `build.gradle.kts` versions
 
 ---
@@ -436,23 +436,24 @@ class HomeViewModel : ViewModel() {
 
 ### TV UI (XML) Issues
 
-**Problem**: Data binding not working
+**Problem**: View binding not resolving / generated binding class missing
 
 **Debugging**:
-```xml
-<!-- Enable data binding in layout -->
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
-    <data>
-        <variable
-            name="viewModel"
-            type="com.windscribe.tv.home.HomeViewModel" />
-    </data>
+```kotlin
+// TV uses ViewBinding (not DataBinding). Inflate and reference views directly:
+private lateinit var binding: ActivityHomeBinding
 
-    <TextView
-        android:text="@{viewModel.serverName}"  <!-- Verify variable name -->
-        ... />
-</layout>
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    binding = ActivityHomeBinding.inflate(layoutInflater)
+    setContentView(binding.root)
+    binding.serverName.text = viewModel.serverName   // direct view access by id
+}
 ```
+
+- The binding class name is derived from the layout file (`activity_home.xml` → `ActivityHomeBinding`).
+- A view is only exposed if it has an `android:id`.
+- `viewBinding true` must be set in the module's `build.gradle` (it is, for `base`/`mobile`/`tv`).
 
 **Check binding generation**:
 ```bash

@@ -11,27 +11,62 @@ import com.android.billingclient.api.Purchase
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.PurchaseState
+import kotlinx.coroutines.CoroutineScope
 
 interface UpgradePresenter {
+    fun bind(
+        view: UpgradeView,
+        scope: CoroutineScope,
+    )
+
     fun checkBillingProcessStatus()
+
     fun onAmazonPurchaseHistoryError(error: String)
+
     fun onAmazonPurchaseHistorySuccess(amazonPurchases: List<AmazonPurchase>)
+
     fun onBillingSetupFailed(errorCode: Int)
+
     fun onBillingSetupSuccessful()
-    fun onConsumeFailed(responseCode: Int, purchase: Purchase)
+
+    fun onConsumeFailed(
+        responseCode: Int,
+        purchase: Purchase,
+    )
+
     fun onContinueFreeClick()
+
     fun onContinuePlanClick(selectedSku: Product)
+
     fun onDestroy()
+
     fun onMonthlyItemClicked(productDetailsParams: List<ProductDetailsParams>)
+
     fun onProductDataResponse(products: Map<String, Product>)
+
     fun onProductResponseFailure()
+
     fun onPurchaseConsumed(purchase: Purchase)
+
     fun onPurchaseResponse(response: PurchaseResponse)
+
     fun onPurchaseResponseFailure(requestStatus: PurchaseResponse.RequestStatus)
-    fun onPurchaseUpdated(responseCode: Int, purchases: List<Purchase>)
-    fun onSkuDetailsReceived(responseCode: Int, productDetailsList: List<ProductDetails>)
+
+    fun onPurchaseUpdated(
+        responseCode: Int,
+        purchases: List<Purchase>,
+    )
+
+    fun onSkuDetailsReceived(
+        responseCode: Int,
+        productDetailsList: List<ProductDetails>,
+    )
+
     fun restorePurchase()
+
     fun setLayoutFromApiSession()
+
     fun setPurchaseFlowState(state: PurchaseState)
+
     fun setPushNotificationAction(pushNotificationAction: PushNotificationAction)
 }

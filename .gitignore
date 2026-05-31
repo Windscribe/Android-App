@@ -20,7 +20,17 @@
 /wstunnel/build/
 /wgtunnel/.cxx/
 /wgtunnel/build/
+/baselineprofile/build/
 
 # Bundler
 /vendor/bundle
 /.bundle
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Maestro local env (real credentials)
+maestro/.env
+
+# Maestro test reports
+/maestro-reports/

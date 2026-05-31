@@ -5,5 +5,7 @@
 package com.windscribe.vpn.backend.utils
 
 enum class SelectedLocationType {
-    CityLocation, StaticIp, CustomConfiguredProfile
+    CityLocation,
+    StaticIp,
+    CustomConfiguredProfile,
 }

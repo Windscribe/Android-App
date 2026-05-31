@@ -3,46 +3,95 @@
  */
 package com.windscribe.tv.settings
 
+import kotlinx.coroutines.CoroutineScope
+
 interface SettingsPresenter {
+    fun bind(
+        view: SettingView,
+        scope: CoroutineScope,
+    )
+
     val isUserInGhostMode: Boolean
     val isUserPro: Boolean
+
     fun onAddEmailClicked()
+
     fun onAllowBootStartClick()
+
     fun onAllowLanClicked()
+
     fun onBlockBootStartClick()
+
     fun onBlockLanClicked()
+
     fun onConnectionModeAutoClicked()
+
     fun onConnectionModeManualClicked()
+
     fun onDestroy()
+
     fun onDisabledModeClick()
+
     fun onEmailResend()
+
     fun onExclusiveModeClick()
+
     fun onInclusiveModeClick()
+
     fun onLanguageSelected(selectedLanguage: String)
+
     fun onLoginAndClaimClick()
-    fun onPortSelected(protocol: String, port: String)
+
+    fun onPortSelected(
+        protocol: String,
+        port: String,
+    )
+
     fun onProtocolSelected(protocol: String)
+
     fun onSendDebugClicked()
+
     fun onSignOutClicked()
+
     fun onSortSelected(newSort: String)
+
     fun onUpgradeClicked(textViewText: String)
+
     fun setUpTabMenu()
+
     fun setupLayoutBasedOnConnectionMode()
+
     fun setupLayoutForDebugTab()
+
     fun setupLayoutForGeneralTab()
+
     fun showLayoutBasedOnUserType()
+
     fun updateUserDataFromApi()
+
     fun observeUserData(settingsActivity: SettingActivity)
+
     fun onProtocolTweaksModeSelected(mode: String)
+
     fun onExtraTlsPaddingOnClicked()
+
     fun onExtraTlsPaddingOffClicked()
+
     fun onServerRoutingAutoClicked()
+
     fun onServerRoutingRegularClicked()
+
     fun onServerRoutingAlternateClicked()
+
     fun onCustomDNSClicked()
+
     fun onRobertDNSClicked()
+
     fun saveCustomDNSAddress(url: String)
+
     fun onAmneziaPresetSelected(presetId: String)
+
     fun onIpStackEgressAutoClicked()
+
     fun onIpStackEgressIpv4OnlyClicked()
 }

@@ -1,0 +1,20 @@
+appId: com.windscribe.vpn
+---
+# Waits up to ~30s for connection_status_connected, dismissing intermittent
+# popups (preferred-protocol, battery-optimization, OS VPN consent) on each
+# iteration. Exits early once the connected indicator is visible.
+- repeat:
+    while:
+      notVisible:
+        id: "connection_status_connected"
+    times: 6
+    commands:
+      - runFlow: ./allow-system-dialog.yaml
+      - runFlow: ./dismiss-popups.yaml
+      - extendedWaitUntil:
+          visible:
+            id: "connection_status_connected"
+          timeout: 5000
+          optional: true
+- assertVisible:
+    id: "connection_status_connected"

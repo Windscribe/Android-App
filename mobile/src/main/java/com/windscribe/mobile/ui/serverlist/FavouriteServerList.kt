@@ -32,7 +32,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,7 +45,6 @@ import com.windscribe.mobile.ui.common.DataCenterName
 import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.HandleScrollHaptic
-import com.windscribe.mobile.ui.helper.miniumHealthStart
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.home.UserState
 import com.windscribe.mobile.ui.theme.font12
@@ -59,63 +58,76 @@ private const val MIN_HEALTH_VALUE = 50
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel, pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()) {
+fun FavouriteList(
+    viewModel: ServerViewModel,
+    connectionViewmodel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel,
+    pullToRefreshState: PullToRefreshState = rememberPullToRefreshState(),
+) {
     val state by viewModel.favouriteListState.collectAsState()
     val lazyListState = rememberLazyListState()
     HandleScrollHaptic(lazyListState, homeViewmodel)
-    when (state) {
-        is ListState.Loading -> ProgressIndicator()
-
-        is ListState.Error -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Error loading favourite list.", style = font16, color = MaterialTheme.colorScheme.serverListSecondaryColor)
+    Box(modifier = Modifier.testTag("server_list_fav").fillMaxSize()) {
+        when (state) {
+            is ListState.Loading -> {
+                ProgressIndicator()
             }
-        }
 
-        is ListState.Success -> {
-            val list = (state as ListState.Success).data
-
-            if (list.isEmpty()) {
+            is ListState.Error -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_location_fav),
-                            contentDescription = "No Favourites",
-                            modifier = Modifier.size(32.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f))
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(stringResource(com.windscribe.vpn.R.string.no_favourites), style = font16, color = MaterialTheme.colorScheme.serverListSecondaryColor)
-                    }
+                    Text("Error loading favourite list.", style = font16, color = MaterialTheme.colorScheme.serverListSecondaryColor)
                 }
-                AddButtonWithDetails(null, com.windscribe.vpn.R.string.no_favourites, R.drawable.ic_location_fav) { }
-            } else {
-                val isRefreshing by viewModel.refreshState.collectAsState()
-                PullToRefreshBox(
-                    isRefreshing = isRefreshing,
-                    onRefresh = {
-                        viewModel.refresh(ServerListType.Fav)
-                    },
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    LazyColumn(modifier = Modifier.fillMaxSize().padding(start = 8.dp), lazyListState) {
-                        item {
-                            Text(
-                                text = stringResource(com.windscribe.vpn.R.string.favourite),
-                                style = font12,
-                                color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
-                                modifier = Modifier.padding(start = 0.dp, top = 16.dp)
+            }
+
+            is ListState.Success -> {
+                val list = (state as ListState.Success).data
+
+                if (list.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Image(
+                                painter = painterResource(R.drawable.ic_location_fav),
+                                contentDescription = "No Favourites",
+                                modifier = Modifier.size(32.dp),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f)),
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                stringResource(com.windscribe.vpn.R.string.no_favourites),
+                                style = font16,
+                                color = MaterialTheme.colorScheme.serverListSecondaryColor,
+                            )
                         }
-                        items(list, key = { it.id }) { item ->
-                            ListItemView(item, viewModel, connectionViewmodel, homeViewmodel)
+                    }
+                    AddButtonWithDetails(null, com.windscribe.vpn.R.string.no_favourites, R.drawable.ic_location_fav) { }
+                } else {
+                    val isRefreshing by viewModel.refreshState.collectAsState()
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = {
+                            viewModel.refresh(ServerListType.Fav)
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        LazyColumn(modifier = Modifier.fillMaxSize().padding(start = 8.dp), lazyListState) {
+                            item {
+                                Text(
+                                    text = stringResource(com.windscribe.vpn.R.string.favourite),
+                                    style = font12,
+                                    color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
+                                    modifier = Modifier.padding(start = 0.dp, top = 16.dp),
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            items(list, key = { it.id }) { item ->
+                                ListItemView(item, viewModel, connectionViewmodel, homeViewmodel)
+                            }
                         }
                     }
                 }
             }
         }
-    }
+    } // Box server_list_fav
 }
 
 @Composable
@@ -123,7 +135,7 @@ private fun ListItemView(
     item: FavouriteListItem,
     viewModel: ServerViewModel,
     connectionViewmodel: ConnectionViewmodel,
-    homeViewmodel: HomeViewmodel
+    homeViewmodel: HomeViewmodel,
 ) {
     val health by viewModel.observeAverageHealth(item.city.id).collectAsState(initial = MIN_HEALTH_VALUE)
     val serverCount by viewModel.observeDatacenterServerCount(item.city.id).collectAsState(initial = 0)
@@ -132,7 +144,9 @@ private fun ListItemView(
     val latency by rememberUpdatedState(
         if (latencyState is ListState.Success) {
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
-        } else -1
+        } else {
+            -1
+        },
     )
     val userState by homeViewmodel.userState.collectAsState()
     val healthColor = healthColor(health)
@@ -140,22 +154,24 @@ private fun ListItemView(
     val isAvailable = DatacenterStatusHelper.isAvailable(item.city, serverCount, userState is UserState.Pro)
     val interactionSource = remember { MutableInteractionSource() }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .clickable(
-                interactionSource,
-                indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
-            ) {
-                connectionViewmodel.onCityClick(item.city, true)
-            }.padding(start = 8.dp, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .testTag("fav_item")
+                .clickable(
+                    interactionSource,
+                    indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor),
+                ) {
+                    connectionViewmodel.onCityClick(item.city, true)
+                }.padding(start = 8.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         LocationSplitBorderCircle(
             health = health,
             flagRes = FlagIconResource.getSmallFlag(item.countryCode),
             showProIcon = requiresPro,
-            showLocationLoad = showLocationLoad
+            showLocationLoad = showLocationLoad,
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -163,14 +179,14 @@ private fun ListItemView(
             Text(
                 text = item.pinnedIp ?: "Random IP",
                 style = font12.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.60f)
+                color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.60f),
             )
         }
         if (isAvailable) {
             DataCenterLatencyIcon(latency)
             Spacer(modifier = Modifier.width(12.dp))
         }
-        DataCenterFavouriteIcon(true) {
+        DataCenterFavouriteIcon(true, testTag = "fav_remove_icon") {
             viewModel.deleteFavourite(item.id)
         }
     }
@@ -180,9 +196,11 @@ private fun ListItemView(
 private fun ProgressIndicator() {
     Box(modifier = Modifier.fillMaxSize()) {
         CircularProgressIndicator(
-            modifier = Modifier
-                .size(48.dp)
-                .align(Alignment.Center), color = MaterialTheme.colorScheme.serverListSecondaryColor
+            modifier =
+                Modifier
+                    .size(48.dp)
+                    .align(Alignment.Center),
+            color = MaterialTheme.colorScheme.serverListSecondaryColor,
         )
     }
 }

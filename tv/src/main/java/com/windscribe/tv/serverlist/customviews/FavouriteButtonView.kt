@@ -29,7 +29,7 @@ class FavouriteButtonView : AppCompatImageView {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         setDimens()
         setState(state)
@@ -63,13 +63,14 @@ class FavouriteButtonView : AppCompatImageView {
             gradientDrawable.setStroke(stroke, resources.getColor(R.color.colorWhite20))
             gradientDrawable.setSize(
                 context.resources.getDimension(R.dimen.reg_56).toInt(),
-                context.resources.getDimension(R.dimen.reg_56).toInt()
+                context.resources.getDimension(R.dimen.reg_56).toInt(),
             )
             setImageDrawable(
                 ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_remove_fav_icon_focused,
-                    context.theme
-                )
+                    resources,
+                    R.drawable.ic_remove_fav_icon_focused,
+                    context.theme,
+                ),
             )
             scaleType = ScaleType.FIT_CENTER
             setPadding(0, 0, 0, 0)
@@ -81,9 +82,10 @@ class FavouriteButtonView : AppCompatImageView {
             gradientDrawable.color = null
             setImageDrawable(
                 ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_remove_fav_icon,
-                    context.theme
-                )
+                    resources,
+                    R.drawable.ic_remove_fav_icon,
+                    context.theme,
+                ),
             )
             scaleType = ScaleType.FIT_CENTER
             setPadding(0, 0, 0, 0)
@@ -98,13 +100,14 @@ class FavouriteButtonView : AppCompatImageView {
             gradientDrawable.setStroke(stroke, resources.getColor(R.color.colorWhite20))
             gradientDrawable.setSize(
                 context.resources.getDimension(R.dimen.reg_56).toInt(),
-                context.resources.getDimension(R.dimen.reg_56).toInt()
+                context.resources.getDimension(R.dimen.reg_56).toInt(),
             )
             setImageDrawable(
                 ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_add_fav_icon_focused,
-                    context.theme
-                )
+                    resources,
+                    R.drawable.ic_add_fav_icon_focused,
+                    context.theme,
+                ),
             )
             scaleType = ScaleType.FIT_CENTER
             background = gradientDrawable
@@ -115,7 +118,7 @@ class FavouriteButtonView : AppCompatImageView {
             gradientDrawable.setStroke(stroke, resources.getColor(R.color.colorWhite20))
             gradientDrawable.color = null
             setImageDrawable(
-                ResourcesCompat.getDrawable(resources, R.drawable.ic_add_fav_icon, context.theme)
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_add_fav_icon, context.theme),
             )
             scaleType = ScaleType.FIT_CENTER
             setPadding(0, 0, 0, 0)
@@ -126,7 +129,7 @@ class FavouriteButtonView : AppCompatImageView {
     override fun onFocusChanged(
         gainFocus: Boolean,
         direction: Int,
-        previouslyFocusedRect: Rect?
+        previouslyFocusedRect: Rect?,
     ) {
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
         setState(state)

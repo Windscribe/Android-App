@@ -9,19 +9,19 @@
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`node_name` TEXT NOT NULL, `node_parent_index` INTEGER NOT NULL, `node_ping_time` INTEGER, PRIMARY KEY(`node_name`))",
         "fields": [
           {
-            "fieldPath": "mNodeName",
+            "fieldPath": "nodeName",
             "columnName": "node_name",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "mNodeParentIndex",
+            "fieldPath": "nodeParentIndex",
             "columnName": "node_parent_index",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "mNodePingTime",
+            "fieldPath": "nodePingTime",
             "columnName": "node_ping_time",
             "affinity": "INTEGER",
             "notNull": false
@@ -38,13 +38,13 @@
       },
       {
         "tableName": "user_account_info",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`account_status` INTEGER, `is_premium` INTEGER, `user_name` TEXT NOT NULL, PRIMARY KEY(`user_name`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`user_name` TEXT NOT NULL, `is_premium` INTEGER, `account_status` INTEGER, PRIMARY KEY(`user_name`))",
         "fields": [
           {
-            "fieldPath": "accountStatus",
-            "columnName": "account_status",
-            "affinity": "INTEGER",
-            "notNull": false
+            "fieldPath": "userName",
+            "columnName": "user_name",
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "isPremium",
@@ -53,10 +53,10 @@
             "notNull": false
           },
           {
-            "fieldPath": "userName",
-            "columnName": "user_name",
-            "affinity": "TEXT",
-            "notNull": true
+            "fieldPath": "accountStatus",
+            "columnName": "account_status",
+            "affinity": "INTEGER",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -70,19 +70,19 @@
       },
       {
         "tableName": "server_status_update",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`server_status` INTEGER, `user_name` TEXT NOT NULL, PRIMARY KEY(`user_name`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`user_name` TEXT NOT NULL, `server_status` INTEGER, PRIMARY KEY(`user_name`))",
         "fields": [
-          {
-            "fieldPath": "serverStatus",
-            "columnName": "server_status",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
           {
             "fieldPath": "userName",
             "columnName": "user_name",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "serverStatus",
+            "columnName": "server_status",
+            "affinity": "INTEGER",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -96,7 +96,7 @@
       },
       {
         "tableName": "notification_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`notification_id` INTEGER NOT NULL, `popup_status` INTEGER, `user_name` TEXT, PRIMARY KEY(`notification_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`notification_id` INTEGER NOT NULL, `user_name` TEXT, `popup_status` INTEGER, PRIMARY KEY(`notification_id`))",
         "fields": [
           {
             "fieldPath": "notificationId",
@@ -105,15 +105,15 @@
             "notNull": true
           },
           {
-            "fieldPath": "popUpStatus",
-            "columnName": "popup_status",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
             "fieldPath": "userName",
             "columnName": "user_name",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "popUpStatus",
+            "columnName": "popup_status",
+            "affinity": "INTEGER",
             "notNull": false
           }
         ],
@@ -380,7 +380,7 @@
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`favourite_id` INTEGER NOT NULL, `pinned_ip` TEXT, `pinned_node_ip` TEXT, PRIMARY KEY(`favourite_id`))",
         "fields": [
           {
-            "fieldPath": "Id",
+            "fieldPath": "id",
             "columnName": "favourite_id",
             "affinity": "INTEGER",
             "notNull": true
@@ -623,8 +623,14 @@
       },
       {
         "tableName": "Network_Info",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`is_auto_secure` INTEGER NOT NULL, `is_preferred` INTEGER NOT NULL, `networkName` TEXT NOT NULL, `port` TEXT, `protocol` TEXT, PRIMARY KEY(`networkName`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`networkName` TEXT NOT NULL, `is_auto_secure` INTEGER NOT NULL, `is_preferred` INTEGER NOT NULL, `protocol` TEXT, `port` TEXT, PRIMARY KEY(`networkName`))",
         "fields": [
+          {
+            "fieldPath": "networkName",
+            "columnName": "networkName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
           {
             "fieldPath": "isAutoSecureOn",
             "columnName": "is_auto_secure",
@@ -638,20 +644,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "networkName",
-            "columnName": "networkName",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "port",
-            "columnName": "port",
+            "fieldPath": "protocol",
+            "columnName": "protocol",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "protocol",
-            "columnName": "protocol",
+            "fieldPath": "port",
+            "columnName": "port",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -694,7 +694,7 @@
             "notNull": false
           },
           {
-            "fieldPath": "remember",
+            "fieldPath": "isRemember",
             "columnName": "remember",
             "affinity": "INTEGER",
             "notNull": true

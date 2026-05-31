@@ -9,18 +9,18 @@ import android.os.Bundle
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class UpgradeActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentLayout(R.layout.activity_upgrade)
-        ErrorFragment.instance.add(getString(com.windscribe.vpn.R.string.billing_unavailable),this, R.id.cl_upgrade, false)
+        ErrorFragment.instance.add(getString(com.windscribe.vpn.R.string.billing_unavailable), this, R.id.cl_upgrade, false)
     }
 
     companion object {
         @JvmStatic
-        fun getStartIntent(context: Context): Intent {
-            return Intent(context, UpgradeActivity::class.java)
-        }
+        fun getStartIntent(context: Context): Intent = Intent(context, UpgradeActivity::class.java)
     }
 }
