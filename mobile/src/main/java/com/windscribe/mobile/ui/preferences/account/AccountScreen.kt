@@ -162,10 +162,6 @@ fun AccountContent(
                 AccountInfo(accountState)
                 Spacer(modifier = Modifier.height(14.dp))
                 PlanInfo(accountState)
-                Spacer(modifier = Modifier.height(14.dp))
-                ActionButton(stringResource(R.string.edit_account)) {
-                    actions.onManageAccountClicked()
-                }
                 if (isSsoLogin && accountState.emailState is EmailState.Email) {
                     Spacer(modifier = Modifier.height(14.dp))
                     ActionButton(stringResource(R.string.reset_password)) {
