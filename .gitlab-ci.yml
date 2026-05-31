@@ -54,7 +54,6 @@ stages:
 # Fetch signing/build secrets from Vault, write to disk.
 .docker_vault_secrets:
   before_script:
-    - 'echo "VAULT_LOGIN_URL=[${VAULT_LOGIN_URL}] VAULT_SECRET_URL=[${VAULT_SECRET_URL}]"'
     - authToken=$(curl -X POST "$VAULT_LOGIN_URL" -d "role_id=$role_id&secret_id=$secret_id" | jq --raw-output '.auth.client_token')
     - secretData=$(curl -H "X-Vault-Token:$authToken" -X GET "$VAULT_SECRET_URL")
     - echo "$secretData" | jq '.data."sign.properties"' | base64 -d -i > $SIGN_PROPERTIES_PATH
