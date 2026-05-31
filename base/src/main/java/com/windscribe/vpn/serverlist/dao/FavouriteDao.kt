@@ -5,7 +5,6 @@
 package com.windscribe.vpn.serverlist.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
@@ -14,7 +13,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FavouriteDao {
-
     @Insert(onConflict = REPLACE)
     suspend fun addToFavouritesAsync(favourite: Favourite): Long
 

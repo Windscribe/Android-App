@@ -16,11 +16,15 @@ import com.windscribe.tv.settings.SettingActivity
 
 class AccountFragment : Fragment() {
     enum class Status {
-        NOT_ADDED, NOT_CONFIRMED, NOT_ADDED_PRO, CONFIRMED
+        NOT_ADDED,
+        NOT_CONFIRMED,
+        NOT_ADDED_PRO,
+        CONFIRMED,
     }
 
     private lateinit var binding: FragmentAccountBinding
     private var listener: SettingsFragmentListener? = null
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val activity: SettingActivity
@@ -37,13 +41,16 @@ class AccountFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentAccountBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         listener?.onFragmentReady(this)
         binding.confirmContainer.setOnClickListener {
@@ -62,7 +69,10 @@ class AccountFragment : Fragment() {
         binding.emailLabel.text = email
     }
 
-    fun setEmailState(status: Status?, email: String?) {
+    fun setEmailState(
+        status: Status?,
+        email: String?,
+    ) {
         when (status) {
             Status.CONFIRMED -> {
                 binding.emailLabel.text = email
@@ -90,7 +100,10 @@ class AccountFragment : Fragment() {
         binding.planLabel.text = planName
     }
 
-    fun setResetDate(resetDateLabel: String?, resetDate: String?) {
+    fun setResetDate(
+        resetDateLabel: String?,
+        resetDate: String?,
+    ) {
         binding.expiry.text = resetDate
         binding.expiryLabel.text = resetDateLabel
     }

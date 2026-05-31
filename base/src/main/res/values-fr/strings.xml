@@ -471,7 +471,7 @@ dernier emplacement choisi.</string>
     <string name="failed_to_update_robert_rules">Impossible de mettre à jour les règles Robert.</string>
     <string name="successfully_updated_robert_rules">Mise à jour réussie des règles Robert.</string>
     <string name="share_app">Partager l’application</string>
-    <string name="share_app_description">"« %s vous invite à rejoindre Windscribe. Fournissez leur nom d’utilisateur lors de l’inscription et vous obtiendrez tous les deux 1 Go de données gratuites ajoutées à vos comptes. Si vous devenez pro, ils le deviendront aussi !\n%s »"</string>
+    <string name="share_app_description">"« %1$s vous invite à rejoindre Windscribe. Fournissez leur nom d’utilisateur lors de l’inscription et vous obtiendrez tous les deux 1 Go de données gratuites ajoutées à vos comptes. Si vous devenez pro, ils le deviendront aussi !\n%2$s »"</string>
     <string name="allow_all_the_time_location_access_required">« Autoriser tout le temps » Accès à l’emplacement requis!</string>
     <string name="enable_location_access">Activer l’accès à l’emplacement</string>
     <string name="location_permission_required">Autorisation de localisation requise</string>
@@ -606,7 +606,7 @@ Vos données de localisation restent sur votre appareil et sont utilisées uniqu
     <string name="ipv6_mode_description">Choisissez la version IP à utiliser pour les connexions VPN.</string>
     <string name="ip_stack">Pile IP</string>
     <string name="ip_stack_description">Configurez la pile IP pour les connexions VPN.</string>
-    <string name="egress">Sortie</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Entrée</string>
     <string name="ipv4_only">IPv4 uniquement</string>
     <string name="manual_connection_mode_failed_title">Échec du mode de connexion manuel</string>
@@ -615,4 +615,7 @@ Vos données de localisation restent sur votre appareil et sont utilisées uniqu
     <string name="reset_password">Réinitialiser le mot de passe</string>
     <string name="password_reset_email_sent">Si vous avez fourni un e-mail lors de l\'inscription, vous recevrez bientôt un lien de réinitialisation du mot de passe. Assurez-vous de vérifier votre dossier Spam.</string>
     <string name="configuration">Configuration</string>
+    <string name="force_upgrade_title">Mise à jour requise</string>
+    <string name="force_upgrade_message">Cette version de Windscribe n’est plus prise en charge. Veuillez mettre à jour pour continuer à utiliser l’application.</string>
+    <string name="force_upgrade_message_with_version">Cette version de Windscribe n’est plus prise en charge. Veuillez mettre à jour vers %s pour continuer à utiliser l’application.</string>
 </resources>

@@ -24,6 +24,7 @@ import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.getNetworkError
 import com.windscribe.vpn.services.FirebaseManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,439 +39,499 @@ import javax.inject.Inject
 
 sealed class SignupState {
     object Idle : SignupState()
-    data class Registering(val message: String) : SignupState()
+
+    data class Registering(
+        val message: String,
+    ) : SignupState()
+
     object Success : SignupState()
-    data class Captcha(val request: CaptchaRequest) : SignupState()
-    data class Error(val error: AuthError) : SignupState()
+
+    data class Captcha(
+        val request: CaptchaRequest,
+    ) : SignupState()
+
+    data class Error(
+        val error: AuthError,
+    ) : SignupState()
 }
 
-class SignupViewModel @Inject constructor(
-    private val apiCallManager: IApiCallManager,
-    private val preferenceHelper: PreferencesHelper,
-    private val firebaseManager: FirebaseManager,
-    private val userRepository: UserRepository
-) : ViewModel() {
+@HiltViewModel
+class SignupViewModel
+    @Inject
+    constructor(
+        private val apiCallManager: IApiCallManager,
+        private val preferenceHelper: PreferencesHelper,
+        private val firebaseManager: FirebaseManager,
+        private val userRepository: UserRepository,
+    ) : ViewModel() {
+        private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
+        val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
 
-    private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
-    val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
+        private val _signupButtonEnabled = MutableStateFlow(false)
+        val signupButtonEnabled: StateFlow<Boolean> = _signupButtonEnabled.asStateFlow()
 
-    private val _signupButtonEnabled = MutableStateFlow(false)
-    val signupButtonEnabled: StateFlow<Boolean> = _signupButtonEnabled.asStateFlow()
+        private val _selectedAuthType = MutableStateFlow(AuthType.STANDARD)
+        val selectedAuthType: StateFlow<AuthType> = _selectedAuthType.asStateFlow()
 
-    private val _selectedAuthType = MutableStateFlow(AuthType.STANDARD)
-    val selectedAuthType: StateFlow<AuthType> = _selectedAuthType.asStateFlow()
+        private val _accountHash = MutableStateFlow("")
+        val accountHash: StateFlow<String> = _accountHash.asStateFlow()
 
-    private val _accountHash = MutableStateFlow("")
-    val accountHash: StateFlow<String> = _accountHash.asStateFlow()
+        private val _isBackupConfirmed = MutableStateFlow(false)
+        val isBackupConfirmed: StateFlow<Boolean> = _isBackupConfirmed.asStateFlow()
 
-    private val _isBackupConfirmed = MutableStateFlow(false)
-    val isBackupConfirmed: StateFlow<Boolean> = _isBackupConfirmed.asStateFlow()
+        private val _generatedUsername = MutableStateFlow("")
+        val generatedUsername: StateFlow<String> = _generatedUsername.asStateFlow()
 
-    private val _generatedUsername = MutableStateFlow("")
-    val generatedUsername: StateFlow<String> = _generatedUsername.asStateFlow()
+        private val _generatedPassword = MutableStateFlow("")
+        val generatedPassword: StateFlow<String> = _generatedPassword.asStateFlow()
 
-    private val _generatedPassword = MutableStateFlow("")
-    val generatedPassword: StateFlow<String> = _generatedPassword.asStateFlow()
+        private val _hashFileBytes = MutableStateFlow<ByteArray?>(null)
+        private val _triggerFilePicker = MutableSharedFlow<Boolean>(replay = 0)
+        val triggerFilePicker: SharedFlow<Boolean> = _triggerFilePicker
 
-    private val _hashFileBytes = MutableStateFlow<ByteArray?>(null)
-    private val _triggerFilePicker = MutableSharedFlow<Boolean>(replay = 0)
-    val triggerFilePicker: SharedFlow<Boolean> = _triggerFilePicker
+        private val _toastMessage = MutableSharedFlow<String>(replay = 0)
+        val toastMessage: SharedFlow<String> = _toastMessage
 
-    private val _toastMessage = MutableSharedFlow<String>(replay = 0)
-    val toastMessage: SharedFlow<String> = _toastMessage
+        private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>()
+        val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
 
-    private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>()
-    val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
+        private val _showEmailInfoDialog = MutableStateFlow(false)
+        val showEmailInfoDialog: StateFlow<Boolean> = _showEmailInfoDialog.asStateFlow()
 
-    private val _showEmailInfoDialog = MutableStateFlow(false)
-    val showEmailInfoDialog: StateFlow<Boolean> = _showEmailInfoDialog.asStateFlow()
+        private var username = ""
+        private var password = ""
+        private var confirmPassword = ""
+        private var email = ""
+        private var voucher = ""
+        private var referralUsername = ""
+        var isAccountClaim = false
+        private val logger = LoggerFactory.getLogger("basic")
 
-    private var username = ""
-    private var password = ""
-    private var confirmPassword = ""
-    private var email = ""
-    private var voucher = ""
-    private var referralUsername = ""
-    var isAccountClaim = false
-    private val logger = LoggerFactory.getLogger("basic")
-
-    fun onUsernameChanged(username: String) {
-        this.username = username
-        validateInput()
-    }
-
-    fun onPasswordChanged(password: String) {
-        this.password = password
-        validateInput()
-    }
-
-    fun onConfirmPasswordChanged(confirmPassword: String) {
-        this.confirmPassword = confirmPassword
-        validateInput()
-    }
-
-    fun onEmailChanged(email: String) {
-        this.email = email
-        validateInput()
-    }
-
-    fun onVoucherChanged(voucher: String) {
-        this.voucher = voucher
-        validateInput()
-    }
-
-    fun onReferralUsernameChanged(referralUsername: String) {
-        this.referralUsername = referralUsername
-        validateInput()
-    }
-
-    fun onAuthTypeChanged(authType: AuthType) {
-        viewModelScope.launch {
-            _selectedAuthType.emit(authType)
-            updateState(SignupState.Idle)
-            _signupButtonEnabled.emit(false)
-            if (authType == AuthType.HASHED) {
-                generateAccountHash()
-            } else {
-                validateInput()
-            }
+        fun onUsernameChanged(username: String) {
+            this.username = username
+            validateInput()
         }
-    }
 
-    fun onBackupConfirmedChanged(confirmed: Boolean) {
-        viewModelScope.launch {
-            _isBackupConfirmed.emit(confirmed)
-            validateHashedSignup()
+        fun onPasswordChanged(password: String) {
+            this.password = password
+            validateInput()
         }
-    }
 
-    fun generateAccountHash() {
-        viewModelScope.launch(Dispatchers.IO) {
-            // Generate random bytes for the hash file
-            val random = java.security.SecureRandom()
-            val bytes = ByteArray(1024) // 1KB random file
-            random.nextBytes(bytes)
-
-            // Generate SHA256 hash from the bytes
-            val hash = HashUtils.sha256FromInputStream(bytes.inputStream())
-
-            // Store both the file bytes and hash
-            _hashFileBytes.emit(bytes)
-            _accountHash.emit(hash)
-            validateHashedSignup()
-
-            logger.info("Generated hash file and hash: ${hash.take(20)}...")
+        fun onConfirmPasswordChanged(confirmPassword: String) {
+            this.confirmPassword = confirmPassword
+            validateInput()
         }
-    }
 
-    fun onUploadHashClick() {
-        viewModelScope.launch {
-            _triggerFilePicker.emit(true)
+        fun onEmailChanged(email: String) {
+            this.email = email
+            validateInput()
         }
-    }
 
-    fun onFileSelected(context: Context, uri: Uri) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val inputStream = context.contentResolver.openInputStream(uri)
-                if (inputStream != null) {
-                    val bytes = inputStream.readBytes()
-                    val hash = HashUtils.sha256FromInputStream(bytes.inputStream())
+        fun onVoucherChanged(voucher: String) {
+            this.voucher = voucher
+            validateInput()
+        }
 
-                    _hashFileBytes.emit(bytes)
-                    _accountHash.emit(hash)
+        fun onReferralUsernameChanged(referralUsername: String) {
+            this.referralUsername = referralUsername
+            validateInput()
+        }
 
-                    withContext(Dispatchers.Main) {
-                        validateHashedSignup()
-                    }
-                    logger.info("Generated hash from uploaded file: ${hash.take(20)}...")
+        fun onAuthTypeChanged(authType: AuthType) {
+            viewModelScope.launch {
+                _selectedAuthType.emit(authType)
+                updateState(SignupState.Idle)
+                _signupButtonEnabled.emit(false)
+                if (authType == AuthType.HASHED) {
+                    generateAccountHash()
                 } else {
-                    logger.error("Failed to open input stream for file")
+                    validateInput()
                 }
-            } catch (e: Exception) {
-                logger.error("Error hashing file: ${e.message}")
             }
         }
-    }
 
-    fun onDownloadHashClick(context: Context) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val bytes = _hashFileBytes.value
-                if (bytes == null) {
-                    logger.error("No hash file bytes available to download")
-                    _toastMessage.emit("Error: No hash file to download")
-                    return@launch
-                }
+        fun onBackupConfirmedChanged(confirmed: Boolean) {
+            viewModelScope.launch {
+                _isBackupConfirmed.emit(confirmed)
+                validateHashedSignup()
+            }
+        }
 
-                val fileName = "windscribe_account_${System.currentTimeMillis()}.key"
+        fun generateAccountHash() {
+            viewModelScope.launch(Dispatchers.IO) {
+                // Generate random bytes for the hash file
+                val random = java.security.SecureRandom()
+                val bytes = ByteArray(1024) // 1KB random file
+                random.nextBytes(bytes)
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    // Use MediaStore for Android 10+
-                    val contentValues = ContentValues().apply {
-                        put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-                        put(MediaStore.Downloads.MIME_TYPE, "application/octet-stream")
-                        put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-                    }
+                // Generate SHA256 hash from the bytes
+                val hash = HashUtils.sha256FromInputStream(bytes.inputStream())
 
-                    val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-                    if (uri != null) {
-                        context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                            outputStream.write(bytes)
+                // Store both the file bytes and hash
+                _hashFileBytes.emit(bytes)
+                _accountHash.emit(hash)
+                validateHashedSignup()
+
+                logger.info("Generated hash file and hash: ${hash.take(20)}...")
+            }
+        }
+
+        fun onUploadHashClick() {
+            viewModelScope.launch {
+                _triggerFilePicker.emit(true)
+            }
+        }
+
+        fun onFileSelected(
+            context: Context,
+            uri: Uri,
+        ) {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    if (inputStream != null) {
+                        val bytes = inputStream.readBytes()
+                        val hash = HashUtils.sha256FromInputStream(bytes.inputStream())
+
+                        _hashFileBytes.emit(bytes)
+                        _accountHash.emit(hash)
+
+                        withContext(Dispatchers.Main) {
+                            validateHashedSignup()
                         }
-                        logger.info("Hash file saved: $fileName")
-                        _toastMessage.emit("Account key saved to Downloads/$fileName")
+                        logger.info("Generated hash from uploaded file: ${hash.take(20)}...")
                     } else {
-                        logger.error("Failed to create file in Downloads")
-                        _toastMessage.emit("Error: Failed to save file")
+                        logger.error("Failed to open input stream for file")
                     }
+                } catch (e: Exception) {
+                    logger.error("Error hashing file: ${e.message}")
+                }
+            }
+        }
+
+        fun onDownloadHashClick(context: Context) {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val bytes = _hashFileBytes.value
+                    if (bytes == null) {
+                        logger.error("No hash file bytes available to download")
+                        _toastMessage.emit("Error: No hash file to download")
+                        return@launch
+                    }
+
+                    val fileName = "windscribe_account_${System.currentTimeMillis()}.key"
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        // Use MediaStore for Android 10+
+                        val contentValues =
+                            ContentValues().apply {
+                                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                                put(MediaStore.Downloads.MIME_TYPE, "application/octet-stream")
+                                put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                            }
+
+                        val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                        if (uri != null) {
+                            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                                outputStream.write(bytes)
+                            }
+                            logger.info("Hash file saved: $fileName")
+                            _toastMessage.emit("Account key saved to Downloads/$fileName")
+                        } else {
+                            logger.error("Failed to create file in Downloads")
+                            _toastMessage.emit("Error: Failed to save file")
+                        }
+                    } else {
+                        // Use legacy file path for older Android
+                        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        val file = File(downloadsDir, fileName)
+                        file.writeBytes(bytes)
+                        logger.info("Hash file saved: ${file.absolutePath}")
+                        _toastMessage.emit("Account key saved to Downloads/$fileName")
+                    }
+                } catch (e: Exception) {
+                    logger.error("Error saving hash file: ${e.message}")
+                    _toastMessage.emit("Error: ${e.message}")
+                }
+            }
+        }
+
+        fun generateUsername() {
+            viewModelScope.launch {
+                val result =
+                    result<com.windscribe.vpn.api.response.GenerateUsernameResponse> {
+                        apiCallManager.generateUsername()
+                    }
+                when (result) {
+                    is CallResult.Success -> {
+                        username = result.data.username ?: ""
+                        _generatedUsername.emit(result.data.username ?: "")
+                        validateInput()
+                        logger.info("Generated username: $username")
+                    }
+
+                    is CallResult.Error -> {
+                        logger.error("Failed to generate username: ${result.errorMessage}")
+                    }
+                }
+            }
+        }
+
+        fun generatePassword() {
+            viewModelScope.launch {
+                val result =
+                    result<com.windscribe.vpn.api.response.GeneratePasswordResponse> {
+                        apiCallManager.generatePassword()
+                    }
+                when (result) {
+                    is CallResult.Success -> {
+                        password = result.data.password ?: ""
+                        _generatedPassword.emit(result.data.password ?: "")
+                        validateInput()
+                        logger.info("Generated password")
+                    }
+
+                    is CallResult.Error -> {
+                        logger.error("Failed to generate password: ${result.errorMessage}")
+                    }
+                }
+            }
+        }
+
+        private fun validateHashedSignup() {
+            viewModelScope.launch {
+                _signupButtonEnabled.emit(_accountHash.value.isNotEmpty() && _isBackupConfirmed.value)
+            }
+        }
+
+        private fun isValidUsername() = username.length >= 2
+
+        private fun isValidPassword() = password.length >= 2
+
+        private fun validateInput() {
+            viewModelScope.launch {
+                // Check if referral username is entered without email
+                if (referralUsername.isNotEmpty() && email.isEmpty()) {
+                    updateState(
+                        SignupState.Error(
+                            AuthError.LocalizedInputError(
+                                com.windscribe.vpn.R.string.please_provide_email_first,
+                                listOf(AuthInputFields.Referral),
+                            ),
+                        ),
+                    )
+                    _signupButtonEnabled.emit(false)
+                } else if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
+                    // Check if passwords match
+                    updateState(
+                        SignupState.Error(
+                            AuthError.LocalizedInputError(
+                                com.windscribe.vpn.R.string.passwords_do_not_match,
+                                listOf(AuthInputFields.ConfirmPassword),
+                            ),
+                        ),
+                    )
+                    _signupButtonEnabled.emit(false)
                 } else {
-                    // Use legacy file path for older Android
-                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    val file = File(downloadsDir, fileName)
-                    file.writeBytes(bytes)
-                    logger.info("Hash file saved: ${file.absolutePath}")
-                    _toastMessage.emit("Account key saved to Downloads/$fileName")
-                }
-            } catch (e: Exception) {
-                logger.error("Error saving hash file: ${e.message}")
-                _toastMessage.emit("Error: ${e.message}")
-            }
-        }
-    }
-
-    fun generateUsername() {
-        viewModelScope.launch {
-            val result = result<com.windscribe.vpn.api.response.GenerateUsernameResponse> {
-                apiCallManager.generateUsername()
-            }
-            when (result) {
-                is CallResult.Success -> {
-                    username = result.data.username
-                    _generatedUsername.emit(result.data.username)
-                    validateInput()
-                    logger.info("Generated username: $username")
-                }
-                is CallResult.Error -> {
-                    logger.error("Failed to generate username: ${result.errorMessage}")
+                    _signupButtonEnabled.emit(isValidUsername() && isValidPassword())
+                    updateState(SignupState.Idle)
                 }
             }
         }
-    }
 
-    fun generatePassword() {
-        viewModelScope.launch {
-            val result = result<com.windscribe.vpn.api.response.GeneratePasswordResponse> {
-                apiCallManager.generatePassword()
+        fun signupButtonClick() {
+            // For hashed signup, use the hash as both username and password
+            if (_selectedAuthType.value == AuthType.HASHED) {
+                username = _accountHash.value
+                password = _accountHash.value
             }
-            when (result) {
-                is CallResult.Success -> {
-                    password = result.data.password
-                    _generatedPassword.emit(result.data.password)
-                    validateInput()
-                    logger.info("Generated password")
+
+            if (!WindUtilities.isOnline()) {
+                logger.info("User is not connected to the internet.")
+                viewModelScope.launch {
+                    _signupButtonEnabled.emit(true)
+                    updateState(
+                        SignupState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)),
+                    )
                 }
-                is CallResult.Error -> {
-                    logger.error("Failed to generate password: ${result.errorMessage}")
-                }
+                return
             }
-        }
-    }
 
-    private fun validateHashedSignup() {
-        viewModelScope.launch {
-            _signupButtonEnabled.emit(_accountHash.value.isNotEmpty() && _isBackupConfirmed.value)
-        }
-    }
+            // Skip validation for hashed signup (hash is auto-generated and valid)
+            if (_selectedAuthType.value == AuthType.HASHED) {
+                viewModelScope.launch {
+                    startSignupProcess()
+                }
+                return
+            }
 
-    private fun isValidUsername() = username.length >= 2
-    private fun isValidPassword() = password.length >= 2
-
-    private fun validateInput() {
-        viewModelScope.launch {
-            // Check if referral username is entered without email
-            if (referralUsername.isNotEmpty() && email.isEmpty()) {
+            // Standard signup validation
+            if (username.isEmpty()) {
                 updateState(
                     SignupState.Error(
                         AuthError.LocalizedInputError(
-                            com.windscribe.vpn.R.string.please_provide_email_first,
-                            listOf(AuthInputFields.Referral)
-                        )
-                    )
+                            com.windscribe.vpn.R.string.username_empty,
+                            listOf(AuthInputFields.Username),
+                        ),
+                    ),
                 )
-                _signupButtonEnabled.emit(false)
-            } else if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
-                // Check if passwords match
+                return
+            }
+            if (password.length < 8) {
+                updateState(
+                    SignupState.Error(
+                        AuthError.LocalizedInputError(
+                            com.windscribe.vpn.R.string.password_too_short,
+                            listOf(AuthInputFields.Password),
+                        ),
+                    ),
+                )
+                return
+            }
+            if (password != confirmPassword) {
                 updateState(
                     SignupState.Error(
                         AuthError.LocalizedInputError(
                             com.windscribe.vpn.R.string.passwords_do_not_match,
-                            listOf(AuthInputFields.ConfirmPassword)
-                        )
-                    )
+                            listOf(AuthInputFields.ConfirmPassword),
+                        ),
+                    ),
                 )
-                _signupButtonEnabled.emit(false)
-            } else {
-                _signupButtonEnabled.emit(isValidUsername() && isValidPassword())
-                updateState(SignupState.Idle)
+                return
             }
-        }
-    }
-
-    fun signupButtonClick() {
-        // For hashed signup, use the hash as both username and password
-        if (_selectedAuthType.value == AuthType.HASHED) {
-            username = _accountHash.value
-            password = _accountHash.value
-        }
-
-        if (!WindUtilities.isOnline()) {
-            logger.info("User is not connected to the internet.")
-            viewModelScope.launch {
-                _signupButtonEnabled.emit(true)
+            val passwordRegex =
+                Regex("^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9!@#\$%^&*()_+\\-={}\\[\\]:;\"'<>,.?/`~|\\\\]+$")
+            if (!password.matches(passwordRegex)) {
                 updateState(
-                    SignupState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet))
+                    SignupState.Error(
+                        AuthError.LocalizedInputError(
+                            com.windscribe.vpn.R.string.password_requirement,
+                            listOf(AuthInputFields.Password),
+                        ),
+                    ),
                 )
+                return
             }
-            return
-        }
-
-        // Skip validation for hashed signup (hash is auto-generated and valid)
-        if (_selectedAuthType.value == AuthType.HASHED) {
+            if (email.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                updateState(
+                    SignupState.Error(
+                        AuthError.LocalizedInputError(
+                            com.windscribe.vpn.R.string.invalid_email_format,
+                            listOf(AuthInputFields.Email),
+                        ),
+                    ),
+                )
+                return
+            }
+            // Standard signup - proceed with validation passed
             viewModelScope.launch {
                 startSignupProcess()
             }
-            return
         }
 
-        // Standard signup validation
-        if (username.isEmpty()) {
-            updateState(
-                SignupState.Error(
-                    AuthError.LocalizedInputError(
-                        com.windscribe.vpn.R.string.username_empty,
-                        listOf(AuthInputFields.Username)
-                    )
-                )
-            )
-            return
-        }
-        if (password.length < 8) {
-            updateState(
-                SignupState.Error(
-                    AuthError.LocalizedInputError(
-                        com.windscribe.vpn.R.string.password_too_short,
-                        listOf(AuthInputFields.Password)
-                    )
-                )
-            )
-            return
-        }
-        if (password != confirmPassword) {
-            updateState(
-                SignupState.Error(
-                    AuthError.LocalizedInputError(
-                        com.windscribe.vpn.R.string.passwords_do_not_match,
-                        listOf(AuthInputFields.ConfirmPassword)
-                    )
-                )
-            )
-            return
-        }
-        val passwordRegex =
-            Regex("^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9!@#\$%^&*()_+\\-={}\\[\\]:;\"'<>,.?/`~|\\\\]+$")
-        if (!password.matches(passwordRegex)) {
-            updateState(
-                SignupState.Error(
-                    AuthError.LocalizedInputError(
-                        com.windscribe.vpn.R.string.password_requirement,
-                        listOf(AuthInputFields.Password)
-                    )
-                )
-            )
-            return
-        }
-        if (email.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            updateState(
-                SignupState.Error(
-                    AuthError.LocalizedInputError(
-                        com.windscribe.vpn.R.string.invalid_email_format,
-                        listOf(AuthInputFields.Email)
-                    )
-                )
-            )
-            return
-        }
-        // Standard signup - proceed with validation passed
-        viewModelScope.launch {
-            startSignupProcess()
-        }
-    }
+        private suspend fun startSignupProcess() {
+            logger.info("Trying to registering with provided credentials...")
+            val authResult = result<AuthToken> { apiCallManager.authTokenSignup(username, false) }
+            when (authResult) {
+                is CallResult.Error -> {
+                    val networkError = getNetworkError(authResult.code)
+                    if (networkError != null) {
+                        handleNetworkError(networkError)
+                    } else {
+                        logger.info("Error login: ${authResult.errorMessage}")
+                        _signupButtonEnabled.emit(true)
+                        handleApiError(authResult.code, authResult.errorMessage)
+                    }
+                }
 
-    private suspend fun startSignupProcess() {
-        logger.info("Trying to registering with provided credentials...")
-        val authResult = result<AuthToken> { apiCallManager.authTokenSignup(username, false) }
-        when (authResult) {
-            is CallResult.Error -> {
-                val networkError = getNetworkError(authResult.code)
-                if (networkError != null) {
-                    handleNetworkError(networkError)
-                } else {
-                    logger.info("Error login: ${authResult.errorMessage}")
-                    _signupButtonEnabled.emit(true)
-                    handleApiError(authResult.code, authResult.errorMessage)
+                is CallResult.Success -> {
+                    logger.info("Received auth token successfully")
+                    handleAuthToken(authResult.data)
                 }
             }
+        }
 
-            is CallResult.Success -> {
-                logger.info("Received auth token successfully")
-                handleAuthToken(authResult.data)
+        fun onCaptchaSolutionReceived(solution: CaptchaSolution) {
+            viewModelScope.launch(Dispatchers.IO) {
+                updateState(SignupState.Registering("Signing up..."))
+                _signupButtonEnabled.emit(false)
+                loginWithCaptcha(solution)
             }
         }
-    }
 
-    fun onCaptchaSolutionReceived(solution: CaptchaSolution) {
-        viewModelScope.launch(Dispatchers.IO) {
-            updateState(SignupState.Registering("Signing up..."))
-            _signupButtonEnabled.emit(false)
-            loginWithCaptcha(solution)
-        }
-    }
+        private suspend fun handleAuthToken(authToken: AuthToken) {
+            val captcha = authToken.captcha
+            val token = authToken.token
+            if (captcha != null) {
+                logger.info("Received captcha: ${captcha.top}")
+                val request =
+                    CaptchaRequest(
+                        captcha.background!!,
+                        captcha.top!!,
+                        captcha.slider!!,
+                        authToken.token,
+                    )
+                updateState(SignupState.Captcha(request))
+            } else {
+                val result =
+                    result<UserRegistrationResponse> {
+                        apiCallManager.signUserIn(
+                            username.trim(),
+                            password.trim(),
+                            referralUsername.trim(),
+                            email.trim(),
+                            voucher.trim(),
+                            token,
+                            null,
+                            floatArrayOf(),
+                            floatArrayOf(),
+                        )
+                    }
 
-    private suspend fun handleAuthToken(authToken: AuthToken) {
-        val captcha = authToken.captcha
-        val token = authToken.token
-        if (captcha != null) {
-            logger.info("Received captcha: ${captcha.top}")
-            val request = CaptchaRequest(
-                captcha.background!!,
-                captcha.top!!,
-                captcha.slider!!,
-                authToken.token
-            )
-            updateState(SignupState.Captcha(request))
-        } else {
-            val result = result<UserRegistrationResponse> {
-                apiCallManager.signUserIn(
-                    username.trim(),
-                    password.trim(),
-                    referralUsername.trim(),
-                    email.trim(),
-                    voucher.trim(),
-                    token,
-                    null,
-                    floatArrayOf(), floatArrayOf()
-                )
+                when (result) {
+                    is CallResult.Error -> {
+                        val networkError = getNetworkError(result.code)
+                        if (networkError != null) {
+                            logger.error("SignupError: ${result.errorMessage}")
+                            handleNetworkError(networkError)
+                        } else {
+                            logger.info("Error signup: ${result.errorMessage}")
+                            _signupButtonEnabled.emit(true)
+                            handleApiError(result.code, result.errorMessage)
+                        }
+                    }
+
+                    is CallResult.Success -> {
+                        logger.info("User signup in successfully.")
+                        handleSuccessfulSignup(result.data.sessionAuthHash ?: "")
+                    }
+                }
             }
+        }
 
+        private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
+            val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
+            val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
+            val result =
+                result<UserRegistrationResponse> {
+                    apiCallManager.signUserIn(
+                        username.trim(),
+                        password.trim(),
+                        referralUsername.trim(),
+                        email.trim(),
+                        voucher.trim(),
+                        captchaSolution.token,
+                        "${captchaSolution.leftOffset}",
+                        trailX,
+                        trailY,
+                    )
+                }
             when (result) {
                 is CallResult.Error -> {
                     val networkError = getNetworkError(result.code)
                     if (networkError != null) {
-                        logger.error("SignupError: ${result.errorMessage}")
                         handleNetworkError(networkError)
                     } else {
-                        logger.info("Error signup: ${result.errorMessage}")
                         _signupButtonEnabled.emit(true)
                         handleApiError(result.code, result.errorMessage)
                     }
@@ -478,150 +539,118 @@ class SignupViewModel @Inject constructor(
 
                 is CallResult.Success -> {
                     logger.info("User signup in successfully.")
-                    handleSuccessfulSignup(result.data.sessionAuthHash)
+                    handleSuccessfulSignup(result.data.sessionAuthHash ?: "")
                 }
             }
         }
-    }
 
-    private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
-        val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
-        val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
-        val result = result<UserRegistrationResponse> {
-            apiCallManager.signUserIn(
-                username.trim(),
-                password.trim(),
-                referralUsername.trim(),
-                email.trim(),
-                voucher.trim(),
-                captchaSolution.token,
-                "${captchaSolution.leftOffset}",
-                trailX,
-                trailY
-            )
-        }
-        when (result) {
-            is CallResult.Error -> {
-                val networkError = getNetworkError(result.code)
-                if (networkError != null) {
-                    handleNetworkError(networkError)
-                } else {
-                    _signupButtonEnabled.emit(true)
-                    handleApiError(result.code, result.errorMessage)
-                }
-            }
-
-            is CallResult.Success -> {
-                logger.info("User signup in successfully.")
-                handleSuccessfulSignup(result.data.sessionAuthHash)
-            }
-        }
-    }
-
-
-    private fun handleSuccessfulSignup(sessionAuthHash: String) {
-        preferenceHelper.sessionHash = sessionAuthHash
-        firebaseManager.getFirebaseToken { firebaseToken ->
-            viewModelScope.launch(Dispatchers.IO) {
-                userRepository.prepareDashboard(firebaseToken).collect {
-                    when (it) {
-                        is UserDataState.Error -> {
-                            updateState(
-                                SignupState.Error(
-                                    AuthError.InputError(it.error)
+        private fun handleSuccessfulSignup(sessionAuthHash: String) {
+            preferenceHelper.sessionHash = sessionAuthHash
+            firebaseManager.getFirebaseToken { firebaseToken ->
+                viewModelScope.launch(Dispatchers.IO) {
+                    userRepository.prepareDashboard(firebaseToken).collect {
+                        when (it) {
+                            is UserDataState.Error -> {
+                                updateState(
+                                    SignupState.Error(
+                                        AuthError.InputError(it.error),
+                                    ),
                                 )
-                            )
-                        }
+                            }
 
-                        is UserDataState.Loading -> {
-                            updateState(SignupState.Registering(it.status))
-                        }
+                            is UserDataState.Loading -> {
+                                updateState(SignupState.Registering(it.status))
+                            }
 
-                        is UserDataState.Success -> {
-                            updateState(SignupState.Success)
+                            is UserDataState.Success -> {
+                                updateState(SignupState.Success)
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    private fun handleNetworkError(failure: ApiFailure) {
-        when (failure) {
-            ApiFailure.AllFallbackFailed -> {
-                updateState(SignupState.Idle)
-                viewModelScope.launch {
-                    _showAllBackupFailedDialog.emit(true)
+        private fun handleNetworkError(failure: ApiFailure) {
+            when (failure) {
+                ApiFailure.AllFallbackFailed -> {
+                    updateState(SignupState.Idle)
+                    viewModelScope.launch {
+                        _showAllBackupFailedDialog.emit(true)
+                    }
+                }
+
+                ApiFailure.IncorrectJsonError -> {
+                    updateState(SignupState.Error(AuthError.InputError("Incorrect JSON response received from server.")))
+                }
+
+                ApiFailure.Network -> {
+                    updateState(SignupState.Error(AuthError.InputError("Network error, unable to connect to server.")))
+                }
+
+                ApiFailure.NoNetwork -> {
+                    updateState(SignupState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
                 }
             }
-
-            ApiFailure.IncorrectJsonError -> {
-                updateState(SignupState.Error(AuthError.InputError("Incorrect JSON response received from server.")))
-            }
-
-            ApiFailure.Network -> {
-                updateState(SignupState.Error(AuthError.InputError("Network error, unable to connect to server.")))
-            }
-
-            ApiFailure.NoNetwork -> {
-                updateState(SignupState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
-            }
         }
-    }
 
-    private fun handleApiError(errorCode: Int, error: String) {
-        logger.error("SignupError: $errorCode-$error")
-        val errorMessage = SessionErrorHandler.instance.getErrorMessage(errorCode, error)
+        private fun handleApiError(
+            errorCode: Int,
+            error: String,
+        ) {
+            logger.error("SignupError: $errorCode-$error")
+            val errorMessage = SessionErrorHandler.instance.getErrorMessage(errorCode, error)
 
-        when (errorCode) {
-            NetworkErrorCodes.ERROR_USER_NAME_ALREADY_TAKEN, NetworkErrorCodes.ERROR_USER_NAME_ALREADY_IN_USE -> {
-                updateState(
-                    SignupState.Error(
-                        AuthError.InputError(
-                            errorMessage,
-                            listOf(AuthInputFields.Username)
-                        )
+            when (errorCode) {
+                NetworkErrorCodes.ERROR_USER_NAME_ALREADY_TAKEN, NetworkErrorCodes.ERROR_USER_NAME_ALREADY_IN_USE -> {
+                    updateState(
+                        SignupState.Error(
+                            AuthError.InputError(
+                                errorMessage,
+                                listOf(AuthInputFields.Username),
+                            ),
+                        ),
                     )
-                )
-            }
+                }
 
-            else -> updateState(
-                SignupState.Error(
-                    AuthError.InputError(
-                        errorMessage,
-                        listOf(AuthInputFields.Username, AuthInputFields.Password)
+                else -> {
+                    updateState(
+                        SignupState.Error(
+                            AuthError.InputError(
+                                errorMessage,
+                                listOf(AuthInputFields.Username, AuthInputFields.Password),
+                            ),
+                        ),
                     )
-                )
-            )
+                }
+            }
+        }
+
+        fun dismissCaptcha() {
+            updateState(SignupState.Idle)
+        }
+
+        private fun updateState(state: SignupState) {
+            viewModelScope.launch {
+                _signupState.emit(state)
+            }
+        }
+
+        fun clearDialog() {
+            viewModelScope.launch {
+                _showAllBackupFailedDialog.emit(false)
+            }
+        }
+
+        fun onEmailInfoClick() {
+            viewModelScope.launch {
+                _showEmailInfoDialog.emit(true)
+            }
+        }
+
+        fun dismissEmailInfoDialog() {
+            viewModelScope.launch {
+                _showEmailInfoDialog.emit(false)
+            }
         }
     }
-
-    fun dismissCaptcha() {
-        updateState(SignupState.Idle)
-    }
-
-    private fun updateState(state: SignupState) {
-        viewModelScope.launch {
-            _signupState.emit(state)
-        }
-    }
-
-    fun clearDialog() {
-        viewModelScope.launch {
-            _showAllBackupFailedDialog.emit(false)
-        }
-    }
-
-    fun onEmailInfoClick() {
-        viewModelScope.launch {
-            _showEmailInfoDialog.emit(true)
-        }
-    }
-
-    fun dismissEmailInfoDialog() {
-        viewModelScope.launch {
-            _showEmailInfoDialog.emit(false)
-        }
-    }
-}
-

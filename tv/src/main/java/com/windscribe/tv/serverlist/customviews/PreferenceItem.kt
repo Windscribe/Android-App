@@ -29,7 +29,7 @@ class PreferenceItem : AppCompatButton {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         setUnits()
         setState(MenuButtonState.NotSelected)
@@ -40,12 +40,14 @@ class PreferenceItem : AppCompatButton {
         when (state) {
             MenuButtonState.Selected -> {
                 setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_check_black_24dp, 0)
-                background = if (hasFocus()) {
-                    shapeWithFocus
-                } else {
-                    shapeWithOutFocus
-                }
+                background =
+                    if (hasFocus()) {
+                        shapeWithFocus
+                    } else {
+                        shapeWithOutFocus
+                    }
             }
+
             MenuButtonState.NotSelected -> {
                 setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
                 if (hasFocus()) {
@@ -59,7 +61,11 @@ class PreferenceItem : AppCompatButton {
         }
     }
 
-    override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+    override fun onFocusChanged(
+        focused: Boolean,
+        direction: Int,
+        previouslyFocusedRect: Rect?,
+    ) {
         super.onFocusChanged(focused, direction, previouslyFocusedRect)
         setState(state)
     }

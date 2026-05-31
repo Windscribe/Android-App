@@ -472,7 +472,7 @@ Ultima posizione scelta.</string>
     <string name="failed_to_update_robert_rules">Impossibile aggiornare le regole di Robert.</string>
     <string name="successfully_updated_robert_rules">Regole di Robert aggiornate con successo.</string>
     <string name="share_app">Condividi App</string>
-    <string name="share_app_description">"%s ti invita a unirti a Windscribe. Fornisci il loro nome utente al momento della registrazione e otterrai entrambi 1 GB di dati gratuiti aggiunti ai tuoi account. Se vai pro, anche loro diventeranno professionisti!\n%s"</string>
+    <string name="share_app_description">"%1$s ti invita a unirti a Windscribe. Fornisci il loro nome utente al momento della registrazione e otterrai entrambi 1 GB di dati gratuiti aggiunti ai tuoi account. Se vai pro, anche loro diventeranno professionisti!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Consenti sempre\" Accesso alla posizione richiesto!</string>
     <string name="enable_location_access">Abilita accesso alla posizione</string>
     <string name="location_permission_required">È richiesta l\autorizzazione alla posizione</string>
@@ -604,7 +604,7 @@ I tuoi dati sulla posizione rimangono sul tuo dispositivo e vengono utilizzati e
     <string name="ipv6_mode_description">Scegli quale versione IP utilizzare per le connessioni VPN.</string>
     <string name="ip_stack">Stack IP</string>
     <string name="ip_stack_description">Configura lo stack IP per le connessioni VPN.</string>
-    <string name="egress">Uscita</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Ingresso</string>
     <string name="ipv4_only">Solo IPv4</string>
     <string name="manual_connection_mode_failed_title">Modalità di connessione manuale fallita</string>
@@ -615,4 +615,7 @@ I tuoi dati sulla posizione rimangono sul tuo dispositivo e vengono utilizzati e
     <string name="app_icon">Icona app</string>
     <string name="app_icon_description">Scegli un\'icona app diversa per ancora più privacy</string>
     <string name="configuration">Configurazione</string>
+    <string name="force_upgrade_title">Aggiornamento richiesto</string>
+    <string name="force_upgrade_message">Questa versione di Windscribe non è più supportata. Aggiorna per continuare a utilizzare l’app.</string>
+    <string name="force_upgrade_message_with_version">Questa versione di Windscribe non è più supportata. Aggiorna alla versione %s per continuare a utilizzare l’app.</string>
 </resources>

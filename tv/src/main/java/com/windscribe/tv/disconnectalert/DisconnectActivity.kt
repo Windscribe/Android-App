@@ -8,15 +8,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
-import com.windscribe.tv.R
 import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.databinding.ActivityDisconnectBinding
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Timer
 import java.util.TimerTask
 
+@AndroidEntryPoint
 class DisconnectActivity : AppCompatActivity() {
-
     private var timer: Timer? = null
 
     private lateinit var binding: ActivityDisconnectBinding
@@ -24,16 +23,18 @@ class DisconnectActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         applyAppLocale()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_disconnect)
+        binding = ActivityDisconnectBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         binding.disconnectAlertContent.text = intent.getStringExtra("message")
         binding.title.text = intent.getStringExtra("title")
         val mHandler = Handler()
         timer = Timer()
-        val timerTask: TimerTask = object : TimerTask() {
-            override fun run() {
-                mHandler.post { finish() }
+        val timerTask: TimerTask =
+            object : TimerTask() {
+                override fun run() {
+                    mHandler.post { finish() }
+                }
             }
-        }
         timer?.schedule(timerTask, 7000)
         binding.disconnectAlertOk.setOnClickListener {
             finish()
@@ -47,7 +48,11 @@ class DisconnectActivity : AppCompatActivity() {
 
     companion object {
         @JvmStatic
-        fun getIntent(context: Context?, message: String?, title: String?): Intent {
+        fun getIntent(
+            context: Context?,
+            message: String?,
+            title: String?,
+        ): Intent {
             val intent = Intent(context, DisconnectActivity::class.java)
             intent.putExtra("message", message)
             intent.putExtra("title", title)

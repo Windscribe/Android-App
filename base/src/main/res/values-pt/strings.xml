@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">Falha ao atualizar as regras de Robert.</string>
     <string name="successfully_updated_robert_rules">Regras Robert atualizadas com sucesso.</string>
     <string name="share_app">Partilhar App</string>
-    <string name="share_app_description">"%s está convidando você a se juntar ao Windscribe. Forneça seu nome de usuário no momento da inscrição e ambos receberão 1 gb de dados gratuitos adicionados às suas contas. Se você for profissional, eles também serão profissionais!\n%s"</string>
+    <string name="share_app_description">"%1$s está convidando você a se juntar ao Windscribe. Forneça seu nome de usuário no momento da inscrição e ambos receberão 1 gb de dados gratuitos adicionados às suas contas. Se você for profissional, eles também serão profissionais!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Permitir o tempo todo\" Acesso à localização necessário!</string>
     <string name="enable_location_access">Ativar acesso à localização</string>
     <string name="location_permission_required">Permissão de localização necessária</string>
@@ -604,7 +604,7 @@ Os seus dados de localização permanecem no seu dispositivo e são usados apena
     <string name="ipv6_mode_description">Escolha qual versão IP usar para ligações VPN.</string>
     <string name="ip_stack">Pilha IP</string>
     <string name="ip_stack_description">Configure a pilha IP para ligações VPN.</string>
-    <string name="egress">Saída</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Entrada</string>
     <string name="ipv4_only">Apenas IPv4</string>
     <string name="manual_connection_mode_failed_title">Modo de ligação manual falhou</string>
@@ -615,4 +615,7 @@ Os seus dados de localização permanecem no seu dispositivo e são usados apena
     <string name="app_icon">Ícone da aplicação</string>
     <string name="app_icon_description">Escolha um ícone de aplicação diferente para ainda mais privacidade</string>
     <string name="configuration">Configuração</string>
+    <string name="force_upgrade_title">Atualização necessária</string>
+    <string name="force_upgrade_message">Esta versão do Windscribe já não é suportada. Atualize para continuar a utilizar a aplicação.</string>
+    <string name="force_upgrade_message_with_version">Esta versão do Windscribe já não é suportada. Atualize para %s para continuar a utilizar a aplicação.</string>
 </resources>

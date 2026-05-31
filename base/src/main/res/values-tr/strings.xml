@@ -471,7 +471,7 @@ son seçilen yer.</string>
     <string name="failed_to_update_robert_rules">Robert kuralları güncellenemedi.</string>
     <string name="successfully_updated_robert_rules">Robert kuralları başarıyla güncellendi.</string>
     <string name="share_app">Uygulamayı Paylaş</string>
-    <string name="share_app_description">"%s sizi Windscribe\a katılmaya davet ediyor. Kayıt sırasında kullanıcı adlarını girin ve ikiniz de hesaplarınıza 1 GB ücretsiz veri eklensin. Eğer profesyonel olursanız, onlar da profesyonel olurlar!\n%s"</string>
+    <string name="share_app_description">"%1$s sizi Windscribe\a katılmaya davet ediyor. Kayıt sırasında kullanıcı adlarını girin ve ikiniz de hesaplarınıza 1 GB ücretsiz veri eklensin. Eğer profesyonel olursanız, onlar da profesyonel olurlar!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Her zaman izin ver\" Konum Erişimi Gerekli!</string>
     <string name="enable_location_access">Konum Erişimini Etkinleştir</string>
     <string name="location_permission_required">Konum izni gereklidir</string>
@@ -604,7 +604,7 @@ Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler içi
     <string name="ipv6_mode_description">VPN bağlantıları için hangi IP sürümünün kullanılacağını seçin.</string>
     <string name="ip_stack">IP Yığını</string>
     <string name="ip_stack_description">VPN bağlantıları için IP yığınını yapılandırın.</string>
-    <string name="egress">Çıkış</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Giriş</string>
     <string name="ipv4_only">Yalnızca IPv4</string>
     <string name="manual_connection_mode_failed_title">Manuel bağlantı modu başarısız oldu</string>
@@ -615,4 +615,7 @@ Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler içi
     <string name="app_icon">Uygulama Simgesi</string>
     <string name="app_icon_description">Daha fazla gizlilik için farklı bir uygulama simgesi seçin</string>
     <string name="configuration">Yapılandırma</string>
+    <string name="force_upgrade_title">Güncelleme Gerekli</string>
+    <string name="force_upgrade_message">Windscribe’ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen güncelleyin.</string>
+    <string name="force_upgrade_message_with_version">Windscribe’ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen %s sürümüne güncelleyin.</string>
 </resources>

@@ -471,7 +471,7 @@ ostatnio wybrana lokalizacja.</string>
     <string name="failed_to_update_robert_rules">Nie udało się zaktualizować zasad Roberta.</string>
     <string name="successfully_updated_robert_rules">Pomyślnie zaktualizowano zasady Roberta.</string>
     <string name="share_app">Udostępnij aplikację</string>
-    <string name="share_app_description">"%s zaprasza do przyłączenia się do Windscribe. Podaj swoją nazwę użytkownika podczas rejestracji, a oboje otrzymacie 1 GB darmowych danych dodanych do swoich kont. Jeśli przejdziesz na zawodowstwo, oni też przejdą na zawodowstwo!\n%s"</string>
+    <string name="share_app_description">"%1$s zaprasza do przyłączenia się do Windscribe. Podaj swoją nazwę użytkownika podczas rejestracji, a oboje otrzymacie 1 GB darmowych danych dodanych do swoich kont. Jeśli przejdziesz na zawodowstwo, oni też przejdą na zawodowstwo!\n%2$s"</string>
     <string name="allow_all_the_time_location_access_required">\"Zezwalaj cały czas\" Wymagany dostęp do lokalizacji!</string>
     <string name="enable_location_access">Włącz dostęp do lokalizacji</string>
     <string name="location_permission_required">Wymagane uprawnienia do lokalizacji</string>
@@ -604,7 +604,7 @@ Twoje dane lokalizacyjne pozostają na urządzeniu i są używane wyłącznie do
     <string name="ipv6_mode_description">Wybierz, której wersji IP użyć do połączeń VPN.</string>
     <string name="ip_stack">Stos IP</string>
     <string name="ip_stack_description">Skonfiguruj stos IP dla połączeń VPN.</string>
-    <string name="egress">Wyjście</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Wejście</string>
     <string name="ipv4_only">Tylko IPv4</string>
     <string name="manual_connection_mode_failed_title">Tryb połączenia ręcznego nie powiódł się</string>
@@ -615,4 +615,7 @@ Twoje dane lokalizacyjne pozostają na urządzeniu i są używane wyłącznie do
     <string name="app_icon">Ikona aplikacji</string>
     <string name="app_icon_description">Wybierz inną ikonę aplikacji dla jeszcze większej prywatności</string>
     <string name="configuration">Konfiguracja</string>
+    <string name="force_upgrade_title">Wymagana aktualizacja</string>
+    <string name="force_upgrade_message">Ta wersja Windscribe nie jest już obsługiwana. Zaktualizuj, aby nadal korzystać z aplikacji.</string>
+    <string name="force_upgrade_message_with_version">Ta wersja Windscribe nie jest już obsługiwana. Zaktualizuj do wersji %s, aby nadal korzystać z aplikacji.</string>
 </resources>

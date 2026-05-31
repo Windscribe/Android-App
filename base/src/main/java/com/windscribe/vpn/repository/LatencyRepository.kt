@@ -1,20 +1,14 @@
 package com.windscribe.vpn.repository
 
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
-import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.PingTime
 import com.windscribe.vpn.serverlist.entity.StaticRegion
-import com.windscribe.vpn.services.ping.Ping
+import com.windscribe.vpn.services.ping.Pinger
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import com.wsnet.lib.WSNet
-import com.windscribe.vpn.wsnet.WSNetWrapper
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -25,248 +19,187 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.LoggerFactory
-import java.net.Inet4Address
-import java.net.InetSocketAddress
-import java.net.Socket
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.resume
-import kotlin.math.roundToInt
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Singleton
-class LatencyRepository @Inject constructor(
+class LatencyRepository
+    @Inject
+    constructor(
         private val preferencesHelper: PreferencesHelper,
         private val localDbInterface: LocalDbInterface,
-        private val wsNetWrapper: WSNetWrapper,
         private val vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
-        private val advanceParameterRepository: AdvanceParameterRepository
-) {
-    enum class LatencyType {
-        Servers, StaticIp, Config
-    }
-
-    companion object {
-        const val MINIMUM_PING_VALIDATION_MINUTES = 5
-    }
-    private val logger = LoggerFactory.getLogger("ping")
-    private var _latencyEvent = MutableStateFlow(Pair(false, LatencyType.Servers))
-    val latencyEvent: StateFlow<Pair<Boolean, LatencyType>> = _latencyEvent.asStateFlow()
-    private val skipPing
-        get() = vpnConnectionStateManager.get().isVPNActive() || WindUtilities.isOnline().not()
-
-    private suspend fun pingJobAsync(city: Datacenter): Deferred<PingTime?> {
-        val context = currentCoroutineContext()
-        return CoroutineScope(context).async {
-            val pingTime = getPingTime(city.getId(), city.regionID, false, true)
-            val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return@async null
-            // Use native ICMP ping instead of WSNet ping to avoid JNI crashes
-            return@async getLatency(pingIpAndHost.first, pingTime)
+        private val pinger: Pinger,
+        private val isOnline: StateFlow<Boolean>,
+    ) {
+        enum class LatencyType {
+            Servers,
+            StaticIp,
+            Config,
         }
-    }
 
-    private suspend fun pingJobAsync(region: StaticRegion): Deferred<PingTime> {
-        val context = currentCoroutineContext()
-        return CoroutineScope(context).async {
-            val pingTime = getPingTime(region.id, region.ipId, isStatic = true, isPro = true)
-            // Use native ICMP ping instead of WSNet ping to avoid JNI crashes
-            return@async getLatency(region.staticIpNode.ip, pingTime)
+        companion object {
+            const val MINIMUM_PING_VALIDATION_MINUTES = 5
+            private const val PING_TIMEOUT_MS = 500
+            private const val BATCH_SIZE = 20
         }
-    }
 
-    suspend fun updateAllServerLatencies(): Boolean {
-        val currentIp = preferencesHelper.userIP
-        val validPings = localDbInterface.getAllPingsAsync().filter {
-            val isSameIp = currentIp != null && currentIp == it.ip
-            val isWithinTimeLimit = (System.currentTimeMillis() - it.updatedAt).toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
-            val isPingValid = it.pingTime != -1
-            return@filter isSameIp && isWithinTimeLimit && isPingValid
-        }.map { it.id }
-        val citiesToPing = localDbInterface.getPingableDatacenters()
-                .filter { city ->
-                    return@filter !validPings.contains(city.id)
-                }
-        logger.debug("Requesting latency for ${citiesToPing.count()} cities.")
+        private val logger = LoggerFactory.getLogger("ping")
+        private val _latencyEvent = MutableStateFlow(Pair(false, LatencyType.Servers))
+        val latencyEvent: StateFlow<Pair<Boolean, LatencyType>> = _latencyEvent.asStateFlow()
 
-        // Process pings in batches of 20 to avoid overwhelming the network
-        val batchSize = 20
-        val allPingResults = mutableListOf<PingTime>()
+        private val skipPing: Boolean
+            get() = vpnConnectionStateManager.get().isVPNActive() || !isOnline.value
 
-        val cityPings = runCatching {
-            citiesToPing.chunked(batchSize).forEach { batch ->
-                val batchJobs = batch.map { pingJobAsync(it) }
-                val batchResults = batchJobs.awaitAll().filterNotNull()
-                batchResults.forEach { pingTime ->
-                    runCatching {
-                        localDbInterface.addPing(pingTime)
-                        allPingResults.add(pingTime)
-                    }
-                }
-            }
-            val successCount = allPingResults.count { it.pingTime > 0 && !it.isStatic }
-            val failureCount = allPingResults.count { it.pingTime == -1 && !it.isStatic }
-            val attemptedCount = allPingResults.count { !it.isStatic }
-            logger.debug("Latency: $successCount successful, $failureCount failed out of $attemptedCount datacenters (${citiesToPing.count()} total).")
-            return@runCatching updateLatencyEvent(allPingResults, LatencyType.Servers)
-        }
-        val staticLatencyChanged = updateStaticIpLatency()
-        val cityPingsChanged = cityPings.getOrElse { false }
-        if (cityPingsChanged) {
-            preferencesHelper.pingTestRequired = false
-        }
-        return cityPingsChanged || staticLatencyChanged
-    }
-
-    suspend fun updateFavouriteCityLatencies(): Boolean {
-        val cities = localDbInterface.getFavouritesAsync().mapNotNull {
-            try {
-                localDbInterface.getDatacenterByIDAsync(it.id)
-            } catch (_: Exception) {
-               null
+        private suspend fun pingJobAsync(city: Datacenter): Deferred<PingTime?> {
+            val context = currentCoroutineContext()
+            return CoroutineScope(context).async {
+                val pingTime = newPingTime(city.id, city.region_id, isStatic = false, isPro = true)
+                val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return@async null
+                getLatency(pingIpAndHost.first, pingTime)
             }
         }
-        val pingJobs = cities.map { pingJobAsync(it) }
-        val cityPings = runCatching {
-            pingJobs.awaitAll().filterNotNull().map { pingTime ->
-                localDbInterface.addPing(pingTime)
-                pingTime
-            }.run {
-                return@run updateLatencyEvent(this, LatencyType.Servers)
+
+        private suspend fun pingJobAsync(region: StaticRegion): Deferred<PingTime> {
+            val context = currentCoroutineContext()
+            return CoroutineScope(context).async {
+                val pingTime = newPingTime(region.id ?: 0, region.ipId ?: 0, isStatic = true, isPro = true)
+                getLatency(region.getStaticIpNode()?.ip, pingTime)
             }
         }
-        return cityPings.getOrElse { false }
-    }
 
+        suspend fun updateAllServerLatencies(): Boolean {
+            if (skipPing) return false
+            val currentIp = preferencesHelper.userIP
+            val validPings =
+                localDbInterface
+                    .getAllPingsAsync()
+                    .filter {
+                        val isSameIp = currentIp != null && currentIp == it.ip
+                        val isWithinTimeLimit =
+                            (System.currentTimeMillis() - it.updatedAt)
+                                .toDuration(DurationUnit.MILLISECONDS)
+                                .inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
+                        val isPingValid = it.pingTime != -1
+                        isSameIp && isWithinTimeLimit && isPingValid
+                    }.map { it.ping_id }
+            val citiesToPing =
+                localDbInterface
+                    .getPingableDatacenters()
+                    .filter { !validPings.contains(it.id) }
+            logger.debug("Requesting latency for ${citiesToPing.count()} cities.")
 
-    private suspend fun updateLatencyEvent(latencies: List<PingTime>, type: LatencyType): Boolean {
-        if (type == LatencyType.Servers) {
-            val lowestPingId = localDbInterface.getLowestPingIdAsync()
-            preferencesHelper.lowestPingId = lowestPingId
-        }
-        if (latencies.isNotEmpty()) {
-            _latencyEvent.update {
-                it.copy(it.first.not(), type)
-            }
-        }
-        return latencies.isNotEmpty()
-    }
-
-    suspend fun updateStaticIpLatency(): Boolean {
-        val regions = localDbInterface.getAllStaticRegions()
-        val pingJobs = regions.map { pingJobAsync(it) }
-        val staticPings = runCatching {
-            pingJobs.awaitAll().map { pingTime ->
-                localDbInterface.addPing(pingTime)
-                pingTime
-            }.run {
-                return@run updateLatencyEvent(this, LatencyType.StaticIp)
-            }
-        }
-        return staticPings.getOrElse { false }
-    }
-
-    suspend fun updateConfigLatencies(): Boolean {
-        return runCatching {
-            localDbInterface.getAllConfigs().map { configFile ->
-                if (skipPing) {
-                    throw Exception()
-                }
-                val hostname: String? = if (WireGuardVpnProfile.validConfig(configFile.content)) {
-                    WireGuardVpnProfile.getHostName(configFile.content)
-                } else {
-                    Util.getHostNameFromOpenVPNConfig(configFile.content)
-                }
-                val pingTime =
-                        getPingTime(configFile.getPrimaryKey(), 0, isStatic = false, isPro = false)
-                getLatency(hostname, pingTime)
-            }.map { pingTime ->
-                localDbInterface.addPing(pingTime)
-                pingTime
-            }.run {
-                return@run updateLatencyEvent(this, LatencyType.Config)
-            }
-        }.getOrElse { false }
-    }
-
-    private fun getPingTime(id: Int, regionId: Int, isStatic: Boolean, isPro: Boolean): PingTime {
-        return PingTime().apply {
-            ping_id = id
-            pro = isPro
-            setRegionId(regionId)
-            setStatic(isStatic)
-            setUpdatedAt(System.currentTimeMillis())
-            preferencesHelper.userIP?.let {
-                setIp(it)
-            }
-        }
-    }
-
-    private fun getLatency(ip: String?, pingTime: PingTime): PingTime {
-        val result = runCatching<PingTime> {
-            val inetAddress = Inet4Address.getByName(ip)
-            val ping = Ping()
-            val timeMs = ping.run(inetAddress, 500)
-            pingTime.setPingTime(timeMs.toFloat().roundToInt())
-            return@runCatching pingTime
-        }
-        return result.getOrNull() ?: run {
-            return getLatencyFromSocketConnection(ip, pingTime)
-        }
-    }
-
-    private fun getLatencyFromSocketConnection(ip: String?, pingTime: PingTime): PingTime {
-        return runCatching {
-            val dnsResolved = System.currentTimeMillis()
-            val address = InetSocketAddress(ip, 443)
-            Socket().apply {
-                connect(address, 500)
-                close()
-            }
-            val probeFinish = System.currentTimeMillis()
-            val time = (probeFinish - dnsResolved).toInt()
-            pingTime.setPingTime(time)
-            return@runCatching pingTime
-        }.getOrElse { pingTime.apply { setPingTime(-1) } }
-    }
-
-    private suspend fun getLatencyFromApi(
-            host: String?, ip: String,
-            ping: PingTime,
-    ):  PingTime {
-        if (skipPing) {
-            throw WindScribeException("Latency check not allowed once vpn is connected.")
-        }
-        if (host == null) {
-            return ping.apply { pingTime = -1 }
-        }
-        val updatedPing = withTimeoutOrNull(500) {
-            suspendCancellableCoroutine {
-                val pingManager = wsNetWrapper.safePingManager()
-                if (pingManager == null) {
-                    it.resume(ping.apply { pingTime = -1 })
-                    return@suspendCancellableCoroutine
-                }
-                try {
-                    val pingType = advanceParameterRepository.pingType()
-                    pingManager.ping(ip, "http://$ip:6464/latency", pingType) { _, _, latency, _ ->
-                        ping.apply {
-                            pingTime = latency
+            val allPingResults = mutableListOf<PingTime>()
+            val cityPings =
+                runCatching {
+                    citiesToPing.chunked(BATCH_SIZE).forEach { batch ->
+                        val batchResults = batch.map { pingJobAsync(it) }.awaitAll().filterNotNull()
+                        batchResults.forEach { pingTime ->
+                            runCatching {
+                                localDbInterface.addPing(pingTime)
+                                allPingResults.add(pingTime)
+                            }
                         }
-                        it.resume(ping)
                     }
-                } catch (e: Exception) {
-                    it.resume(ping.apply { pingTime = -1 })
+                    val successCount = allPingResults.count { it.pingTime > 0 && !it.isStatic }
+                    val failureCount = allPingResults.count { it.pingTime == -1 && !it.isStatic }
+                    val attemptedCount = allPingResults.count { !it.isStatic }
+                    logger.debug(
+                        "Latency: $successCount successful, $failureCount failed out of $attemptedCount datacenters (${citiesToPing.count()} total).",
+                    )
+                    updateLatencyEvent(allPingResults, LatencyType.Servers)
                 }
+            val staticLatencyChanged = updateStaticIpLatency()
+            val cityPingsChanged = cityPings.getOrElse { false }
+            if (cityPingsChanged) {
+                preferencesHelper.pingTestRequired = false
             }
+            return cityPingsChanged || staticLatencyChanged
         }
-        return ping.apply {
-            if (updatedPing == null) {
-                pingTime = -1
+
+        suspend fun updateFavouriteCityLatencies(): Boolean {
+            if (skipPing) return false
+            val cities =
+                localDbInterface.getFavouritesAsync().mapNotNull {
+                    runCatching { localDbInterface.getDatacenterByIDAsync(it.id) }.getOrNull()
+                }
+            val pingJobs = cities.map { pingJobAsync(it) }
+            return runCatching {
+                val results = pingJobs.awaitAll().filterNotNull().onEach { localDbInterface.addPing(it) }
+                updateLatencyEvent(results, LatencyType.Servers)
+            }.getOrElse { false }
+        }
+
+        suspend fun updateStaticIpLatency(): Boolean {
+            if (skipPing) return false
+            val regions = localDbInterface.getAllStaticRegions()
+            val pingJobs = regions.map { pingJobAsync(it) }
+            return runCatching {
+                val results = pingJobs.awaitAll().onEach { localDbInterface.addPing(it) }
+                updateLatencyEvent(results, LatencyType.StaticIp)
+            }.getOrElse { false }
+        }
+
+        suspend fun updateConfigLatencies(): Boolean {
+            if (skipPing) return false
+            return runCatching {
+                val results =
+                    localDbInterface
+                        .getAllConfigs()
+                        .map { configFile ->
+                            val hostname: String? =
+                                if (WireGuardVpnProfile.validConfig(configFile.content ?: "")) {
+                                    WireGuardVpnProfile.getHostName(configFile.content ?: "")
+                                } else {
+                                    Util.getHostNameFromOpenVPNConfig(configFile.content ?: "")
+                                }
+                            val pingTime = newPingTime(configFile.primaryKey, 0, isStatic = false, isPro = false)
+                            getLatency(hostname, pingTime)
+                        }.onEach { localDbInterface.addPing(it) }
+                updateLatencyEvent(results, LatencyType.Config)
+            }.getOrElse { false }
+        }
+
+        private suspend fun updateLatencyEvent(
+            latencies: List<PingTime>,
+            type: LatencyType,
+        ): Boolean {
+            if (type == LatencyType.Servers) {
+                preferencesHelper.lowestPingId = localDbInterface.getLowestPingIdAsync()
             }
+            if (latencies.isNotEmpty()) {
+                _latencyEvent.update { it.copy(it.first.not(), type) }
+            }
+            return latencies.isNotEmpty()
+        }
+
+        private fun newPingTime(
+            id: Int,
+            regionId: Int,
+            isStatic: Boolean,
+            isPro: Boolean,
+        ): PingTime =
+            PingTime().apply {
+                ping_id = id
+                pro = isPro
+                this.regionId = regionId
+                this.isStatic = isStatic
+                updatedAt = System.currentTimeMillis()
+                preferencesHelper.userIP?.let { ip = it }
+            }
+
+        private suspend fun getLatency(
+            host: String?,
+            pingTime: PingTime,
+        ): PingTime {
+            if (host == null) {
+                pingTime.pingTime = -1
+                return pingTime
+            }
+            pingTime.pingTime = pinger.ping(host, PING_TIMEOUT_MS)
+            return pingTime
         }
     }
-}

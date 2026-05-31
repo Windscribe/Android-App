@@ -7,21 +7,21 @@
 plugins {
     id("com.android.library")
     id("checkstyle")
-    kotlin("android")
-   // kotlin("android.extensions")
 }
 
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 android {
-    compileSdkVersion(34)
+    compileSdk = rootProject.extra["appCompiledSdk"] as Int
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
-        minSdkVersion(21)
-        targetSdkVersion(34) // 'Q'.toInt()
+        minSdk = rootProject.extra["appMinSdk"] as Int
 //        versionCode = 175
 //        versionName = "0.7.21"
 
@@ -29,6 +29,15 @@ android {
             cmake {
                 // arguments = listOf("-DANDROID_TOOLCHAIN=clang",
                 //        "-DANDROID_STL=c++_static")
+                // Silence warnings from vendored OpenSSL C sources we don't own.
+                val vendorCFlags =
+                    listOf(
+                        "-Wno-constant-conversion",
+                        "-Wno-fortify-source",
+                        "-Wno-atomic-alignment",
+                    )
+                cFlags += vendorCFlags
+                cppFlags += vendorCFlags
             }
         }
     }
@@ -37,7 +46,10 @@ android {
         buildConfig = true
         aidl = true
     }
-    testOptions.unitTests.isIncludeAndroidResources = true
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        targetSdk = rootProject.extra["appTargetSdk"] as Int
+    }
 
     externalNativeBuild {
         cmake {
@@ -105,7 +117,7 @@ android {
             setDimension("implementation")
             buildConfigField("boolean", "openvpn3", "true")
         }
-        */
+         */
         create("skeleton") {
             dimension = "implementation"
             buildConfigField("boolean", "openvpn3", "false")
@@ -116,43 +128,66 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 
     splits {
         abi {
             isEnable = true
             reset()
-            include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
+            val requested =
+                (project.findProperty("abiFilter") as String?)
+                    ?.split(",")
+                    ?.map { it.trim() }
+                    ?.filter { it.isNotEmpty() }
+            include(*(requested ?: listOf("x86", "x86_64", "armeabi-v7a", "arm64-v8a")).toTypedArray())
             isUniversalApk = true
         }
     }
     namespace = "de.blinkt.openvpn"
 }
 
+// Vendored module: AIDL-generated Stub/Proxy overrides don't carry @Deprecated
+// even when the interface method does. Silence that dep-ann lint noise from
+// generated code we don't own.
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:-dep-ann")
+}
+
 var swigcmd = "swig"
 // Workaround for Mac OS X since it otherwise does not find swig and I cannot get
 // the Exec task to respect the PATH environment :(
-if (File("/usr/local/bin/swig").exists())
+if (File("/usr/local/bin/swig").exists()) {
     swigcmd = "/usr/local/bin/swig"
+}
 
-fun registerGenTask(variantName: String, variantDirName: String): File {
+fun registerGenTask(
+    variantName: String,
+    variantDirName: String,
+): File {
     val baseDir = File(buildDir, "generated/source/ovpn3swig/$variantDirName")
     val genDir = File(baseDir, "net/openvpn/ovpn3")
 
     tasks.register<Exec>("generateOpenVPN3Swig$variantName") {
-
         doFirst {
             mkdir(genDir)
         }
         commandLine(
             listOf(
-                swigcmd, "-outdir", genDir, "-outcurrentdir", "-c++", "-java", "-package", "net.openvpn.ovpn3",
-                "-Isrc/main/cpp/openvpn3/client", "-Isrc/main/cpp/openvpn3/",
-                "-o", "$genDir/ovpncli_wrap.cxx", "-oh", "$genDir/ovpncli_wrap.h",
-                "src/main/cpp/openvpn3/javacli/ovpncli.i"
-            )
+                swigcmd,
+                "-outdir",
+                genDir,
+                "-outcurrentdir",
+                "-c++",
+                "-java",
+                "-package",
+                "net.openvpn.ovpn3",
+                "-Isrc/main/cpp/openvpn3/client",
+                "-Isrc/main/cpp/openvpn3/",
+                "-o",
+                "$genDir/ovpncli_wrap.cxx",
+                "-oh",
+                "$genDir/ovpncli_wrap.h",
+                "src/main/cpp/openvpn3/javacli/ovpncli.i",
+            ),
         )
     }
     return baseDir
@@ -175,7 +210,7 @@ dependencies {
     val materialVersion = "1.1.0"
     val fragment_version = "1.2.4"
 
-    implementation("androidx.annotation:annotation:1.1.0")
+    implementation("androidx.annotation:annotation:1.9.1")
     implementation("androidx.core:core:$coreVersion")
 /*
     // Is there a nicer way to do this?
@@ -195,10 +230,9 @@ dependencies {
     dependencies.add("uiImplementation", "com.google.android.material:material:$materialVersion")
     dependencies.add("uiImplementation", "androidx.webkit:webkit:1.2.0")
 */
-    testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.72")
-    testImplementation("junit:junit:4.13")
-    testImplementation("org.mockito:mockito-core:3.3.3")
-    testImplementation("org.robolectric:robolectric:4.3.1")
-    testImplementation("androidx.test:core:1.2.0")
+    testImplementation("junit:junit:${libs.versions.junit.get()}")
+    testImplementation("org.mockito:mockito-core:5.23.0")
+    testImplementation("org.robolectric:robolectric:4.16.1")
+    testImplementation("androidx.test:core:1.7.0")
     implementation(project(":common"))
 }

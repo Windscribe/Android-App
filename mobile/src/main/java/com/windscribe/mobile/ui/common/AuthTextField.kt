@@ -54,7 +54,7 @@ fun AuthTextField(
     isPassword: Boolean = false,
     autofillType: ContentType? = null,
     onValueChange: (String) -> Unit = {},
-    onHintClick: () -> Unit = {}
+    onHintClick: () -> Unit = {},
 ) {
     var text by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -70,8 +70,8 @@ fun AuthTextField(
             Text(
                 text = hint,
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = if(isError) AppColors.red else AppColors.white,
-                modifier = Modifier.clickable { onHintClick() }
+                color = if (isError) AppColors.red else AppColors.white,
+                modifier = Modifier.clickable { onHintClick() },
             )
             if (isError) {
                 Icon(
@@ -92,77 +92,88 @@ fun AuthTextField(
                 isError = isError,
                 singleLine = true,
                 shape = RoundedCornerShape(9.dp),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrectEnabled = false,
-                    imeAction = ImeAction.Done,
-                    keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        autoCorrectEnabled = false,
+                        imeAction = ImeAction.Done,
+                        keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text,
+                    ),
                 placeholder = {
                     if (placeHolder != null) {
                         Text(
                             text = placeHolder,
                             style = font16.copy(fontWeight = FontWeight.Normal),
                             color = AppColors.white.copy(alpha = 0.70f),
-                            textAlign = TextAlign.Start)
+                            textAlign = TextAlign.Start,
+                        )
                     }
                 },
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = if(isError) AppColors.red else AppColors.white,
-                    unfocusedTextColor = if(isError) AppColors.red else AppColors.white,
-                    disabledTextColor = if (isError) AppColors.red else AppColors.white,
-                    unfocusedContainerColor = AppColors.white.copy(0.05f),
-                    focusedContainerColor =  AppColors.white.copy(0.05f),
-                    disabledContainerColor =  AppColors.white.copy(0.05f),
-                    errorContainerColor =  AppColors.white.copy(0.05f),
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                    cursorColor = AppColors.white,
-                    disabledIndicatorColor = Color.Transparent,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = AppColors.white,
-                        backgroundColor = AppColors.white.copy(alpha = 0.3f)
-                    )
-                ),
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedTextColor = if (isError) AppColors.red else AppColors.white,
+                        unfocusedTextColor = if (isError) AppColors.red else AppColors.white,
+                        disabledTextColor = if (isError) AppColors.red else AppColors.white,
+                        unfocusedContainerColor = AppColors.white.copy(0.05f),
+                        focusedContainerColor = AppColors.white.copy(0.05f),
+                        disabledContainerColor = AppColors.white.copy(0.05f),
+                        errorContainerColor = AppColors.white.copy(0.05f),
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = Color.Transparent,
+                        cursorColor = AppColors.white,
+                        disabledIndicatorColor = Color.Transparent,
+                        selectionColors =
+                            androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = AppColors.white,
+                                backgroundColor = AppColors.white.copy(alpha = 0.3f),
+                            ),
+                    ),
                 visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = {
                     if (isPassword) {
                         IconButton(
-                            onClick = { passwordVisible = !passwordVisible }
+                            onClick = { passwordVisible = !passwordVisible },
                         ) {
                             Icon(
-                                painter = painterResource(
-                                    id = if (passwordVisible) R.drawable.ic_eye_off else R.drawable.ic_eye
-                                ),
+                                painter =
+                                    painterResource(
+                                        id = if (passwordVisible) R.drawable.ic_eye_off else R.drawable.ic_eye,
+                                    ),
                                 stringResource(id = com.windscribe.vpn.R.string.password),
-                                tint = AppColors.white.copy(alpha = 0.50f)
+                                tint = AppColors.white.copy(alpha = 0.50f),
                             )
                         }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (isError) Modifier.border(
-                            width = 1.dp,
-                            color = AppColors.red,
-                            shape = RoundedCornerShape(9.dp)
-                        ) else Modifier
-                    )
-                    .then(
-                        if (autofillType != null) {
-                            Modifier.semantics {
-                                contentType = autofillType
-                                contentDataType = ContentDataType.Text
-                            }
-                        } else if (isPassword) {
-                            Modifier.semantics {
-                                contentType = ContentType.Password
-                                contentDataType = ContentDataType.Text
-                            }
-                        } else Modifier
-                    ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (isError) {
+                                Modifier.border(
+                                    width = 1.dp,
+                                    color = AppColors.red,
+                                    shape = RoundedCornerShape(9.dp),
+                                )
+                            } else {
+                                Modifier
+                            },
+                        ).then(
+                            if (autofillType != null) {
+                                Modifier.semantics {
+                                    contentType = autofillType
+                                    contentDataType = ContentDataType.Text
+                                }
+                            } else if (isPassword) {
+                                Modifier.semantics {
+                                    contentType = ContentType.Password
+                                    contentDataType = ContentDataType.Text
+                                }
+                            } else {
+                                Modifier
+                            },
+                        ),
                 textStyle = font16.copy(color = if (isError) AppColors.red else AppColors.white, textAlign = TextAlign.Start),
             )
         }
@@ -173,9 +184,10 @@ fun AuthTextField(
 @Preview(showBackground = true)
 fun AuthTextFieldPreview() {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 100.dp, start = 16.dp, end = 16.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(top = 100.dp, start = 16.dp, end = 16.dp),
     ) {
         AuthTextField(hint = "Username", isError = true)
         Spacer(modifier = Modifier.height(16.dp))

@@ -2,7 +2,6 @@ package com.windscribe.mobile.ui.preferences.network_options
 
 import PreferencesNavBar
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,17 +18,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.PreferenceBackground
-import com.windscribe.mobile.ui.common.ScreenDescription
 import com.windscribe.mobile.ui.common.SwitchItemView
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -44,20 +43,54 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.constants.FeatureExplainer
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 
+/**
+ * Snapshot of the network-options UI state. Hoisted so the stateless [NetworkOptionsContent]
+ * never touches [NetworkOptionsViewModel] — previews feed it directly.
+ */
+data class NetworkOptionsState(
+    val autoSecureEnabled: Boolean = false,
+    val currentNetwork: NetworkInfo? = null,
+    val allNetworks: List<NetworkInfo> = emptyList(),
+)
+
+/**
+ * Stateful entry point. Owns the [NetworkOptionsViewModel], collects its flows, then delegates
+ * rendering to [NetworkOptionsContent].
+ */
 @Composable
-fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
+fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel = hiltViewModel<NetworkOptionsViewModelImpl>()) {
+    val autoSecureEnabled by viewModel.autoSecureEnabled.collectAsState()
+    val currentNetwork by viewModel.currentNetwork.collectAsState()
+    val allNetworks by viewModel.allNetworks.collectAsState()
+
+    NetworkOptionsContent(
+        state =
+            NetworkOptionsState(
+                autoSecureEnabled = autoSecureEnabled,
+                currentNetwork = currentNetwork,
+                allNetworks = allNetworks,
+            ),
+        onAutoSecureChanged = viewModel::onAutoSecureChanged,
+    )
+}
+
+/**
+ * Stateless network-options UI. Everything it needs is passed in, so it renders identically in
+ * the app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun NetworkOptionsContent(
+    state: NetworkOptionsState,
+    onAutoSecureChanged: () -> Unit,
+) {
     val navController = LocalNavController.current
-    val autoSecureEnabled by viewModel?.autoSecureEnabled?.collectAsState()
-        ?: remember { mutableStateOf(false) }
-    val currentNetwork by viewModel?.currentNetwork?.collectAsState() ?: remember {
-        mutableStateOf(
-            null
-        )
-    }
     PreferenceBackground {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 16.dp, horizontal = 16.dp)) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 16.dp, horizontal = 16.dp),
+        ) {
             PreferencesNavBar(stringResource(R.string.network_options)) {
                 navController.popBackStack()
             }
@@ -66,18 +99,19 @@ fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
                 title = R.string.auto_secure_new_networks,
                 icon = com.windscribe.mobile.R.drawable.ic_wifi,
                 description = R.string.auto_secure_new_networks_description,
-                autoSecureEnabled,
+                state.autoSecureEnabled,
                 explainer = FeatureExplainer.NETWORK_OPTIONS,
                 onSelect = {
-                    viewModel?.onAutoSecureChanged()
+                    onAutoSecureChanged()
                 },
             )
+            val currentNetwork = state.currentNetwork
             if (currentNetwork != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                CurrentNetwork(currentNetwork!!)
+                CurrentNetwork(currentNetwork)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            OtherNetworks(viewModel)
+            OtherNetworks(state.allNetworks)
         }
     }
 }
@@ -90,7 +124,7 @@ private fun CurrentNetwork(networkInfo: NetworkInfo) {
             color = MaterialTheme.colorScheme.preferencesSubtitleColor,
             style = font12.copy(fontWeight = FontWeight.SemiBold),
             textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(8.dp))
         Network(networkInfo)
@@ -101,21 +135,20 @@ private fun CurrentNetwork(networkInfo: NetworkInfo) {
 private fun Network(networkInfo: NetworkInfo) {
     val navController = LocalNavController.current
     Row(
-        modifier = Modifier
-            .height(48.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .hapticClickable {
-                navController.currentBackStackEntry?.savedStateHandle?.set(
-                    "network_name",
-                    networkInfo.networkName
-                )
-                navController.navigate(Screen.NetworkDetails.route)
-            }
-            .padding(14.dp)
-           , verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .height(48.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(12.dp),
+                ).hapticClickable {
+                    navController.currentBackStackEntry?.savedStateHandle?.set(
+                        "network_name",
+                        networkInfo.networkName,
+                    )
+                    navController.navigate(Screen.NetworkDetails.route)
+                }.padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = networkInfo.networkName,
@@ -133,18 +166,14 @@ private fun Network(networkInfo: NetworkInfo) {
         Spacer(modifier = Modifier.width(8.dp))
         Icon(
             painterResource(com.windscribe.mobile.R.drawable.arrow_right),
-            contentDescription = "", tint = MaterialTheme.colorScheme.primaryTextColor
+            contentDescription = "",
+            tint = MaterialTheme.colorScheme.primaryTextColor,
         )
     }
 }
 
 @Composable
-private fun OtherNetworks(viewModel: NetworkOptionsViewModel?) {
-    val allNetworks by viewModel?.allNetworks?.collectAsState() ?: remember {
-        mutableStateOf(
-            emptyList()
-        )
-    }
+private fun OtherNetworks(allNetworks: List<NetworkInfo>) {
     if (allNetworks.isNotEmpty()) {
         Column {
             Text(
@@ -152,7 +181,7 @@ private fun OtherNetworks(viewModel: NetworkOptionsViewModel?) {
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 style = font12.copy(fontWeight = FontWeight.SemiBold),
                 textAlign = TextAlign.Start,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(8.dp))
             LazyColumn {
@@ -165,10 +194,33 @@ private fun OtherNetworks(viewModel: NetworkOptionsViewModel?) {
     }
 }
 
+/**
+ * Feeds representative [NetworkOptionsState] values into the preview.
+ */
+private class NetworkOptionsStateProvider : PreviewParameterProvider<NetworkOptionsState> {
+    override val values =
+        sequenceOf(
+            NetworkOptionsState(autoSecureEnabled = false),
+            NetworkOptionsState(
+                autoSecureEnabled = true,
+                currentNetwork = NetworkInfo("Home WiFi", true, false, "wstunnel", "443"),
+                allNetworks =
+                    listOf(
+                        NetworkInfo("Office WiFi", false, false, "wstunnel", "443"),
+                    ),
+            ),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun NetworkOptionsScreenPreview() {
+private fun NetworkOptionsContentPreview(
+    @PreviewParameter(NetworkOptionsStateProvider::class) state: NetworkOptionsState,
+) {
     PreviewWithNav {
-        NetworkOptionsScreen()
+        NetworkOptionsContent(
+            state = state,
+            onAutoSecureChanged = {},
+        )
     }
 }

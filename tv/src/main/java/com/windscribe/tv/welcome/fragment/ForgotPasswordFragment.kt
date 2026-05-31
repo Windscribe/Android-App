@@ -13,16 +13,20 @@ import com.windscribe.tv.databinding.ForgotPasswordBinding
 
 class ForgotPasswordFragment : Fragment() {
     private lateinit var binding: ForgotPasswordBinding
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = ForgotPasswordBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.back.requestFocus()
         binding.back.setOnClickListener {

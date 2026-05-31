@@ -1,6 +1,8 @@
 package com.windscribe.vpn.commonutils
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -8,7 +10,6 @@ import org.junit.Test
  * Tests all individual functions and edge cases for IP generation from public keys.
  */
 class WireguardUtilTest {
-
     // ==================== parseCIDR Tests ====================
 
     @Test
@@ -111,15 +112,16 @@ class WireguardUtilTest {
 
     @Test
     fun `ipIntToString and ipStringToInt should be inverse operations`() {
-        val testIPs = listOf(
-            "100.64.0.0",
-            "10.0.0.0",
-            "172.16.0.0",
-            "192.168.1.1",
-            "127.0.0.1",
-            "1.2.3.4",
-            "255.255.255.255"
-        )
+        val testIPs =
+            listOf(
+                "100.64.0.0",
+                "10.0.0.0",
+                "172.16.0.0",
+                "192.168.1.1",
+                "127.0.0.1",
+                "1.2.3.4",
+                "255.255.255.255",
+            )
 
         testIPs.forEach { ip ->
             val converted = WireguardUtil.ipIntToString(WireguardUtil.ipStringToInt(ip))
@@ -185,8 +187,10 @@ class WireguardUtilTest {
         // Second octet should be in range 64-127 (10 bits: 01xxxxxx)
         val parts = ipString.split(".")
         val secondOctet = parts[1].toInt()
-        assertTrue("Second octet should be 64-127, got $secondOctet",
-            secondOctet in 64..127)
+        assertTrue(
+            "Second octet should be 64-127, got $secondOctet",
+            secondOctet in 64..127,
+        )
     }
 
     @Test
@@ -221,8 +225,10 @@ class WireguardUtilTest {
 
         // Second octet should be 64-127
         val secondOctet = parts[1].toInt()
-        assertTrue("Second octet should be 64-127, got $secondOctet",
-            secondOctet in 64..127)
+        assertTrue(
+            "Second octet should be 64-127, got $secondOctet",
+            secondOctet in 64..127,
+        )
     }
 
     @Test
@@ -326,8 +332,10 @@ class WireguardUtilTest {
         assertTrue("IP should start with 100.", ip.startsWith("100."))
         val parts = ip.split(".")
         val secondOctet = parts[1].toInt()
-        assertTrue("Second octet should be 64-127, got $secondOctet",
-            secondOctet in 64..127)
+        assertTrue(
+            "Second octet should be 64-127, got $secondOctet",
+            secondOctet in 64..127,
+        )
 
         println("Generated IP for public key $publicKey: $ip")
     }
@@ -351,13 +359,13 @@ class WireguardUtilTest {
         val phpOctet2 = 64 or ((v ushr 16) and 0xFF)
         val phpOctet3 = (v ushr 8) and 0xFF
         val phpOctet4 = v and 0xFF
-        val phpIP = "100.$phpOctet2.$phpOctet3.$phpOctet4"
+        // generateWireguardIP() returns CIDR-formatted "IP/32" — that's the contract
+        // (used directly in WireGuard config Address= lines). Match the suffix here.
+        val phpIP = "100.$phpOctet2.$phpOctet3.$phpOctet4/32"
 
         // Kotlin approach: use our implementation
         val kotlinIP = WireguardUtil.generateWireguardIP(publicKey, cidr)
 
         assertEquals("Kotlin implementation should match PHP server", phpIP, kotlinIP)
-        println("PHP approach: $phpIP")
-        println("Kotlin approach: $kotlinIP")
     }
 }

@@ -10,26 +10,37 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.windscribe.tv.R
 
 class OverlayFocusAware : ConstraintLayout {
-    private val contentIds = intArrayOf(
-        R.id.server_item, R.id.connect, R.id.all_server_view,
-        R.id.all_server_view_static
-    )
-    private val headerIds = intArrayOf(
-        R.id.header_item_all, R.id.header_item_fav,
-        R.id.header_item_static
-    )
+    private val contentIds =
+        intArrayOf(
+            R.id.server_item,
+            R.id.connect,
+            R.id.all_server_view,
+            R.id.all_server_view_static,
+        )
+    private val headerIds =
+        intArrayOf(
+            R.id.header_item_all,
+            R.id.header_item_fav,
+            R.id.header_item_static,
+        )
     private var currentFragment = 0
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(
-        context, attrs
+        context,
+        attrs,
     )
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context, attrs, defStyleAttr
+        context,
+        attrs,
+        defStyleAttr,
     )
 
-    override fun focusSearch(focused: View, direction: Int): View {
+    override fun focusSearch(
+        focused: View,
+        direction: Int,
+    ): View {
         var viewId: Int? = null
         if (direction == FOCUS_LEFT && contentIds.contains(focused.id)) {
             if (nextFocusLeftId == -1) {
@@ -47,17 +58,18 @@ class OverlayFocusAware : ConstraintLayout {
                 }
             }
         }
-        headerIds.firstOrNull {
-            it == focused.id
-        }?.let {
-            val index = headerIds.indexOf(it)
-            if (index in 0..1 && direction == FOCUS_DOWN) {
-                viewId = headerIds[index + 1]
+        headerIds
+            .firstOrNull {
+                it == focused.id
+            }?.let {
+                val index = headerIds.indexOf(it)
+                if (index in 0..1 && direction == FOCUS_DOWN) {
+                    viewId = headerIds[index + 1]
+                }
+                if (index in 1..2 && direction == FOCUS_UP) {
+                    viewId = headerIds[index - 1]
+                }
             }
-            if (index in 1..2 && direction == FOCUS_UP) {
-                viewId = headerIds[index - 1]
-            }
-        }
         return viewId?.let {
             findViewById<View>(it) ?: focused
         } ?: focused

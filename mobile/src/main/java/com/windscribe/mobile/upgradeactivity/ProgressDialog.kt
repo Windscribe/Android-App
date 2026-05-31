@@ -11,16 +11,21 @@ import androidx.appcompat.app.AppCompatActivity
 import com.windscribe.mobile.databinding.FragmentProgressBinding
 
 class ProgressDialog : FullScreenDialog() {
-
     private var binding: FragmentProgressBinding? = null
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentProgressBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         // Delay the progress bar visibility to avoid the flicker
         Looper.getMainLooper().let {
@@ -53,19 +58,24 @@ class ProgressDialog : FullScreenDialog() {
         const val tag = "ProgressDialog"
 
         @JvmStatic
-        fun show(activity: AppCompatActivity, progressText: String? = null, @ColorInt backgroundColor: Int? = null) {
+        fun show(
+            activity: AppCompatActivity,
+            progressText: String? = null,
+            @ColorInt backgroundColor: Int? = null,
+        ) {
             if (activity.supportFragmentManager.findFragmentByTag(tag) != null) {
                 return
             }
             activity.runOnUiThread {
                 kotlin.runCatching {
-                    ProgressDialog().apply {
-                        Bundle().apply {
-                            putString(progressTextKey, progressText)
-                            backgroundColor?.let { putInt(ProgressDialog.backgroundColorKey, it) }
-                            arguments = this
-                        }
-                    }.show(activity.supportFragmentManager, tag)
+                    ProgressDialog()
+                        .apply {
+                            Bundle().apply {
+                                putString(progressTextKey, progressText)
+                                backgroundColor?.let { putInt(ProgressDialog.backgroundColorKey, it) }
+                                arguments = this
+                            }
+                        }.show(activity.supportFragmentManager, tag)
                 }
             }
         }

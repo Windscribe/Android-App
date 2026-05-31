@@ -1,0 +1,96 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - ui
+---
+# Adds two cities to favourites from the All Servers list, verifies they appear
+# in the Favourites tab, then removes them one-by-one and verifies removal.
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    id: "home_connect_button"
+
+# ── Step 0: Clear any leftover favourites from previous runs ─────────────────
+
+- runFlow: ../subflows/clear-favourites.yaml
+
+# ── Step 1: Expand first country, fav its first city, collapse ───────────────
+
+- tapOn:
+    id: "country_row"
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: "fav_icon"
+    index: 0
+
+- tapOn:
+    id: "country_chevron"
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# ── Step 2: Expand second country, fav its first city, collapse ──────────────
+
+- tapOn:
+    id: "country_row"
+    index: 1
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: "fav_icon"
+    index: 0
+
+- tapOn:
+    id: "country_chevron"
+    index: 1
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# ── Step 4: Switch to Favourites tab ─────────────────────────────────────────
+
+- tapOn:
+    id: "tab_fav"
+- assertVisible:
+    id: "server_list_fav"
+
+# ── Step 5: Verify two items appear ──────────────────────────────────────────
+
+- assertVisible:
+    id: "fav_item"
+    index: 0
+- assertVisible:
+    id: "fav_item"
+    index: 1
+
+# ── Step 6: Remove first item, verify second shifts up ───────────────────────
+
+- tapOn:
+    id: "fav_remove_icon"
+    index: 0
+
+- assertVisible:
+    id: "fav_item"
+    index: 0
+- assertNotVisible:
+    id: "fav_item"
+    index: 1
+
+# ── Step 7: Remove remaining item, verify list is empty ──────────────────────
+
+- tapOn:
+    id: "fav_remove_icon"
+    index: 0
+
+- assertNotVisible:
+    id: "fav_item"
+    index: 0

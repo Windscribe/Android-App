@@ -17,6 +17,6 @@ fun TenGIcon() {
         painter = painterResource(R.drawable.ic_ten_gb),
         contentDescription = "Ten 10 GBPS location.",
         modifier = Modifier.size(16.dp),
-        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
+        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor),
     )
 }

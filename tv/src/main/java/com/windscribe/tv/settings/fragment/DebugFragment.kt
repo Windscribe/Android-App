@@ -17,6 +17,7 @@ import com.windscribe.tv.settings.SettingActivity
 class DebugFragment : Fragment() {
     private lateinit var binding: FragmentDebugBinding
     private var listener: SettingsFragmentListener? = null
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val activity: SettingActivity
@@ -33,18 +34,24 @@ class DebugFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentDebugBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         listener?.onFragmentReady(this)
     }
 
-    fun showLoading(loadingText: String, error: String) {
+    fun showLoading(
+        loadingText: String,
+        error: String,
+    ) {
         if (loadingText.isNotEmpty() && error.isEmpty()) {
             binding.debugRecycleView.visibility = View.GONE
             binding.progressBar.visibility = View.VISIBLE

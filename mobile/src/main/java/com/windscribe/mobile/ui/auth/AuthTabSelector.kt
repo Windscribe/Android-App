@@ -24,34 +24,34 @@ import com.windscribe.mobile.ui.theme.font16
 
 enum class AuthType {
     STANDARD,
-    HASHED
+    HASHED,
 }
 
 @Composable
 fun AuthTabSelector(
     selectedTab: AuthType,
     onTabSelected: (AuthType) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .background(
-                color = AppColors.white.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(100.dp)
-            )
-            .padding(6.dp),
+        modifier =
+            modifier
+                .background(
+                    color = AppColors.white.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(100.dp),
+                ).padding(6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         TabItem(
             text = stringResource(com.windscribe.vpn.R.string.standard),
             isSelected = selectedTab == AuthType.STANDARD,
-            onClick = { onTabSelected(AuthType.STANDARD) }
+            onClick = { onTabSelected(AuthType.STANDARD) },
         )
         TabItem(
             text = stringResource(com.windscribe.vpn.R.string.hashed),
             isSelected = selectedTab == AuthType.HASHED,
-            onClick = { onTabSelected(AuthType.HASHED) }
+            onClick = { onTabSelected(AuthType.HASHED) },
         )
     }
 }
@@ -60,44 +60,46 @@ fun AuthTabSelector(
 private fun TabItem(
     text: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .then(
-                if (isSelected) {
-                    Modifier
-                        .shadow(
-                            elevation = 2.dp,
-                            shape = RoundedCornerShape(100.dp),
-                            spotColor = Color.Black.copy(alpha = 0.25f)
-                        )
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    AppColors.tabGradientTop,
-                                    AppColors.tabGradientBottom
-                                )
-                            ),
-                            shape = RoundedCornerShape(100.dp)
-                        )
-                } else {
-                    Modifier
-                }
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .then(
+                    if (isSelected) {
+                        Modifier
+                            .shadow(
+                                elevation = 2.dp,
+                                shape = RoundedCornerShape(100.dp),
+                                spotColor = Color.Black.copy(alpha = 0.25f),
+                            ).background(
+                                brush =
+                                    Brush.verticalGradient(
+                                        colors =
+                                            listOf(
+                                                AppColors.tabGradientTop,
+                                                AppColors.tabGradientBottom,
+                                            ),
+                                    ),
+                                shape = RoundedCornerShape(100.dp),
+                            )
+                    } else {
+                        Modifier
+                    },
+                ).clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
-            style = font16.copy(
-                fontWeight = FontWeight.Medium,
-                lineHeight = font16.fontSize * 1.25f
-            ),
+            style =
+                font16.copy(
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = font16.fontSize * 1.25f,
+                ),
             color = if (isSelected) AppColors.white else AppColors.grayText,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -106,13 +108,14 @@ private fun TabItem(
 @Composable
 fun AuthTabSelectorPreview() {
     Box(
-        modifier = Modifier
-            .background(AppColors.deepBlue)
-            .padding(24.dp)
+        modifier =
+            Modifier
+                .background(AppColors.deepBlue)
+                .padding(24.dp),
     ) {
         AuthTabSelector(
             selectedTab = AuthType.STANDARD,
-            onTabSelected = {}
+            onTabSelected = {},
         )
     }
 }

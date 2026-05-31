@@ -12,7 +12,6 @@ import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 
 @Dao
 interface ServerStatusDao {
-
     @Query("SELECT * FROM server_status_update WHERE user_name =:username")
     suspend fun getServerStatus(username: String): ServerStatusUpdateTable
 

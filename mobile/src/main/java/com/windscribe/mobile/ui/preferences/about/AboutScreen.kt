@@ -1,11 +1,9 @@
 package com.windscribe.mobile.ui.preferences.about
 
 import PreferencesNavBar
-import androidx.annotation.DrawableRes
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,16 +37,17 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 @Composable
 fun AboutScreen() {
     val navController = LocalNavController.current
-    val aboutItems = listOf(
-        R.string.status to NetworkKeyConstants.URL_STATUS,
-        R.string.about to NetworkKeyConstants.URL_ABOUT,
-        R.string.privacy_policy to NetworkKeyConstants.URL_PRIVACY,
-        R.string.terms_title to NetworkKeyConstants.URL_TERMS,
-        R.string.blog to NetworkKeyConstants.URL_BLOG,
-        R.string.jobs to NetworkKeyConstants.URL_JOB,
-        R.string.software_licenses to NetworkKeyConstants.URL_VIEW_LICENCE,
-        R.string.changelog to NetworkKeyConstants.URL_CHANGELOG
-    )
+    val aboutItems =
+        listOf(
+            R.string.status to NetworkKeyConstants.URL_STATUS,
+            R.string.about to NetworkKeyConstants.URL_ABOUT,
+            R.string.privacy_policy to NetworkKeyConstants.URL_PRIVACY,
+            R.string.terms_title to NetworkKeyConstants.URL_TERMS,
+            R.string.blog to NetworkKeyConstants.URL_BLOG,
+            R.string.jobs to NetworkKeyConstants.URL_JOB,
+            R.string.software_licenses to NetworkKeyConstants.URL_VIEW_LICENCE,
+            R.string.changelog to NetworkKeyConstants.URL_CHANGELOG,
+        )
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
             PreferencesNavBar(stringResource(R.string.about_us)) {
@@ -71,32 +69,30 @@ private fun AboutItem(
     @StringRes title: Int,
     path: String,
 ) {
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     Row(
         Modifier
             .fillMaxWidth()
             .height(44.dp)
             .background(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(size = 12.dp)
-            )
-            .hapticClickable {
+                shape = RoundedCornerShape(size = 12.dp),
+            ).hapticClickable {
                 activity?.openUrl(path)
-            }
-            .padding(start = 14.dp, end = 14.dp)
-           , verticalAlignment = Alignment.CenterVertically
+            }.padding(start = 14.dp, end = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             stringResource(title),
             style = font16.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.primaryTextColor
+            color = MaterialTheme.colorScheme.primaryTextColor,
         )
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             modifier = Modifier.size(16.dp),
             painter = painterResource(com.windscribe.mobile.R.drawable.arrow_right),
             contentDescription = "",
-            tint = MaterialTheme.colorScheme.primaryTextColor
+            tint = MaterialTheme.colorScheme.primaryTextColor,
         )
     }
 }

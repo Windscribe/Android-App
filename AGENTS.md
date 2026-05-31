@@ -4,7 +4,7 @@
 
 **Repository**: ws/client/androidapp (GitLab)
 **Purpose**: Windscribe VPN application for Android devices (phones, tablets, Android TV)
-**Tech Stack**: Kotlin (primary), Java (legacy), Jetpack Compose (mobile UI), XML (TV UI), Native C/C++/Go (protocols)
+**Tech Stack**: Kotlin (100% of base/mobile/tv), Jetpack Compose (mobile UI), XML (TV UI), Native C/C++/Go (vendored protocol modules)
 **Owner**: Windscribe Engineering Team
 **Platform**: Android API 21+ (Lollipop and above)
 
@@ -130,9 +130,7 @@ androidapp/
 │       │   └── AppStartActivity.kt         # 🔑 Main activity (Compose entry point)
 │       ├── nav/
 │       │   ├── Screen.kt                   # Screen route definitions
-│       │   └── NavigationStack.kt          # Navigation graph
-│       ├── di/                             # Dagger modules for Compose
-│       │   └── ComposeModule.kt            # ViewModel factories
+│       │   └── NavigationStack.kt          # Navigation graph (hiltViewModel() per screen)
 │       └── [screens]/                      # Compose UI screens
 │           ├── HomeScreen.kt
 │           ├── LocationsScreen.kt
@@ -265,14 +263,15 @@ class ApiCallManager(private val wsNetServerAPI: WSNetServerAPI) : IApiCallManag
 
 **Migration Strategy**: Schema changes require migration scripts in `WindscribeDatabase.kt`. Current version tracked in `schemas/` folder.
 
-### 4. Dagger 2 Dependency Injection
+### 4. Hilt Dependency Injection
 
-**Entire app** uses Dagger 2 for DI. No manual `new` instantiation for core classes.
+**Entire app** uses Hilt for DI. No manual `new` instantiation for core classes.
 
-**Component Hierarchy**:
-- `WindscribeComponent` (app-level singleton)
-- `ActivitySubcomponent` (per-activity scope)
-- `ComposeModule` (ViewModel factories for Compose)
+**Structure**:
+- `@HiltAndroidApp` on the `Application` (`Windscribe` / `PhoneApplication`)
+- `@Module @InstallIn(SingletonComponent::class)` modules under `*/di/` provide app-level singletons (e.g. `BaseApplicationModule`, `VPNModule`, flavor `ApplicationModule`/`BillingModule`)
+- `@AndroidEntryPoint` on activities and services for field injection
+- `@HiltViewModel class FooViewmodelImpl @Inject constructor(...)` for Compose ViewModels, retrieved per screen via `hiltViewModel()` in `NavigationStack.kt`
 
 **Injection Pattern**:
 ```kotlin
@@ -280,15 +279,16 @@ class ApiCallManager(private val wsNetServerAPI: WSNetServerAPI) : IApiCallManag
 @Inject lateinit var serverListRepository: ServerListRepository
 ```
 
-### 5. Coroutines + Flows (RxJava Fully Removed)
+### 5. Coroutines + Flows
 
 **Async Operations**: 100% Kotlin coroutines + Flows.
 
 **Patterns**:
 - `suspend fun` for one-shot async operations
-- `Flow<T>` for streams (replacing RxJava `Observable`)
-- `SharedFlow<T>` for hot streams (replacing `BehaviorSubject`)
-- `StateFlow<T>` for state (replacing `BehaviorSubject` with initial value)
+- `Flow<T>` for streams
+- `SharedFlow<T>` for hot streams; one-shot events use `MutableSharedFlow(replay = 0)` (e.g. the
+  billing managers' purchase events)
+- `StateFlow<T>` for state
 
 **Example**:
 ```kotlin
@@ -354,27 +354,24 @@ class BillingManagerImpl : BillingManager {
 }
 ```
 
-### 8. Migration Status: Java → Kotlin
+### 8. Language: Kotlin
 
-**Current State**:
-- **TV Module**: 100% Kotlin ✅
-- **Mobile Module**: ~95% Kotlin (5 Java files — billing interfaces)
-- **Base Module**: ~85% Kotlin (65 Java files — data models, API responses)
-- **Target**: 100% Kotlin (ongoing migration)
+`base`, `mobile`, and `tv` are 100% Kotlin. The only Java in the repo is the vendored native VPN
+backend modules (`openvpn`, `strongswan`, `wgtunnel`), which are upstream-sourced and out of scope.
 
-**Rule**: ALL new code MUST be in Kotlin. No new Java files.
+**Rule**: ALL code is Kotlin. No new Java files.
 
 ### 9. UI Architecture: Compose (Mobile) vs XML (TV)
 
 **Mobile**: 100% Jetpack Compose
 - Screen-based navigation (NavHost)
-- ViewModels injected via Dagger factories
+- ViewModels provided by Hilt (`@HiltViewModel` + `hiltViewModel()`)
 - State management via `StateFlow` → `collectAsState()`
 
-**TV**: XML layouts + data binding
+**TV**: XML layouts + view binding
 - Activity-based navigation
 - Traditional MVP pattern
-- ViewModels with LiveData (being migrated to StateFlow)
+- State exposed via `StateFlow`/`SharedFlow` (no LiveData)
 
 ### 10. Protocol Connection Flow
 
@@ -433,7 +430,7 @@ UI observes ViewModel.state via StateFlow
 UI updates (new server list displayed)
 ```
 
-**Code Example** (from CLAUDE.md):
+**Code Example**:
 ```kotlin
 // ViewModel
 class LocationsViewModel(
@@ -557,10 +554,11 @@ fun HomeScreen(viewModel: HomeViewModel) {
     // UI rendering
 }
 
-// Injected via Dagger
-class HomeViewModel(
+// Provided by Hilt
+@HiltViewModel
+class HomeViewModelImpl @Inject constructor(
     private val serverListRepository: ServerListRepository // from base/
-) : ViewModel()
+) : HomeViewModel()
 ```
 
 **TV (XML)**:
@@ -660,8 +658,8 @@ See [SKILL.md](SKILL.md) for complete step-by-step guide.
 1. Define route in `Screen.kt`
 2. Add to `NavigationStack.kt` with transitions
 3. Create Compose screen file
-4. Create abstract ViewModel + implementation
-5. Wire up Dagger factory in `ComposeModule.kt`
+4. Create abstract ViewModel + `@HiltViewModel` implementation
+5. Resolve it in `NavigationStack.kt` via `hiltViewModel()` (no module wiring needed)
 6. Navigate via `navController.navigate(Screen.NewScreen.route)`
 
 ### Adding a Preference
@@ -762,11 +760,11 @@ sqlite> SELECT * FROM Region LIMIT 5;
 - **Test on multiple protocols** for VPN features (all 6)
 - **Update database schema** properly with migrations
 - **Follow MVP architecture** pattern
-- **Inject via Dagger** (no manual `new` for core classes)
+- **Inject via Hilt** (no manual `new` for core classes)
 
 ### Never
 - Create circular module dependencies (mobile/tv → base → protocols, NOT base → mobile)
-- Use RxJava (fully removed, use coroutines/flows)
+- Use RxJava (use coroutines/flows instead)
 - Call APIs directly (use ApiCallManager → wsnet)
 - Skip database migrations (will crash on upgrade)
 - Modify protocol modules without testing all 6 protocols
@@ -791,6 +789,6 @@ sqlite> SELECT * FROM Region LIMIT 5;
 
 ---
 
-**Last Updated**: 2026-04-22
+**Last Updated**: 2026-05-27
 **Maintained By**: Engineering Team
 **Next Review**: Post-feature additions or major architecture changes

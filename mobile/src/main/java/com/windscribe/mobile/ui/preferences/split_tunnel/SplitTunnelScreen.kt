@@ -1,8 +1,6 @@
 package com.windscribe.mobile.ui.preferences.split_tunnel
 
 import PreferencesNavBar
-import android.annotation.SuppressLint
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,24 +29,23 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
@@ -57,128 +54,209 @@ import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.api.response.InstalledAppsData
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.constants.FeatureExplainer
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Snapshot of the split-tunnel UI state. Hoisted so the stateless [SplitTunnelContent] never
+ * touches [SplitTunnelViewModel] — previews feed it directly.
+ */
+data class SplitTunnelState(
+    val showProgress: Boolean = false,
+    val modes: List<DropDownStringItem> = emptyList(),
+    val selectedModeKey: String = "",
+    val isSplitTunnelEnabled: Boolean = false,
+    val showSystemApps: Boolean = false,
+    val searchKeyword: String = "",
+    val filteredApps: List<InstalledAppsData> = emptyList(),
+    val appIconCache: AppIconCache? = null,
+)
+
+/**
+ * Callbacks the split-tunnel UI can raise.
+ */
+class SplitTunnelActions(
+    val onModeSelected: (DropDownStringItem) -> Unit = {},
+    val onAppSelected: (InstalledAppsData) -> Unit = {},
+    val onSplitTunnelSettingChanged: () -> Unit = {},
+    val onQueryTextChange: (String) -> Unit = {},
+    val onShowSystemAppsToggle: () -> Unit = {},
+)
+
+/**
+ * Stateful entry point. Owns the [SplitTunnelViewModel], collects its flows, then delegates
+ * rendering to [SplitTunnelContent].
+ */
 @Composable
-fun SplitTunnelScreen(viewModel: SplitTunnelViewModel? = null) {
+fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunnelViewModelImpl>()) {
+    val showProgress by viewModel.showProgress.collectAsState()
+    val selectedModeKey by viewModel.selectedModeKey.collectAsState()
+    val isSplitTunnelEnabled by viewModel.isSplitTunnelEnabled.collectAsState()
+    val showSystemApps by viewModel.showSystemApps.collectAsState()
+    val searchKeyword by viewModel.searchKeyword.collectAsState()
+    val filteredApps by viewModel.filteredApps.collectAsState()
+
+    SplitTunnelContent(
+        state =
+            SplitTunnelState(
+                showProgress = showProgress,
+                modes = viewModel.modes,
+                selectedModeKey = selectedModeKey,
+                isSplitTunnelEnabled = isSplitTunnelEnabled,
+                showSystemApps = showSystemApps,
+                searchKeyword = searchKeyword,
+                filteredApps = filteredApps,
+                appIconCache = viewModel.appIconCache,
+            ),
+        actions =
+            SplitTunnelActions(
+                onModeSelected = viewModel::onModeSelected,
+                onAppSelected = viewModel::onAppSelected,
+                onSplitTunnelSettingChanged = viewModel::onSplitTunnelSettingChanged,
+                onQueryTextChange = viewModel::onQueryTextChange,
+                onShowSystemAppsToggle = viewModel::onShowSystemAppsToggle,
+            ),
+    )
+}
+
+/**
+ * Stateless split-tunnel UI. Everything it needs is passed in, so it renders identically in the
+ * app and in `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun SplitTunnelContent(
+    state: SplitTunnelState,
+    actions: SplitTunnelActions,
+) {
     val navController = LocalNavController.current
-    val showProgress by viewModel?.showProgress?.collectAsState()
-        ?: remember { mutableStateOf(false) }
     PreferenceBackground {
         Column(
-            modifier = Modifier
-                .padding(vertical = 16.dp, horizontal = 16.dp)
-                .navigationBarsPadding()
+            modifier =
+                Modifier
+                    .testTag("split_tunnel_screen")
+                    .padding(vertical = 16.dp, horizontal = 16.dp)
+                    .navigationBarsPadding(),
         ) {
             PreferencesNavBar(stringResource(R.string.split_tunneling)) {
                 navController.popBackStack()
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Mode(viewModel)
+            Mode(
+                state.modes,
+                state.selectedModeKey,
+                state.isSplitTunnelEnabled,
+                actions.onSplitTunnelSettingChanged,
+                actions.onModeSelected,
+            )
             Spacer(modifier = Modifier.height(14.dp))
             AppsTitle()
             Spacer(modifier = Modifier.height(8.dp))
-            ShowSystemAppsToggle(viewModel)
+            ShowSystemAppsToggle(state.showSystemApps, actions.onShowSystemAppsToggle)
             Spacer(modifier = Modifier.height(8.dp))
-            Search(viewModel)
-            Apps(viewModel)
+            Search(state.searchKeyword, actions.onQueryTextChange)
+            Apps(state.filteredApps, state.appIconCache, actions.onAppSelected)
         }
-        PreferenceProgressBar(showProgress)
+        PreferenceProgressBar(state.showProgress)
     }
 }
 
 @Composable
-private fun ShowSystemAppsToggle(viewModel: SplitTunnelViewModel? = null) {
-    val showSystemApps by viewModel?.showSystemApps?.collectAsState()
-        ?: remember { mutableStateOf(false) }
+private fun ShowSystemAppsToggle(
+    showSystemApps: Boolean,
+    onShowSystemAppsToggle: () -> Unit,
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .clickable { viewModel?.onShowSystemAppsToggle() }
-            .padding(start = 16.dp, end = 0.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(8.dp),
+                ).clickable { onShowSystemAppsToggle() }
+                .padding(start = 16.dp, end = 0.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = stringResource(R.string.show_system_apps),
             color = MaterialTheme.colorScheme.primaryTextColor,
             style = font16.copy(fontWeight = FontWeight.Medium),
             textAlign = TextAlign.Start,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         Checkbox(
             showSystemApps,
             onCheckedChange = {
-                viewModel?.onShowSystemAppsToggle()
+                onShowSystemAppsToggle()
             },
-            colors = CheckboxDefaults.colors(
-                checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                checkedColor = MaterialTheme.colorScheme.primaryTextColor,
-                uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor
-            ),
+            colors =
+                CheckboxDefaults.colors(
+                    checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                    checkedColor = MaterialTheme.colorScheme.primaryTextColor,
+                    uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                ),
         )
     }
 }
 
 @Composable
-private fun Search(viewModel: SplitTunnelViewModel? = null) {
-    val query by viewModel?.searchKeyword?.collectAsState() ?: remember { mutableStateOf("") }
+private fun Search(
+    query: String,
+    onQueryTextChange: (String) -> Unit,
+) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-            )
-            .padding(horizontal = 12.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+                ).padding(horizontal = 12.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) {
             Image(
                 painter = painterResource(com.windscribe.mobile.R.drawable.ic_location_search),
                 contentDescription = "Search",
-                modifier = Modifier.clickable {
-
-                },
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.70f))
+                modifier =
+                    Modifier.clickable {
+                    },
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.70f)),
             )
             TextField(
                 value = query,
                 onValueChange = {
-                    viewModel?.onQueryTextChange(it)
+                    onQueryTextChange(it)
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier =
+                    Modifier
+                        .testTag("split_tunnel_search")
+                        .weight(1f)
+                        .fillMaxHeight(),
                 textStyle = font16.copy(textAlign = TextAlign.Start, color = MaterialTheme.colorScheme.primaryTextColor),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.primaryTextColor,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = MaterialTheme.colorScheme.primaryTextColor,
-                        backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f)
-                    )
-                ),
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                        selectionColors =
+                            androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                                backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f),
+                            ),
+                    ),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             )
         }
@@ -186,29 +264,30 @@ private fun Search(viewModel: SplitTunnelViewModel? = null) {
 }
 
 @Composable
-private fun Mode(viewModel: SplitTunnelViewModel?) {
-    val modes = viewModel?.modes ?: emptyList()
-    val selectedKey by viewModel?.selectedModeKey?.collectAsState()
-        ?: remember { mutableStateOf("") }
+private fun Mode(
+    modes: List<DropDownStringItem>,
+    selectedKey: String,
+    splitTunnelEnabled: Boolean,
+    onSplitTunnelSettingChanged: () -> Unit,
+    onModeSelected: (DropDownStringItem) -> Unit,
+) {
     val modeDescription =
         if (selectedKey == "Exclusive") R.string.feature_tunnel_mode_exclusive else R.string.feature_tunnel_mode_inclusive
-    val splitTunnelEnabled by viewModel?.isSplitTunnelEnabled?.collectAsState()
-        ?: remember { mutableStateOf(false) }
     Column {
         SwitchItemView(
             title = R.string.split_tunneling,
             icon = com.windscribe.mobile.R.drawable.ic_split_routing,
-            description = com.windscribe.vpn.R.string.split_tunneling_feature,
+            description = R.string.split_tunneling_feature,
             splitTunnelEnabled,
             shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
             onSelect = {
-                viewModel?.onSplitTunnelSettingChanged()
+                onSplitTunnelSettingChanged()
             },
-            explainer = FeatureExplainer.SPLIT_TUNNELING
+            explainer = FeatureExplainer.SPLIT_TUNNELING,
         )
         Spacer(modifier = Modifier.height(1.dp))
         CustomDropDown(R.string.mode, modes, selectedKey, description = modeDescription) {
-            viewModel?.onModeSelected(it)
+            onModeSelected(it)
         }
     }
 }
@@ -220,47 +299,50 @@ private fun AppsTitle() {
         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
         style = font16.copy(fontWeight = FontWeight.SemiBold),
         textAlign = TextAlign.Start,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 
 @Composable
-private fun Apps(viewModel: SplitTunnelViewModel? = null) {
-    val apps by viewModel?.filteredApps?.collectAsState()
-        ?: remember { mutableStateOf(emptyList()) }
-    val appIconCache = viewModel?.appIconCache
+private fun Apps(
+    apps: List<InstalledAppsData>,
+    appIconCache: AppIconCache?,
+    onAppSelected: (InstalledAppsData) -> Unit,
+) {
     LazyColumn {
         itemsIndexed(apps) { index, app ->
-            val shape = if (index == apps.lastIndex) {
-                RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
-            } else {
-                RoundedCornerShape(0.dp)
-            }
+            val shape =
+                if (index == apps.lastIndex) {
+                    RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+                } else {
+                    RoundedCornerShape(0.dp)
+                }
             Spacer(modifier = Modifier.height(1.dp))
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                        shape = shape
-                    )
-                    .padding(start = 14.dp)
-                    .clickable { viewModel?.onAppSelected(app) },
-                verticalAlignment = Alignment.CenterVertically
+                modifier =
+                    Modifier
+                        .testTag("app_row_${app.appName}")
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                            shape = shape,
+                        ).padding(start = 14.dp)
+                        .clickable { onAppSelected(app) },
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 val iconBitmap = appIconCache?.getIcon(app.packageName)
                 if (iconBitmap != null) {
                     Image(
                         painter = BitmapPainter(iconBitmap.asImageBitmap()),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     )
                 } else {
                     Image(
                         painter = painterResource(android.R.drawable.sym_def_app_icon),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
@@ -271,64 +353,54 @@ private fun Apps(viewModel: SplitTunnelViewModel? = null) {
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Checkbox(
-                    app.isChecked, onCheckedChange = {
-                        viewModel?.onAppSelected(app)
-                    }, colors = CheckboxDefaults.colors(
-                        checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                        checkedColor = MaterialTheme.colorScheme.primaryTextColor,
-                        uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor
-                    ),
+                    app.isChecked,
+                    onCheckedChange = {
+                        onAppSelected(app)
+                    },
+                    colors =
+                        CheckboxDefaults.colors(
+                            checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                            checkedColor = MaterialTheme.colorScheme.primaryTextColor,
+                            uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                        ),
                 )
             }
         }
     }
 }
 
+/**
+ * Feeds representative [SplitTunnelState] values into the preview.
+ */
+private class SplitTunnelStateProvider : PreviewParameterProvider<SplitTunnelState> {
+    override val values: Sequence<SplitTunnelState>
+        get() {
+            val chrome = InstalledAppsData("Chrome", "com.google.chrome").apply { isChecked = true }
+            val discord = InstalledAppsData("Discord", "com.discord")
+            val telegram = InstalledAppsData("Telegram", "org.telegram.messenger")
+            return sequenceOf(
+                SplitTunnelState(
+                    isSplitTunnelEnabled = true,
+                    filteredApps = listOf(chrome, discord, telegram),
+                    appIconCache = AppIconCache(),
+                ),
+            )
+        }
+}
+
 @Composable
 @MultiDevicePreview
-private fun SplitTunnelScreenPreview() {
+private fun SplitTunnelContentPreview(
+    @PreviewParameter(SplitTunnelStateProvider::class) state: SplitTunnelState,
+) {
     PreviewWithNav {
-        SplitTunnelScreen()
+        SplitTunnelContent(
+            state = state,
+            actions = SplitTunnelActions(),
+        )
     }
 }
-
-@SuppressLint("UseCompatLoadingForDrawables")
-@Composable
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun SplitTunnelScreenApps() {
-    val apps = listOf<InstalledAppsData>().toMutableList()
-    val chrome = InstalledAppsData(
-        "Chrome",
-        "com.google.chrome"
-    )
-    chrome.isChecked = true
-    apps.add(chrome)
-    val discord = InstalledAppsData(
-        "Discord",
-        "com.discord"
-    )
-    apps.add(discord)
-    val telegram = InstalledAppsData(
-        "Telegram",
-        "org.telegram.messenger"
-    )
-    apps.add(telegram)
-    val viewmodel = object : SplitTunnelViewModel() {
-        override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
-        override val modes: List<DropDownStringItem> = listOf()
-        override val selectedModeKey: StateFlow<String> = MutableStateFlow("")
-        override val filteredApps: StateFlow<List<InstalledAppsData>> = MutableStateFlow(apps)
-        override val isSplitTunnelEnabled: StateFlow<Boolean> = MutableStateFlow(true)
-        override val searchKeyword: StateFlow<String> = MutableStateFlow("")
-        override val showSystemApps: StateFlow<Boolean> = MutableStateFlow(false)
-        override val appIconCache: com.windscribe.vpn.cache.AppIconCache = com.windscribe.vpn.cache.AppIconCache()
-    }
-    PreviewWithNav {
-        SplitTunnelScreen(viewmodel)
-    }
-}
-

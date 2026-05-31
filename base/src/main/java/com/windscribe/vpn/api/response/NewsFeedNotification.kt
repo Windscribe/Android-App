@@ -11,7 +11,5 @@ import com.windscribe.vpn.localdatabase.tables.WindNotification
 
 @Keep
 data class NewsFeedNotification(
-        @SerializedName("notifications")
-        @Expose
-        val notifications: List<WindNotification>?
+    @SerializedName("notifications") @Expose val notifications: List<WindNotification>?,
 )

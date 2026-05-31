@@ -10,17 +10,21 @@ import androidx.appcompat.app.AppCompatActivity
 import com.windscribe.mobile.databinding.FragmentErrorBinding
 
 class ErrorDialog : FullScreenDialog() {
-
     private var binding: FragmentErrorBinding? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentErrorBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.getInt(backgroundColorKey)?.let {
             view.setBackgroundColor(it)
@@ -57,21 +61,22 @@ class ErrorDialog : FullScreenDialog() {
             activity: AppCompatActivity,
             error: String?,
             @ColorInt backgroundColor: Int? = null,
-            closeActivity: Boolean = false
+            closeActivity: Boolean = false,
         ) {
             if (activity.supportFragmentManager.findFragmentByTag(tag) != null) {
                 return
             }
             activity.runOnUiThread {
                 kotlin.runCatching {
-                    ErrorDialog().apply {
-                        Bundle().apply {
-                            putString(errorKey, error)
-                            backgroundColor?.let { putInt(backgroundColorKey, it) }
-                            putBoolean(closeActivityKey, closeActivity)
-                            arguments = this
-                        }
-                    }.showNow(activity.supportFragmentManager, tag)
+                    ErrorDialog()
+                        .apply {
+                            Bundle().apply {
+                                putString(errorKey, error)
+                                backgroundColor?.let { putInt(backgroundColorKey, it) }
+                                putBoolean(closeActivityKey, closeActivity)
+                                arguments = this
+                            }
+                        }.showNow(activity.supportFragmentManager, tag)
                 }
             }
         }

@@ -6,15 +6,22 @@ package com.windscribe.vpn.model
 
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.constants.UserStatusConstants
-import com.windscribe.vpn.model.User.AccountStatus.*
-import com.windscribe.vpn.model.User.EmailStatus.*
+import com.windscribe.vpn.model.User.AccountStatus.Banned
+import com.windscribe.vpn.model.User.AccountStatus.Expired
+import com.windscribe.vpn.model.User.AccountStatus.Okay
+import com.windscribe.vpn.model.User.EmailStatus.Confirmed
+import com.windscribe.vpn.model.User.EmailStatus.EmailProvided
+import com.windscribe.vpn.model.User.EmailStatus.NoEmail
 import java.lang.Exception
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-class User(private val sessionResponse: UserSessionResponse) {
-
+class User(
+    private val sessionResponse: UserSessionResponse,
+) {
     val alcList: String?
         get() {
             val alcListString = StringBuilder()
@@ -30,31 +37,25 @@ class User(private val sessionResponse: UserSessionResponse) {
     val isOurIp: Boolean
         get() = sessionResponse.ourIp != null && sessionResponse.ourIp == 0
     val locationRevision: String
-        get() = sessionResponse.locationRevision
+        get() = sessionResponse.locationRevision ?: ""
     val locationHash: String
-        get() = sessionResponse.locationHash
+        get() = sessionResponse.locationHash ?: ""
     val email: String?
         get() = sessionResponse.userEmail
     val userName: String
-        get() = if (sessionResponse.userName == null) "na" else sessionResponse.userName
+        get() = sessionResponse.userName ?: "na"
     val sipCount: Int
-        get() {
-            return if (sessionResponse.sip != null) {
-                sessionResponse.sip.count
-            } else {
-                0
-            }
-        }
+        get() = sessionResponse.sip?.count ?: 0
     val dataUsed: Long
         get() {
-            return sessionResponse.trafficUsed.toLong()
+            return sessionResponse.trafficUsed?.toLong() ?: 0L
         }
     val maxData: Long
-        get() = sessionResponse.trafficMax.toLong()
+        get() = sessionResponse.trafficMax?.toLong() ?: 0L
     val isPro: Boolean
         get() = sessionResponse.isPremium == 1
     val userStatusInt: Int
-        get() = sessionResponse.isPremium
+        get() = sessionResponse.isPremium ?: 0
     val dataLeft: Float
         get() {
             if (dataUsed > maxData) {
@@ -64,7 +65,9 @@ class User(private val sessionResponse: UserSessionResponse) {
         }
 
     enum class AccountStatus {
-        Okay, Expired, Banned
+        Okay,
+        Expired,
+        Banned,
     }
 
     val accountStatus: AccountStatus
@@ -86,7 +89,9 @@ class User(private val sessionResponse: UserSessionResponse) {
         }
 
     enum class EmailStatus {
-        NoEmail, EmailProvided, Confirmed
+        NoEmail,
+        EmailProvided,
+        Confirmed,
     }
 
     val emailStatus: EmailStatus
@@ -114,30 +119,27 @@ class User(private val sessionResponse: UserSessionResponse) {
     val daysRegisteredSince: Long
         get() {
             val registrationDate = sessionResponse.registrationDate
-            val difference = Date().time - registrationDate.toLong() * 1000L
+            val difference = Date().time - (registrationDate?.toLong() ?: 0L) * 1000L
             return TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)
         }
 
     fun nextResetDate(): String? {
-        return if (resetDate != null) {
-            try {
-                val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val lastResetDate = formatter.parse(resetDate)
-                val c = Calendar.getInstance()
-                c.time = Objects.requireNonNull(lastResetDate)
-                c.add(Calendar.MONTH, 1)
-                val nextResetDate = c.time
-                formatter.format(nextResetDate)
-            } catch (e: Exception) {
-                null
-            }
-        } else {
+        val date = resetDate ?: return null
+        return try {
+            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val lastResetDate = formatter.parse(date) ?: return null
+            val c = Calendar.getInstance()
+            c.time = lastResetDate
+            c.add(Calendar.MONTH, 1)
+            val nextResetDate = c.time
+            formatter.format(nextResetDate)
+        } catch (e: Exception) {
             null
         }
     }
-    override fun toString(): String {
-        return "Account Status: $accountStatus | User Status: $userStatusInt | Ghost $isGhost | Email Status: $emailStatus | Sip count $sipCount"
-    }
+
+    override fun toString(): String =
+        "Account Status: $accountStatus | User Status: $userStatusInt | Ghost $isGhost | Email Status: $emailStatus | Sip count $sipCount"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -175,11 +177,11 @@ class User(private val sessionResponse: UserSessionResponse) {
         result = 31 * result + (email?.hashCode() ?: 0)
         result = 31 * result + userName.hashCode()
         result = 31 * result + sipCount
-        result = 31 * result + (dataUsed?.hashCode() ?: 0)
+        result = 31 * result + dataUsed.hashCode()
         result = 31 * result + maxData.hashCode()
         result = 31 * result + isPro.hashCode()
         result = 31 * result + userStatusInt
-        result = 31 * result + (dataLeft?.hashCode() ?: 0)
+        result = 31 * result + dataLeft.hashCode()
         result = 31 * result + accountStatus.hashCode()
         result = 31 * result + accountStatusToInt
         result = 31 * result + emailStatus.hashCode()
@@ -188,5 +190,4 @@ class User(private val sessionResponse: UserSessionResponse) {
         result = 31 * result + (resetDate?.hashCode() ?: 0)
         return result
     }
-
 }

@@ -2,6 +2,4 @@ package com.windscribe.mobile.ui.preferences.icons
 
 import android.app.Activity
 
-class DickButtActivity: Activity() {
-
-}
+class DickButtActivity : Activity()

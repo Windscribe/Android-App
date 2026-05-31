@@ -1,8 +1,8 @@
 package com.windscribe.vpn.model
 
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.encoding.encoders.Base64
 
 data class OpenVPNConnectionInfo(
@@ -11,7 +11,7 @@ data class OpenVPNConnectionInfo(
     val port: String,
     val protocol: String,
     val username: String,
-    val password: String
+    val password: String,
 ) {
     val base64EncodedServerConfig =
         String(Base64.encode(serverConfig.toByteArray()))
@@ -22,11 +22,12 @@ data class OpenVPNConnectionInfo(
             protocol = PreferencesKeyConstants.PROTO_UDP
         }
         return ProtocolInformation(
-            protocol, port, "", type = ProtocolConnectionStatus.NextUp
+            protocol,
+            port,
+            "",
+            type = ProtocolConnectionStatus.NextUp,
         )
     }
 
-    override fun toString(): String {
-        return "$ip:$port $protocol"
-    }
+    override fun toString(): String = "$ip:$port $protocol"
 }

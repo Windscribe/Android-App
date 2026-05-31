@@ -1,11 +1,11 @@
 package com.windscribe.mobile.ui.popup
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
@@ -22,11 +22,10 @@ import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
-
 @Composable
 fun LocationUnderMaintenanceScreen() {
     val navController = LocalNavController.current
-    val activity = LocalContext.current as? AppStartActivity
+    val activity = LocalActivity.current as? AppStartActivity
     PopupContainer {
         Spacer(Modifier.weight(1f))
         PopupHeroImage(R.drawable.garry_location_under_maintence)
@@ -37,7 +36,7 @@ fun LocationUnderMaintenanceScreen() {
         Spacer(Modifier.height(32.dp))
         PopupPrimaryActionButton(
             modifier = Modifier,
-            stringResource(com.windscribe.vpn.R.string.check_status)
+            stringResource(com.windscribe.vpn.R.string.check_status),
         ) {
             activity?.openUrl(NetworkKeyConstants.NODE_STATUS_URL)
             navController.popBackStack()
@@ -45,7 +44,7 @@ fun LocationUnderMaintenanceScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         PopupSecondaryActionButton(
             modifier = Modifier,
-            stringResource(com.windscribe.vpn.R.string.back)
+            stringResource(com.windscribe.vpn.R.string.back),
         ) {
             navController.popBackStack()
         }
@@ -56,7 +55,7 @@ fun LocationUnderMaintenanceScreen() {
 @Composable
 private fun LocationUnderMaintenanceScreenPreviewContent() {
     CompositionLocalProvider(
-        LocalNavController provides rememberNavController()
+        LocalNavController provides rememberNavController(),
     ) {
         LocationUnderMaintenanceScreen()
     }

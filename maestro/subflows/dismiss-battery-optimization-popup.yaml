@@ -1,0 +1,8 @@
+appId: com.windscribe.vpn
+---
+# Dismisses the "Disable Battery Optimization" screen (PowerWhitelistScreen.kt).
+# Taps "Don't ask again" so it never re-appears during the test run.
+# Optional — only shown on first connection that triggers the battery check.
+- tapOn:
+    id: "battery_dont_ask_again"
+    optional: true

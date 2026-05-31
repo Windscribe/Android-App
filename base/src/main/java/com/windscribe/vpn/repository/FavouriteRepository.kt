@@ -9,37 +9,44 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class FavouriteWithCity(val favourite: Favourite, val city: Datacenter)
+data class FavouriteWithCity(
+    val favourite: Favourite,
+    val city: Datacenter,
+)
 
-class FavouriteRepository @Inject constructor(
-    private val scope: CoroutineScope, private val localDbInterface: LocalDbInterface
-) {
-    private val _favourites = MutableSharedFlow<List<FavouriteWithCity>>(replay = 1)
-    val favourites: SharedFlow<List<FavouriteWithCity>> = _favourites
+class FavouriteRepository
+    @Inject
+    constructor(
+        private val scope: CoroutineScope,
+        private val localDbInterface: LocalDbInterface,
+    ) {
+        private val _favourites = MutableSharedFlow<List<FavouriteWithCity>>(replay = 1)
+        val favourites: SharedFlow<List<FavouriteWithCity>> = _favourites
 
-    init {
-        load()
-    }
+        init {
+            load()
+        }
 
-    fun load() {
-        scope.launch {
-            localDbInterface.getFavourites().collect { favourites ->
-                val favouriteCityList = favourites.mapNotNull { fav ->
-                    try {
-                        val city = localDbInterface.getDatacenterByIDAsync(fav.id)
-                        FavouriteWithCity(fav, city)
-                    } catch (e: Exception) {
-                        null
-                    }
+        fun load() {
+            scope.launch {
+                localDbInterface.getFavourites().collect { favourites ->
+                    val favouriteCityList =
+                        favourites.mapNotNull { fav ->
+                            try {
+                                val city = localDbInterface.getDatacenterByIDAsync(fav.id)
+                                FavouriteWithCity(fav, city)
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                    _favourites.emit(favouriteCityList)
                 }
-                _favourites.emit(favouriteCityList)
+            }
+        }
+
+        fun remove(id: Int) {
+            scope.launch {
+                localDbInterface.deleteFavourite(id)
             }
         }
     }
-
-    fun remove(id: Int) {
-        scope.launch {
-            localDbInterface.deleteFavourite(id)
-        }
-    }
-}

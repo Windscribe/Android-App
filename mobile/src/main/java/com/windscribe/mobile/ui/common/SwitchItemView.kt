@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,26 +44,27 @@ fun SwitchItemView(
     enabled: Boolean,
     explainer: String? = null,
     shape: RoundedCornerShape = RoundedCornerShape(12.dp),
-    onSelect: (Boolean) -> Unit
+    onSelect: (Boolean) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .background(
-                MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = shape
-            )
-            .padding(14.dp)
-            .fillMaxWidth()
+        modifier =
+            Modifier
+                .background(
+                    MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = shape,
+                ).padding(14.dp)
+                .fillMaxWidth(),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier =
+                Modifier
+                    .fillMaxWidth(),
         ) {
             Image(
                 painter = painterResource(icon),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
@@ -72,24 +74,26 @@ fun SwitchItemView(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Start,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
             Spacer(modifier = Modifier.width(8.dp))
             if (enabled) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_toggle_button_on),
                     contentDescription = null,
-                    modifier = Modifier.clickable {
-                        onSelect(!enabled)
-                    }
+                    modifier =
+                        Modifier
+                            .testTag("toggle_on")
+                            .clickable { onSelect(!enabled) },
                 )
             } else {
                 Image(
                     painter = painterResource(id = R.drawable.ic_toggle_button_off),
                     contentDescription = null,
-                    modifier = Modifier.clickable {
-                        onSelect(!enabled)
-                    }
+                    modifier =
+                        Modifier
+                            .testTag("toggle_off")
+                            .clickable { onSelect(!enabled) },
                 )
             }
         }
@@ -101,7 +105,7 @@ fun SwitchItemView(
                 text = stringResource(description),
                 style = font14.copy(fontWeight = FontWeight.Normal),
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
             )
         }
     }
@@ -112,10 +116,11 @@ fun SwitchItemView(
 private fun SwitchItemViewPreview() {
     PreviewWithNav {
         Column(
-            modifier = Modifier
-                .background(color = MaterialTheme.colorScheme.preferencesBackgroundColor)
-                .fillMaxSize()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .background(color = MaterialTheme.colorScheme.preferencesBackgroundColor)
+                    .fillMaxSize()
+                    .padding(16.dp),
         ) {
             Spacer(Modifier.height(62.dp))
             SwitchItemView(
@@ -123,7 +128,7 @@ private fun SwitchItemViewPreview() {
                 icon = R.drawable.ic_apple,
                 description = com.windscribe.vpn.R.string.appearance_description,
                 false,
-                onSelect = {}
+                onSelect = {},
             )
             Spacer(Modifier.height(16.dp))
             SwitchItemView(
@@ -131,7 +136,7 @@ private fun SwitchItemViewPreview() {
                 icon = R.drawable.ic_apple,
                 description = com.windscribe.vpn.R.string.appearance_description,
                 true,
-                onSelect = {}
+                onSelect = {},
             )
         }
     }

@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.helper.hapticClickableRipple
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font18
@@ -30,29 +29,29 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 @Composable
 fun NavBar(
     title: String,
-    onNavClick: () -> Unit
+    onNavClick: () -> Unit,
 ) {
     val interactionSource = MutableInteractionSource()
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(top = 24.dp, bottom = 8.dp)
-        ,
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(top = 24.dp, bottom = 8.dp),
     ) {
         Image(
             painter = painterResource(id = R.drawable.arrow_left),
             contentDescription = stringResource(id = com.windscribe.vpn.R.string.image_description),
             colorFilter = ColorFilter.tint(AppColors.white),
-            modifier = Modifier
-                .size(24.dp)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = ripple(bounded = false, color = AppColors.white),
-                    onClick = onNavClick
-                )
-                .padding(4.dp)
-                .align(Alignment.CenterStart)
+            modifier =
+                Modifier
+                    .size(24.dp)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = ripple(bounded = false, color = AppColors.white),
+                        onClick = onNavClick,
+                    ).padding(4.dp)
+                    .align(Alignment.CenterStart),
         )
 
         Text(
@@ -60,9 +59,10 @@ fun NavBar(
             style = font24,
             color = AppColors.white,
             maxLines = 1,
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .align(Alignment.Center)
+            modifier =
+                Modifier
+                    .padding(horizontal = 8.dp)
+                    .align(Alignment.Center),
         )
     }
 }
@@ -71,22 +71,24 @@ fun NavBar(
 @Composable
 fun PreferencesNavBar(
     title: String,
-    onNavClick: () -> Unit
+    onNavClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding(),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .statusBarsPadding(),
     ) {
         Image(
             painter = painterResource(id = R.drawable.arrow_left),
             contentDescription = stringResource(id = com.windscribe.vpn.R.string.image_description),
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
-            modifier = Modifier
-                .size(24.dp)
-                .hapticClickableRipple(onClick = onNavClick)
-                .padding(4.dp)
-                .align(Alignment.CenterStart)
+            modifier =
+                Modifier
+                    .size(24.dp)
+                    .hapticClickableRipple(onClick = onNavClick)
+                    .padding(4.dp)
+                    .align(Alignment.CenterStart),
         )
 
         Text(
@@ -94,9 +96,10 @@ fun PreferencesNavBar(
             style = font18,
             color = MaterialTheme.colorScheme.primaryTextColor,
             maxLines = 1,
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .align(Alignment.Center)
+            modifier =
+                Modifier
+                    .padding(horizontal = 8.dp)
+                    .align(Alignment.Center),
         )
     }
 }

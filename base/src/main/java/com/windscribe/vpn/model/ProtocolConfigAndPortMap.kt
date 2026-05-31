@@ -7,4 +7,7 @@ package com.windscribe.vpn.model
 import com.windscribe.vpn.api.response.PortMapResponse.PortMap
 import com.windscribe.vpn.backend.utils.ProtocolConfig
 
-class ProtocolConfigAndPortMap(val protocolConfig: ProtocolConfig, val portMap: PortMap? = null)
+class ProtocolConfigAndPortMap(
+    val protocolConfig: ProtocolConfig,
+    val portMap: PortMap? = null,
+)

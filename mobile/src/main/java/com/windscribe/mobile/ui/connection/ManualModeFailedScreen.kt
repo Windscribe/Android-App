@@ -35,74 +35,104 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font24
 
-
+/**
+ * Stateful entry point. The [AppStartActivityViewModel] is activity-scoped (it carries the
+ * connection callbacks set by the hosting activity), so it is passed in rather than resolved
+ * via `hiltViewModel()`. The single-shot click guards and side effects are wired here and
+ * rendering is delegated to [ManualModeFailedContent].
+ */
 @Composable
-fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel? = null) {
+fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel) {
     val navController = LocalNavController.current
     var isSwitchToAutoClicked by remember { mutableStateOf(false) }
     var isCancelClicked by remember { mutableStateOf(false) }
 
+    ManualModeFailedContent(
+        switchToAutoEnabled = !isSwitchToAutoClicked,
+        cancelEnabled = !isCancelClicked,
+        onSwitchToAutoClick = {
+            if (!isSwitchToAutoClicked && !isCancelClicked) {
+                isSwitchToAutoClicked = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onSwitchToAutoMode()
+                navController.popBackStack()
+            }
+        },
+        onCancelClick = {
+            if (!isSwitchToAutoClicked && !isCancelClicked) {
+                isCancelClicked = true
+                appStartActivityViewModel.autoConnectionModeCallback?.onCancel()
+                navController.popBackStack()
+            }
+        },
+    )
+}
+
+/**
+ * Stateless UI. Everything it needs is passed in, so it renders identically in the app and in
+ * `@Preview`. This is the composable previews target.
+ */
+@Composable
+fun ManualModeFailedContent(
+    switchToAutoEnabled: Boolean,
+    cancelEnabled: Boolean,
+    onSwitchToAutoClick: () -> Unit,
+    onCancelClick: () -> Unit,
+) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = AppColors.deepBlue)
-            .clickable(enabled = false) {}) {
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(color = AppColors.deepBlue)
+                .clickable(enabled = false) {},
+    ) {
         Column(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 32.dp)
-                .width(560.dp)
-                .padding(24.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 32.dp)
+                    .width(560.dp)
+                    .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_attention_icon),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(100.dp)
-                    .padding(top = 8.dp),
-                colorFilter = ColorFilter.tint(AppColors.white)
+                modifier =
+                    Modifier
+                        .size(100.dp)
+                        .padding(top = 8.dp),
+                colorFilter = ColorFilter.tint(AppColors.white),
             )
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.manual_connection_mode_failed_title),
                 style = font24,
                 color = AppColors.white,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.manual_connection_mode_failed_description),
                 style = font16,
                 color = AppColors.white,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp),
             )
             Spacer(modifier = Modifier.padding(top = 24.dp))
             NextButton(
                 Modifier,
                 text = stringResource(com.windscribe.vpn.R.string.switch_to_auto),
-                enabled = !isSwitchToAutoClicked
+                enabled = switchToAutoEnabled,
             ) {
-                if (!isSwitchToAutoClicked && !isCancelClicked) {
-                    isSwitchToAutoClicked = true
-                    appStartActivityViewModel?.autoConnectionModeCallback?.onSwitchToAutoMode()
-                    navController.popBackStack()
-                }
+                onSwitchToAutoClick()
             }
             TextButton(
-                onClick = {
-                    if (!isSwitchToAutoClicked && !isCancelClicked) {
-                        isCancelClicked = true
-                        appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
-                        navController.popBackStack()
-                    }
-                },
-                enabled = !isCancelClicked
+                onClick = onCancelClick,
+                enabled = cancelEnabled,
             ) {
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
-                    color = AppColors.white
+                    color = AppColors.white,
                 )
             }
         }
@@ -113,6 +143,11 @@ fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel?
 @Composable
 fun ManualModeFailedScreenPreview() {
     PreviewWithNav {
-        ManualModeFailedScreen()
+        ManualModeFailedContent(
+            switchToAutoEnabled = true,
+            cancelEnabled = true,
+            onSwitchToAutoClick = {},
+            onCancelClick = {},
+        )
     }
 }

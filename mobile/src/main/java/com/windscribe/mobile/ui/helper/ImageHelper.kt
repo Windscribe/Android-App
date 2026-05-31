@@ -9,7 +9,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 
-data class ImageDimensions(val width: Dp, val height: Dp)
+data class ImageDimensions(
+    val width: Dp,
+    val height: Dp,
+)
 
 @Composable
 fun getStatusBarHeight(): Dp {
@@ -18,12 +21,11 @@ fun getStatusBarHeight(): Dp {
 }
 
 @Composable
-fun getHeaderHeight(): Dp {
-    return getStatusBarHeight() + 60.dp
-}
+fun getHeaderHeight(): Dp = getStatusBarHeight() + 60.dp
 
 const val latencyArcStart = 270f
 const val miniumHealthStart = 10
+
 @Composable
 fun calculateImageDimensions(isSingleLineLocationName: Boolean): ImageDimensions {
     val config = LocalConfiguration.current
@@ -39,11 +41,12 @@ fun calculateImageDimensions(isSingleLineLocationName: Boolean): ImageDimensions
     val maxHeight = screenHeight * 0.45f
 
     // Determine dynamic height
-    val height = if (screenWidth < minHeight * 2) {
-        minHeight
-    } else {
-        min(screenWidth / 2, maxHeight)
-    }
+    val height =
+        if (screenWidth < minHeight * 2) {
+            minHeight
+        } else {
+            min(screenWidth / 2, maxHeight)
+        }
 
     // Width is the smaller of screen width or 2 × height
     val width = minOf(screenWidth, height * 2)

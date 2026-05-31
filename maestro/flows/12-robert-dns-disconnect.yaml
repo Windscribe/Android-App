@@ -1,0 +1,11 @@
+appId: com.windscribe.vpn
+---
+# Disconnects after ROBERT DNS check.
+# No launchApp — app still running from 12-robert-dns.yaml.
+
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000

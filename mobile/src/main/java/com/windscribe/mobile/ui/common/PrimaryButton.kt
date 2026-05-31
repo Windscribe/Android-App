@@ -2,7 +2,6 @@ package com.windscribe.mobile.ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,55 +41,60 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     text: String,
     enabled: Boolean = true,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
     // Gradient colors for enabled state (white to #a5b1c6)
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color.White,
-            Color(0xFFA5B1C6)
+    val gradientBrush =
+        Brush.verticalGradient(
+            colors =
+                listOf(
+                    Color.White,
+                    Color(0xFFA5B1C6),
+                ),
         )
-    )
 
-    val buttonModifier = if (enabled) {
-        modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .background(
-                brush = gradientBrush,
-                shape = RoundedCornerShape(46.dp)
-            )
-    } else {
-        modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .background(
-                color = AppColors.white.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(46.dp)
-            )
-    }
+    val buttonModifier =
+        if (enabled) {
+            modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    brush = gradientBrush,
+                    shape = RoundedCornerShape(46.dp),
+                )
+        } else {
+            modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    color = AppColors.white.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(46.dp),
+                )
+        }
 
     Button(
         onClick = onClick,
         enabled = enabled,
         modifier = buttonModifier,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent, // Transparent to show gradient
-            contentColor = Color(0xFF072711), // Dark green text
-            disabledContainerColor = Color.Transparent, // Transparent to show background
-            disabledContentColor = AppColors.white.copy(alpha = 0.25f) // Light gray text (25% opacity)
-        ),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent, // Transparent to show gradient
+                contentColor = Color(0xFF072711), // Dark green text
+                disabledContainerColor = Color.Transparent, // Transparent to show background
+                disabledContentColor = AppColors.white.copy(alpha = 0.25f), // Light gray text (25% opacity)
+            ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(46.dp), // Fully rounded (height is 48dp)
     ) {
         Text(
             text = text,
-            style = font18.copy(
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp
-            )
+            style =
+                font18.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                ),
         )
     }
 }
@@ -99,22 +103,23 @@ fun PrimaryButton(
 @Preview(showBackground = true, backgroundColor = 0xFF090E19)
 fun PrimaryButtonPreview() {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.deepBlue)
-            .padding(16.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(AppColors.deepBlue)
+                .padding(16.dp),
     ) {
         // Enabled state
         Text(
             text = "Enabled State",
             style = font18,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         PrimaryButton(
             text = "Continue",
             enabled = true,
-            onClick = { }
+            onClick = { },
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -124,12 +129,12 @@ fun PrimaryButtonPreview() {
             text = "Disabled State",
             style = font18,
             color = AppColors.white,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
         )
         PrimaryButton(
             text = "Continue",
             enabled = false,
-            onClick = { }
+            onClick = { },
         )
     }
 }

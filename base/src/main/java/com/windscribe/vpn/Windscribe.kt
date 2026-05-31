@@ -17,29 +17,20 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
-import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.apppreference.MigrationResult
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.apppreference.TrayToDataStoreMigration
 import com.windscribe.vpn.apppreference.windscribeDataStore
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
 import com.windscribe.vpn.autoconnection.ProtocolInformation
-import com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper
-import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.debug.MainThreadWatchdog
-import com.windscribe.vpn.di.ActivityComponent
-import com.windscribe.vpn.di.ApplicationComponent
-import com.windscribe.vpn.di.ApplicationModule
-import com.windscribe.vpn.di.DaggerActivityComponent
-import com.windscribe.vpn.di.DaggerApplicationComponent
-import com.windscribe.vpn.di.DaggerServiceComponent
-import com.windscribe.vpn.di.ServiceComponent
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.services.FirebaseManager
@@ -51,15 +42,14 @@ import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.LoggerFactory
-import org.strongswan.android.logic.StrongSwanApplication
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -76,16 +66,22 @@ open class Windscribe : MultiDexApplication() {
         val splashIntent: Intent
         val upgradeIntent: Intent
         val isTV: Boolean
+
         fun setTheme()
+
         fun launchFragment(
             protocolInformationList: List<ProtocolInformation>,
             fragmentType: FragmentType,
             autoConnectionModeCallback: AutoConnectionModeCallback,
-            protocolInformation: ProtocolInformation? = null
+            protocolInformation: ProtocolInformation? = null,
         ): Boolean
 
         fun cancelDialog() {}
-        fun showPinnedNodeErrorDialog(title: String, description: String) {}
+
+        fun showPinnedNodeErrorDialog(
+            title: String,
+            description: String,
+        ) {}
     }
 
     private val logger = LoggerFactory.getLogger("windscribe-main")
@@ -131,29 +127,27 @@ open class Windscribe : MultiDexApplication() {
     @Inject
     lateinit var appIconCache: AppIconCache
 
-    lateinit var applicationComponent: ApplicationComponent
-    lateinit var activityComponent: ActivityComponent
-    lateinit var serviceComponent: ServiceComponent
+    @Inject
+    lateinit var wsNetWrapper: WSNetWrapper
+
+    @Inject
+    lateinit var localDbInterface: LocalDbInterface
 
     override fun onCreate() {
         if (BuildConfig.DEV) {
             setupStrictMode()
             MainThreadWatchdog().start()
         }
-        super.onCreate()
+        // Must precede super.onCreate(): Hilt-constructed singletons read appContext from init blocks.
         appContext = this
+        super.onCreate()
         // Ensure notification channel exists before any service can start.
         // This must happen before DI so foreground services can post immediately.
-        com.windscribe.vpn.backend.utils.ForegroundServiceHelper.ensureNotificationChannel(this)
+        com.windscribe.vpn.backend.utils.ForegroundServiceHelper
+            .ensureNotificationChannel(this)
         registerForegroundActivityObserver()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         runTrayMigrationEarly()
-        applicationComponent = getApplicationModuleComponent()
-        applicationComponent.inject(this)
-        activityComponent = DaggerActivityComponent.builder()
-            .applicationComponent(applicationComponent)
-            .build()
-        serviceComponent = serviceComponent()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifeCycleObserver)
         reloadAfterMigration()
 
@@ -181,7 +175,8 @@ open class Windscribe : MultiDexApplication() {
                             if (networkInfo?.isAutoSecureOn == true &&
                                 !isVpnActive &&
                                 preference.autoConnect &&
-                                canAccessNetworkName()) {
+                                canAccessNetworkName()
+                            ) {
                                 logger.debug("Network changed to auto-secure ON network - starting AutoConnectService")
                                 startAutoConnectService()
                             }
@@ -201,16 +196,18 @@ open class Windscribe : MultiDexApplication() {
 
         // Initialize WSNet in background after DI is ready
         applicationScope.launch(Dispatchers.IO) {
-            val wrapper = applicationComponent.wsNetWrapper
             if (preference.deviceUuid == null) {
-                preference.deviceUuid = java.util.UUID.randomUUID().toString()
+                preference.deviceUuid =
+                    java.util.UUID
+                        .randomUUID()
+                        .toString()
             }
-            val systemLanguageCode = if (VERSION.SDK_INT >= VERSION_CODES.N) {
-                resources.configuration.locales.get(0).language.substring(0..1)
-            } else {
-                resources.configuration.locale.language.substring(0..1)
-            }
-            wrapper.initialize(
+            val systemLanguageCode =
+                resources.configuration.locales
+                    .get(0)
+                    .language
+                    .substring(0..1)
+            wsNetWrapper.initialize(
                 if (applicationInterface.isTV) "android-tv" else "android",
                 WindUtilities.getVersionName(),
                 preference.deviceUuid ?: "",
@@ -220,7 +217,7 @@ open class Windscribe : MultiDexApplication() {
                 systemLanguageCode,
                 preference.wsNetSettings,
                 true,
-                ExtraConstants.AMNEZIA_WG_VERSION
+                ExtraConstants.AMNEZIA_WG_VERSION,
             )
         }
         applicationScope.launch {
@@ -243,11 +240,10 @@ open class Windscribe : MultiDexApplication() {
     }
 
     fun getAppSupportedSystemLanguage(): String {
-        val systemLanguageCode = if (VERSION.SDK_INT >= VERSION_CODES.N) {
-            resources.configuration.locales.get(0).language
-        } else {
-            resources.configuration.locale.language
-        }
+        val systemLanguageCode =
+            resources.configuration.locales
+                .get(0)
+                .language
         return appContext.resources.getStringArray(R.array.language).firstOrNull {
             systemLanguageCode == getLanguageCode(it)
         } ?: PreferencesKeyConstants.DEFAULT_LANGUAGE
@@ -255,11 +251,10 @@ open class Windscribe : MultiDexApplication() {
 
     val isRegionRestricted: Boolean
         get() {
-            val systemLanguageCode = if (VERSION.SDK_INT >= VERSION_CODES.N) {
-                resources.configuration.locales.get(0).language
-            } else {
-                resources.configuration.locale.language
-            }
+            val systemLanguageCode =
+                resources.configuration.locales
+                    .get(0)
+                    .language
             // Censored countries: Belarus, Iran, Russia, Turkey, China
             val censoredCountries = setOf("be", "fa", "ru", "tr", "zh")
             return censoredCountries.contains(systemLanguageCode)
@@ -270,9 +265,13 @@ open class Windscribe : MultiDexApplication() {
         val language = getLanguageCode(selectedLanguage)
         return if (language.contains("-")) {
             val splits = language.split("-")
-            Locale(splits[0], splits[1])
+            Locale
+                .Builder()
+                .setLanguage(splits[0])
+                .setRegion(splits[1])
+                .build()
         } else {
-            Locale(language)
+            Locale.Builder().setLanguage(language).build()
         }
     }
 
@@ -280,46 +279,52 @@ open class Windscribe : MultiDexApplication() {
 
     private fun runTrayMigrationEarly() {
         runBlocking(Dispatchers.IO) {
-            val migrationCompleted = withTimeoutOrNull(3_000) {
-                try {
-                    // Ensure DataStore directory exists before accessing
-                    val dataStoreDir = java.io.File(appContext.filesDir, "datastore")
-                    if (!dataStoreDir.exists()) {
-                        logger.debug("Creating DataStore directory: ${dataStoreDir.absolutePath}")
-                        val created = dataStoreDir.mkdirs()
-                        if (!created && !dataStoreDir.exists()) {
-                            logger.error("Failed to create DataStore directory - disk full or permissions issue")
-                            return@withTimeoutOrNull false
-                        }
-                    }
-
-                    val dataStore = appContext.windscribeDataStore
-                    val migration = TrayToDataStoreMigration(appContext, dataStore)
-                    when (val result = migration.migrate()) {
-                        is MigrationResult.Success -> {
-                            logger.info("Tray migration completed: ${result.migratedCount} items migrated, ${result.errorCount} errors, ${result.unmigratedCount} not migrated")
-                            notificationIdsToMigrate = result.notificationIdsToMarkRead
-                            if (notificationIdsToMigrate.isNotEmpty()) {
-                                logger.info("Found ${notificationIdsToMigrate.size} notification read statuses to migrate later")
+            val migrationCompleted =
+                withTimeoutOrNull(3_000) {
+                    try {
+                        // Ensure DataStore directory exists before accessing
+                        val dataStoreDir = java.io.File(appContext.filesDir, "datastore")
+                        if (!dataStoreDir.exists()) {
+                            logger.debug("Creating DataStore directory: ${dataStoreDir.absolutePath}")
+                            val created = dataStoreDir.mkdirs()
+                            if (!created && !dataStoreDir.exists()) {
+                                logger.error("Failed to create DataStore directory - disk full or permissions issue")
+                                return@withTimeoutOrNull false
                             }
                         }
-                        is MigrationResult.AlreadyCompleted -> { }
-                        is MigrationResult.NoTrayData -> {
-                            logger.info("No Tray data to migrate (fresh install or already migrated)")
+
+                        val dataStore = appContext.windscribeDataStore
+                        val migration = TrayToDataStoreMigration(appContext, dataStore)
+                        when (val result = migration.migrate()) {
+                            is MigrationResult.Success -> {
+                                logger.info(
+                                    "Tray migration completed: ${result.migratedCount} items migrated, ${result.errorCount} errors, ${result.unmigratedCount} not migrated",
+                                )
+                                notificationIdsToMigrate = result.notificationIdsToMarkRead
+                                if (notificationIdsToMigrate.isNotEmpty()) {
+                                    logger.info("Found ${notificationIdsToMigrate.size} notification read statuses to migrate later")
+                                }
+                            }
+
+                            is MigrationResult.AlreadyCompleted -> { }
+
+                            is MigrationResult.NoTrayData -> {
+                                logger.info("No Tray data to migrate (fresh install or already migrated)")
+                            }
+
+                            is MigrationResult.Error -> {
+                                logger.error("Tray migration failed: ${result.message}")
+                            }
                         }
-                        is MigrationResult.Error -> {
-                            logger.error("Tray migration failed: ${result.message}")
-                        }
+                        true
+                    } catch (e: java.io.IOException) {
+                        logger.error("IOException during DataStore initialization - disk full or permissions issue: ${e.message}", e)
+                        false
+                    } catch (e: Exception) {
+                        logger.error("Unexpected error during Tray migration: ${e.message}", e)
+                        false
                     }
-                    true
-                } catch (e: java.io.IOException) {
-                    logger.error("IOException during DataStore initialization - disk full or permissions issue: ${e.message}", e)
-                    false
-                } catch (e: Exception) {
-                    logger.error("Unexpected error during Tray migration: ${e.message}", e)
-                    false
                 }
-            }
 
             if (migrationCompleted == null) {
                 logger.error("Tray migration timed out after 2s - continuing with app initialization to avoid ANR")
@@ -335,7 +340,7 @@ open class Windscribe : MultiDexApplication() {
                     var migratedCount = 0
                     for (notificationId in notificationIdsToMigrate) {
                         try {
-                            applicationComponent.localDbInterface.markNotificationAsRead(notificationId)
+                            localDbInterface.markNotificationAsRead(notificationId)
                             migratedCount++
                         } catch (e: Exception) {
                             logger.debug("Notification $notificationId not found in database, skipping")
@@ -348,7 +353,6 @@ open class Windscribe : MultiDexApplication() {
             }
         }
     }
-
 
     private fun setUpNewInstallation() {
         if (preference.newInstallation == null) {
@@ -377,23 +381,26 @@ open class Windscribe : MultiDexApplication() {
                     .permitDiskWrites()
                     .permitUnbufferedIo()
                     .penaltyLog()
-                    .build()
+                    .build(),
             )
             StrictMode.setVmPolicy(
-                VmPolicy.Builder()
+                VmPolicy
+                    .Builder()
                     .detectLeakedSqlLiteObjects()
-                    .detectLeakedClosableObjects().detectActivityLeaks().detectFileUriExposure()
-                    .detectLeakedRegistrationObjects().detectContentUriWithoutPermission()
-                    .penaltyLog().build()
+                    .detectLeakedClosableObjects()
+                    .detectActivityLeaks()
+                    .detectFileUriExposure()
+                    .detectLeakedRegistrationObjects()
+                    .detectContentUriWithoutPermission()
+                    .penaltyLog()
+                    .build(),
             )
         }
     }
 
     companion object {
         @JvmStatic
-        fun getExecutorService(): ExecutorService {
-            return Executors.newSingleThreadExecutor()
-        }
+        fun getExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
 
         /**
          * Provides access to global context.
@@ -402,17 +409,6 @@ open class Windscribe : MultiDexApplication() {
         lateinit var appContext: Windscribe
 
         var applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    }
-
-    open fun getApplicationModuleComponent(): ApplicationComponent {
-        return DaggerApplicationComponent.builder()
-            .applicationModule(ApplicationModule(this)).build()
-    }
-
-    private fun serviceComponent(): ServiceComponent {
-        return DaggerServiceComponent.builder()
-            .applicationComponent(applicationComponent)
-            .build()
     }
 
     override fun onLowMemory() {
@@ -426,20 +422,23 @@ open class Windscribe : MultiDexApplication() {
     }
 
     override fun onTrimMemory(level: Int) {
-        if (level > 60)
+        if (level > 60) {
             logger.debug("Device is asking for memory trim with level = $level.")
+        }
         super.onTrimMemory(level)
     }
 
     private fun registerForegroundActivityObserver() {
-        registerActivityLifecycleCallbacks(object : ActivityLifecycleObserver {
-            override fun onActivityResumed(activity: Activity) {
-                activeActivity = activity as? AppCompatActivity
-            }
+        registerActivityLifecycleCallbacks(
+            object : ActivityLifecycleObserver {
+                override fun onActivityResumed(activity: Activity) {
+                    activeActivity = activity as? AppCompatActivity
+                }
 
-            override fun onActivityPaused(activity: Activity) {
-                activeActivity = null
-            }
-        })
+                override fun onActivityPaused(activity: Activity) {
+                    activeActivity = null
+                }
+            },
+        )
     }
 }

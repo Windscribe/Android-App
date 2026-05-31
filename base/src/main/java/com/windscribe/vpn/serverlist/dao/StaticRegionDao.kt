@@ -12,7 +12,6 @@ import com.windscribe.vpn.serverlist.entity.StaticRegion
 
 @Dao
 abstract class StaticRegionDao {
-
     suspend fun addStaticRegions(staticRegions: List<StaticRegion>) {
         deleteAll()
         insert(staticRegions)

@@ -5,28 +5,34 @@
 package com.windscribe.vpn.workers.worker
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.UserRepository
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import org.slf4j.LoggerFactory
 
-class NotificationWorker(context: Context, workerParams: WorkerParameters) :
-    CoroutineWorker(context, workerParams) {
-    @Inject
-    lateinit var notificationRepository: NotificationRepository
+@HiltWorker
+class NotificationWorker
+    @AssistedInject
+    constructor(
+        @Assisted context: Context,
+        @Assisted workerParams: WorkerParameters,
+        private val notificationRepository: NotificationRepository,
+        private val userRepository: UserRepository,
+    ) : CoroutineWorker(context, workerParams) {
+        private val logger = LoggerFactory.getLogger("worker")
 
-    @Inject
-    lateinit var userRepository: UserRepository
-
-    init {
-        appContext.applicationComponent.inject(this)
+        override suspend fun doWork(): Result {
+            if (!userRepository.loggedIn()) return Result.failure()
+            return try {
+                notificationRepository.update()
+                Result.success()
+            } catch (e: Exception) {
+                logger.debug("Failed to update notifications: $e")
+                Result.failure()
+            }
+        }
     }
-
-    override suspend fun doWork(): Result {
-        if (!userRepository.loggedIn()) return Result.failure()
-        notificationRepository.update()
-        return Result.success()
-    }
-}

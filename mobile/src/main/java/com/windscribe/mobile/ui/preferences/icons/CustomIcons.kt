@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -36,10 +35,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -52,8 +54,6 @@ import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.constants.ExtraConstants
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 // UI Constants
 private object CustomIconsConstants {
@@ -70,21 +70,55 @@ private object CustomIconsConstants {
     const val BACKGROUND_ALPHA = 0.05f
 }
 
+/**
+ * Callbacks the custom-icons UI can raise. Hoisted out of the composables so the stateless
+ * [CustomIconsContent] never needs to know about [CustomIconsViewModel].
+ */
+class CustomIconsActions(
+    val onIconSelected: (AppIcon) -> Unit = {},
+    val onConfirmIconChange: () -> Unit = {},
+    val onDismissDialog: () -> Unit = {},
+)
+
 @Composable
-fun CustomIconsScreen(viewModel: CustomIconsViewModel?) {
+fun CustomIconsScreen(viewModel: CustomIconsViewModel = hiltViewModel<CustomIconsViewModelImpl>()) {
+    val icons by viewModel.icons.collectAsState()
+    val showDialog by viewModel.showConfirmDialog.collectAsState()
+
+    CustomIconsContent(
+        icons = icons,
+        showDialog = showDialog,
+        actions =
+            CustomIconsActions(
+                onIconSelected = viewModel::selectIcon,
+                onConfirmIconChange = viewModel::confirmIconChange,
+                onDismissDialog = viewModel::dismissDialog,
+            ),
+    )
+}
+
+@Composable
+fun CustomIconsContent(
+    icons: Map<String, AppIcon>,
+    showDialog: AppIcon?,
+    actions: CustomIconsActions,
+) {
     val navController = LocalNavController.current
-    val showDialog by viewModel?.showConfirmDialog?.collectAsState() ?: return
 
     PreferenceBackground {
-        AppIconView(viewModel, navController)
+        AppIconView(
+            icons = icons,
+            navController = navController,
+            onIconSelected = actions.onIconSelected,
+        )
     }
 
     // Show confirmation dialog
     showDialog?.let { appIcon ->
         IconChangeConfirmDialog(
             iconName = appIcon.name,
-            onConfirm = { viewModel.confirmIconChange() },
-            onDismiss = { viewModel.dismissDialog() }
+            onConfirm = actions.onConfirmIconChange,
+            onDismiss = actions.onDismissDialog,
         )
     }
 }
@@ -93,29 +127,32 @@ fun CustomIconsScreen(viewModel: CustomIconsViewModel?) {
 private fun IconChangeConfirmDialog(
     iconName: String,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         shape = RoundedCornerShape(16.dp),
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-        modifier = Modifier.border(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.1f),
-            shape = RoundedCornerShape(16.dp)
-        ),
+        modifier =
+            Modifier.border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(16.dp),
+            ),
         title = {
             Text(
                 text = "Change App Icon?",
                 style = font16.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primaryTextColor
+                color = MaterialTheme.colorScheme.primaryTextColor,
             )
         },
         text = {
             Text(
-                text = "Changing the app icon to \"$iconName\" will close the app. You can reopen it from your home screen with the new icon.",
+                text =
+                    "Changing the app icon to \"$iconName\" will close the app. " +
+                        "You can reopen it from your home screen with the new icon.",
                 style = font12.copy(textAlign = TextAlign.Left),
-                color = MaterialTheme.colorScheme.primaryTextColor
+                color = MaterialTheme.colorScheme.primaryTextColor,
             )
         },
         confirmButton = {
@@ -123,7 +160,7 @@ private fun IconChangeConfirmDialog(
                 Text(
                     "OK",
                     style = font16.copy(fontWeight = FontWeight.Medium),
-                    color = MaterialTheme.colorScheme.primaryTextColor
+                    color = MaterialTheme.colorScheme.primaryTextColor,
                 )
             }
         },
@@ -132,17 +169,19 @@ private fun IconChangeConfirmDialog(
                 Text(
                     "Cancel",
                     style = font16,
-                    color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 )
             }
-        }
+        },
     )
 }
 
-
 @Composable
-private fun AppIconItemSection(category: AppIconCategory, viewModel: CustomIconsViewModel? = null) {
-    val icons by viewModel?.icons?.collectAsState() ?: return
+private fun AppIconItemSection(
+    category: AppIconCategory,
+    icons: Map<String, AppIcon>,
+    onIconSelected: (AppIcon) -> Unit,
+) {
     val filteredIcons by remember(icons, category) {
         derivedStateOf {
             icons.values.filter { it.category == category }
@@ -151,20 +190,21 @@ private fun AppIconItemSection(category: AppIconCategory, viewModel: CustomIcons
 
     if (filteredIcons.isEmpty()) return
 
-    val title = remember(category) {
-        when (category) {
-            AppIconCategory.Windscribe -> "Windscribe"
-            AppIconCategory.Discreet -> "Discreet"
-            AppIconCategory.Other -> "Other"
+    val title =
+        remember(category) {
+            when (category) {
+                AppIconCategory.Windscribe -> "Windscribe"
+                AppIconCategory.Discreet -> "Discreet"
+                AppIconCategory.Other -> "Other"
+            }
         }
-    }
 
     Column {
         Text(
             text = title,
             style = font12.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.expandedServerItemTextColor,
-            modifier = Modifier.padding(bottom = CustomIconsConstants.SECTION_BOTTOM_PADDING)
+            modifier = Modifier.padding(bottom = CustomIconsConstants.SECTION_BOTTOM_PADDING),
         )
 
         filteredIcons.forEachIndexed { index, item ->
@@ -172,7 +212,7 @@ private fun AppIconItemSection(category: AppIconCategory, viewModel: CustomIcons
                 icon = item,
                 isFirst = index == 0,
                 isLast = index == filteredIcons.lastIndex,
-                onClick = { viewModel.selectIcon(item) }
+                onClick = { onIconSelected(item) },
             )
             if (index < filteredIcons.lastIndex) {
                 Spacer(modifier = Modifier.height(CustomIconsConstants.ITEM_DIVIDER_HEIGHT))
@@ -186,46 +226,57 @@ private fun AppIconItem(
     icon: AppIcon,
     isFirst: Boolean,
     isLast: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val context = LocalContext.current
 
-    val shape = remember(isFirst, isLast) {
-        when {
-            isFirst && isLast -> RoundedCornerShape(CustomIconsConstants.CORNER_RADIUS)
-            isFirst -> RoundedCornerShape(
-                topStart = CustomIconsConstants.CORNER_RADIUS,
-                topEnd = CustomIconsConstants.CORNER_RADIUS
-            )
+    val shape =
+        remember(isFirst, isLast) {
+            when {
+                isFirst && isLast -> {
+                    RoundedCornerShape(CustomIconsConstants.CORNER_RADIUS)
+                }
 
-            isLast -> RoundedCornerShape(
-                bottomStart = CustomIconsConstants.CORNER_RADIUS,
-                bottomEnd = CustomIconsConstants.CORNER_RADIUS
-            )
+                isFirst -> {
+                    RoundedCornerShape(
+                        topStart = CustomIconsConstants.CORNER_RADIUS,
+                        topEnd = CustomIconsConstants.CORNER_RADIUS,
+                    )
+                }
 
-            else -> RectangleShape
+                isLast -> {
+                    RoundedCornerShape(
+                        bottomStart = CustomIconsConstants.CORNER_RADIUS,
+                        bottomEnd = CustomIconsConstants.CORNER_RADIUS,
+                    )
+                }
+
+                else -> {
+                    RectangleShape
+                }
+            }
         }
-    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = CustomIconsConstants.BACKGROUND_ALPHA),
-                shape = shape
-            )
-            .clickable(onClick = onClick)
-            .padding(CustomIconsConstants.ITEM_PADDING)
+        modifier =
+            Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = CustomIconsConstants.BACKGROUND_ALPHA),
+                    shape = shape,
+                ).clickable(onClick = onClick)
+                .padding(CustomIconsConstants.ITEM_PADDING),
     ) {
-        val bitmap = remember(icon.icon) {
-            ContextCompat.getDrawable(context, icon.icon)?.toBitmap()?.asImageBitmap()
-        }
+        val bitmap =
+            remember(icon.icon) {
+                ContextCompat.getDrawable(context, icon.icon)?.toBitmap()?.asImageBitmap()
+            }
 
         bitmap?.let { imageBitmap ->
             Image(
                 bitmap = imageBitmap,
                 contentDescription = icon.name,
-                modifier = Modifier.size(CustomIconsConstants.ICON_SIZE)
+                modifier = Modifier.size(CustomIconsConstants.ICON_SIZE),
             )
         }
 
@@ -234,7 +285,7 @@ private fun AppIconItem(
         Text(
             text = icon.name,
             style = font16.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.primaryTextColor
+            color = MaterialTheme.colorScheme.primaryTextColor,
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -250,107 +301,113 @@ private fun AppIconItem(
 
 @Composable
 private fun AppIconView(
-    viewModel: CustomIconsViewModel? = null,
-    navController: androidx.navigation.NavController? = null
+    icons: Map<String, AppIcon>,
+    navController: NavController,
+    onIconSelected: (AppIcon) -> Unit,
 ) {
     Column(
-        modifier = Modifier.padding(
-            horizontal = CustomIconsConstants.HORIZONTAL_PADDING,
-            vertical = CustomIconsConstants.VERTICAL_PADDING
-        ).navigationBarsPadding()
+        modifier =
+            Modifier
+                .padding(
+                    horizontal = CustomIconsConstants.HORIZONTAL_PADDING,
+                    vertical = CustomIconsConstants.VERTICAL_PADDING,
+                ).navigationBarsPadding(),
     ) {
-        navController?.let {
-            PreferencesNavBar(stringResource(com.windscribe.vpn.R.string.app_icon)) {
-                it.popBackStack()
-            }
+        PreferencesNavBar(stringResource(com.windscribe.vpn.R.string.app_icon)) {
+            navController.popBackStack()
         }
         Column(
-            modifier = Modifier.verticalScroll(rememberScrollState())
+            modifier = Modifier.verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(CustomIconsConstants.TOP_SPACER_HEIGHT))
-            AppIconItemSection(AppIconCategory.Discreet, viewModel)
+            AppIconItemSection(AppIconCategory.Discreet, icons, onIconSelected)
             Spacer(modifier = Modifier.height(CustomIconsConstants.CATEGORY_SPACING))
-            AppIconItemSection(AppIconCategory.Windscribe, viewModel)
+            AppIconItemSection(AppIconCategory.Windscribe, icons, onIconSelected)
             Spacer(modifier = Modifier.height(CustomIconsConstants.CATEGORY_SPACING))
-            AppIconItemSection(AppIconCategory.Other, viewModel)
+            AppIconItemSection(AppIconCategory.Other, icons, onIconSelected)
         }
     }
 }
 
+private class CustomIconsStateProvider : PreviewParameterProvider<AppIcon?> {
+    override val values =
+        sequenceOf(
+            null,
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun CustomIconScreenPreview() {
+private fun CustomIconScreenPreview(
+    @PreviewParameter(CustomIconsStateProvider::class) showDialog: AppIcon?,
+) {
     val context = LocalContext.current
-    val viewModel = object : CustomIconsViewModel() {
-        override val icons: StateFlow<Map<String, AppIcon>>
-            get() = MutableStateFlow(previewIcons(context))
-
-        override val showConfirmDialog: StateFlow<AppIcon?>
-            get() = MutableStateFlow(null)
-
-        override fun selectIcon(appIcon: AppIcon) {}
-        override fun confirmIconChange() {}
-        override fun dismissDialog() {}
-    }
+    val icons = previewIcons(context)
     PreviewWithNav {
-        CustomIconsScreen(viewModel)
+        CustomIconsContent(
+            icons = icons,
+            showDialog = showDialog,
+            actions = CustomIconsActions(),
+        )
     }
 }
 
 private fun previewIcons(context: Context): Map<String, AppIcon> {
     val selectedCustomIcon = "Clock"
     // List of icon configurations - add or remove items here
-    val iconConfigs = listOf(
-        IconConfig(
-            "Clock",
-            com.windscribe.mobile.R.mipmap.ic_launcher_clock,
-            AppIconCategory.Discreet
-        ),
-        IconConfig(
-            "Calculator",
-            com.windscribe.mobile.R.mipmap.ic_launcher_calculator,
-            AppIconCategory.Discreet
-        ),
-        IconConfig(
-            ExtraConstants.DEFAULT_ICON,
-            com.windscribe.vpn.R.mipmap.ws_launcher,
-            AppIconCategory.Windscribe
-        ),
-        IconConfig(
-            "Vapor",
-            com.windscribe.mobile.R.mipmap.ic_launcher_vapor,
-            AppIconCategory.Windscribe
-        ),
-        IconConfig(
-            "Glitch",
-            com.windscribe.mobile.R.mipmap.ic_launcher_glitch,
-            AppIconCategory.Windscribe
-        ),
-        IconConfig(
-            "WindPass",
-            com.windscribe.mobile.R.mipmap.ic_launcher_pass,
-            AppIconCategory.Other
-        ),
-        IconConfig(
-            "BSVpn",
-            com.windscribe.mobile.R.mipmap.ic_launcher_bs,
-            AppIconCategory.Other
-        ),
-        IconConfig(
-            "DickButt",
-            com.windscribe.mobile.R.mipmap.ic_launcher_butt,
-            AppIconCategory.Other
-        ),
-    )
+    val iconConfigs =
+        listOf(
+            IconConfig(
+                "Clock",
+                com.windscribe.mobile.R.mipmap.ic_launcher_clock,
+                AppIconCategory.Discreet,
+            ),
+            IconConfig(
+                "Calculator",
+                com.windscribe.mobile.R.mipmap.ic_launcher_calculator,
+                AppIconCategory.Discreet,
+            ),
+            IconConfig(
+                ExtraConstants.DEFAULT_ICON,
+                com.windscribe.vpn.R.mipmap.ws_launcher,
+                AppIconCategory.Windscribe,
+            ),
+            IconConfig(
+                "Vapor",
+                com.windscribe.mobile.R.mipmap.ic_launcher_vapor,
+                AppIconCategory.Windscribe,
+            ),
+            IconConfig(
+                "Glitch",
+                com.windscribe.mobile.R.mipmap.ic_launcher_glitch,
+                AppIconCategory.Windscribe,
+            ),
+            IconConfig(
+                "WindPass",
+                com.windscribe.mobile.R.mipmap.ic_launcher_pass,
+                AppIconCategory.Other,
+            ),
+            IconConfig(
+                "BSVpn",
+                com.windscribe.mobile.R.mipmap.ic_launcher_bs,
+                AppIconCategory.Other,
+            ),
+            IconConfig(
+                "DickButt",
+                com.windscribe.mobile.R.mipmap.ic_launcher_butt,
+                AppIconCategory.Other,
+            ),
+        )
     return iconConfigs.associate { config ->
         val component = AppIconManager.getComponentName(context, config.name)
-        val appIcon = AppIcon(
-            name = config.name,
-            icon = config.iconRes,
-            component = component,
-            category = config.category,
-            isSelected = selectedCustomIcon == config.name
-        )
+        val appIcon =
+            AppIcon(
+                name = config.name,
+                icon = config.iconRes,
+                component = component,
+                category = config.category,
+                isSelected = selectedCustomIcon == config.name,
+            )
         config.name to appIcon
     }
 }

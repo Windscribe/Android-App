@@ -1,0 +1,62 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+  - protocols
+---
+# Cycles through WireGuard, IKEv2, and OpenVPN UDP, connecting on each.
+# Exercises libwg-go.so, libcharon.so, and libopenvpn.so in a single run.
+# This is the flow most likely to surface native-side regressions before release.
+#
+# Key behaviors of ConnectionChangeScreen (mobile/.../ConnectionChangeScreen.kt):
+#   - Tapping protocol_<name> triggers BOTH onProtocolSelect (starts connect)
+#     AND popBackStack (returns to home). We do NOT tap home_connect_button
+#     to start the connection — it would either be a no-op or disconnect.
+#   - The home screen rebuilds after popBackStack, so home_connect_button is
+#     briefly unmounted. Wait for connection_status_connected (which only
+#     appears once home re-renders) before tapping anything else.
+#
+# Popups that can race in during connect (all dismissed by wait-for-connected):
+#   - wg-key-limit dialog (WG only, on first connect with key-limit account)
+#   - OS VPN consent ("Connection request" / OK) — first time only per session
+#   - SetupPreferredProtocolScreen — covers home, must be dismissed
+#   - PowerWhitelistScreen ("Grant Permission") — appears after tunnel is up
+- launchApp:
+    clearState: false
+
+# --- WireGuard (libwg-go.so) ---
+- tapOn:
+    id: "protocol_switcher"
+- tapOn:
+    id: "protocol_wg"
+- runFlow: ../subflows/dismiss-wg-key-popup.yaml
+# If the key-limit retry caused AutoConnectionManager to re-show
+# ConnectionChangeScreen, re-select WG.
+- tapOn:
+    id: "protocol_wg"
+    optional: true
+- runFlow: ../subflows/dismiss-wg-key-popup.yaml
+- runFlow: ../subflows/wait-for-connected.yaml
+- tapOn:
+    id: "home_connect_button"
+- runFlow: ../subflows/wait-for-disconnected.yaml
+
+# --- IKEv2 (libcharon.so) ---
+- tapOn:
+    id: "protocol_switcher"
+- tapOn:
+    id: "protocol_ikev2"
+- runFlow: ../subflows/wait-for-connected.yaml
+- tapOn:
+    id: "home_connect_button"
+- runFlow: ../subflows/wait-for-disconnected.yaml
+
+# --- OpenVPN UDP (libopenvpn.so) ---
+- tapOn:
+    id: "protocol_switcher"
+- tapOn:
+    id: "protocol_udp"
+- runFlow: ../subflows/wait-for-connected.yaml
+- tapOn:
+    id: "home_connect_button"
+- runFlow: ../subflows/wait-for-disconnected.yaml

@@ -8,19 +8,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ProgressFragment.Companion.instance
 import com.windscribe.tv.databinding.ActivityConfirmBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-class ConfirmActivity : BaseActivity(), ConfirmEmailView {
-
+@AndroidEntryPoint
+class ConfirmActivity :
+    BaseActivity(),
+    ConfirmEmailView {
     private lateinit var binding: ActivityConfirmBinding
 
     @Inject
@@ -28,8 +30,9 @@ class ConfirmActivity : BaseActivity(), ConfirmEmailView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_confirm)
+        presenter.bind(this, lifecycleScope)
+        binding = ActivityConfirmBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         onActivityLaunch()
         setupUI()
         presenter.init()
@@ -67,10 +70,11 @@ class ConfirmActivity : BaseActivity(), ConfirmEmailView {
     }
 
     private fun navigateToChangeEmail() {
-        val startIntent = AddEmailActivity.getStartIntent(this).apply {
-            putExtra("pro_user", presenter.isUserPro)
-            action = PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT
-        }
+        val startIntent =
+            AddEmailActivity.getStartIntent(this).apply {
+                putExtra("pro_user", presenter.isUserPro)
+                action = PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT
+            }
         startActivity(startIntent)
         finish()
     }

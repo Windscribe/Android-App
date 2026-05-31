@@ -1,25 +1,32 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
 }
 
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 android {
-    compileSdk = 34
+    compileSdk = rootProject.extra["appCompiledSdk"] as Int
     ndkVersion = "27.2.12479018"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     namespace = "com.wireguard.tunnel"
     defaultConfig {
-        minSdk = 21
+        minSdk = rootProject.extra["appMinSdk"] as Int
+        (project.findProperty("abiFilter") as String?)
+            ?.split(",")
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.let { ndk.abiFilters += it }
+    }
+    testOptions {
+        targetSdk = rootProject.extra["appTargetSdk"] as Int
     }
     externalNativeBuild {
         cmake {
@@ -45,7 +52,6 @@ android {
         debug {
             externalNativeBuild {
                 cmake {
-
                 }
             }
         }
@@ -57,8 +63,8 @@ android {
 }
 
 dependencies {
-    implementation("androidx.annotation:annotation:1.7.0")
-    implementation("androidx.collection:collection:1.3.0")
+    implementation("androidx.annotation:annotation:1.9.1")
+    implementation("androidx.collection:collection:1.5.0")
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     testImplementation("junit:junit:4.13.2")
     implementation(project(":common"))

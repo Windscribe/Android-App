@@ -7,7 +7,7 @@ import java.io.Serializable
 @Keep
 data class WgInitResponse(
     @SerializedName("config")
-    val config: WgInitConfig
+    val config: WgInitConfig,
 ) : Serializable
 
 @Keep
@@ -21,5 +21,5 @@ data class WgInitConfig(
     @SerializedName("HashedCIDR")
     val hashedCIDR: List<String>,
     @SerializedName("HashedCIDRv6")
-    val hashedCIDRV6: List<String>
+    val hashedCIDRV6: List<String>,
 ) : Serializable

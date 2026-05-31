@@ -17,9 +17,12 @@ import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.serverlist.overlay.OverlayListener
 import kotlinx.coroutines.launch
 
-class AllOverlayFragment : Fragment(), CustomVerticalGridView.CustomFocusListener {
+class AllOverlayFragment :
+    Fragment(),
+    CustomVerticalGridView.CustomFocusListener {
     private var recyclerView: CustomVerticalGridView? = null
     private var overlayListener: OverlayListener? = null
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         overlayListener = context as OverlayListener
@@ -28,13 +31,16 @@ class AllOverlayFragment : Fragment(), CustomVerticalGridView.CustomFocusListene
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         val view = inflater.inflate(R.layout.fragment_all_overlay, container, false)
         return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         recyclerView = view.findViewById(R.id.all_server_view)
         recyclerView?.setNumColumns(4)

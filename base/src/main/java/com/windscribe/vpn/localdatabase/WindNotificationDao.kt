@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WindNotificationDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(newsFeedNotification: List<WindNotification>)
 

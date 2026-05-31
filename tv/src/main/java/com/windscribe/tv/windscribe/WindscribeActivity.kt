@@ -12,7 +12,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -20,14 +20,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
-import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
-import com.windscribe.tv.R.*
+import com.windscribe.tv.R.anim
+import com.windscribe.tv.R.drawable
+import com.windscribe.tv.R.id
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorPrimaryFragment
 import com.windscribe.tv.databinding.ActivityWindscribeBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.news.NewsFeedActivity
 import com.windscribe.tv.rate.RateMyAppActivity
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
@@ -41,19 +42,22 @@ import com.windscribe.tv.windscribe.WindscribeView.ConnectionStateAnimationListe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.backend.VPNState
-import com.windscribe.vpn.backend.VPNState.Status.*
+import com.windscribe.vpn.backend.VPNState.Status.Connected
+import com.windscribe.vpn.backend.VPNState.Status.Connecting
+import com.windscribe.vpn.backend.VPNState.Status.Disconnected
+import com.windscribe.vpn.backend.VPNState.Status.Disconnecting
 import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.constants.NotificationConstants
-import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.AndroidEntryPoint
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintLayout.OnWindowResizeListener {
-
-    @Inject
-    lateinit var preferenceChangeObserver: PreferenceChangeObserver
-
+@AndroidEntryPoint
+class WindscribeActivity :
+    BaseActivity(),
+    WindscribeView,
+    FocusAwareConstraintLayout.OnWindowResizeListener {
     @Inject
     lateinit var windscribePresenter: WindscribePresenter
 
@@ -75,8 +79,9 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_windscribe)
+        windscribePresenter.bind(this, lifecycleScope)
+        binding = ActivityWindscribeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         onActivityLaunch()
         setViews()
         registerDataChangeObserver()
@@ -122,10 +127,13 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         super.onDestroy()
     }
 
-    override val networkInfo: NetworkInfo?
+    override val isEthernetConnection: Boolean
         get() {
             val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-            return connectivityManager.activeNetworkInfo
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+                    ?: return false
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
         }
 
     override fun gotoLoginRegistrationActivity() {
@@ -163,7 +171,10 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         mainLogger.info("Opening settings activity.")
     }
 
-    override fun openNewsFeedActivity(showPopUp: Boolean, popUp: Int) {
+    override fun openNewsFeedActivity(
+        showPopUp: Boolean,
+        popUp: Int,
+    ) {
         mainLogger.info("Opening notification activity.")
         val intent = NewsFeedActivity.getStartIntent(this@WindscribeActivity, showPopUp, popUp)
         startActivity(intent)
@@ -178,7 +189,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         super.onBackPressed()
     }
 
-    override fun setProtocolAndPortInfo(protocol: String, port: String, disconnected: Boolean) {
+    override fun setProtocolAndPortInfo(
+        protocol: String,
+        port: String,
+        disconnected: Boolean,
+    ) {
         runOnUiThread {
             binding.protocolText.text = protocol
             binding.portText.text = port
@@ -189,11 +204,12 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         runOnUiThread {
             when (status) {
                 Connecting -> {
-                    binding.connectionStatus.background = ResourcesCompat.getDrawable(
-                        resources,
-                        R.drawable.ic_connecting_status_bg,
-                        theme
-                    )
+                    binding.connectionStatus.background =
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_connecting_status_bg,
+                            theme,
+                        )
                     binding.connectionStatus.text = getString(com.windscribe.vpn.R.string.ON)
                     binding.connectionStatus.setTextColor(resources.getColor(R.color.colorLightBlue))
                     binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
@@ -202,11 +218,12 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
                 }
 
                 Connected -> {
-                    binding.connectionStatus.background = ResourcesCompat.getDrawable(
-                        resources,
-                        R.drawable.ic_connected_status_bg,
-                        theme
-                    )
+                    binding.connectionStatus.background =
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_connected_status_bg,
+                            theme,
+                        )
                     binding.connectionStatus.text = getString(com.windscribe.vpn.R.string.ON)
                     binding.connectionStatus.setTextColor(resources.getColor(R.color.sea_green))
                     binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
@@ -215,11 +232,12 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
                 }
 
                 Disconnecting, Disconnected -> {
-                    binding.connectionStatus.background = ResourcesCompat.getDrawable(
-                        resources,
-                        R.drawable.ic_disconnected_status_bg,
-                        theme
-                    )
+                    binding.connectionStatus.background =
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_disconnected_status_bg,
+                            theme,
+                        )
                     binding.connectionStatus.text = getString(com.windscribe.vpn.R.string.OFF)
                     binding.connectionStatus.setTextColor(resources.getColor(R.color.colorWhite))
                     binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
@@ -329,7 +347,10 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         }
     }
 
-    override fun setupLayoutForFreeUser(dataLeft: String, color: Int) {
+    override fun setupLayoutForFreeUser(
+        dataLeft: String,
+        color: Int,
+    ) {
         binding.dataLeftLabel.text = dataLeft
         binding.dataLeftLabel.setTextColor(color)
         binding.upgradeParent.visibility = View.VISIBLE
@@ -357,16 +378,16 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
                 ResourcesCompat.getDrawable(
                     resources,
                     drawable.ic_connected_split_ring,
-                    theme
-                )
+                    theme,
+                ),
             )
         } else {
             binding.imgConnected.setImageDrawable(
                 ResourcesCompat.getDrawable(
                     resources,
                     drawable.ic_connected_ring,
-                    theme
-                )
+                    theme,
+                ),
             )
         }
     }
@@ -389,7 +410,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         backgroundColorFinal: Int,
         textColorStart: Int,
         textColorFinal: Int,
-        listenerState: ConnectionStateAnimationListener
+        listenerState: ConnectionStateAnimationListener,
     ) {
         mainLogger.debug("Starting connected state animation")
         runOnUiThread {
@@ -405,32 +426,35 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
                         rgbEvaluator,
                         backgroundColorStart,
                         backgroundColorFinal,
-                        binding.imgFlagGradientTop
+                        binding.imgFlagGradientTop,
                     )
                     setTextColor(
                         animator,
                         rgbEvaluator,
                         textColorStart,
                         textColorFinal,
-                        arrayOf(binding.connectionStatus, binding.portText, binding.protocolText)
+                        arrayOf(binding.connectionStatus, binding.portText, binding.protocolText),
                     )
                 }
-                animator.addListener(object : AnimatorListener {
-                    override fun onAnimationCancel(animation: Animator) {
-                        animator.removeAllListeners()
-                    }
+                animator.addListener(
+                    object : AnimatorListener {
+                        override fun onAnimationCancel(animation: Animator) {
+                            animator.removeAllListeners()
+                        }
 
-                    override fun onAnimationEnd(animation: Animator) {
-                        animator.removeAllListeners()
-                        binding.connectionProgressBar.visibility = View.GONE
-                        binding.imgConnected.visibility = View.VISIBLE
-                        listenerState.onConnectedAnimationCompleted()
-                        mainLogger.info("Ending connected animation.")
-                    }
+                        override fun onAnimationEnd(animation: Animator) {
+                            animator.removeAllListeners()
+                            binding.connectionProgressBar.visibility = View.GONE
+                            binding.imgConnected.visibility = View.VISIBLE
+                            listenerState.onConnectedAnimationCompleted()
+                            mainLogger.info("Ending connected animation.")
+                        }
 
-                    override fun onAnimationRepeat(animation: Animator) {}
-                    override fun onAnimationStart(animation: Animator) {}
-                })
+                        override fun onAnimationRepeat(animation: Animator) {}
+
+                        override fun onAnimationStart(animation: Animator) {}
+                    },
+                )
                 animator.duration = 1000
                 animator.start()
             }
@@ -444,7 +468,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         backgroundColorFinal: Int,
         textColorStart: Int,
         textColorFinal: Int,
-        listenerState: ConnectionStateAnimationListener
+        listenerState: ConnectionStateAnimationListener,
     ) {
         runOnUiThread {
             state = 1
@@ -459,31 +483,34 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
                         rgbEvaluator,
                         backgroundColorStart,
                         backgroundColorFinal,
-                        binding.imgFlagGradientTop
+                        binding.imgFlagGradientTop,
                     )
                     setTextColor(
                         it,
                         rgbEvaluator,
                         textColorStart,
                         textColorFinal,
-                        arrayOf(binding.connectionStatus, binding.portText, binding.protocolText)
+                        arrayOf(binding.connectionStatus, binding.portText, binding.protocolText),
                     )
                 }
-                it.addListener(object : AnimatorListener {
-                    override fun onAnimationCancel(animation: Animator) {
-                        it.removeAllListeners()
-                    }
+                it.addListener(
+                    object : AnimatorListener {
+                        override fun onAnimationCancel(animation: Animator) {
+                            it.removeAllListeners()
+                        }
 
-                    override fun onAnimationEnd(animation: Animator) {
-                        it.removeAllListeners()
-                        listenerState.onConnectingAnimationCompleted()
-                    }
+                        override fun onAnimationEnd(animation: Animator) {
+                            it.removeAllListeners()
+                            listenerState.onConnectingAnimationCompleted()
+                        }
 
-                    override fun onAnimationRepeat(animation: Animator) {}
-                    override fun onAnimationStart(animation: Animator) {
-                        setCountryFlag(flagIcon)
-                    }
-                })
+                        override fun onAnimationRepeat(animation: Animator) {}
+
+                        override fun onAnimationStart(animation: Animator) {
+                            setCountryFlag(flagIcon)
+                        }
+                    },
+                )
                 it.duration = 500
                 it.interpolator = LinearInterpolator()
                 it.start()
@@ -496,13 +523,14 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         argbEvaluator: ArgbEvaluator?,
         textColorStart: Int,
         textColorFinal: Int,
-        textViews: Array<TextView?>
+        textViews: Array<TextView?>,
     ) {
-        val color = argbEvaluator?.evaluate(
-            valueAnimator.animatedFraction,
-            textColorStart,
-            textColorFinal
-        ) as Int
+        val color =
+            argbEvaluator?.evaluate(
+                valueAnimator.animatedFraction,
+                textColorStart,
+                textColorFinal,
+            ) as Int
         textViews.forEach {
             it?.setTextColor(color)
         }
@@ -513,17 +541,21 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         argbEvaluator: ArgbEvaluator?,
         textColorStart: Int,
         textColorFinal: Int,
-        imageView: ImageView?
+        imageView: ImageView?,
     ) {
-        val color = argbEvaluator?.evaluate(
-            valueAnimator.animatedFraction,
-            textColorStart,
-            textColorFinal
-        ) as Int
+        val color =
+            argbEvaluator?.evaluate(
+                valueAnimator.animatedFraction,
+                textColorStart,
+                textColorFinal,
+            ) as Int
         imageView?.setColorFilter(color)
     }
 
-    override fun updateLocationName(nodeName: String, nodeNickName: String) {
+    override fun updateLocationName(
+        nodeName: String,
+        nodeNickName: String,
+    ) {
         binding.cityName.text = nodeName
         binding.nodeName.text = nodeNickName
         mainLogger.info("Updating location name to:$nodeName")
@@ -532,7 +564,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
     private fun onFadeIn() {
         runOnUiThread {
             if (!isDestroyed && binding.flagAlpha.isAttachedToWindow) {
-                binding.flagAlpha.animate().alpha(0.5f).setDuration(500).withEndAction {}
+                binding.flagAlpha
+                    .animate()
+                    .alpha(0.5f)
+                    .setDuration(500)
+                    .withEndAction {}
             }
         }
     }
@@ -540,7 +576,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
     private fun onFadeOut(flagIconResource: Int) {
         runOnUiThread {
             if (!isDestroyed && binding.flagAlpha.isAttachedToWindow) {
-                binding.flagAlpha.animate()
+                binding.flagAlpha
+                    .animate()
                     .alpha(0.0f)
                     .setDuration(500)
                     .withEndAction {
@@ -557,7 +594,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         runOnUiThread {
             if (!isDestroyed) {
                 try {
-                    Glide.with(this@WindscribeActivity)
+                    Glide
+                        .with(this@WindscribeActivity)
                         .load(ResourcesCompat.getDrawable(resources, flagIconResource, theme))
                         .dontAnimate()
                         .into(binding.flagAlpha)
@@ -624,7 +662,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
     }
 
     companion object {
-
         const val ERROR_TAG = "login_error_tag"
         private const val TAG = "basic"
 

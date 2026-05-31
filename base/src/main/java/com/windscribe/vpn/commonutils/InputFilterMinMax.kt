@@ -7,16 +7,20 @@ import android.text.InputFilter
 import android.text.Spanned
 import java.lang.NumberFormatException
 
-class InputFilterMinMax(min: String, max: String) : InputFilter {
+class InputFilterMinMax(
+    min: String,
+    max: String,
+) : InputFilter {
     private val max: Int = max.toInt()
     private val min: Int = min.toInt()
+
     override fun filter(
         source: CharSequence,
         start: Int,
         end: Int,
         dest: Spanned,
         dStart: Int,
-        dEnd: Int
+        dEnd: Int,
     ): CharSequence? {
         try {
             val input = (dest.toString() + source.toString()).toInt()
@@ -28,7 +32,9 @@ class InputFilterMinMax(min: String, max: String) : InputFilter {
         return ""
     }
 
-    private fun isInRange(a: Int, b: Int, c: Int): Boolean {
-        return if (b > a) c in a..b else c in b..a
-    }
+    private fun isInRange(
+        a: Int,
+        b: Int,
+        c: Int,
+    ): Boolean = if (b > a) c in a..b else c in b..a
 }

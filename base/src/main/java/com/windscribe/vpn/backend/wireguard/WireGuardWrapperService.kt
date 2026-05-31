@@ -7,7 +7,6 @@ package com.windscribe.vpn.backend.wireguard
 import android.content.Intent
 import android.net.VpnService
 import com.windscribe.common.DNSDetails
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
@@ -18,12 +17,13 @@ import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.wireguard.android.backend.GoBackend
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class WireGuardWrapperService : GoBackend.VpnService() {
-
     @Inject
     lateinit var windNotificationBuilder: WindNotificationBuilder
 
@@ -48,24 +48,27 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         // Promote to foreground IMMEDIATELY before DI to prevent
         // ForegroundServiceDidNotStartInTimeException on slow devices.
         startForegroundImmediately(NotificationConstants.SERVICE_NOTIFICATION_ID)
-        Windscribe.appContext.serviceComponent.inject(this)
+        super.onCreate()
         // Replace placeholder with full notification now that DI is complete.
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            Connecting
+            Connecting,
         )
-        super.onCreate()
         wireguardBackend.serviceCreated(this)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         if (intent == null || intent.action == SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
             startForegroundSafely(
                 windNotificationBuilder,
                 NotificationConstants.SERVICE_NOTIFICATION_ID,
-                Connecting
+                Connecting,
             )
             shortcutStateManager.connect()
             stopSelf()
@@ -74,7 +77,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            Connecting
+            Connecting,
         )
         return if (preferencesHelper.globalUserConnectionPreference) {
             START_STICKY
@@ -100,11 +103,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         wireguardBackend.scope.launch { vpnController.disconnectAsync() }
     }
 
-    override fun getDnsDetails(): DNSDetails? {
-        return proxyDNSManager.dnsDetails
-    }
+    override fun getDnsDetails(): DNSDetails? = proxyDNSManager.dnsDetails
 
-    override fun getControlDPort(): Int {
-        return proxyDNSManager.getListenPort()
-    }
+    override fun getControlDPort(): Int = proxyDNSManager.getListenPort()
 }

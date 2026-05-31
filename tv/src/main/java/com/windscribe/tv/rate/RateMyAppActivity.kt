@@ -8,18 +8,19 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
-import androidx.databinding.DataBindingUtil
-import com.windscribe.tv.R
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.databinding.ActivityRateMyAppBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.RateDialogConstants.PLAY_STORE_URL
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-class RateMyAppActivity : BaseActivity(), RateView {
-
+@AndroidEntryPoint
+class RateMyAppActivity :
+    BaseActivity(),
+    RateView {
     private lateinit var binding: ActivityRateMyAppBinding
 
     @Inject
@@ -27,9 +28,10 @@ class RateMyAppActivity : BaseActivity(), RateView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
+        presenter.bind(this, lifecycleScope)
         applyAppLocale()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_rate_my_app)
+        binding = ActivityRateMyAppBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         setupUI()
     }
 

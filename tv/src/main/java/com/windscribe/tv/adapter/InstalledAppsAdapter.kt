@@ -19,27 +19,34 @@ import com.windscribe.vpn.cache.AppIconCache
 class InstalledAppsAdapter(
     mAppsList: List<InstalledAppsData>,
     installedAppListener: InstalledAppListener,
-    private val appIconCache: AppIconCache
+    private val appIconCache: AppIconCache,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private class InstalledAppsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    private class InstalledAppsViewHolder(
+        itemView: View,
+    ) : RecyclerView.ViewHolder(itemView) {
         val imgAppLogo: ImageView = itemView.findViewById(R.id.banner)
         val imgCheck: ImageView = itemView.findViewById(R.id.check)
         val tvAppName: TextView = itemView.findViewById(R.id.app_name)
     }
 
     interface InstalledAppListener {
-        fun onInstalledAppClick(updatedModel: InstalledAppsData?, reloadAdapter: Boolean)
+        fun onInstalledAppClick(
+            updatedModel: InstalledAppsData?,
+            reloadAdapter: Boolean,
+        )
     }
 
     private val specialPackages: MutableList<String> = ArrayList()
     private val copyAppsList: List<InstalledAppsData>
     private val installedAppListener: InstalledAppListener
     private var mAppsList: List<InstalledAppsData>?
-    override fun getItemCount(): Int {
-        return mAppsList?.size ?: 0
-    }
 
-    override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, i: Int) {
+    override fun getItemCount(): Int = mAppsList?.size ?: 0
+
+    override fun onBindViewHolder(
+        viewHolder: RecyclerView.ViewHolder,
+        i: Int,
+    ) {
         val listViewHolder = viewHolder as InstalledAppsViewHolder
         val installedAppsData = mAppsList!![viewHolder.getAdapterPosition()]
         val iconBitmap = appIconCache.getIcon(installedAppsData.packageName)
@@ -51,18 +58,22 @@ class InstalledAppsAdapter(
 
         listViewHolder.tvAppName.text = installedAppsData.appName
         if (installedAppsData.isChecked) {
-            listViewHolder.itemView.background = ResourcesCompat
-                .getDrawable(
-                    listViewHolder.itemView.context.resources,
-                    R.drawable.apps_background_selected, appContext.theme
-                )
+            listViewHolder.itemView.background =
+                ResourcesCompat
+                    .getDrawable(
+                        listViewHolder.itemView.context.resources,
+                        R.drawable.apps_background_selected,
+                        appContext.theme,
+                    )
             listViewHolder.imgCheck.visibility = View.VISIBLE
         } else {
-            listViewHolder.itemView.background = ResourcesCompat
-                .getDrawable(
-                    listViewHolder.itemView.context.resources, R.drawable.apps_background,
-                    appContext.theme
-                )
+            listViewHolder.itemView.background =
+                ResourcesCompat
+                    .getDrawable(
+                        listViewHolder.itemView.context.resources,
+                        R.drawable.apps_background,
+                        appContext.theme,
+                    )
             listViewHolder.imgCheck.visibility = View.INVISIBLE
         }
         listViewHolder.itemView.setOnClickListener {
@@ -72,30 +83,39 @@ class InstalledAppsAdapter(
         }
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): RecyclerView.ViewHolder {
-        val itemView = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.installed_apps_viewholder, viewGroup, false)
+    override fun onCreateViewHolder(
+        viewGroup: ViewGroup,
+        i: Int,
+    ): RecyclerView.ViewHolder {
+        val itemView =
+            LayoutInflater
+                .from(viewGroup.context)
+                .inflate(R.layout.installed_apps_viewholder, viewGroup, false)
         return InstalledAppsViewHolder(itemView)
     }
 
     @SuppressLint("NotifyDataSetChanged")
     fun setFilterType(showSystemApps: Boolean) {
-        mAppsList = if (showSystemApps) {
-            copyAppsList
-        } else {
-            val filteredList: MutableList<InstalledAppsData> = ArrayList()
-            for (installedAppsData in copyAppsList) {
-                if (!installedAppsData.isSystemApp) {
-                    filteredList.add(installedAppsData)
+        mAppsList =
+            if (showSystemApps) {
+                copyAppsList
+            } else {
+                val filteredList: MutableList<InstalledAppsData> = ArrayList()
+                for (installedAppsData in copyAppsList) {
+                    if (!installedAppsData.isSystemApp) {
+                        filteredList.add(installedAppsData)
+                    }
                 }
+                filteredList
             }
-            filteredList
-        }
         notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun updateApp(name: String, check: Boolean) {
+    fun updateApp(
+        name: String,
+        check: Boolean,
+    ) {
         for (app in mAppsList!!) {
             if (app.packageName == name) {
                 app.isChecked = check

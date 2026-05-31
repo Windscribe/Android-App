@@ -10,17 +10,21 @@ class TrafficTrend {
     private val minMaxRandomPercentage = 90
     private val minMaxPercentage = 25
 
-    fun calculateTraffic(targetData: Int, attemptsToIncrease: Int, isUpload: Boolean): Int{
+    fun calculateTraffic(
+        targetData: Int,
+        attemptsToIncrease: Int,
+        isUpload: Boolean,
+    ): Int {
         val average = if (isUpload) getUploadAverage() else getDownloadAverage()
         val finalDataBasedOnAverage = targetData * average
-        if(attemptsToIncrease <= 2) return finalDataBasedOnAverage
-        if(isUpload){
+        if (attemptsToIncrease <= 2) return finalDataBasedOnAverage
+        if (isUpload) {
             currentUploadTrend.attemptsToIncrease -= 1
-        }else{
+        } else {
             currentDownloadTrend.attemptsToIncrease -= 1
         }
         val chunk = finalDataBasedOnAverage / attemptsToIncrease
-        if(chunk > finalDataBasedOnAverage)return finalDataBasedOnAverage
+        if (chunk > finalDataBasedOnAverage) return finalDataBasedOnAverage
         return chunk
     }
 
@@ -40,13 +44,27 @@ class TrafficTrend {
                 }
             } else {
                 currentUploadTrend = UploadTrend.MinMax
-                Random.nextInt(lowerLimitMultiplier.coerceAtMost(upperLimitMultiplier), lowerLimitMultiplier.coerceAtLeast(upperLimitMultiplier))
+                Random.nextInt(
+                    lowerLimitMultiplier.coerceAtMost(upperLimitMultiplier),
+                    lowerLimitMultiplier.coerceAtLeast(upperLimitMultiplier),
+                )
             }
         } else {
             return when (currentUploadTrend) {
-                UploadTrend.Min -> lowerLimitMultiplier
-                UploadTrend.Max ->  upperLimitMultiplier
-                UploadTrend.MinMax -> Random.nextInt(lowerLimitMultiplier.coerceAtMost(upperLimitMultiplier), lowerLimitMultiplier.coerceAtLeast(upperLimitMultiplier))
+                UploadTrend.Min -> {
+                    lowerLimitMultiplier
+                }
+
+                UploadTrend.Max -> {
+                    upperLimitMultiplier
+                }
+
+                UploadTrend.MinMax -> {
+                    Random.nextInt(
+                        lowerLimitMultiplier.coerceAtMost(upperLimitMultiplier),
+                        lowerLimitMultiplier.coerceAtLeast(upperLimitMultiplier),
+                    )
+                }
             }
         }
     }
@@ -67,40 +85,56 @@ class TrafficTrend {
                 }
             } else {
                 currentDownloadTrend = DownloadTrend.MinMax
-                Random.nextInt(lowerLimitMultiplier.coerceAtMost(upperLimitMultiplier), lowerLimitMultiplier.coerceAtLeast(upperLimitMultiplier))
+                Random.nextInt(
+                    lowerLimitMultiplier.coerceAtMost(upperLimitMultiplier),
+                    lowerLimitMultiplier.coerceAtLeast(upperLimitMultiplier),
+                )
             }
         } else {
             return when (currentDownloadTrend) {
-                DownloadTrend.Min -> lowerLimitMultiplier
-                DownloadTrend.Max ->  upperLimitMultiplier
-                DownloadTrend.MinMax -> Random.nextInt(lowerLimitMultiplier.coerceAtMost(upperLimitMultiplier), lowerLimitMultiplier.coerceAtLeast(upperLimitMultiplier))
+                DownloadTrend.Min -> {
+                    lowerLimitMultiplier
+                }
+
+                DownloadTrend.Max -> {
+                    upperLimitMultiplier
+                }
+
+                DownloadTrend.MinMax -> {
+                    Random.nextInt(
+                        lowerLimitMultiplier.coerceAtMost(upperLimitMultiplier),
+                        lowerLimitMultiplier.coerceAtLeast(upperLimitMultiplier),
+                    )
+                }
             }
         }
     }
 
-
-    override fun toString(): String {
-        return "Upload: $currentUploadTrend | Download: $currentDownloadTrend"
-    }
+    override fun toString(): String = "Upload: $currentUploadTrend | Download: $currentDownloadTrend"
 
     enum class UploadTrend {
-        Min, Max, MinMax;
+        Min,
+        Max,
+        MinMax,
+        ;
 
         fun start() {
             resetTime = System.currentTimeMillis()
-            uploadTries = when (this) {
-                Min -> Random.nextInt(2, 60)
-                Max -> Random.nextInt(60, 180)
-                MinMax -> 0
-            }
-            attemptsToIncrease = when(this){
-                Min -> Random.nextInt(1, 10)
-                Max -> Random.nextInt(1, 8)
-                MinMax -> 1
-            }
+            uploadTries =
+                when (this) {
+                    Min -> Random.nextInt(2, 60)
+                    Max -> Random.nextInt(60, 180)
+                    MinMax -> 0
+                }
+            attemptsToIncrease =
+                when (this) {
+                    Min -> Random.nextInt(1, 10)
+                    Max -> Random.nextInt(1, 8)
+                    MinMax -> 1
+                }
         }
 
-        fun isFinished(): Boolean{
+        fun isFinished(): Boolean {
             val currentTime = System.currentTimeMillis()
             val millis = currentTime - resetTime
             return millis > uploadTries * 1000
@@ -110,29 +144,32 @@ class TrafficTrend {
         var uploadTries = 0
         var attemptsToIncrease = 1
 
-        override fun toString(): String {
-            return "$uploadTries"
-        }
+        override fun toString(): String = "$uploadTries"
     }
 
     enum class DownloadTrend {
-        Min, Max, MinMax;
+        Min,
+        Max,
+        MinMax,
+        ;
 
         fun start() {
             resetTime = System.currentTimeMillis()
-            downloadTries = when (this) {
-                Min -> Random.nextInt(2, 60)
-                Max -> Random.nextInt(60, 180)
-                MinMax -> 0
-            }
-            attemptsToIncrease = when(this){
-                Min -> Random.nextInt(1, 10)
-                Max -> Random.nextInt(1, 8)
-                MinMax -> 1
-            }
+            downloadTries =
+                when (this) {
+                    Min -> Random.nextInt(2, 60)
+                    Max -> Random.nextInt(60, 180)
+                    MinMax -> 0
+                }
+            attemptsToIncrease =
+                when (this) {
+                    Min -> Random.nextInt(1, 10)
+                    Max -> Random.nextInt(1, 8)
+                    MinMax -> 1
+                }
         }
 
-        fun isFinished(): Boolean{
+        fun isFinished(): Boolean {
             val currentTime = System.currentTimeMillis()
             val millis = currentTime - resetTime
             return millis > downloadTries * 1000
@@ -142,8 +179,6 @@ class TrafficTrend {
         var downloadTries = 0
         var attemptsToIncrease = 1
 
-        override fun toString(): String {
-            return "$downloadTries"
-        }
+        override fun toString(): String = "$downloadTries"
     }
 }

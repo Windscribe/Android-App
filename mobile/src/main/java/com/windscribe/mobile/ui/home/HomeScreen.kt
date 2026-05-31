@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.home
 
 import NetworkNameSheet
-import com.windscribe.mobile.ui.serverlist.ServerListScreen
 import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.Toast
@@ -51,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -60,17 +60,21 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AnimatedIPAddress
@@ -78,8 +82,12 @@ import com.windscribe.mobile.ui.common.AppConnectButton
 import com.windscribe.mobile.ui.common.LocationImage
 import com.windscribe.mobile.ui.common.fitsInOneLine
 import com.windscribe.mobile.ui.connection.BridgeApiViewModel
+import com.windscribe.mobile.ui.connection.BridgeApiViewModelImpl
 import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.connection.ConnectionViewmodelImpl
+import com.windscribe.mobile.ui.connection.LocationBackground
+import com.windscribe.mobile.ui.connection.LocationInfo
 import com.windscribe.mobile.ui.connection.LocationInfoState
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.ForceStatusBarIcons
@@ -91,35 +99,41 @@ import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
+import com.windscribe.mobile.ui.serverlist.ConfigViewmodelImpl
 import com.windscribe.mobile.ui.serverlist.SearchServerList
+import com.windscribe.mobile.ui.serverlist.ServerListScreen
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
+import com.windscribe.mobile.ui.serverlist.ServerViewModelImpl
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font26
 import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
+import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
-    serverViewModel: ServerViewModel?,
-    connectionViewmodel: ConnectionViewmodel?,
-    configViewmodel: ConfigViewmodel?,
-    homeViewmodel: HomeViewmodel?,
-    bridgeApiViewModel: BridgeApiViewModel?
+    serverViewModel: ServerViewModel = hiltViewModel<ServerViewModelImpl>(),
+    connectionViewmodel: ConnectionViewmodel = hiltViewModel<ConnectionViewmodelImpl>(),
+    configViewmodel: ConfigViewmodel = hiltViewModel<ConfigViewmodelImpl>(),
+    homeViewmodel: HomeViewmodel = hiltViewModel<HomeViewmodelImpl>(),
+    bridgeApiViewModel: BridgeApiViewModel = hiltViewModel<BridgeApiViewModelImpl>(),
 ) {
-    if (serverViewModel == null || connectionViewmodel == null || configViewmodel == null || homeViewmodel == null || bridgeApiViewModel == null) {
-        return
-    }
     HandleToast(connectionViewmodel)
     HandleGoto(connectionViewmodel, homeViewmodel, bridgeApiViewModel)
     CompactUI(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel, bridgeApiViewModel)
 }
 
 @Composable
-fun HandleGoto(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel, bridgeApiViewModel: BridgeApiViewModel) {
+fun HandleGoto(
+    connectionViewmodel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel,
+) {
     val connectionGoto by connectionViewmodel.goto.collectAsState(initial = null)
     val homeGoto by homeViewmodel.goto.collectAsState(initial = null)
     val bridgeApiGoto by bridgeApiViewModel.goto.collectAsState(initial = null)
@@ -133,53 +147,57 @@ private fun HandleGotoAction(
     goto: HomeGoto?,
     homeViewmodel: HomeViewmodel,
     connectionViewmodel: ConnectionViewmodel,
-    bridgeApiViewModel: BridgeApiViewModel
+    bridgeApiViewModel: BridgeApiViewModel,
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
     var didNavigate = false
     when (goto) {
         HomeGoto.Banned -> {
-            val bannedData = AccountStatusDialogData(
-                title = stringResource(com.windscribe.vpn.R.string.you_ve_been_banned),
-                icon = R.drawable.garry_account_ban,
-                description = stringResource(com.windscribe.vpn.R.string.you_ve_violated_our_terms),
-                showSecondaryButton = true,
-                secondaryText = stringResource(com.windscribe.vpn.R.string.close),
-                showPrimaryButton = false,
-                primaryText = ""
-            )
+            val bannedData =
+                AccountStatusDialogData(
+                    title = stringResource(com.windscribe.vpn.R.string.you_ve_been_banned),
+                    icon = R.drawable.garry_account_ban,
+                    description = stringResource(com.windscribe.vpn.R.string.you_ve_violated_our_terms),
+                    showSecondaryButton = true,
+                    secondaryText = stringResource(com.windscribe.vpn.R.string.close),
+                    showPrimaryButton = false,
+                    primaryText = "",
+                )
             navigateWithData(navController, Screen.AccountStatus.route, bannedData)
             didNavigate = true
         }
 
         HomeGoto.Downgraded -> {
-            val downgradedData = AccountStatusDialogData(
-                title = stringResource(com.windscribe.vpn.R.string.you_r_pro_plan_expired),
-                icon = R.drawable.garry_downgraded,
-                description = stringResource(com.windscribe.vpn.R.string.you_ve_been_downgraded_to_free_for_now),
-                showSecondaryButton = true,
-                secondaryText = stringResource(com.windscribe.vpn.R.string.back),
-                showPrimaryButton = true,
-                primaryText = stringResource(com.windscribe.vpn.R.string.renew_plan)
-            )
+            val downgradedData =
+                AccountStatusDialogData(
+                    title = stringResource(com.windscribe.vpn.R.string.you_r_pro_plan_expired),
+                    icon = R.drawable.garry_downgraded,
+                    description = stringResource(com.windscribe.vpn.R.string.you_ve_been_downgraded_to_free_for_now),
+                    showSecondaryButton = true,
+                    secondaryText = stringResource(com.windscribe.vpn.R.string.back),
+                    showPrimaryButton = true,
+                    primaryText = stringResource(com.windscribe.vpn.R.string.renew_plan),
+                )
             navigateWithData(navController, Screen.AccountStatus.route, downgradedData)
             didNavigate = true
         }
 
         is HomeGoto.Expired -> {
-            val expireData = AccountStatusDialogData(
-                title = stringResource(com.windscribe.vpn.R.string.you_re_out_of_data),
-                icon = R.drawable.garry_account_no_data,
-                description = stringResource(
-                    com.windscribe.vpn.R.string.upgrade_to_stay_protected,
-                    goto.date
-                ),
-                showSecondaryButton = true,
-                secondaryText = stringResource(com.windscribe.vpn.R.string.back),
-                showPrimaryButton = true,
-                primaryText = stringResource(com.windscribe.vpn.R.string.upgrade_case_normal)
-            )
+            val expireData =
+                AccountStatusDialogData(
+                    title = stringResource(com.windscribe.vpn.R.string.you_re_out_of_data),
+                    icon = R.drawable.garry_account_no_data,
+                    description =
+                        stringResource(
+                            com.windscribe.vpn.R.string.upgrade_to_stay_protected,
+                            goto.date,
+                        ),
+                    showSecondaryButton = true,
+                    secondaryText = stringResource(com.windscribe.vpn.R.string.back),
+                    showPrimaryButton = true,
+                    primaryText = stringResource(com.windscribe.vpn.R.string.upgrade_case_normal),
+                )
             navigateWithData(navController, Screen.AccountStatus.route, expireData)
             didNavigate = true
         }
@@ -217,8 +235,19 @@ private fun HandleGotoAction(
         }
 
         is HomeGoto.UpdateAvailable -> {
-            navController.currentBackStackEntry?.savedStateHandle?.set("latest_version", goto.latestVersion)
-            navController.navigate(Screen.UpdateAvailable.route)
+            navController.currentBackStackEntry?.savedStateHandle?.apply {
+                set("latest_version", goto.latestVersion)
+                set("force_upgrade", goto.force)
+            }
+            // Foreground re-trigger can fire repeatedly — keep at most one instance.
+            if (goto.force) {
+                navController.navigate(Screen.UpdateAvailable.route) {
+                    popUpTo(Screen.UpdateAvailable.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            } else {
+                navController.navigate(Screen.UpdateAvailable.route)
+            }
             didNavigate = true
         }
 
@@ -231,8 +260,8 @@ private fun HandleGotoAction(
             didNavigate = true
         }
 
-
         HomeGoto.None -> {}
+
         null -> {}
     }
 
@@ -246,34 +275,36 @@ private fun HandleGotoAction(
 private fun navigateWithData(
     navController: NavController,
     route: String,
-    data: AccountStatusDialogData
+    data: AccountStatusDialogData,
 ) {
     navController.currentBackStackEntry?.savedStateHandle?.set("accountStatusDialogData", data)
     navController.navigate(route)
 }
 
 @Composable
-fun HandleToast(connectionViewmodel: ConnectionViewmodel?) {
+fun HandleToast(connectionViewmodel: ConnectionViewmodel) {
     val context = LocalContext.current
-    val toastMessage by connectionViewmodel?.toastMessage?.collectAsState() ?: return
+    val toastMessage by connectionViewmodel.toastMessage.collectAsState()
     LaunchedEffect(toastMessage) {
         when (toastMessage) {
             is ToastMessage.Localized -> {
-                Toast.makeText(
-                    context,
-                    (toastMessage as ToastMessage.Localized).message,
-                    Toast.LENGTH_SHORT
-                ).show()
-                connectionViewmodel?.clearToast()
+                Toast
+                    .makeText(
+                        context,
+                        (toastMessage as ToastMessage.Localized).message,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                connectionViewmodel.clearToast()
             }
 
             is ToastMessage.Raw -> {
-                Toast.makeText(
-                    context,
-                    (toastMessage as ToastMessage.Raw).message,
-                    Toast.LENGTH_SHORT
-                ).show()
-                connectionViewmodel?.clearToast()
+                Toast
+                    .makeText(
+                        context,
+                        (toastMessage as ToastMessage.Raw).message,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                connectionViewmodel.clearToast()
             }
 
             else -> {}
@@ -284,10 +315,11 @@ fun HandleToast(connectionViewmodel: ConnectionViewmodel?) {
 @Composable
 private fun Background(content: @Composable () -> Unit) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.midnightNavy)
-            .navigationBarsPadding()
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(AppColors.midnightNavy)
+                .navigationBarsPadding(),
     ) {
         content()
     }
@@ -299,7 +331,7 @@ private fun CompactUI(
     connectionViewmodel: ConnectionViewmodel,
     configViewmodel: ConfigViewmodel,
     homeViewmodel: HomeViewmodel,
-    bridgeApiViewModel: BridgeApiViewModel
+    bridgeApiViewModel: BridgeApiViewModel,
 ) {
     ForceStatusBarIcons(true)
     val searchState by serverViewModel.showSearchView.collectAsState()
@@ -308,7 +340,7 @@ private fun CompactUI(
         Column {
             Spacer(modifier = Modifier.height(36.dp))
             LocationImage(connectionViewmodel, homeViewmodel, bridgeApiViewModel)
-            ServerListScreen(serverViewModel, connectionViewmodel, bridgeApiViewModel,configViewmodel, homeViewmodel)
+            ServerListScreen(serverViewModel, connectionViewmodel, bridgeApiViewModel, configViewmodel, homeViewmodel)
         }
         Column {
             Header(connectionViewmodel, homeViewmodel)
@@ -319,10 +351,11 @@ private fun CompactUI(
         }
         IPContextMenu(bridgeApiViewModel)
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 61.dp, end = 16.dp),
-            contentAlignment = Alignment.TopEnd
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(top = 61.dp, end = 16.dp),
+            contentAlignment = Alignment.TopEnd,
         ) {
             AppConnectButton(connectionViewmodel)
         }
@@ -332,34 +365,61 @@ private fun CompactUI(
     }
 }
 
-@SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
     val state by connectionViewmodel.connectionUIState.collectAsState()
     val isDecoyTrafficEnabled by connectionViewmodel.isDecoyTrafficEnabled.collectAsState()
-    val containerColor = when (state) {
-        is ConnectionUIState.Connected -> AppColors.mintGreen
-        else -> AppColors.white
-    }
+    val protocolTweaksEnabled by connectionViewmodel.isProtocolTweaksEnabled.collectAsState()
+    val preferredProtocolEnabled by connectionViewmodel.isPreferredProtocolEnabled.collectAsState()
+    ConnectionStatusSheetContent(
+        state = state,
+        isDecoyTrafficEnabled = isDecoyTrafficEnabled,
+        isProtocolTweaksEnabled = protocolTweaksEnabled,
+        isPreferredProtocolEnabled = preferredProtocolEnabled,
+        onProtocolChangeClick = { connectionViewmodel.onProtocolChangeClick() },
+    )
+}
+
+@SuppressLint("UnrememberedMutableInteractionSource")
+@Composable
+private fun ConnectionStatusSheetContent(
+    state: ConnectionUIState,
+    isDecoyTrafficEnabled: Boolean,
+    isProtocolTweaksEnabled: Boolean,
+    isPreferredProtocolEnabled: Boolean,
+    onProtocolChangeClick: () -> Unit,
+) {
+    val containerColor =
+        when (state) {
+            is ConnectionUIState.Connected -> AppColors.mintGreen
+            else -> AppColors.white
+        }
     Row(
         modifier = Modifier.padding(start = 12.dp, top = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         ConnectionStatus(state)
-        val protocolTweaksEnabled by connectionViewmodel.isProtocolTweaksEnabled.collectAsState()
         val showDecoyTraffic = state is ConnectionUIState.Connected && isDecoyTrafficEnabled
 
         // Add initial spacing
-        Spacer(modifier = Modifier.width(if (protocolTweaksEnabled || showDecoyTraffic) 4.dp else 12.dp))
+        Spacer(modifier = Modifier.width(if (isProtocolTweaksEnabled || showDecoyTraffic) 4.dp else 12.dp))
 
-        if (protocolTweaksEnabled) {
+        if (isProtocolTweaksEnabled) {
             Image(
-                painter = painterResource(if (state is ConnectionUIState.Connected) R.drawable.ic_anti_censorship_enabled else R.drawable.ic_anti_censorship_disabled),
+                painter =
+                    painterResource(
+                        if (state is ConnectionUIState.Connected) {
+                            R.drawable.ic_anti_censorship_enabled
+                        } else {
+                            R.drawable.ic_anti_censorship_disabled
+                        },
+                    ),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(24.dp),
+                modifier =
+                    Modifier
+                        .size(24.dp),
                 contentScale = ContentScale.Inside,
-                colorFilter = ColorFilter.tint(containerColor)
+                colorFilter = ColorFilter.tint(containerColor),
             )
             Spacer(modifier = Modifier.width(4.dp))
         }
@@ -368,54 +428,73 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
             Text(
                 stringResource(com.windscribe.vpn.R.string.decoy),
                 style = font12,
-                color = AppColors.neonGreen
+                color = AppColors.neonGreen,
             )
             Spacer(modifier = Modifier.width(4.dp))
         }
         Text(
             text = "${Util.getProtocolLabel(state.protocolInfo?.protocol ?: "")}  ${state.protocolInfo?.port}",
             style = font12.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp),
-            color = containerColor
+            color = containerColor,
         )
         Spacer(modifier = Modifier.width(4.dp))
-        val preferredProtocolEnabled by connectionViewmodel.isPreferredProtocolEnabled.collectAsState()
-        if (preferredProtocolEnabled) {
+        if (isPreferredProtocolEnabled) {
             Image(
-                painter = painterResource(if (state is ConnectionUIState.Connected) R.drawable.ic_preferred_protocol_status_enabled else R.drawable.ic_preferred_protocol_status_disabled),
+                painter =
+                    painterResource(
+                        if (state is ConnectionUIState.Connected) {
+                            R.drawable.ic_preferred_protocol_status_enabled
+                        } else {
+                            R.drawable.ic_preferred_protocol_status_disabled
+                        },
+                    ),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(24.dp),
+                modifier =
+                    Modifier
+                        .size(24.dp),
                 contentScale = ContentScale.Inside,
-                colorFilter = ColorFilter.tint(containerColor)
+                colorFilter = ColorFilter.tint(containerColor),
             )
         }
         Image(
             painter = painterResource(R.drawable.arrow_right_small),
             contentDescription = null,
-            modifier = Modifier
-                .size(24.dp)
-                .hapticClickable() {
-                    connectionViewmodel.onProtocolChangeClick()
-                },
+            modifier =
+                Modifier
+                    .size(24.dp)
+                    .hapticClickable {
+                        onProtocolChangeClick()
+                    }.testTag("protocol_switcher"),
             contentScale = ContentScale.None,
-            colorFilter = ColorFilter.tint(containerColor.copy(alpha = 0.4f))
+            colorFilter = ColorFilter.tint(containerColor.copy(alpha = 0.4f)),
         )
     }
 }
 
-
 @Composable
 private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
     val state by connectionViewmodel.connectionUIState.collectAsState()
-    val locationInfo = (state.locationInfo as? LocationInfoState.Success)?.locationInfo
-    val nodeName = locationInfo?.nodeName ?: ""
-    val nickname = locationInfo?.nickName ?: ""
+    LocationNameContent(
+        locationInfo = state.locationInfo,
+        onSingleLineComputed = { isSingleLine ->
+            connectionViewmodel.setIsSingleLineLocationName(isSingleLine)
+        },
+    )
+}
+
+@Composable
+private fun LocationNameContent(
+    locationInfo: LocationInfoState?,
+    onSingleLineComputed: (Boolean) -> Unit,
+) {
+    val info = (locationInfo as? LocationInfoState.Success)?.locationInfo
+    val nodeName = info?.nodeName ?: ""
+    val nickname = info?.nickName ?: ""
     val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
+    val screenWidthDp = LocalWindowInfo.current.containerSize.width
     val maxWidthPx = with(density) { screenWidthDp.dp.toPx() }
     val isSingleLine = fitsInOneLine("$nodeName $nickname", 26.0f, maxWidthPx, density)
-    connectionViewmodel.setIsSingleLineLocationName(isSingleLine)
+    onSingleLineComputed(isSingleLine)
     if (isSingleLine) {
         Row {
             Text(
@@ -423,14 +502,14 @@ private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
                 style = font26.copy(textAlign = TextAlign.Start),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = 12.dp)
+                modifier = Modifier.padding(start = 12.dp),
             )
             Text(
                 text = " $nickname",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = font26.copy(fontWeight = FontWeight.Normal, textAlign = TextAlign.Start),
-                modifier = Modifier.padding(end = 12.dp)
+                modifier = Modifier.padding(end = 12.dp),
             )
         }
     } else {
@@ -440,14 +519,14 @@ private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
                 style = font26.copy(textAlign = TextAlign.Start),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp),
             )
             Text(
                 text = nickname,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = font26.copy(fontWeight = FontWeight.Normal, textAlign = TextAlign.Start),
-                modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp),
             )
         }
     }
@@ -458,7 +537,7 @@ private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
 internal fun BoxScope.NetworkInfoSheet(
     connectionViewmodel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel,
-    bridgeApiViewModel: BridgeApiViewModel
+    bridgeApiViewModel: BridgeApiViewModel,
 ) {
     val showContextMenu by bridgeApiViewModel.ipContextMenuState.collectAsState()
     val isBridgeApiReady by bridgeApiViewModel.bridgeApiReady.collectAsState()
@@ -480,58 +559,67 @@ internal fun BoxScope.NetworkInfoSheet(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .offset(y = (-66).dp)
-            .padding(end = 8.dp)
+        modifier =
+            Modifier
+                .align(Alignment.BottomCenter)
+                .offset(y = (-66).dp)
+                .padding(end = 8.dp),
     ) {
         NetworkNameSheet(connectionViewmodel, homeViewmodel)
         Row(
             modifier = Modifier.padding(start = 12.dp, end = 8.dp),
             horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (!showContextMenu.first && showIpAndIcon) {
                 Box(
-                    modifier = Modifier
-                        .pointerInput(hideIp) {
-                            detectTapGestures(
-                                onTap = {
-                                    if (!hideIp) {
-                                        val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                        val clip = android.content.ClipData.newPlainText("IP Address", ipAddress)
-                                        clipboard.setPrimaryClip(clip)
-                                        Toast.makeText(context, "IP address copied to clipboard", Toast.LENGTH_SHORT).show()
-                                    }
-                                },
-                                onDoubleTap = {
-                                    homeViewmodel.onHideIpClick()
-                                }
-                            )
-                        }
+                    modifier =
+                        Modifier
+                            .pointerInput(hideIp) {
+                                detectTapGestures(
+                                    onTap = {
+                                        if (!hideIp) {
+                                            val clipboard =
+                                                context.getSystemService(
+                                                    android.content.Context.CLIPBOARD_SERVICE,
+                                                ) as android.content.ClipboardManager
+                                            val clip = android.content.ClipData.newPlainText("IP Address", ipAddress)
+                                            clipboard.setPrimaryClip(clip)
+                                            Toast.makeText(context, "IP address copied to clipboard", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onDoubleTap = {
+                                        homeViewmodel.onHideIpClick()
+                                    },
+                                )
+                            },
                 ) {
                     AnimatedIPAddress(
                         connectionViewmodel = connectionViewmodel,
                         bridgeApiViewModel = bridgeApiViewModel,
                         style = font16,
                         color = AppColors.white,
-                        modifier = Modifier.graphicsLayer {
-                            renderEffect =
-                                if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                    BlurEffect(15f, 15f)
-                                } else null
-                        }
+                        modifier =
+                            Modifier.graphicsLayer {
+                                renderEffect =
+                                    if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        BlurEffect(15f, 15f)
+                                    } else {
+                                        null
+                                    }
+                            },
                     )
 
                     // Overlay box for Android 10 and below - only covers the text
                     if (hideIp && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
                         Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(
-                                    color = AppColors.midnightNavy.copy(alpha = 1.0f),
-                                    shape = RoundedCornerShape(2.dp)
-                                )
+                            modifier =
+                                Modifier
+                                    .matchParentSize()
+                                    .background(
+                                        color = AppColors.midnightNavy.copy(alpha = 1.0f),
+                                        shape = RoundedCornerShape(2.dp),
+                                    ),
                         )
                     }
                 }
@@ -540,17 +628,17 @@ internal fun BoxScope.NetworkInfoSheet(
                 Image(
                     painter = painterResource(R.drawable.ic_context),
                     contentDescription = null,
-                    modifier = Modifier
-                        .alpha(if (isBridgeApiReady) 1.0f else 0.3f)
-                        .size(24.dp)
-                        .onGloballyPositioned { layoutCoordinates ->
-                            bridgeApiViewModel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
-                        }
-                        .hapticClickable {
-                            if (isBridgeApiReady) {
-                                bridgeApiViewModel.setContextMenuState(true)
-                            }
-                        }
+                    modifier =
+                        Modifier
+                            .alpha(if (isBridgeApiReady) 1.0f else 0.3f)
+                            .size(24.dp)
+                            .onGloballyPositioned { layoutCoordinates ->
+                                bridgeApiViewModel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
+                            }.hapticClickable {
+                                if (isBridgeApiReady) {
+                                    bridgeApiViewModel.setContextMenuState(true)
+                                }
+                            },
                 )
             }
         }
@@ -561,172 +649,224 @@ internal fun BoxScope.NetworkInfoSheet(
 private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
     val containerColor =
         if (connectionUIState is ConnectionUIState.Connected) AppColors.mintGreen else AppColors.white
+    val stateTag =
+        when (connectionUIState) {
+            is ConnectionUIState.Connected -> "connection_status_connected"
+            is ConnectionUIState.Connecting -> "connection_status_connecting"
+            else -> "connection_status_disconnected"
+        }
     Box(
-        modifier = Modifier
-            .border(
-                width = 1.dp,
-                color = containerColor.copy(alpha = 0.10f),
-                shape = RoundedCornerShape(size = 34.dp)
-            )
-            .width(39.dp)
-            .height(21.dp)
-            .background(
-                color = containerColor.copy(alpha = 0.10f),
-                shape = RoundedCornerShape(size = 34.dp)
-            )
-            .padding(start = 8.dp, top = 2.dp, end = 8.dp, bottom = 3.dp)
+        modifier =
+            Modifier
+                .testTag(stateTag)
+                .border(
+                    width = 1.dp,
+                    color = containerColor.copy(alpha = 0.10f),
+                    shape = RoundedCornerShape(size = 34.dp),
+                ).width(39.dp)
+                .height(21.dp)
+                .background(
+                    color = containerColor.copy(alpha = 0.10f),
+                    shape = RoundedCornerShape(size = 34.dp),
+                ).padding(start = 8.dp, top = 2.dp, end = 8.dp, bottom = 3.dp),
     ) {
         when (connectionUIState) {
-            is ConnectionUIState.Connected -> Text(
-                text = "ON",
-                style = font12.copy(fontWeight = FontWeight.SemiBold),
-                color = containerColor,
-                modifier = Modifier.align(Alignment.Center)
-            )
+            is ConnectionUIState.Connected -> {
+                Text(
+                    text = "ON",
+                    style = font12.copy(fontWeight = FontWeight.SemiBold),
+                    color = containerColor,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
 
-            is ConnectionUIState.Connecting -> Dots(modifier = Modifier.align(Alignment.Center))
-            else -> Text(
-                text = "OFF",
-                style = font12.copy(fontWeight = FontWeight.SemiBold),
-                color = containerColor,
-                modifier = Modifier.align(Alignment.Center)
-            )
+            is ConnectionUIState.Connecting -> {
+                Dots(modifier = Modifier.align(Alignment.Center))
+            }
+
+            else -> {
+                Text(
+                    text = "OFF",
+                    style = font12.copy(fontWeight = FontWeight.SemiBold),
+                    color = containerColor,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
-    val state by connectionViewmodel?.connectionUIState?.collectAsState() ?: return
-    if (state is ConnectionUIState.Connected) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height((273 + 36).dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            AppColors.primaryBlue,
-                            AppColors.midnightNavy
-                        )
-                    )
-                )
-        )
-    }
-
+private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel) {
+    val state by connectionViewmodel.connectionUIState.collectAsState()
+    ConnectedBackgroundContent(connectionUIState = state)
 }
 
+@Composable
+private fun ConnectedBackgroundContent(connectionUIState: ConnectionUIState) {
+    if (connectionUIState is ConnectionUIState.Connected) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height((273 + 36).dp)
+                    .background(
+                        brush =
+                            Brush.verticalGradient(
+                                colors =
+                                    listOf(
+                                        AppColors.primaryBlue,
+                                        AppColors.midnightNavy,
+                                    ),
+                            ),
+                    ),
+        )
+    }
+}
 
 @Composable
-private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
+private fun Header(
+    connectionViewmodel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel,
+) {
     val navController = LocalNavController.current
     val state by connectionViewmodel.connectionUIState.collectAsState()
-    val leftHeaderAsset = if (state is ConnectionUIState.Connected) {
-        R.drawable.header_left
-    } else {
-        R.drawable.header_left_deep
-    }
+    val userState by homeViewmodel.userState.collectAsState()
+    val newsfeedCount by connectionViewmodel.newFeedCount.collectAsState()
+    HeaderContent(
+        connectionUIState = state,
+        userState = userState,
+        newsfeedCount = newsfeedCount,
+        onMainMenuClick = { homeViewmodel.onMainMenuClick() },
+        onNewsfeedClick = { navController.navigate(Screen.Newsfeed.route) },
+    )
+}
 
-    val rigtHeaderAsset = if (state is ConnectionUIState.Connected) {
-        R.drawable.header_right
-    } else {
-        R.drawable.header_right_deep
-    }
+@Composable
+private fun HeaderContent(
+    connectionUIState: ConnectionUIState,
+    userState: UserState,
+    newsfeedCount: Int,
+    onMainMenuClick: () -> Unit,
+    onNewsfeedClick: () -> Unit,
+) {
+    val leftHeaderAsset =
+        if (connectionUIState is ConnectionUIState.Connected) {
+            R.drawable.header_left
+        } else {
+            R.drawable.header_left_deep
+        }
+
+    val rigtHeaderAsset =
+        if (connectionUIState is ConnectionUIState.Connected) {
+            R.drawable.header_right
+        } else {
+            R.drawable.header_right_deep
+        }
     val height = getHeaderHeight()
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier
-                .height(height)
-                .fillMaxWidth()
-                .clipToBounds()
+            modifier =
+                Modifier
+                    .height(height)
+                    .fillMaxWidth()
+                    .clipToBounds(),
         ) {
-
             // Left
             Box(
-                modifier = Modifier
-                    .height(height)
-                    .weight(1.0f)
+                modifier =
+                    Modifier
+                        .height(height)
+                        .weight(1.0f),
             ) {
                 Image(
                     painter = painterResource(leftHeaderAsset),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds
+                    contentScale = ContentScale.FillBounds,
                 )
             }
 
             // Right
             Box(
-                modifier = Modifier
-                    .height(height)
-                    .width(163.dp)
+                modifier =
+                    Modifier
+                        .height(height)
+                        .width(163.dp),
             ) {
                 Image(
                     painter = painterResource(rigtHeaderAsset),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds
+                    contentScale = ContentScale.FillBounds,
                 )
             }
         }
 
         Row(
-            modifier = Modifier
-                .align(Alignment.BottomStart) // Ensures it starts from the bottom left
-                .padding(start = 12.dp, bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .align(Alignment.BottomStart) // Ensures it starts from the bottom left
+                    .padding(start = 12.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_ham_button),
                 contentDescription = null,
-                modifier = Modifier.hapticClickable() {
-                    homeViewmodel.onMainMenuClick()
-                }
+                modifier =
+                    Modifier
+                        .testTag("main_menu_button")
+                        .hapticClickable {
+                            onMainMenuClick()
+                        },
             )
             Spacer(modifier = Modifier.width(12.dp))
             Image(
                 painter = painterResource(R.drawable.logo_home),
                 contentDescription = null,
-                modifier = Modifier
-                    .height(18.dp)
-                    .clickable {
-                        navController.navigate(Screen.Newsfeed.route)
-                    },
+                modifier =
+                    Modifier
+                        .testTag("newsfeed_open")
+                        .height(18.dp)
+                        .clickable {
+                            onNewsfeedClick()
+                        },
                 contentScale = ContentScale.FillHeight,
             )
-            val userState by homeViewmodel.userState.collectAsState()
             if (userState is UserState.Pro) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Image(
                     painter = painterResource(R.drawable.header_pro_icon),
                     contentDescription = null,
-                    modifier = Modifier
-                        .clickable {
-                            navController.navigate(Screen.Newsfeed.route)
-                        },
+                    modifier =
+                        Modifier
+                            .clickable {
+                                onNewsfeedClick()
+                            },
                     contentScale = ContentScale.FillHeight,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
             }
-            val newsfeedCount by connectionViewmodel.newFeedCount.collectAsState()
             if (newsfeedCount > 0) {
                 Box(
-                    modifier = Modifier
-                        .offset(y = ((-12).dp))
-                        .size(14.dp)
-                        .background(
-                            color = AppColors.neonGreen,
-                            shape = CircleShape
-                        )
+                    modifier =
+                        Modifier
+                            .offset(y = ((-12).dp))
+                            .size(14.dp)
+                            .background(
+                                color = AppColors.neonGreen,
+                                shape = CircleShape,
+                            ),
                 ) {
                     Text(
                         "$newsfeedCount",
-                        style = font9.copy(
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold
-                        ),
+                        style =
+                            font9.copy(
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                            ),
                         color = AppColors.midnightNavy,
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
             }
@@ -739,63 +879,84 @@ private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
     val context = LocalContext.current
     val ipContextMenuState by bridgeApiViewModel.ipContextMenuState.collectAsState()
     val hasPinnedIp by bridgeApiViewModel.hasPinnedIp.collectAsState()
+
+    IPContextMenuContent(
+        ipContextMenuState = ipContextMenuState,
+        hasPinnedIp = hasPinnedIp,
+        onPinIPClick = {
+            bridgeApiViewModel.onPinIPClick(
+                onSuccess = { _, message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                },
+            )
+        },
+        onRotateIpClick = {
+            bridgeApiViewModel.onRotateIpClick(
+                onSuccess = { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                },
+            )
+        },
+        onCloseClick = { bridgeApiViewModel.setContextMenuState(false) },
+    )
+}
+
+@Composable
+private fun IPContextMenuContent(
+    ipContextMenuState: Pair<Boolean, Offset>,
+    hasPinnedIp: Boolean,
+    onPinIPClick: () -> Unit,
+    onRotateIpClick: () -> Unit,
+    onCloseClick: () -> Unit,
+) {
     val density = LocalDensity.current
     val menuWidth = 80.dp
 
     Box(
-        modifier = Modifier
-            .offset {
-                // Guard against NaN values which can occur if layout hasn't been measured yet
-                val x = ipContextMenuState.second.x
-                val y = ipContextMenuState.second.y
-                if (x.isNaN() || y.isNaN() || x.isInfinite() || y.isInfinite()) {
-                    IntOffset.Zero
-                } else {
-                    IntOffset(
-                        (x - with(density) { menuWidth.toPx() }).toInt(),
-                        y.toInt()
-                    )
-                }
-            }
+        modifier =
+            Modifier
+                .offset {
+                    // Guard against NaN values which can occur if layout hasn't been measured yet
+                    val x = ipContextMenuState.second.x
+                    val y = ipContextMenuState.second.y
+                    if (x.isNaN() || y.isNaN() || x.isInfinite() || y.isInfinite()) {
+                        IntOffset.Zero
+                    } else {
+                        IntOffset(
+                            (x - with(density) { menuWidth.toPx() }).toInt(),
+                            y.toInt(),
+                        )
+                    }
+                },
     ) {
         AnimatedVisibility(
             visible = ipContextMenuState.first,
-            enter = slideInHorizontally(
-                initialOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
-            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
-            exit = slideOutHorizontally(
-                targetOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
-            ) + fadeOut(animationSpec = tween(durationMillis = 400))
+            enter =
+                slideInHorizontally(
+                    initialOffsetX = { fullWidth -> fullWidth },
+                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+            exit =
+                slideOutHorizontally(
+                    targetOffsetX = { fullWidth -> fullWidth },
+                    animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+                ) + fadeOut(animationSpec = tween(durationMillis = 400)),
         ) {
             Row {
                 IPMenuItem(
                     icon = if (hasPinnedIp) R.drawable.ic_fav_selected else R.drawable.ic_fav,
                     contentDescription = if (hasPinnedIp) "Marked as Favourite" else "Mark as Favourite",
-                    onClick = {
-                        bridgeApiViewModel.onPinIPClick(
-                            onSuccess = { isPinned, message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    }
+                    onClick = onPinIPClick,
                 )
                 IPMenuItem(
                     icon = R.drawable.refresh,
                     contentDescription = "Refresh IP",
-                    onClick = {
-                        bridgeApiViewModel.onRotateIpClick(
-                            onSuccess = { message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    }
+                    onClick = onRotateIpClick,
                 )
                 IPMenuItem(
                     icon = R.drawable.ic_search_location_close,
                     contentDescription = "Close Menu",
-                    onClick = { bridgeApiViewModel.setContextMenuState(false) }
+                    onClick = onCloseClick,
                 )
             }
         }
@@ -806,7 +967,7 @@ private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
 private fun IPMenuItem(
     icon: Int,
     contentDescription: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -814,13 +975,14 @@ private fun IPMenuItem(
         painter = painterResource(id = icon),
         contentDescription = contentDescription,
         colorFilter = ColorFilter.tint(AppColors.white),
-        modifier = Modifier
-            .size(24.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = ripple(bounded = false, color = AppColors.white),
-                onClick = onClick
-            )
+        modifier =
+            Modifier
+                .size(24.dp)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = ripple(bounded = false, color = AppColors.white),
+                    onClick = onClick,
+                ),
     )
     Spacer(modifier = Modifier.width(16.dp))
 }
@@ -839,29 +1001,80 @@ private fun Dots(modifier: Modifier) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = modifier
+        modifier = modifier,
     ) {
         repeat(3) { index ->
-            val alpha = animateFloatAsState(
-                targetValue = if (index == currentIndex) 1f else 0.4f,
-                animationSpec = tween(durationMillis = 300, easing = LinearEasing),
-                label = "dotAlpha"
-            )
+            val alpha =
+                animateFloatAsState(
+                    targetValue = if (index == currentIndex) 1f else 0.4f,
+                    animationSpec = tween(durationMillis = 300, easing = LinearEasing),
+                    label = "dotAlpha",
+                )
 
             Box(
-                modifier = Modifier
-                    .size(5.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = alpha.value))
+                modifier =
+                    Modifier
+                        .size(5.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = alpha.value)),
             )
         }
     }
 }
 
+private val previewProtocol =
+    ProtocolInformation(
+        protocol = "WireGuard",
+        port = "443",
+        description = "",
+        type = ProtocolConnectionStatus.Connected,
+    )
+
+private val previewLocation =
+    LocationInfoState.Success(
+        LocationInfo(
+            country = "United States",
+            nodeName = "New York",
+            nickName = "Liberty",
+            locationBackground = LocationBackground.Flag(R.drawable.dummy_flag),
+        ),
+    )
+
+/**
+ * Connected vs disconnected status sheet, so the preview shows the green "ON" pill with the
+ * protocol/port label and the grey "OFF" variant side by side.
+ */
+private class ConnectionStateProvider : PreviewParameterProvider<ConnectionUIState> {
+    override val values =
+        sequenceOf(
+            ConnectionUIState.Connected(previewProtocol, previewLocation),
+            ConnectionUIState.Disconnected(previewProtocol, previewLocation),
+        )
+}
+
 @Composable
 @MultiDevicePreview
-private fun HomeScreenPreview() {
+private fun ConnectionStatusSheetContentPreview(
+    @PreviewParameter(ConnectionStateProvider::class) state: ConnectionUIState,
+) {
     PreviewWithNav {
-        HomeScreen(null, null, null, null, null)
+        ConnectionStatusSheetContent(
+            state = state,
+            isDecoyTrafficEnabled = true,
+            isProtocolTweaksEnabled = true,
+            isPreferredProtocolEnabled = true,
+            onProtocolChangeClick = {},
+        )
+    }
+}
+
+@Composable
+@MultiDevicePreview
+private fun LocationNameContentPreview() {
+    PreviewWithNav {
+        LocationNameContent(
+            locationInfo = previewLocation,
+            onSingleLineComputed = {},
+        )
     }
 }

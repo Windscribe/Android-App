@@ -472,7 +472,7 @@
     <string name="failed_to_update_robert_rules">Не вдалося оновити правила Роберта.</string>
     <string name="successfully_updated_robert_rules">Успішно оновлені правила Роберта.</string>
     <string name="share_app">Поділитися додатком</string>
-    <string name="share_app_description">"«%s запрошує вас приєднатися до Windscribe. Вкажіть їх ім\я користувача під час реєстрації, і ви обидва отримаєте 1 ГБ безкоштовних даних, доданих до своїх облікових записів. Якщо ви підете професіоналом, вони також стануть професіоналами!\n%s\""</string>
+    <string name="share_app_description">"«%1$s запрошує вас приєднатися до Windscribe. Вкажіть їх ім\я користувача під час реєстрації, і ви обидва отримаєте 1 ГБ безкоштовних даних, доданих до своїх облікових записів. Якщо ви підете професіоналом, вони також стануть професіоналами!\n%2$s\""</string>
     <string name="allow_all_the_time_location_access_required">\"Дозволяти весь час\" Потрібен доступ до місцезнаходження!</string>
     <string name="enable_location_access">Увімкнення доступу до геоданих</string>
     <string name="location_permission_required">Потрібен дозвіл на місцезнаходження</string>
@@ -605,7 +605,7 @@
     <string name="ipv6_mode_description">Виберіть, яку версію IP використовувати для VPN-з\'єднань.</string>
     <string name="ip_stack">IP-стек</string>
     <string name="ip_stack_description">Налаштуйте IP-стек для VPN-з\'єднань.</string>
-    <string name="egress">Вихідний</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">Вхідний</string>
     <string name="ipv4_only">Тільки IPv4</string>
     <string name="manual_connection_mode_failed_title">Режим ручного підключення не вдався</string>
@@ -616,4 +616,7 @@
     <string name="app_icon">Значок додатка</string>
     <string name="app_icon_description">Виберіть інший значок додатка для ще більшої конфіденційності</string>
     <string name="configuration">Конфігурація</string>
+    <string name="force_upgrade_title">Потрібне оновлення</string>
+    <string name="force_upgrade_message">Ця версія Windscribe більше не підтримується. Будь ласка, оновіть, щоб продовжувати використовувати додаток.</string>
+    <string name="force_upgrade_message_with_version">Ця версія Windscribe більше не підтримується. Будь ласка, оновіть до %s, щоб продовжувати використовувати додаток.</string>
 </resources>

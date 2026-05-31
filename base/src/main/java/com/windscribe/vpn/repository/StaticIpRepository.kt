@@ -20,51 +20,57 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class StaticIpRepository @Inject constructor(
-    val scope: CoroutineScope,
-    private val preferencesHelper: PreferencesHelper,
-    private val apiCallManager: IApiCallManager,
-    private val localDbInterface: LocalDbInterface,
-) {
-    private var _events = MutableStateFlow(emptyList<StaticRegion>())
-    val regions: StateFlow<List<StaticRegion>> = _events
+class StaticIpRepository
+    @Inject
+    constructor(
+        val scope: CoroutineScope,
+        private val preferencesHelper: PreferencesHelper,
+        private val apiCallManager: IApiCallManager,
+        private val localDbInterface: LocalDbInterface,
+    ) {
+        private var _events = MutableStateFlow(emptyList<StaticRegion>())
+        val regions: StateFlow<List<StaticRegion>> = _events
 
-    init {
-        load()
-    }
-
-    fun load() {
-        scope.launch {
-            try {
-                val regions = localDbInterface.getAllStaticRegions()
-                _events.emit(regions)
-            } catch (e: Exception) {
-            }
+        init {
+            load()
         }
-    }
 
-    suspend fun updateFromApi() {
-        val result = result<StaticIPResponse> {
-            apiCallManager.getStaticIpList(preferencesHelper.deviceUuid)
-        }
-        when (result) {
-            is CallResult.Error -> {}
-            is CallResult.Success -> {
+        fun load() {
+            scope.launch {
                 try {
-                    val regions = result.data.let {
-                        val jsonObject = JSONObject(Gson().toJson(it))
-                        if (jsonObject.has("static_ips")) {
-                            Gson().fromJson<List<StaticRegion>>(
-                                jsonObject.getJSONArray("static_ips").toString(),
-                                object : TypeToken<List<StaticRegion>?>() {}.type
-                            )
-                        } else {
-                            null
-                        }
-                    } ?: emptyList()
-                    localDbInterface.addStaticRegions(regions)
-                } catch (ignore : Exception) { }
+                    val regions = localDbInterface.getAllStaticRegions()
+                    _events.emit(regions)
+                } catch (e: Exception) {
+                }
+            }
+        }
+
+        suspend fun updateFromApi() {
+            val result =
+                result<StaticIPResponse> {
+                    apiCallManager.getStaticIpList(preferencesHelper.deviceUuid)
+                }
+            when (result) {
+                is CallResult.Error -> {}
+
+                is CallResult.Success -> {
+                    try {
+                        val regions =
+                            result.data.let {
+                                val jsonObject = JSONObject(Gson().toJson(it))
+                                if (jsonObject.has("static_ips")) {
+                                    Gson().fromJson<List<StaticRegion>>(
+                                        jsonObject.getJSONArray("static_ips").toString(),
+                                        object : TypeToken<List<StaticRegion>?>() {}.type,
+                                    )
+                                } else {
+                                    null
+                                }
+                            } ?: emptyList()
+                        localDbInterface.addStaticRegions(regions)
+                    } catch (ignore: Exception) {
+                    }
+                }
             }
         }
     }
-}

@@ -16,12 +16,14 @@ import androidx.fragment.app.Fragment
 import com.windscribe.tv.R
 import com.windscribe.tv.databinding.FragmentLoginBinding
 
-class LoginFragment : Fragment(), WelcomeActivityCallback {
-
+class LoginFragment :
+    Fragment(),
+    WelcomeActivityCallback {
     private lateinit var generateCode: Button
     private lateinit var secretCode: TextView
     private lateinit var binding: FragmentLoginBinding
     private var callBack: FragmentCallback? = null
+
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
             callBack = activity as FragmentCallback?
@@ -30,13 +32,18 @@ class LoginFragment : Fragment(), WelcomeActivityCallback {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         generateCode = view.findViewById(R.id.generate_code)
         secretCode = view.findViewById(R.id.secret_code)
@@ -61,7 +68,7 @@ class LoginFragment : Fragment(), WelcomeActivityCallback {
             binding.showPassword,
             binding.usernameContainer,
             binding.loginSignUp,
-            generateCode
+            generateCode,
         ).forEach {
             it.setOnFocusChangeListener { _, _ ->
                 resetButtonTextColor()
@@ -132,21 +139,28 @@ class LoginFragment : Fragment(), WelcomeActivityCallback {
     override fun setUsernameError(error: String) {
         binding.error.visibility = View.VISIBLE
         binding.error.text = error
-
     }
 
     private fun resetButtonTextColor() {
         val normalColor = requireActivity().resources.getColor(R.color.colorWhite50)
         val focusColor = requireActivity().resources.getColor(R.color.colorWhite)
         binding.loginSignUp.setTextColor(
-            if (binding.loginSignUp.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
-                R.color.colorWhite50
-            )
+            if (binding.loginSignUp.hasFocus()) {
+                requireActivity().resources.getColor(R.color.colorWhite)
+            } else {
+                requireActivity().resources.getColor(
+                    R.color.colorWhite50,
+                )
+            },
         )
         generateCode.setTextColor(
-            if (generateCode.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
-                R.color.colorWhite50
-            )
+            if (generateCode.hasFocus()) {
+                requireActivity().resources.getColor(R.color.colorWhite)
+            } else {
+                requireActivity().resources.getColor(
+                    R.color.colorWhite50,
+                )
+            },
         )
         binding.back.setTextColor(if (binding.back.hasFocus()) focusColor else normalColor)
         binding.forgotPassword.setTextColor(if (binding.forgotPassword.hasFocus()) focusColor else normalColor)

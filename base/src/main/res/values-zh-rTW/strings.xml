@@ -471,7 +471,7 @@
     <string name="failed_to_update_robert_rules">无法更新罗伯特规则。</string>
     <string name="successfully_updated_robert_rules">已成功更新罗伯特规则。</string>
     <string name="share_app">共享应用</string>
-    <string name="share_app_description">"“%s邀请您加入Windscribe。在注册时提供他们的用户名，你们都将获得 1GB 的免费数据添加到您的帐户中。如果你成为专业人士，他们也会成为专业人士！\n%s”"</string>
+    <string name="share_app_description">"“%1$s邀请您加入Windscribe。在注册时提供他们的用户名，你们都将获得 1GB 的免费数据添加到您的帐户中。如果你成为专业人士，他们也会成为专业人士！\n%2$s”"</string>
     <string name="allow_all_the_time_location_access_required">“一直允许”需要位置访问！</string>
     <string name="enable_location_access">启用位置信息访问</string>
     <string name="location_permission_required">需要位置权限</string>
@@ -604,7 +604,7 @@
     <string name="ipv6_mode_description">選擇用於VPN連接的IP版本。</string>
     <string name="ip_stack">IP堆疊</string>
     <string name="ip_stack_description">為VPN連接配置IP堆疊。</string>
-    <string name="egress">出口</string>
+    <string name="egress">Egress (WireGuard only)</string>
     <string name="ingress">入口</string>
     <string name="ipv4_only">僅IPv4</string>
     <string name="manual_connection_mode_failed_title">手動連接模式失敗</string>
@@ -615,4 +615,7 @@
     <string name="app_icon">應用圖示</string>
     <string name="app_icon_description">選擇不同的應用圖示以獲得更多隱私</string>
     <string name="configuration">配置</string>
+    <string name="force_upgrade_title">需要更新</string>
+    <string name="force_upgrade_message">此版本的 Windscribe 已不再支援。請更新以繼續使用此應用程式。</string>
+    <string name="force_upgrade_message_with_version">此版本的 Windscribe 已不再支援。請更新至 %s 以繼續使用此應用程式。</string>
 </resources>

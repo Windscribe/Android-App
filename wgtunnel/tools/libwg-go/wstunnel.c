@@ -3,7 +3,7 @@
 #include <stdbool.h>
 struct go_string { const char *str; long n; };
 extern void Initialise(bool development, struct go_string logPath);
-extern bool StartProxy(struct go_string listenAddress, struct go_string remoteAddress, int tunnelType, long mtu , bool extraPadding);
+extern bool StartProxy(struct go_string listenAddress, struct go_string remoteAddress, int tunnelType, long mtu , bool extraPadding, struct go_string tlsServerName);
 extern int GetPrimaryListenerSocketFd();
 extern void Stop();
 
@@ -30,7 +30,7 @@ Java_com_windscribe_vpn_backend_openvpn_WSTunnelLib_socketFd(JNIEnv* env, jobjec
 }
 
 JNIEXPORT void JNICALL
-Java_com_windscribe_vpn_backend_openvpn_WSTunnelLib_startProxy(JNIEnv* env, jobject thiz, jstring listenAddress, jstring remoteAddress, jint tunnelType, jlong mtu, jboolean extraPadding) {
+Java_com_windscribe_vpn_backend_openvpn_WSTunnelLib_startProxy(JNIEnv* env, jobject thiz, jstring listenAddress, jstring remoteAddress, jint tunnelType, jlong mtu, jboolean extraPadding, jstring tlsServerName) {
     const char *listen_str = (*env)->GetStringUTFChars(env, listenAddress, 0);
     int const listen_size = (*env)->GetStringUTFLength(env, listenAddress);
     struct go_string listen_go_str =  {
@@ -43,7 +43,14 @@ Java_com_windscribe_vpn_backend_openvpn_WSTunnelLib_startProxy(JNIEnv* env, jobj
             .str = remote_str,
             .n = remote_size
     };
-    StartProxy(listen_go_str, remote_go_str, tunnelType, mtu, extraPadding);
+    const char *tls_server_name_str = (*env)->GetStringUTFChars(env, tlsServerName, 0);
+    int const tls_server_name_size = (*env)->GetStringUTFLength(env, tlsServerName);
+    struct go_string sni_go_str =  {
+            .str = tls_server_name_str,
+            .n = tls_server_name_size
+    };
+    StartProxy(listen_go_str, remote_go_str, tunnelType, mtu, extraPadding, sni_go_str);
     (*env)->ReleaseStringUTFChars(env, listenAddress, listen_str);
     (*env)->ReleaseStringUTFChars(env, remoteAddress, remote_str);
+    (*env)->ReleaseStringUTFChars(env, tlsServerName, tls_server_name_str);
 }

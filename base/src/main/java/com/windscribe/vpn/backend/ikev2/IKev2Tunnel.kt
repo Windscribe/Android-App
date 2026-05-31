@@ -12,17 +12,17 @@ import kotlinx.coroutines.flow.MutableSharedFlow
  * Uses StateFlow pattern to emit connection state changes from CharonVpnService.
  */
 class IKev2Tunnel {
-
     enum class State {
         DOWN,
         CONNECTING,
         CONNECTED,
-        DISCONNECTING
+        DISCONNECTING,
     }
 
-    private val internalStateFlow = MutableSharedFlow<State>(replay = 1, extraBufferCapacity = 5).apply {
-        tryEmit(State.DOWN)
-    }
+    private val internalStateFlow =
+        MutableSharedFlow<State>(replay = 1, extraBufferCapacity = 5).apply {
+            tryEmit(State.DOWN)
+        }
     val stateFlow: Flow<State> = internalStateFlow
 
     var state = State.DOWN

@@ -32,7 +32,7 @@ class PreferenceHeaderItemMain : AppCompatTextView {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         setPaintToDraw()
         setDefaultState()
@@ -56,26 +56,32 @@ class PreferenceHeaderItemMain : AppCompatTextView {
                     marginForLine.toFloat(),
                     0f,
                     (height - marginForLine).toFloat(),
-                    paint
+                    paint,
                 )
                 invalidate()
             }
         }
     }
 
-    override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+    override fun onFocusChanged(
+        focused: Boolean,
+        direction: Int,
+        previouslyFocusedRect: Rect?,
+    ) {
         super.onFocusChanged(focused, direction, previouslyFocusedRect)
         setState(state)
     }
 
     private val backgroundGradient: GradientDrawable
         get() {
-            val gradientDrawable = GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(
-                    context.resources.getColor(R.color.colorWhite16),
-                    context.resources.getColor(android.R.color.transparent)
+            val gradientDrawable =
+                GradientDrawable(
+                    GradientDrawable.Orientation.LEFT_RIGHT,
+                    intArrayOf(
+                        context.resources.getColor(R.color.colorWhite16),
+                        context.resources.getColor(android.R.color.transparent),
+                    ),
                 )
-            )
             gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
             return gradientDrawable
         }
@@ -84,19 +90,20 @@ class PreferenceHeaderItemMain : AppCompatTextView {
         setTextColor(context.resources.getColor(R.color.colorDeepBlue40))
         setTextSize(
             TypedValue.COMPLEX_UNIT_PX,
-            context.resources.getDimension(R.dimen.text_size_21)
+            context.resources.getDimension(R.dimen.text_size_21),
         )
         setPadding(
             context.resources.getDimension(R.dimen.reg_24dp).toInt(),
             context.resources.getDimension(R.dimen.reg_16dp).toInt(),
             context.resources.getDimension(R.dimen.reg_16dp).toInt(),
-            context.resources.getDimension(R.dimen.reg_16dp).toInt()
+            context.resources.getDimension(R.dimen.reg_16dp).toInt(),
         )
-        background = if (hasFocus()) {
-            backgroundGradient
-        } else {
-            null
-        }
+        background =
+            if (hasFocus()) {
+                backgroundGradient
+            } else {
+                null
+            }
     }
 
     private fun setDefaultState() {

@@ -37,9 +37,7 @@ object NetworkKeyConstants {
     var WEB_URL: String? = null
 
     @JvmStatic
-    fun getWebsiteLink(url: String): String {
-        return WEB_URL + url
-    }
+    fun getWebsiteLink(url: String): String = WEB_URL + url
 
     init {
         if (BuildConfig.DEV) {

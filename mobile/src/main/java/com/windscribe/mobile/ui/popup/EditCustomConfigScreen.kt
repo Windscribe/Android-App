@@ -19,8 +19,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -49,6 +49,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -57,43 +58,97 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 
+/** State the edit-custom-config UI renders. */
+data class EditCustomConfigState(
+    val name: String = "",
+    val username: String = "",
+    val password: String = "",
+    val isOpenVPN: Boolean = true,
+    val isRemember: Boolean = false,
+    val connect: Boolean = true,
+)
+
+/** Callbacks the edit-custom-config UI can raise; defaults are no-ops for previews. */
+class EditCustomConfigActions(
+    val onNameChange: (String) -> Unit = {},
+    val onUsernameChange: (String) -> Unit = {},
+    val onPasswordChange: (String) -> Unit = {},
+    val onToggleIsRemember: () -> Unit = {},
+    val onSaveClick: () -> Unit = {},
+)
+
 @Composable
-fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
+fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel = hiltViewModel<EditCustomConfigViewmodelImpl>()) {
     val navController = LocalNavController.current
-    val shouldExit by viewmodel?.shouldExit?.collectAsState() ?: remember { mutableStateOf(false) }
+    val shouldExit by viewmodel.shouldExit.collectAsState()
     LaunchedEffect(shouldExit) {
         if (shouldExit) {
             navController.popBackStack()
         }
     }
-    val name by viewmodel?.name?.collectAsState() ?: remember { mutableStateOf("") }
-    val username by viewmodel?.username?.collectAsState() ?: remember { mutableStateOf("") }
-    val password by viewmodel?.password?.collectAsState() ?: remember { mutableStateOf("") }
-    val isOpenVPN by viewmodel?.isOpenVPN?.collectAsState() ?: remember { mutableStateOf(true) }
-    val isRemember by viewmodel?.isRemember?.collectAsState() ?: remember { mutableStateOf(false) }
-    val connect by viewmodel?.connect?.collectAsState() ?: remember { mutableStateOf(true) }
-    val tintColor = if (isRemember) {
-        AppColors.neonGreen
-    } else {
-        AppColors.white
-    }
+    val name by viewmodel.name.collectAsState()
+    val username by viewmodel.username.collectAsState()
+    val password by viewmodel.password.collectAsState()
+    val isOpenVPN by viewmodel.isOpenVPN.collectAsState()
+    val isRemember by viewmodel.isRemember.collectAsState()
+    val connect by viewmodel.connect.collectAsState()
+    EditCustomConfigContent(
+        state =
+            EditCustomConfigState(
+                name = name,
+                username = username,
+                password = password,
+                isOpenVPN = isOpenVPN,
+                isRemember = isRemember,
+                connect = connect,
+            ),
+        actions =
+            EditCustomConfigActions(
+                onNameChange = viewmodel::onNameChange,
+                onUsernameChange = viewmodel::onUsernameChange,
+                onPasswordChange = viewmodel::onPasswordChange,
+                onToggleIsRemember = viewmodel::onToggleIsRemember,
+                onSaveClick = viewmodel::onSaveClick,
+            ),
+    )
+}
+
+@Composable
+fun EditCustomConfigContent(
+    state: EditCustomConfigState,
+    actions: EditCustomConfigActions,
+) {
+    val name = state.name
+    val username = state.username
+    val password = state.password
+    val isOpenVPN = state.isOpenVPN
+    val isRemember = state.isRemember
+    val connect = state.connect
+    val tintColor =
+        if (isRemember) {
+            AppColors.neonGreen
+        } else {
+            AppColors.white
+        }
     val scrollState = rememberScrollState()
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = AppColors.deepBlue)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(color = AppColors.deepBlue),
     ) {
         Column(
-            modifier = Modifier
-                .width(400.dp)
-                .fillMaxHeight()
-                .verticalScroll(scrollState)
-                .imePadding()
-                .statusBarsPadding()
-                .padding(horizontal = 32.dp)
-                .align(Alignment.Center),
+            modifier =
+                Modifier
+                    .width(400.dp)
+                    .fillMaxHeight()
+                    .verticalScroll(scrollState)
+                    .imePadding()
+                    .statusBarsPadding()
+                    .padding(horizontal = 32.dp)
+                    .align(Alignment.Center),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.weight(1.0f))
             Image(
@@ -108,32 +163,33 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                 fontSize = 24.sp,
                 color = Color.White,
                 textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .fillMaxWidth()
+                modifier =
+                    Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(16.dp))
             CustomTextField(
-                onValueChange = { viewmodel?.onNameChange(it) },
+                onValueChange = actions.onNameChange,
                 modifier = Modifier.fillMaxWidth(),
                 hint = stringResource(com.windscribe.vpn.R.string.config_title),
-                value = name
+                value = name,
             )
             if (isOpenVPN) {
                 Spacer(modifier = Modifier.height(16.dp))
                 CustomTextField(
-                    onValueChange = { viewmodel?.onUsernameChange(it) },
+                    onValueChange = actions.onUsernameChange,
                     modifier = Modifier.fillMaxWidth(),
                     hint = stringResource(com.windscribe.vpn.R.string.username),
-                    value = username
+                    value = username,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 CustomTextField(
-                    onValueChange = { viewmodel?.onPasswordChange(it) },
+                    onValueChange = actions.onPasswordChange,
                     modifier = Modifier.fillMaxWidth(),
                     hint = stringResource(com.windscribe.vpn.R.string.password),
                     value = password,
-                    isPassword = true
+                    isPassword = true,
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -143,11 +199,11 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                         painter = painterResource(id = R.drawable.ic_check),
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(tintColor),
-                        modifier = Modifier
-                            .clickable {
-                                viewmodel?.onToggleIsRemember()
-                            }
-                            .size(24.dp)
+                        modifier =
+                            Modifier
+                                .clickable {
+                                    actions.onToggleIsRemember()
+                                }.size(24.dp),
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                 }
@@ -156,11 +212,12 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                 text = stringResource(if (connect) com.windscribe.vpn.R.string.connect else com.windscribe.vpn.R.string.update),
                 enabled = true,
                 onClick = {
-                    viewmodel?.onSaveClick()
+                    actions.onSaveClick()
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 32.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 32.dp),
             )
             Spacer(modifier = Modifier.weight(1.0f))
         }
@@ -188,7 +245,7 @@ private fun CustomTextField(
             text = hint,
             style = font16.copy(fontWeight = FontWeight.Medium),
             color = AppColors.white,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
         )
         Box {
             TextField(
@@ -200,51 +257,57 @@ private fun CustomTextField(
                 isError = false,
                 singleLine = true,
                 shape = RoundedCornerShape(9.dp),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrectEnabled = false,
-                    keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        autoCorrectEnabled = false,
+                        keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text,
+                    ),
                 visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = {
                     if (isPassword) {
                         IconButton(
-                            onClick = { passwordVisible = !passwordVisible }
+                            onClick = { passwordVisible = !passwordVisible },
                         ) {
                             Icon(
-                                painter = painterResource(
-                                    id = if (passwordVisible) R.drawable.ic_eye_off else R.drawable.ic_eye
-                                ),
+                                painter =
+                                    painterResource(
+                                        id = if (passwordVisible) R.drawable.ic_eye_off else R.drawable.ic_eye,
+                                    ),
                                 contentDescription = "Toggle password visibility",
-                                tint = AppColors.white.copy(alpha = 0.50f)
+                                tint = AppColors.white.copy(alpha = 0.50f),
                             )
                         }
                     }
                 },
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = AppColors.white,
-                    unfocusedTextColor = AppColors.white,
-                    disabledTextColor = AppColors.white,
-                    unfocusedContainerColor =  AppColors.white.copy(0.05f),
-                    focusedContainerColor = AppColors.white.copy(0.05f),
-                    disabledContainerColor =  AppColors.white.copy(0.05f),
-                    errorContainerColor =  AppColors.white.copy(0.05f),
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                    cursorColor = AppColors.white,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = AppColors.white,
-                        backgroundColor = AppColors.white.copy(alpha = 0.3f)
-                    )
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                textStyle = font16.copy(
-                    color = AppColors.white,
-                    textAlign = TextAlign.Start
-                ),
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedTextColor = AppColors.white,
+                        unfocusedTextColor = AppColors.white,
+                        disabledTextColor = AppColors.white,
+                        unfocusedContainerColor = AppColors.white.copy(0.05f),
+                        focusedContainerColor = AppColors.white.copy(0.05f),
+                        disabledContainerColor = AppColors.white.copy(0.05f),
+                        errorContainerColor = AppColors.white.copy(0.05f),
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = Color.Transparent,
+                        cursorColor = AppColors.white,
+                        selectionColors =
+                            androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = AppColors.white,
+                                backgroundColor = AppColors.white.copy(alpha = 0.3f),
+                            ),
+                    ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                textStyle =
+                    font16.copy(
+                        color = AppColors.white,
+                        textAlign = TextAlign.Start,
+                    ),
             )
         }
     }
@@ -254,6 +317,9 @@ private fun CustomTextField(
 @MultiDevicePreview
 fun EditCustomConfigScreenPreview() {
     PreviewWithNav {
-        EditCustomConfigScreen(viewmodel = null)
+        EditCustomConfigContent(
+            state = EditCustomConfigState(name = "My Config", isOpenVPN = true),
+            actions = EditCustomConfigActions(),
+        )
     }
 }

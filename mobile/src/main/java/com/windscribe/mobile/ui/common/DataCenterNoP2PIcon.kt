@@ -16,6 +16,6 @@ fun DataCenterNoP2PIcon() {
         painter = painterResource(com.windscribe.mobile.R.drawable.p2p),
         contentDescription = "No 2 P2P Indiactor",
         modifier = Modifier.size(12.dp),
-        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverItemTextColor)
+        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverItemTextColor),
     )
 }

@@ -11,8 +11,9 @@ import android.content.Intent
 import android.os.Build
 import org.slf4j.LoggerFactory
 
-class WireguardContextWrapper(context: Context) : ContextWrapper(context) {
-
+class WireguardContextWrapper(
+    context: Context,
+) : ContextWrapper(context) {
     private val logger = LoggerFactory.getLogger("vpn")
 
     override fun startService(serviceIntent: Intent?): ComponentName? {

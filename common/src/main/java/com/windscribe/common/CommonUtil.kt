@@ -10,7 +10,7 @@ import android.os.Build
 fun Service.startSafeForeground(
     id: Int,
     notification: Notification,
-    serviceType: Int = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+    serviceType: Int = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
         startForeground(id, notification, serviceType)

@@ -6,20 +6,20 @@ import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants.SELECTION_KEY
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.FavouriteWithCity
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
+import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
-import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.Location
 import com.windscribe.vpn.serverlist.entity.ServerMapState
 import com.windscribe.vpn.serverlist.entity.StaticRegion
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -29,12 +29,14 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import javax.inject.Inject
 import kotlin.collections.filter
 import kotlin.collections.map
 import kotlin.collections.mapNotNull
@@ -44,7 +46,7 @@ data class ServerListItem(
     val id: Int,
     val region: Location,
     val datacenters: List<Datacenter>,
-    val servers: List<String> = emptyList()
+    val servers: List<String> = emptyList(),
 )
 
 data class FavouriteListItem(
@@ -52,21 +54,41 @@ data class FavouriteListItem(
     val city: Datacenter,
     val region: Location,
     val countryCode: String,
-    val pinnedIp: String?
+    val pinnedIp: String?,
 )
 
-data class StaticListItem(val id: Int, val staticItem: StaticRegion)
-data class ConfigListItem(val id: Int, val config: ConfigFile)
-data class LatencyListItem(val id: Int, val time: Int)
+data class StaticListItem(
+    val id: Int,
+    val staticItem: StaticRegion,
+)
+
+data class ConfigListItem(
+    val id: Int,
+    val config: ConfigFile,
+)
+
+data class LatencyListItem(
+    val id: Int,
+    val time: Int,
+)
 
 sealed class ListState<out T> {
     object Loading : ListState<Nothing>()
-    data class Success<T>(val data: List<T>) : ListState<T>()
-    data class Error(val message: String) : ListState<Nothing>()
+
+    data class Success<T>(
+        val data: List<T>,
+    ) : ListState<T>()
+
+    data class Error(
+        val message: String,
+    ) : ListState<Nothing>()
 }
 
 enum class ServerListType {
-    All, Fav, Static, Config
+    All,
+    Fav,
+    Static,
+    Config,
 }
 
 private const val MIN_HEALTH_VALUE = 10
@@ -85,544 +107,606 @@ abstract class ServerViewModel : ViewModel() {
     abstract val searchItemsExpandState: StateFlow<HashMap<String, Boolean>>
     abstract val refreshState: StateFlow<Boolean>
     abstract val isPro: StateFlow<Boolean>
+
     abstract fun setSelectedType(type: ServerListType)
+
     abstract fun toggleFavorite(city: Datacenter)
+
     abstract fun deleteFavourite(id: Int)
+
     abstract fun toggleSearch()
+
     abstract fun onQueryTextChange(query: String)
+
     abstract fun clearSearch()
-    abstract fun onExpandStateChanged(id: String, expanded: Boolean)
+
+    abstract fun onExpandStateChanged(
+        id: String,
+        expanded: Boolean,
+    )
+
     abstract fun refresh(serverListType: ServerListType)
+
     abstract fun observeAverageHealth(dataCenterId: Int): Flow<Int>
+
     abstract fun observeDatacenterServerCount(dataCenterId: Int): Flow<Int>
+
     abstract fun observeAverageRegionHealth(cities: List<Datacenter>): Flow<Int>
+
     abstract fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean>
 }
 
-class ServerViewModelImpl(
-    private val serverRepository: ServerListRepository,
-    private val favouriteRepository: FavouriteRepository,
-    private val staticIpRepository: StaticIpRepository,
-    private val localDbInterface: LocalDbInterface,
-    private val preferencesHelper: PreferencesHelper,
-    private val latencyRepository: LatencyRepository,
-    private val userRepository: com.windscribe.vpn.repository.UserRepository
-) : ServerViewModel() {
+@HiltViewModel
+class ServerViewModelImpl
+    @Inject
+    constructor(
+        private val serverRepository: ServerListRepository,
+        private val favouriteRepository: FavouriteRepository,
+        private val staticIpRepository: StaticIpRepository,
+        private val localDbInterface: LocalDbInterface,
+        private val preferencesHelper: PreferencesHelper,
+        private val latencyRepository: LatencyRepository,
+        private val userRepository: com.windscribe.vpn.repository.UserRepository,
+    ) : ServerViewModel() {
+        private val _serverListState = MutableStateFlow<ListState<ServerListItem>>(ListState.Loading)
+        override val serverListState: StateFlow<ListState<ServerListItem>> = _serverListState
 
-    private val _serverListState = MutableStateFlow<ListState<ServerListItem>>(ListState.Loading)
-    override val serverListState: StateFlow<ListState<ServerListItem>> = _serverListState
+        private val _favouriteListState =
+            MutableStateFlow<ListState<FavouriteListItem>>(ListState.Loading)
+        override val favouriteListState: StateFlow<ListState<FavouriteListItem>> = _favouriteListState
 
-    private val _favouriteListState =
-        MutableStateFlow<ListState<FavouriteListItem>>(ListState.Loading)
-    override val favouriteListState: StateFlow<ListState<FavouriteListItem>> = _favouriteListState
+        private val _staticListState = MutableStateFlow<ListState<StaticListItem>>(ListState.Loading)
+        override val staticListState: StateFlow<ListState<StaticListItem>> = _staticListState
 
-    private val _staticListState = MutableStateFlow<ListState<StaticListItem>>(ListState.Loading)
-    override val staticListState: StateFlow<ListState<StaticListItem>> = _staticListState
+        private val _configListState = MutableStateFlow<ListState<ConfigListItem>>(ListState.Loading)
+        override val configListState: StateFlow<ListState<ConfigListItem>> = _configListState
 
-    private val _configListState = MutableStateFlow<ListState<ConfigListItem>>(ListState.Loading)
-    override val configListState: StateFlow<ListState<ConfigListItem>> = _configListState
+        private val _latencyListState = MutableStateFlow<ListState<LatencyListItem>>(ListState.Loading)
+        override val latencyListState: StateFlow<ListState<LatencyListItem>> = _latencyListState
 
-    private val _latencyListState = MutableStateFlow<ListState<LatencyListItem>>(ListState.Loading)
-    override val latencyListState: StateFlow<ListState<LatencyListItem>> = _latencyListState
+        // Delegate serversState to repository
+        override val serversState: StateFlow<ServerMapState> = serverRepository.serversState
 
-    // Delegate serversState to repository
-    override val serversState: StateFlow<ServerMapState> = serverRepository.serversState
+        private val _searchListState = MutableStateFlow<ListState<ServerListItem>>(ListState.Loading)
+        override val searchListState: StateFlow<ListState<ServerListItem>> = _searchListState
 
-    private val _searchListState = MutableStateFlow<ListState<ServerListItem>>(ListState.Loading)
-    override val searchListState: StateFlow<ListState<ServerListItem>> = _searchListState
+        private val _selectedServerListType =
+            MutableStateFlow(
+                when (preferencesHelper.lastSelectedTabIndex) {
+                    0 -> ServerListType.All
+                    1 -> ServerListType.Fav
+                    2 -> ServerListType.Static
+                    3 -> ServerListType.Config
+                    else -> ServerListType.All
+                },
+            )
+        override val selectedServerListType: StateFlow<ServerListType> = _selectedServerListType
 
-    private val _selectedServerListType = MutableStateFlow(
-        when (preferencesHelper.lastSelectedTabIndex) {
-            0 -> ServerListType.All
-            1 -> ServerListType.Fav
-            2 -> ServerListType.Static
-            3 -> ServerListType.Config
-            else -> ServerListType.All
+        private val _showSearchView = MutableStateFlow(false)
+        override val showSearchView: StateFlow<Boolean> = _showSearchView
+
+        private val _searchKeyword = MutableStateFlow("")
+        override val searchKeyword: StateFlow<String> = _searchKeyword
+        private val _searchItemsExpandState = MutableStateFlow<HashMap<String, Boolean>>(hashMapOf())
+        override val searchItemsExpandState: StateFlow<HashMap<String, Boolean>> =
+            _searchItemsExpandState
+        private val _refreshState = MutableStateFlow(false)
+        override val refreshState: StateFlow<Boolean> = _refreshState
+
+        private val _isPro = MutableStateFlow(false)
+        override val isPro: StateFlow<Boolean> = _isPro
+
+        init {
+            fetchAllLists()
+            observeSelectionPreference()
+            observeUserProStatus()
         }
-    )
-    override val selectedServerListType: StateFlow<ServerListType> = _selectedServerListType
 
-
-    private val _showSearchView = MutableStateFlow(false)
-    override val showSearchView: StateFlow<Boolean> = _showSearchView
-
-    private val _searchKeyword = MutableStateFlow("")
-    override val searchKeyword: StateFlow<String> = _searchKeyword
-    private val _searchItemsExpandState = MutableStateFlow<HashMap<String, Boolean>>(hashMapOf())
-    override val searchItemsExpandState: StateFlow<HashMap<String, Boolean>> =
-        _searchItemsExpandState
-    private val _refreshState = MutableStateFlow(false)
-    override val refreshState: StateFlow<Boolean> = _refreshState
-
-    private val _isPro = MutableStateFlow(false)
-    override val isPro: StateFlow<Boolean> = _isPro
-
-    init {
-        fetchAllLists()
-        observeSelectionPreference()
-        observeUserProStatus()
-    }
-
-    private fun observeUserProStatus() {
-        viewModelScope.launch(Dispatchers.IO) {
-            userRepository.userInfo.collectLatest { user ->
-                _isPro.value = user.isPro
+        private fun observeUserProStatus() {
+            viewModelScope.launch(Dispatchers.IO) {
+                userRepository.user.filterNotNull().collectLatest { user ->
+                    _isPro.value = user.isPro
+                }
             }
         }
-    }
 
-    private fun fetchAllLists() {
-        fetchServerList()
-        fetchFavouriteList()
-        fetchStaticList()
-        fetchConfigList()
-        fetchLatencyList()
-    }
+        private fun fetchAllLists() {
+            fetchServerList()
+            fetchFavouriteList()
+            fetchStaticList()
+            fetchConfigList()
+            fetchLatencyList()
+        }
 
-    private fun fetchLatencyList() {
-        fetchData(
-            ignoreLatencyAwait = true,
-            stateFlow = _latencyListState,
-            repositoryFlow = localDbInterface.getLatency(),
-            transform = { latency -> latency.map { LatencyListItem(it.ping_id, it.pingTime) } },
-            errorMessage = "Failed to load latency times."
-        )
-    }
+        private fun fetchLatencyList() {
+            fetchData(
+                ignoreLatencyAwait = true,
+                stateFlow = _latencyListState,
+                repositoryFlow = localDbInterface.getLatency(),
+                transform = { latency -> latency.map { LatencyListItem(it.ping_id, it.pingTime) } },
+                errorMessage = "Failed to load latency times.",
+            )
+        }
 
-    private fun observeSelectionPreference() {
-        viewModelScope.launch(Dispatchers.IO) {
-            preferencesHelper.selectionFlow.collectLatest { _ ->
-                // When selection preference changes, reload all lists to apply new sorting
-                fetchServerList()
-                fetchFavouriteList()
-                fetchStaticList()
-                fetchConfigList()
+        private fun observeSelectionPreference() {
+            viewModelScope.launch(Dispatchers.IO) {
+                preferencesHelper.selectionFlow.collectLatest { _ ->
+                    // When selection preference changes, reload all lists to apply new sorting
+                    fetchServerList()
+                    fetchFavouriteList()
+                    fetchStaticList()
+                    fetchConfigList()
+                }
             }
         }
-    }
 
-    private fun fetchServerList() {
-        fetchData(
-            stateFlow = _serverListState,
-            repositoryFlow = serverRepository.locationAndDatacenters,
-            transform = { locations ->
-                locations
-                    .map { location ->
-                        ServerListItem(
-                            id = location.location.id,
-                            region = location.location,
-                            datacenters = location.datacenters.updateCityNames().sortCities(),
-                        )
-                    }
-                    .updateRegionNames().sortRegions()
-            },
-            errorMessage = "Failed to load servers"
-        )
-    }
+        private fun fetchServerList() {
+            fetchData(
+                stateFlow = _serverListState,
+                repositoryFlow = serverRepository.locationAndDatacenters,
+                transform = { locations ->
+                    locations
+                        .mapNotNull { location ->
+                            val region = location.location ?: return@mapNotNull null
+                            ServerListItem(
+                                id = region.id,
+                                region = region,
+                                datacenters = location.datacenters.updateCityNames().sortCities(),
+                            )
+                        }.updateRegionNames()
+                        .sortRegions()
+                },
+                errorMessage = "Failed to load servers",
+            )
+        }
 
-    private fun List<Datacenter>.sortCities(): List<Datacenter> {
-        return when (preferencesHelper.selection) {
-            LATENCY_LIST_SELECTION_MODE -> {
-                val state = latencyListState.value as? ListState.Success<LatencyListItem>
-                if (state != null) {
-                    sortedBy { city ->
-                        state.data.firstOrNull { it.id == city.id }?.time
+        private fun List<Datacenter>.sortCities(): List<Datacenter> =
+            when (preferencesHelper.selection) {
+                LATENCY_LIST_SELECTION_MODE -> {
+                    val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                    if (state != null) {
+                        sortedBy { city ->
+                            state.data.firstOrNull { it.id == city.id }?.time
+                        }
+                    } else {
+                        sortedBy { it.nodeName }
                     }
-                } else {
+                }
+
+                else -> {
                     sortedBy { it.nodeName }
                 }
             }
 
-            else -> sortedBy { it.nodeName }
-        }
-    }
-
-    private fun List<Datacenter>.updateCityNames(): List<Datacenter> {
-        return map {
-            val cityName = serverRepository.getCustomCityName(it.id)
-            val nickName = serverRepository.getCustomCityNickName(it.id)
-            if (cityName != null && nickName != null) {
-                it.apply {
-                    this.nodeName = cityName
-                    this.nickName = nickName
-                }
-            } else {
-                it
-            }
-        }
-    }
-
-    private fun List<ServerListItem>.updateRegionNames(): List<ServerListItem> {
-        return map {
-            val countryName = serverRepository.getCustomRegionName(it.id)
-            if (countryName != null) {
-                it.apply {
-                    this.region.name = countryName
-                }
-            } else {
-                it
-            }
-        }
-    }
-
-    private fun List<ServerListItem>.sortRegions(): List<ServerListItem> {
-        return when (preferencesHelper.selection) {
-            LATENCY_LIST_SELECTION_MODE -> {
-                val state = latencyListState.value as? ListState.Success<LatencyListItem>
-                if (state != null) {
-                    val latencyMap = state.data.associateBy { it.id }
-                    sortedBy { item ->
-                        // Find lowest latency across cities in region
-                        val minLatency = item.datacenters.mapNotNull { city ->
-                            val time = latencyMap[city.id]?.time
-                            if (time != null && time > 0) time else null
-                        }.minOrNull()
-                        minLatency ?: Int.MAX_VALUE
+        private fun List<Datacenter>.updateCityNames(): List<Datacenter> =
+            map {
+                val cityName = serverRepository.getCustomCityName(it.id)
+                val nickName = serverRepository.getCustomCityNickName(it.id)
+                if (cityName != null && nickName != null) {
+                    it.apply {
+                        this.nodeName = cityName
+                        this.nickName = nickName
                     }
                 } else {
+                    it
+                }
+            }
+
+        private fun List<ServerListItem>.updateRegionNames(): List<ServerListItem> =
+            map {
+                val countryName = serverRepository.getCustomRegionName(it.id)
+                if (countryName != null) {
+                    it.apply {
+                        this.region.name = countryName
+                    }
+                } else {
+                    it
+                }
+            }
+
+        private fun List<ServerListItem>.sortRegions(): List<ServerListItem> =
+            when (preferencesHelper.selection) {
+                LATENCY_LIST_SELECTION_MODE -> {
+                    val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                    if (state != null) {
+                        val latencyMap = state.data.associateBy { it.id }
+                        sortedBy { item ->
+                            // Find lowest latency across cities in region
+                            val minLatency =
+                                item.datacenters
+                                    .mapNotNull { city ->
+                                        val time = latencyMap[city.id]?.time
+                                        if (time != null && time > 0) time else null
+                                    }.minOrNull()
+                            minLatency ?: Int.MAX_VALUE
+                        }
+                    } else {
+                        this
+                    }
+                }
+
+                AZ_LIST_SELECTION_MODE -> {
+                    sortedBy { it.region.name }
+                }
+
+                else -> {
                     this
                 }
             }
 
-            AZ_LIST_SELECTION_MODE -> sortedBy { it.region.name }
-            else -> this
-        }
-    }
-
-    private fun List<StaticListItem>.sortStaticRegions(): List<StaticListItem> {
-        return when (preferencesHelper.selection) {
-            LATENCY_LIST_SELECTION_MODE -> {
-                val state = latencyListState.value as? ListState.Success<LatencyListItem>
-                if (state != null) {
-                    sortedBy { item ->
-                        state.data.find { it.id == item.id }?.time ?: -1
+        private fun List<StaticListItem>.sortStaticRegions(): List<StaticListItem> =
+            when (preferencesHelper.selection) {
+                LATENCY_LIST_SELECTION_MODE -> {
+                    val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                    if (state != null) {
+                        sortedBy { item ->
+                            state.data.find { it.id == item.id }?.time ?: -1
+                        }
+                    } else {
+                        sortedBy { it.staticItem.cityName }
                     }
-                } else {
+                }
+
+                else -> {
                     sortedBy { it.staticItem.cityName }
                 }
             }
 
-            else -> sortedBy { it.staticItem.cityName }
-        }
-    }
-
-    private fun List<ConfigListItem>.sortConfigs(): List<ConfigListItem> {
-        return when (preferencesHelper.selection) {
-            LATENCY_LIST_SELECTION_MODE -> {
-                val state = latencyListState.value as? ListState.Success<LatencyListItem>
-                if (state != null) {
-                    sortedBy { item ->
-                        state.data.find { it.id == item.id }?.time ?: -1
+        private fun List<ConfigListItem>.sortConfigs(): List<ConfigListItem> =
+            when (preferencesHelper.selection) {
+                LATENCY_LIST_SELECTION_MODE -> {
+                    val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                    if (state != null) {
+                        sortedBy { item ->
+                            state.data.find { it.id == item.id }?.time ?: -1
+                        }
+                    } else {
+                        sortedBy { it.config.name }
                     }
-                } else {
+                }
+
+                else -> {
                     sortedBy { it.config.name }
                 }
             }
 
-            else -> sortedBy { it.config.name }
-        }
-    }
-
-    private fun List<FavouriteWithCity>.sortFavouriteCities(): List<FavouriteWithCity> {
-        return when (preferencesHelper.selection) {
-            LATENCY_LIST_SELECTION_MODE -> {
-                val state = latencyListState.value as? ListState.Success<LatencyListItem>
-                if (state != null) {
-                    sortedBy { favWithCity ->
-                        state.data.firstOrNull { it.id == favWithCity.city.id }?.time
+        private fun List<FavouriteWithCity>.sortFavouriteCities(): List<FavouriteWithCity> =
+            when (preferencesHelper.selection) {
+                LATENCY_LIST_SELECTION_MODE -> {
+                    val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                    if (state != null) {
+                        sortedBy { favWithCity ->
+                            state.data.firstOrNull { it.id == favWithCity.city.id }?.time
+                        }
+                    } else {
+                        sortedBy { it.city.nodeName }
                     }
-                } else {
+                }
+
+                else -> {
                     sortedBy { it.city.nodeName }
                 }
             }
 
-            else -> sortedBy { it.city.nodeName }
-        }
-    }
-
-    private fun List<FavouriteWithCity>.updateFavouriteCityNames(): List<FavouriteWithCity> {
-        return map { favWithCity ->
-            val cityName = serverRepository.getCustomCityName(favWithCity.city.id)
-            val nickName = serverRepository.getCustomCityNickName(favWithCity.city.id)
-            if (cityName != null && nickName != null) {
-                favWithCity.copy(city = favWithCity.city.apply {
-                    this.nodeName = cityName
-                    this.nickName = nickName
-                })
-            } else {
-                favWithCity
-            }
-        }
-    }
-
-    private fun fetchFavouriteList() {
-        viewModelScope.launch(Dispatchers.IO) {
-            favouriteRepository.favourites.map { favourites ->
-                favourites.updateFavouriteCityNames().sortFavouriteCities().mapNotNull { favWithCity ->
-                    val region = localDbInterface.getLocationById(favWithCity.city.regionID) ?: return@mapNotNull null
-                    FavouriteListItem(
-                        favWithCity.city.id,
-                        favWithCity.city,
-                        region,
-                        localDbInterface.getCountryCode(favWithCity.city.id),
-                        favWithCity.favourite.pinnedIp
+        private fun List<FavouriteWithCity>.updateFavouriteCityNames(): List<FavouriteWithCity> =
+            map { favWithCity ->
+                val cityName = serverRepository.getCustomCityName(favWithCity.city.id)
+                val nickName = serverRepository.getCustomCityNickName(favWithCity.city.id)
+                if (cityName != null && nickName != null) {
+                    favWithCity.copy(
+                        city =
+                            favWithCity.city.apply {
+                                this.nodeName = cityName
+                                this.nickName = nickName
+                            },
                     )
-                }
-            }.collect {
-                _favouriteListState.value = ListState.Success(it)
-            }
-        }
-    }
-
-    private fun fetchStaticList() {
-        fetchData(
-            stateFlow = _staticListState,
-            repositoryFlow = staticIpRepository.regions,
-            transform = { regions ->
-                regions.map { StaticListItem(it.id, it) }.sortStaticRegions()
-            },
-            errorMessage = "Failed to load static IPs"
-        )
-    }
-
-    private fun fetchConfigList() {
-        fetchData(
-            stateFlow = _configListState,
-            repositoryFlow = localDbInterface.getConfigs(),
-            transform = { configs ->
-                configs.map { ConfigListItem(it.getPrimaryKey(), it) }.sortConfigs()
-            },
-            errorMessage = "Failed to load custom configs"
-        )
-    }
-
-    private fun <T, R> fetchData(
-        ignoreLatencyAwait: Boolean = false,
-        stateFlow: MutableStateFlow<ListState<R>>,
-        repositoryFlow: Flow<List<T>>,
-        transform: (List<T>) -> List<R>,
-        errorMessage: String
-    ) {
-        stateFlow.value = ListState.Loading
-        viewModelScope.launch(Dispatchers.IO) {
-            if (!ignoreLatencyAwait) {
-                awaitLatencyIfNeeded()
-            }
-            repositoryFlow
-                .flowOn(Dispatchers.IO)
-                .map { transform(it) }
-                .catch { e -> stateFlow.value = ListState.Error("$errorMessage: ${e.message}") }
-                .collect { result ->
-                    stateFlow.value = ListState.Success(result.toList())
-                }
-        }
-    }
-
-    private suspend fun awaitLatencyIfNeeded() {
-        if (preferencesHelper.selection == LATENCY_LIST_SELECTION_MODE) {
-            latencyListState
-                .filterIsInstance<ListState.Success<*>>()
-                .first()
-        }
-    }
-
-    override fun setSelectedType(type: ServerListType) {
-        preferencesHelper.lastSelectedTabIndex = when (type) {
-            ServerListType.All -> 0
-            ServerListType.Fav -> 1
-            ServerListType.Static -> 2
-            ServerListType.Config -> 3
-        }
-        _selectedServerListType.value = type
-    }
-
-    override fun toggleFavorite(city: Datacenter) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val state = favouriteListState.value
-            if (state is ListState.Success) {
-                val isFavorite = state.data.any { it.city.id == city.id }
-                if (isFavorite) {
-                    favouriteRepository.remove(city.id)
                 } else {
-                    localDbInterface.addToFavouritesAsync(Favourite(city.id))
+                    favWithCity
+                }
+            }
+
+        private fun fetchFavouriteList() {
+            viewModelScope.launch(Dispatchers.IO) {
+                favouriteRepository.favourites
+                    .map { favourites ->
+                        favourites.updateFavouriteCityNames().sortFavouriteCities().mapNotNull { favWithCity ->
+                            val region = localDbInterface.getLocationById(favWithCity.city.region_id) ?: return@mapNotNull null
+                            FavouriteListItem(
+                                favWithCity.city.id,
+                                favWithCity.city,
+                                region,
+                                localDbInterface.getCountryCode(favWithCity.city.id),
+                                favWithCity.favourite.pinnedIp,
+                            )
+                        }
+                    }.collect {
+                        _favouriteListState.value = ListState.Success(it)
+                    }
+            }
+        }
+
+        private fun fetchStaticList() {
+            fetchData(
+                stateFlow = _staticListState,
+                repositoryFlow = staticIpRepository.regions,
+                transform = { regions ->
+                    regions.map { StaticListItem(it.id ?: 0, it) }.sortStaticRegions()
+                },
+                errorMessage = "Failed to load static IPs",
+            )
+        }
+
+        private fun fetchConfigList() {
+            fetchData(
+                stateFlow = _configListState,
+                repositoryFlow = localDbInterface.getConfigs(),
+                transform = { configs ->
+                    configs.map { ConfigListItem(it.primaryKey, it) }.sortConfigs()
+                },
+                errorMessage = "Failed to load custom configs",
+            )
+        }
+
+        private fun <T, R> fetchData(
+            ignoreLatencyAwait: Boolean = false,
+            stateFlow: MutableStateFlow<ListState<R>>,
+            repositoryFlow: Flow<List<T>>,
+            transform: (List<T>) -> List<R>,
+            errorMessage: String,
+        ) {
+            stateFlow.value = ListState.Loading
+            viewModelScope.launch(Dispatchers.IO) {
+                if (!ignoreLatencyAwait) {
+                    awaitLatencyIfNeeded()
+                }
+                repositoryFlow
+                    .flowOn(Dispatchers.IO)
+                    .map { transform(it) }
+                    .catch { e -> stateFlow.value = ListState.Error("$errorMessage: ${e.message}") }
+                    .collect { result ->
+                        stateFlow.value = ListState.Success(result.toList())
+                    }
+            }
+        }
+
+        private suspend fun awaitLatencyIfNeeded() {
+            if (preferencesHelper.selection == LATENCY_LIST_SELECTION_MODE) {
+                latencyListState
+                    .filterIsInstance<ListState.Success<*>>()
+                    .first()
+            }
+        }
+
+        override fun setSelectedType(type: ServerListType) {
+            preferencesHelper.lastSelectedTabIndex =
+                when (type) {
+                    ServerListType.All -> 0
+                    ServerListType.Fav -> 1
+                    ServerListType.Static -> 2
+                    ServerListType.Config -> 3
+                }
+            _selectedServerListType.value = type
+        }
+
+        override fun toggleFavorite(city: Datacenter) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val state = favouriteListState.value
+                if (state is ListState.Success) {
+                    val isFavorite = state.data.any { it.city.id == city.id }
+                    if (isFavorite) {
+                        favouriteRepository.remove(city.id)
+                    } else {
+                        localDbInterface.addToFavouritesAsync(Favourite(city.id))
+                    }
                 }
             }
         }
-    }
 
-    override fun deleteFavourite(id: Int) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                localDbInterface.deleteFavourite(id)
+        override fun deleteFavourite(id: Int) {
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    localDbInterface.deleteFavourite(id)
+                }
             }
         }
-    }
 
-    override fun toggleSearch() {
-        val searchViewState = _showSearchView.value
-        _showSearchView.value = !searchViewState
+        override fun toggleSearch() {
+            val searchViewState = _showSearchView.value
+            _showSearchView.value = !searchViewState
 
-        if (!searchViewState) {
+            if (!searchViewState) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _searchListState.emit(ListState.Loading)
+                    val items =
+                        (serverListState.value as? ListState.Success<ServerListItem>)?.data
+                            ?: emptyList()
+                    _searchListState.emit(ListState.Success(items))
+                    _searchItemsExpandState.value = hashMapOf()
+                }
+            }
+        }
+
+        override fun onQueryTextChange(query: String) {
+            if (_searchKeyword.value.isEmpty() && query.isEmpty()) {
+                return
+            }
+            _searchKeyword.value = query
             viewModelScope.launch(Dispatchers.IO) {
                 _searchListState.emit(ListState.Loading)
-                val items = (serverListState.value as? ListState.Success<ServerListItem>)?.data
-                    ?: emptyList()
-                _searchListState.emit(ListState.Success(items))
-                _searchItemsExpandState.value = hashMapOf()
+                val items =
+                    (serverListState.value as? ListState.Success<ServerListItem>)?.data ?: emptyList()
+                val sortedItems = items.sortedWith(getComparator(query))
+                val updatedList = sortedItems.mapNotNull { it.filterIfContains(query) }
+                val searchItems = if (updatedList.size < items.size) updatedList else items
+                _searchItemsExpandState.value =
+                    HashMap(searchItems.associate { it.region.name.orEmpty() to true })
+                _searchListState.emit(ListState.Success(searchItems))
             }
         }
-    }
 
-    override fun onQueryTextChange(query: String) {
-        if (_searchKeyword.value.isEmpty() && query.isEmpty()) {
-            return
-        }
-        _searchKeyword.value = query
-        viewModelScope.launch(Dispatchers.IO) {
-            _searchListState.emit(ListState.Loading)
-            val items =
-                (serverListState.value as? ListState.Success<ServerListItem>)?.data ?: emptyList()
-            val sortedItems = items.sortedWith(getComparator(query))
-            val updatedList = sortedItems.mapNotNull { it.filterIfContains(query) }
-            val searchItems = if (updatedList.size < items.size) updatedList else items
-            _searchItemsExpandState.value =
-                HashMap(searchItems.associate { it.region.name to true })
-            _searchListState.emit(ListState.Success(searchItems))
-        }
-    }
-
-    override fun clearSearch() {
-        _searchKeyword.value = ""
-    }
-
-    private fun ServerListItem.filterIfContains(keyword: String): ServerListItem? {
-        val lowerKeyword = keyword.lowercase(Locale.getDefault())
-
-        val filteredCities = datacenters.filter {
-            it.nickName.lowercase(Locale.getDefault()).contains(lowerKeyword) ||
-                    it.nodeName.lowercase(Locale.getDefault()).contains(lowerKeyword)
+        override fun clearSearch() {
+            _searchKeyword.value = ""
         }
 
-        return when {
-            filteredCities.isNotEmpty() -> copy(datacenters = filteredCities)
-            region.name.lowercase(Locale.getDefault()).contains(lowerKeyword) -> this
-            else -> null
+        private fun ServerListItem.filterIfContains(keyword: String): ServerListItem? {
+            val lowerKeyword = keyword.lowercase(Locale.getDefault())
+
+            val filteredCities =
+                datacenters.filter {
+                    it.nickName
+                        .orEmpty()
+                        .lowercase(Locale.getDefault())
+                        .contains(lowerKeyword) ||
+                        it.nodeName
+                            .orEmpty()
+                            .lowercase(Locale.getDefault())
+                            .contains(lowerKeyword)
+                }
+
+            return when {
+                filteredCities.isNotEmpty() -> copy(datacenters = filteredCities)
+
+                region.name
+                    .orEmpty()
+                    .lowercase(Locale.getDefault())
+                    .contains(lowerKeyword) -> this
+
+                else -> null
+            }
         }
-    }
 
-    private fun ServerListItem.startsWithKeyword(keyword: String): Boolean {
-        val lowerKeyword = keyword.lowercase(Locale.getDefault())
+        private fun ServerListItem.startsWithKeyword(keyword: String): Boolean {
+            val lowerKeyword = keyword.lowercase(Locale.getDefault())
 
-        return region.name.lowercase(Locale.getDefault()).startsWith(lowerKeyword) ||
+            return region.name
+                .orEmpty()
+                .lowercase(Locale.getDefault())
+                .startsWith(lowerKeyword) ||
                 datacenters.any {
-                    it.nickName.lowercase(Locale.getDefault()).startsWith(lowerKeyword) ||
-                            it.nodeName.lowercase(Locale.getDefault()).startsWith(lowerKeyword)
+                    it.nickName
+                        .orEmpty()
+                        .lowercase(Locale.getDefault())
+                        .startsWith(lowerKeyword) ||
+                        it.nodeName
+                            .orEmpty()
+                            .lowercase(Locale.getDefault())
+                            .startsWith(lowerKeyword)
                 }
-    }
+        }
 
-    private fun getComparator(part: String): Comparator<ServerListItem> {
-        return compareByDescending { it.startsWithKeyword(part) }
-    }
+        private fun getComparator(part: String): Comparator<ServerListItem> = compareByDescending { it.startsWithKeyword(part) }
 
-    override fun onExpandStateChanged(id: String, expanded: Boolean) {
-        viewModelScope.launch {
-            _searchItemsExpandState.value = HashMap(_searchItemsExpandState.value).apply {
-                this[id] = expanded
+        override fun onExpandStateChanged(
+            id: String,
+            expanded: Boolean,
+        ) {
+            viewModelScope.launch {
+                _searchItemsExpandState.value =
+                    HashMap(_searchItemsExpandState.value).apply {
+                        this[id] = expanded
+                    }
             }
         }
-    }
 
-    // Transform repository's serversState for UI needs
-    override fun observeAverageHealth(dataCenterId: Int): Flow<Int> {
-        return serverRepository.serversState
-            .map { state ->
-                when (state) {
-                    is ServerMapState.Success -> {
-                        val servers = state.data[dataCenterId] ?: emptyList()
-                        if (servers.isEmpty()) return@map MIN_HEALTH_VALUE
-                        val average = servers.map { it.health }.average().toInt()
-                        maxOf(MIN_HEALTH_VALUE, average)
+        // Transform repository's serversState for UI needs
+        override fun observeAverageHealth(dataCenterId: Int): Flow<Int> {
+            return serverRepository.serversState
+                .map { state ->
+                    when (state) {
+                        is ServerMapState.Success -> {
+                            val servers = state.data[dataCenterId] ?: emptyList()
+                            if (servers.isEmpty()) return@map MIN_HEALTH_VALUE
+                            val average = servers.map { it.health }.average().toInt()
+                            maxOf(MIN_HEALTH_VALUE, average)
+                        }
+
+                        else -> {
+                            MIN_HEALTH_VALUE
+                        }
                     }
-                    else -> MIN_HEALTH_VALUE
-                }
-            }
-            .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
-    }
+                }.distinctUntilChanged()
+                .flowOn(Dispatchers.IO)
+        }
 
-    override fun observeAverageRegionHealth(cities: List<Datacenter>): Flow<Int> {
-        return serverRepository.serversState
-            .map { state ->
-                if (cities.isEmpty()) return@map MIN_HEALTH_VALUE
-                when (state) {
-                    is ServerMapState.Success -> {
-                        var sum = 0
-                        for (city in cities) {
-                            val servers = state.data[city.id] ?: emptyList()
-                            val health = if (servers.isEmpty()) {
-                                MIN_HEALTH_VALUE
-                            } else {
-                                val average = servers.map { it.health }.average().toInt()
-                                maxOf(MIN_HEALTH_VALUE, average)
+        override fun observeAverageRegionHealth(cities: List<Datacenter>): Flow<Int> {
+            return serverRepository.serversState
+                .map { state ->
+                    if (cities.isEmpty()) return@map MIN_HEALTH_VALUE
+                    when (state) {
+                        is ServerMapState.Success -> {
+                            var sum = 0
+                            for (city in cities) {
+                                val servers = state.data[city.id] ?: emptyList()
+                                val health =
+                                    if (servers.isEmpty()) {
+                                        MIN_HEALTH_VALUE
+                                    } else {
+                                        val average = servers.map { it.health }.average().toInt()
+                                        maxOf(MIN_HEALTH_VALUE, average)
+                                    }
+                                sum += health
                             }
-                            sum += health
+                            sum / cities.size
                         }
-                        sum / cities.size
-                    }
-                    else -> MIN_HEALTH_VALUE
-                }
-            }
-            .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
-    }
 
-    override fun observeDatacenterServerCount(dataCenterId: Int): Flow<Int> {
-        return serverRepository.serversState
-            .map { state ->
-                when (state) {
-                    is ServerMapState.Success -> {
-                        val servers = state.data[dataCenterId] ?: emptyList()
-                        servers.size
-                    }
-                    else -> 0
-                }
-            }
-            .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
-    }
-
-    override fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean> {
-        return serverRepository.serversState
-            .map { state ->
-                if (cities.isEmpty()) return@map false
-
-                when (state) {
-                    is ServerMapState.Success -> {
-                        // A region is premium if ALL its cities require Pro
-                        cities.all { datacenter ->
-                            val serverCount = state.data[datacenter.id]?.size ?: 0
-                            DatacenterStatusHelper.requiresPro(datacenter, serverCount, isPro.value)
+                        else -> {
+                            MIN_HEALTH_VALUE
                         }
                     }
-                    else -> false
-                }
-            }
-            .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
-    }
+                }.distinctUntilChanged()
+                .flowOn(Dispatchers.IO)
+        }
 
-    override fun refresh(serverListType: ServerListType) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _refreshState.emit(true)
-            when (serverListType) {
-                ServerListType.All -> latencyRepository.updateAllServerLatencies()
-                ServerListType.Fav -> latencyRepository.updateFavouriteCityLatencies()
-                ServerListType.Static -> latencyRepository.updateStaticIpLatency()
-                ServerListType.Config -> latencyRepository.updateConfigLatencies()
+        override fun observeDatacenterServerCount(dataCenterId: Int): Flow<Int> =
+            serverRepository.serversState
+                .map { state ->
+                    when (state) {
+                        is ServerMapState.Success -> {
+                            val servers = state.data[dataCenterId] ?: emptyList()
+                            servers.size
+                        }
+
+                        else -> {
+                            0
+                        }
+                    }
+                }.distinctUntilChanged()
+                .flowOn(Dispatchers.IO)
+
+        override fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean> {
+            return serverRepository.serversState
+                .map { state ->
+                    if (cities.isEmpty()) return@map false
+
+                    when (state) {
+                        is ServerMapState.Success -> {
+                            // A region is premium if ALL its cities require Pro
+                            cities.all { datacenter ->
+                                val serverCount = state.data[datacenter.id]?.size ?: 0
+                                DatacenterStatusHelper.requiresPro(datacenter, serverCount, isPro.value)
+                            }
+                        }
+
+                        else -> {
+                            false
+                        }
+                    }
+                }.distinctUntilChanged()
+                .flowOn(Dispatchers.IO)
+        }
+
+        override fun refresh(serverListType: ServerListType) {
+            viewModelScope.launch(Dispatchers.IO) {
+                _refreshState.emit(true)
+                when (serverListType) {
+                    ServerListType.All -> latencyRepository.updateAllServerLatencies()
+                    ServerListType.Fav -> latencyRepository.updateFavouriteCityLatencies()
+                    ServerListType.Static -> latencyRepository.updateStaticIpLatency()
+                    ServerListType.Config -> latencyRepository.updateConfigLatencies()
+                }
+                latencyRepository.latencyEvent.first()
+                delay(100)
+                _refreshState.emit(false)
             }
-            latencyRepository.latencyEvent.first()
-            delay(100)
-            _refreshState.emit(false)
         }
     }
-}

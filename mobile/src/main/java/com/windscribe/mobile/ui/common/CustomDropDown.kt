@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,56 +47,59 @@ fun CustomDropDown(
     shape: RoundedCornerShape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
     @StringRes description: Int? = null,
     textAlign: TextAlign = TextAlign.Center,
-    onSelect: (DropDownStringItem) -> Unit
+    onSelect: (DropDownStringItem) -> Unit,
 ) {
     val expanded = remember { mutableStateOf(false) }
     var selected by remember(selectedItemKey, items) {
         mutableStateOf(items.find { it.key == selectedItemKey })
     }
     Column(
-        modifier = Modifier
-            .background(
-                MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = shape
-            )
-            .padding(14.dp)
-            .fillMaxWidth()
+        modifier =
+            Modifier
+                .background(
+                    MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = shape,
+                ).padding(14.dp)
+                .fillMaxWidth(),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier =
+                Modifier
+                    .fillMaxWidth(),
         ) {
             Text(
                 text = stringResource(title),
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.primaryTextColor
+                color = MaterialTheme.colorScheme.primaryTextColor,
             )
             Spacer(modifier = Modifier.weight(1f))
 
             Box(
-                modifier = Modifier
-                    .clickable { expanded.value = !expanded.value }
+                modifier =
+                    Modifier
+                        .testTag("dropdown_selector")
+                        .clickable { expanded.value = !expanded.value },
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = selected?.label ?: "",
                         style = font16,
-                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         painter = painterResource(id = com.windscribe.mobile.R.drawable.ic_cm_icon),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primaryTextColor
+                        tint = MaterialTheme.colorScheme.primaryTextColor,
                     )
                 }
 
                 DropdownMenu(
                     expanded = expanded.value,
                     onDismissRequest = { expanded.value = false },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryTextColor)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryTextColor),
                 ) {
                     items.forEach {
                         DropdownMenuItem(
@@ -110,9 +114,9 @@ fun CustomDropDown(
                                     color = MaterialTheme.colorScheme.backgroundColor,
                                     style = font16,
                                     textAlign = textAlign,
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier.fillMaxWidth(),
                                 )
-                            }
+                            },
                         )
                     }
                 }

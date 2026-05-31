@@ -1,0 +1,20 @@
+appId: com.windscribe.vpn
+---
+# Disables split tunneling after the split tunnel test.
+
+- launchApp:
+    clearState: false
+
+- tapOn:
+    id: "main_menu_button"
+- tapOn:
+    id: "menu_item_connection"
+- tapOn:
+    id: "connection_item_split_tunnel"
+- tapOn:
+    id: "toggle_on"
+- assertVisible:
+    id: "toggle_off"
+- back
+- back
+- back

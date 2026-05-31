@@ -10,8 +10,11 @@ import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.services.FirebaseManager
 import org.slf4j.LoggerFactory
 
-class FireBaseManagerImpl(private val context: Windscribe): FirebaseManager {
+class FireBaseManagerImpl(
+    private val context: Windscribe,
+) : FirebaseManager {
     private val logger = LoggerFactory.getLogger("fcm")
+
     override fun getFirebaseToken(callback: (String?) -> Unit) {
         var token: String? = null
         if (BuildConfig.API_KEY.isEmpty()) {
@@ -29,20 +32,25 @@ class FireBaseManagerImpl(private val context: Windscribe): FirebaseManager {
     }
 
     override fun initialise() {
-        FirebaseApp.initializeApp(context, FirebaseOptions.Builder()
+        FirebaseApp.initializeApp(
+            context,
+            FirebaseOptions
+                .Builder()
                 .setGcmSenderId(BuildConfig.GCM_SENDER_ID)
                 .setApplicationId(BuildConfig.APP_ID)
                 .setProjectId(BuildConfig.PROJECT_ID)
                 .setApiKey(BuildConfig.API_KEY)
-                .build())
+                .build(),
+        )
     }
 
     override val isPlayStoreInstalled: Boolean
-        get() = try {
-            Windscribe.appContext.packageManager
+        get() =
+            try {
+                Windscribe.appContext.packageManager
                     .getPackageInfo(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
-            true
-        } catch (e: PackageManager.NameNotFoundException) {
-            false
-        }
+                true
+            } catch (e: PackageManager.NameNotFoundException) {
+                false
+            }
 }

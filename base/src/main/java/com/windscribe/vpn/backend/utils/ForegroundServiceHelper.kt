@@ -29,7 +29,6 @@ import com.windscribe.vpn.constants.NotificationConstants
  * any DI or heavy work. The notification will be replaced by the proper one after DI.
  */
 object ForegroundServiceHelper {
-
     /**
      * Ensures the notification channel exists. Safe to call multiple times.
      * Must be called from Application.onCreate() so the channel is ready before
@@ -39,14 +38,15 @@ object ForegroundServiceHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = context.getSystemService(NotificationManager::class.java)
             if (manager.getNotificationChannel(NotificationConstants.NOTIFICATION_CHANNEL_ID) == null) {
-                val channel = NotificationChannel(
-                    NotificationConstants.NOTIFICATION_CHANNEL_ID,
-                    "WindScribe",
-                    NotificationManager.IMPORTANCE_LOW
-                ).apply {
-                    description = "VPN connection state and background service notification."
-                    enableLights(true)
-                }
+                val channel =
+                    NotificationChannel(
+                        NotificationConstants.NOTIFICATION_CHANNEL_ID,
+                        "WindScribe",
+                        NotificationManager.IMPORTANCE_LOW,
+                    ).apply {
+                        description = "VPN connection state and background service notification."
+                        enableLights(true)
+                    }
                 manager.createNotificationChannel(channel)
             }
         }
@@ -56,15 +56,15 @@ object ForegroundServiceHelper {
      * Builds a minimal notification that requires no DI-injected dependencies.
      * Uses only the application context and static resources.
      */
-    fun buildMinimalNotification(context: Context): Notification {
-        return NotificationCompat.Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
+    fun buildMinimalNotification(context: Context): Notification =
+        NotificationCompat
+            .Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.mipmap.connecting)
             .setContentTitle(context.getString(R.string.app_name))
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
-    }
 }
 
 /**
@@ -78,7 +78,7 @@ object ForegroundServiceHelper {
  */
 fun Service.startForegroundImmediately(
     notificationId: Int,
-    serviceType: Int = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+    serviceType: Int = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
 ) {
     ForegroundServiceHelper.ensureNotificationChannel(applicationContext)
     val notification = ForegroundServiceHelper.buildMinimalNotification(applicationContext)
