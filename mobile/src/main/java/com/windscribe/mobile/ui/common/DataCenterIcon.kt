@@ -26,8 +26,9 @@ fun DataCenterIcon(
     showLocationLoad: Boolean = false,
     serverCount: Int,
     isPro: Boolean,
+    hasAlcAccess: Boolean = false,
 ) {
-    val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro)
+    val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro, hasAlcAccess)
 
     when (status) {
         DatacenterStatus.UnderMaintenance -> {

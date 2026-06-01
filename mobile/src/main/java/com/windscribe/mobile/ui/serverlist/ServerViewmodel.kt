@@ -133,7 +133,12 @@ abstract class ServerViewModel : ViewModel() {
 
     abstract fun observeAverageRegionHealth(cities: List<Datacenter>): Flow<Int>
 
-    abstract fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean>
+    abstract fun observeRegionPremiumStatus(
+        cities: List<Datacenter>,
+        countryCode: String?,
+    ): Flow<Boolean>
+
+    abstract fun hasAlcAccessForCountry(countryCode: String?): Boolean
 }
 
 @HiltViewModel
@@ -196,6 +201,8 @@ class ServerViewModelImpl
         private val _isPro = MutableStateFlow(false)
         override val isPro: StateFlow<Boolean> = _isPro
 
+        private val _alcCountryCodes = MutableStateFlow<Set<String>>(emptySet())
+
         init {
             fetchAllLists()
             observeSelectionPreference()
@@ -206,9 +213,13 @@ class ServerViewModelImpl
             viewModelScope.launch(Dispatchers.IO) {
                 userRepository.user.filterNotNull().collectLatest { user ->
                     _isPro.value = user.isPro
+                    _alcCountryCodes.value = user.alcCountryCodes
                 }
             }
         }
+
+        override fun hasAlcAccessForCountry(countryCode: String?): Boolean =
+            countryCode != null && _alcCountryCodes.value.contains(countryCode)
 
         private fun fetchAllLists() {
             fetchServerList()
@@ -673,17 +684,21 @@ class ServerViewModelImpl
                 }.distinctUntilChanged()
                 .flowOn(Dispatchers.IO)
 
-        override fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean> {
+        override fun observeRegionPremiumStatus(
+            cities: List<Datacenter>,
+            countryCode: String?,
+        ): Flow<Boolean> {
             return serverRepository.serversState
                 .map { state ->
                     if (cities.isEmpty()) return@map false
 
                     when (state) {
                         is ServerMapState.Success -> {
+                            val alcAccess = hasAlcAccessForCountry(countryCode)
                             // A region is premium if ALL its cities require Pro
                             cities.all { datacenter ->
                                 val serverCount = state.data[datacenter.id]?.size ?: 0
-                                DatacenterStatusHelper.requiresPro(datacenter, serverCount, isPro.value)
+                                DatacenterStatusHelper.requiresPro(datacenter, serverCount, isPro.value, alcAccess)
                             }
                         }
 
