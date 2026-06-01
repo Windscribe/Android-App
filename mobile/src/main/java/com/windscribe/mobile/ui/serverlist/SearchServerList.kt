@@ -139,7 +139,11 @@ private fun LocationItem(
 ) {
     val userState by homeViewmodel.userState.collectAsState()
     val locationHealth by viewModel.observeAverageRegionHealth(item.datacenters).collectAsState(initial = MIN_HEALTH_VALUE)
-    val isLocationPremiumOnly by viewModel.observeRegionPremiumStatus(item.datacenters).collectAsState(initial = false)
+    val isLocationPremiumOnly by viewModel
+        .observeRegionPremiumStatus(
+            item.datacenters,
+            item.region.countryCode,
+        ).collectAsState(initial = false)
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     Column(
         verticalArrangement = Arrangement.Center,
@@ -203,7 +207,7 @@ private fun LocationItem(
         AnimatedVisibility(visible = expanded) {
             Column {
                 item.datacenters.forEach {
-                    DataCenterItem(it, viewModel, connectionViewModel, homeViewmodel)
+                    DataCenterItem(it, item.region.countryCode, viewModel, connectionViewModel, homeViewmodel)
                 }
             }
         }
@@ -213,6 +217,7 @@ private fun LocationItem(
 @Composable
 private fun DataCenterItem(
     item: Datacenter,
+    countryCode: String?,
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel,
@@ -234,7 +239,8 @@ private fun DataCenterItem(
     )
     val serverCount by viewModel.observeDatacenterServerCount(item.id).collectAsState(initial = 0)
     val isPro by viewModel.isPro.collectAsState()
-    val isAvailable = DatacenterStatusHelper.getStatus(item, serverCount, isPro) == DatacenterStatus.Available
+    val hasAlcAccess = viewModel.hasAlcAccessForCountry(countryCode)
+    val isAvailable = DatacenterStatusHelper.getStatus(item, serverCount, isPro, hasAlcAccess) == DatacenterStatus.Available
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier =
@@ -250,7 +256,7 @@ private fun DataCenterItem(
                 }.padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        DataCenterIcon(item, health, showLocationLoad, serverCount, isPro)
+        DataCenterIcon(item, health, showLocationLoad, serverCount, isPro, hasAlcAccess)
         Spacer(modifier = Modifier.width(8.dp))
         DataCenterName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
         if (item.p2p != 1) {

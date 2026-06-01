@@ -712,8 +712,10 @@ class ConnectionViewmodelImpl
                 try {
                     // Check datacenter status
                     val serverCount = localdb.getServersByDatacenter(city.id).size
-                    val isPro = userRepository.user.value?.isPro ?: false
-                    val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro)
+                    val user = userRepository.user.value
+                    val isPro = user?.isPro ?: false
+                    val hasAlcAccess = user?.hasAlcAccess(datacenterAndLocation.location?.countryCode) ?: false
+                    val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro, hasAlcAccess)
                     when (status) {
                         DatacenterStatus.UnderMaintenance -> {
                             _goto.emit(HomeGoto.LocationMaintenance)
@@ -736,7 +738,6 @@ class ConnectionViewmodelImpl
                     }
 
                     // Check account status
-                    val user = userRepository.user.value
                     if (user?.accountStatus == User.AccountStatus.Expired) {
                         logger.info("Error: account status is expired and can not connect to this datacenter")
                         val resetDate = user.nextResetDate() ?: ""

@@ -34,6 +34,17 @@ class User(
             }
             return null
         }
+
+    val alcCountryCodes: Set<String>
+        get() =
+            sessionResponse.alcList
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                ?.toSet()
+                ?: emptySet()
+
+    fun hasAlcAccess(countryCode: String?): Boolean = countryCode != null && alcCountryCodes.contains(countryCode)
+
     val isOurIp: Boolean
         get() = sessionResponse.ourIp != null && sessionResponse.ourIp == 0
     val locationRevision: String
