@@ -16,6 +16,7 @@ import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.google.gson.Gson
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.BillingPlanResponse
@@ -756,7 +757,11 @@ class UpgradePresenterImpl
         private fun upgradeUserAccount() {
             logger.info("Updating server locations,credentials, server config and port map...")
             upgradeView.showProgressBar("#Upgrading to pro...")
-            activityScope.launch(Dispatchers.IO) {
+            // Run the post-purchase sync on the application scope so it completes even if the upgrade
+            // activity is destroyed mid-flow (otherwise the activity scope is cancelled and the sync
+            // dies with a phantom "Failed to get session"). UI/navigation is then done back on the
+            // activity scope, which is skipped automatically if the activity is already gone.
+            Windscribe.applicationScope.launch(Dispatchers.IO) {
                 try {
                     // Post promo payment confirmation if needed
                     if (notificationAction != null) {
@@ -771,7 +776,7 @@ class UpgradePresenterImpl
                     // Update user status
                     updateUserStatus()
 
-                    withContext(Dispatchers.Main) {
+                    activityScope.launch(Dispatchers.Main) {
                         setPurchaseFlowState(PurchaseState.FINISHED)
                         upgradeView.hideProgressBar()
                         logger.info("User status before going to Home: ${preferencesHelper.userStatus}")
@@ -783,7 +788,7 @@ class UpgradePresenterImpl
                         }
                     }
                 } catch (e: Throwable) {
-                    withContext(Dispatchers.Main) {
+                    activityScope.launch(Dispatchers.Main) {
                         logger.debug(
                             "Could not modify the server list data..." +
                                 instance.convertThrowableToString(e),

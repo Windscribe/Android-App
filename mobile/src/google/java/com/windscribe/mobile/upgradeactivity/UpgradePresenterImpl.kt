@@ -17,6 +17,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.google.gson.Gson
 import com.windscribe.mobile.R
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.BillingPlanResponse
@@ -612,7 +613,11 @@ class UpgradePresenterImpl
         private fun upgradeUserAccount() {
             presenterLog.info("Updating server locations,credentials, server config and port map...")
             upgradeView?.showProgressBar("#Upgrading to pro...")
-            activityScope.launch(Dispatchers.IO) {
+            // Run the post-purchase sync on the application scope so it completes even if the upgrade
+            // activity is destroyed mid-flow (otherwise the activity scope is cancelled and the sync
+            // dies with a phantom "Failed to get session"). UI/navigation is then done back on the
+            // activity scope, which is skipped automatically if the activity is already gone.
+            Windscribe.applicationScope.launch(Dispatchers.IO) {
                 try {
                     if (mPushNotificationAction != null) {
                         postPromoPaymentConfirmation()
@@ -623,7 +628,7 @@ class UpgradePresenterImpl
                     serverListRepository.update()
                     updateUserStatus()
 
-                    withContext(Dispatchers.Main) {
+                    activityScope.launch(Dispatchers.Main) {
                         setPurchaseFlowState(PurchaseState.FINISHED)
                         upgradeView?.hideProgressBar()
                         presenterLog.info("User status before going to Home: ${preferencesHelper.userStatus}")
@@ -631,7 +636,7 @@ class UpgradePresenterImpl
                         upgradeView?.goToSuccessfulUpgrade(ghostMode)
                     }
                 } catch (e: Throwable) {
-                    withContext(Dispatchers.Main) {
+                    activityScope.launch(Dispatchers.Main) {
                         presenterLog.debug(
                             "Could not modify the server list data..." +
                                 instance.convertThrowableToString(e),
