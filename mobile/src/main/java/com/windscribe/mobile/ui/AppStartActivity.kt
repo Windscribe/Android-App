@@ -50,7 +50,14 @@ class AppStartActivity : AppCompatActivity() {
         }
         val splashScreen = installSplashScreen()
         splashScreen.setOnExitAnimationListener { splashScreenView ->
-            splashScreenView.remove()
+            if (isFinishing || isDestroyed) {
+                return@setOnExitAnimationListener
+            }
+            try {
+                splashScreenView.remove()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         val navigationBarStyle =
             if (isDark) {
