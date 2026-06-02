@@ -14,6 +14,7 @@ import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.ServerListRepository
+import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.ServerListData
@@ -35,6 +36,7 @@ class DetailsPresenterImp
         private val resourceHelper: ResourceHelper,
         private val latencyRepository: LatencyRepository,
         private val serverListRepository: ServerListRepository,
+        private val userRepository: UserRepository,
     ) : DetailPresenter,
         DetailListener {
         private val logger = LoggerFactory.getLogger("basic")
@@ -85,6 +87,15 @@ class DetailsPresenterImp
                             emptyList()
                         }
 
+                    // Resolve the region's country code and the user's ALC access list
+                    val countryCode =
+                        try {
+                            localDbInterface.getLocationAsync(regionId).location?.countryCode
+                        } catch (e: Exception) {
+                            null
+                        }
+                    val alcCountryCodes = userRepository.user.value?.alcCountryCodes ?: emptySet()
+
                     // Load server counts from repository state
                     val serverState = serverListRepository.serversState.value
                     val serverCountMap =
@@ -116,6 +127,7 @@ class DetailsPresenterImp
                                     this@DetailsPresenterImp,
                                 )
                             detailViewAdapter?.setPremiumUser(preferencesHelper.userStatus == UserStatusConstants.USER_STATUS_PREMIUM)
+                            detailViewAdapter?.setAlcAccess(countryCode, alcCountryCodes)
                             detailViewAdapter?.let { detailView.setDetailAdapter(it) }
                             setFavouriteStates()
                             detailView.setState(LoadState.Loaded, 0, 0)

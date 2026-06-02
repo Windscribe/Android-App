@@ -591,8 +591,10 @@ class WindscribePresenterImpl
                 withContext(Dispatchers.IO) {
                     localDbInterface.getServersByDatacenter(datacenterAndLocation.datacenter.id).size
                 }
-            val isPro = userRepository.user.value?.isPro ?: false
-            val status = DatacenterStatusHelper.getStatus(datacenterAndLocation.datacenter, serverCount, isPro)
+            val user = userRepository.user.value
+            val isPro = user?.isPro ?: false
+            val hasAlcAccess = user?.hasAlcAccess(datacenterAndLocation.location?.countryCode) ?: false
+            val status = DatacenterStatusHelper.getStatus(datacenterAndLocation.datacenter, serverCount, isPro, hasAlcAccess)
 
             when (status) {
                 DatacenterStatus.UnderMaintenance -> {
