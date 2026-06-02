@@ -127,8 +127,8 @@ class UserRepositoryTest {
             every { sip } returns mockk { every { count } returns sipCount }
             if (amneziaWgConfigId != null) {
                 every { serverInventory } returns
-                    mockk {
-                        every { this@mockk.amneziaWgConfigId } returns amneziaWgConfigId
+                    mockk inventory@{
+                        every { this@inventory.amneziaWgConfigId } returns amneziaWgConfigId
                     }
             } else {
                 every { serverInventory } returns null
