@@ -37,15 +37,17 @@ object DatacenterStatusHelper {
         isPro: Boolean,
         hasAlcAccess: Boolean = false,
     ): DatacenterStatus {
-        val hasServers = serverCount > 0
+        val hasAtLeastOneServer = serverCount > 0
+        val isEnabled = datacenter.status == 1
         val hasAccess = isPro || hasAlcAccess
+        val isPremiumLocation = datacenter.pro == 1
 
         return when {
-            hasServers -> DatacenterStatus.Available
-            // Users with access (Pro or ALC) never see the Pro star; no servers means maintenance.
-            hasAccess -> DatacenterStatus.UnderMaintenance
-            // Free user on a pro-only location: prompt upgrade.
-            datacenter.pro == 1 -> DatacenterStatus.Pro
+            // Enabled only when the location is active (status == 1) and has at least one server in inventory.
+            isEnabled && hasAtLeastOneServer -> DatacenterStatus.Available
+            // User without access (no Pro/ALC) on a premium location: prompt upgrade.
+            !hasAccess && isPremiumLocation -> DatacenterStatus.Pro
+            // Everything else disabled: down/empty location, or access user with no servers.
             else -> DatacenterStatus.UnderMaintenance
         }
     }
