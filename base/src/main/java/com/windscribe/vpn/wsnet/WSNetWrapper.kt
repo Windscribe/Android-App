@@ -30,20 +30,10 @@ class WSNetWrapper {
     private var wsNetInstance: WSNet? = null
 
     /**
-     * Cached, strongly-held references to the native sub-API peers.
+     * Strongly-held references to the native sub-API peers, captured once at init.
      *
-     * Each sub-API is a singleton on the native (scapix) side, and the native side keeps only a
-     * JNI *weak* global reference to its Java peer. Calling wsNet.serverAPI()/bridgeAPI() returns
-     * that peer, but if nothing on the Java side holds a strong reference the GC can collect it;
-     * the next native->Java handoff then decodes a stale weak global and ART aborts the process
-     * (SetLongField on the collected "ptr" field).
-     *
-     * Up to 4.1.0 the @Singleton Dagger providers (providesWsNetServerApi / providesBridgeApi)
-     * called wrapper.getServerAPI()/getBridgeAPI() once and held the result for the app lifetime,
-     * so the peer was never collected. The Hilt refactor switched callers to
-     * awaitServerAPI()/awaitBridgeAPI(), which re-fetched on every call and retained nothing,
-     * reintroducing the GC race. Caching the peer here restores that guarantee: fetch once, then
-     * always hand back the same strongly-referenced instance.
+     * The native side keeps only a weak ref to each peer, so if nothing here holds it the GC can
+     * collect it and the next native handoff crashes (SetLongField on a collected object).
      */
     @Volatile
     private var serverAPIInstance: WSNetServerAPI? = null
@@ -100,7 +90,10 @@ class WSNetWrapper {
                 ignoreTestDomains,
                 amneziaWgVersion,
             )
-            wsNetInstance = WSNet.instance()
+            val wsNet = WSNet.instance()
+            wsNetInstance = wsNet
+            // Capture all sub-API peers before marking ready, so accessors never re-fetch them. See captureSubApis().
+            captureSubApis(wsNet)
             initialized.set(true)
             updateReadyState()
             logger.debug("WSNet initialized successfully")
@@ -108,6 +101,24 @@ class WSNetWrapper {
         } catch (e: Exception) {
             logger.error("Failed to initialize WSNet: ${e.message}", e)
             false
+        }
+    }
+
+    /**
+     * Fetch each sub-API peer once and hold it strongly for the process lifetime.
+     *
+     * The native side keeps only a weak ref to each peer, so a peer created then GC'd before we hold
+     * it crashes the next native handoff (SetLongField on a collected object). Capturing here, on the
+     * init thread before _isReady flips, removes that window. Accessors only return these instances.
+     */
+    private fun captureSubApis(wsNet: WSNet) {
+        try {
+            serverAPIInstance = wsNet.serverAPI()
+            bridgeAPIInstance = wsNet.bridgeAPI()
+            emergencyConnectInstance = wsNet.emergencyConnect()
+            advancedParametersInstance = wsNet.advancedParameters()
+        } catch (e: Exception) {
+            logger.error("Failed to capture WSNet sub-API peers: ${e.message}", e)
         }
     }
 
@@ -152,22 +163,17 @@ class WSNetWrapper {
             logger.debug("awaitBridgeAPI: waiting for WSNet init")
         }
         isReady.first { it }
-        val wsNet = wsNetInstance ?: throw IllegalStateException("WSNet not initialized")
-        return bridgeAPIInstance ?: wsNet.bridgeAPI().also { bridgeAPIInstance = it }
+        // Return the peer captured at init; never re-fetch from native (avoids the stale weak-ref crash).
+        return bridgeAPIInstance ?: throw IllegalStateException("WSNet ready but bridgeAPI not captured")
     }
 
     /**
      * Safely get the bridge API, returns null if WSNet is not ready.
      */
     fun safeBridgeAPI(): WSNetBridgeAPI? {
-        val wsNet = wsNetInstance ?: return null
         if (!isInitialized()) return null
-        return try {
-            bridgeAPIInstance ?: wsNet.bridgeAPI().also { bridgeAPIInstance = it }
-        } catch (e: Exception) {
-            logger.error("Failed to get bridgeAPI: ${e.message}")
-            null
-        }
+        // Return the peer captured at init; never re-fetch from native (avoids the stale weak-ref crash).
+        return bridgeAPIInstance
     }
 
     /**
@@ -179,40 +185,26 @@ class WSNetWrapper {
             logger.debug("awaitServerAPI: waiting for WSNet init")
         }
         isReady.first { it }
-        val wsNet = wsNetInstance ?: throw IllegalStateException("WSNet not initialized")
-        return serverAPIInstance ?: wsNet.serverAPI().also { serverAPIInstance = it }
+        // Return the peer captured at init; never re-fetch from native (avoids the stale weak-ref crash).
+        return serverAPIInstance ?: throw IllegalStateException("WSNet ready but serverAPI not captured")
     }
 
     /**
      * Safely get the emergency connect API, returns null if WSNet is not ready.
      */
     fun safeEmergencyConnect(): WSNetEmergencyConnect? {
-        val wsNet = wsNetInstance ?: return null
         if (!isInitialized()) return null
-        return try {
-            emergencyConnectInstance ?: wsNet
-                .emergencyConnect()
-                .also { emergencyConnectInstance = it }
-        } catch (e: Exception) {
-            logger.error("Failed to get emergencyConnect: ${e.message}")
-            null
-        }
+        // Return the peer captured at init; never re-fetch from native (avoids the stale weak-ref crash).
+        return emergencyConnectInstance
     }
 
     /**
      * Safely get the advanced parameters, returns null if WSNet is not ready.
      */
     fun safeAdvancedParameters(): WSNetAdvancedParameters? {
-        val wsNet = wsNetInstance ?: return null
         if (!isInitialized()) return null
-        return try {
-            advancedParametersInstance ?: wsNet
-                .advancedParameters()
-                ?.also { advancedParametersInstance = it }
-        } catch (e: Exception) {
-            logger.error("Failed to get advancedParameters: ${e.message}")
-            null
-        }
+        // Return the peer captured at init; never re-fetch from native (avoids the stale weak-ref crash).
+        return advancedParametersInstance
     }
 
     /**
