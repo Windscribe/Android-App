@@ -27,6 +27,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.wireguard.WgLogger
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.backend.wireguard.WireguardContextWrapper
+import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
@@ -430,6 +431,14 @@ open class BaseApplicationModule {
         apiManager: IApiCallManager,
         preferencesHelper: PreferencesHelper,
     ): WgConfigRepository = WgConfigRepository(apiManager, preferencesHelper)
+
+    @Provides
+    @Singleton
+    fun providePurchaseManager(
+        scope: CoroutineScope,
+        apiManager: IApiCallManager,
+        userRepository: UserRepository,
+    ): PurchaseManager = PurchaseManager(scope, apiManager, userRepository)
 
     @Provides
     @Singleton

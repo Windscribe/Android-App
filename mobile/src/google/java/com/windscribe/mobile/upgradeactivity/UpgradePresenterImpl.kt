@@ -16,35 +16,27 @@ import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.google.gson.Gson
-import com.windscribe.mobile.R
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.BillingPlanResponse
 import com.windscribe.vpn.api.response.BillingPlanResponse.BillingPlans
-import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.api.response.WebSession
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.billing.AmazonProducts
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.GoogleProducts
+import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.billing.PurchaseState
+import com.windscribe.vpn.billing.ReceiptParams
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.BillingConstants.PLAY_STORE_UPDATE
 import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM_NULL
-import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
-import com.windscribe.vpn.exceptions.GenericApiException
-import com.windscribe.vpn.exceptions.InvalidSessionException
-import com.windscribe.vpn.exceptions.UnknownException
 import com.windscribe.vpn.repository.CallResult
-import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.repository.ServerListRepository
-import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.services.ReceiptValidator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,10 +50,8 @@ class UpgradePresenterImpl
     constructor(
         private val preferencesHelper: PreferencesHelper,
         private val apiCallManager: IApiCallManager,
-        private val userRepository: UserRepository,
+        private val purchaseManager: PurchaseManager,
         private val receiptValidator: ReceiptValidator,
-        private val connectionDataRepository: ConnectionDataRepository,
-        private val serverListRepository: ServerListRepository,
     ) : UpgradePresenter {
         private var upgradeView: UpgradeView? = null
         private lateinit var activityScope: CoroutineScope
@@ -80,34 +70,6 @@ class UpgradePresenterImpl
         private var overriddenPlans: BillingPlanResponse.OverriddenPlans? = null
         private var paymentToken: String? = null
         private val presenterLog = LoggerFactory.getLogger("billing")
-
-        private suspend fun getUserSessionData(): UserSessionResponse {
-            val result =
-                result<UserSessionResponse> {
-                    apiCallManager.getSessionGeneric(null)
-                }
-            when (result) {
-                is CallResult.Error -> {
-                    when (result.code) {
-                        NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA -> {
-                            throw UnknownException("Unknown exception")
-                        }
-
-                        NetworkErrorCodes.ERROR_RESPONSE_SESSION_INVALID -> {
-                            throw InvalidSessionException("Session request Success: Invalid session.")
-                        }
-
-                        else -> {
-                            throw GenericApiException(result.errorMessage)
-                        }
-                    }
-                }
-
-                is CallResult.Success -> {
-                    return result.data
-                }
-            }
-        }
 
         override fun onDestroy() {
             presenterLog.info("Stopping billing connection...")
@@ -258,45 +220,48 @@ class UpgradePresenterImpl
             preferencesHelper.purchasedItem = purchase.originalJson
             presenterLog.info("Verifying payment for purchased item: " + purchase.originalJson)
 
-            activityScope.launch(Dispatchers.IO) {
-                try {
-                    val result =
-                        result<GenericSuccess> {
-                            apiCallManager.verifyPurchaseReceipt(
-                                purchase.purchaseToken,
-                                purchase.packageName,
-                                purchase.products[0],
-                                "",
-                                "",
-                            )
-                        }
-                    withContext(Dispatchers.Main) {
-                        when (result) {
-                            is CallResult.Error -> {
-                                showBillingError(
-                                    result.code,
-                                    result.errorMessage,
-                                )
-                            }
+            val receipt =
+                ReceiptParams(
+                    purchaseToken = purchase.purchaseToken,
+                    gpPackageName = purchase.packageName,
+                    gpProductId = purchase.products[0],
+                )
+            completePurchase(receipt) {
+                // Google-specific success cleanup.
+                preferencesHelper.purchasedItem = null
+                mPurchase = null
+            }
+        }
 
-                            is CallResult.Success -> {
-                                presenterLog.info("Payment verification successful. ")
-                                preferencesHelper.purchasedItem = null
-                                presenterLog.info("Setting item purchased to null & upgrading user account")
-                                mPurchase = null
-                                upgradeUserAccount()
+        /**
+         * Drives the durable verify -> promo -> account-refresh pipeline (PurchaseManager runs it on
+         * the application scope, so it survives this activity). We only collect here to update the UI;
+         * [onVerified] runs store-specific fulfillment once the pipeline succeeds.
+         */
+        private fun completePurchase(
+            receipt: ReceiptParams,
+            onVerified: () -> Unit,
+        ) {
+            activityScope.launch {
+                purchaseManager
+                    .completePurchase(receipt, promoPcpId = mPushNotificationAction?.pcpID)
+                    .collect { state ->
+                        when (state) {
+                            is UserDataState.Loading -> {}
+                            is UserDataState.Success -> {
+                                presenterLog.info("Payment verification + account upgrade successful.")
+                                onVerified()
                                 setPurchaseFlowState(PurchaseState.FINISHED)
+                                upgradeView?.hideProgressBar()
+                                // Navigates and finishes the activity, so do this last.
+                                upgradeView?.goToSuccessfulUpgrade(preferencesHelper.userIsInGhostMode())
+                            }
+                            is UserDataState.Error -> {
+                                presenterLog.debug("Purchase completion failed: ${state.error}")
+                                upgradeView?.showBillingError("Payment verification failed!")
                             }
                         }
                     }
-                } catch (e: Throwable) {
-                    withContext(Dispatchers.Main) {
-                        presenterLog.debug(
-                            "Payment verification failed. " + instance.convertThrowableToString(e),
-                        )
-                        upgradeView?.showBillingError("Payment verification failed!")
-                    }
-                }
             }
         }
 
@@ -552,149 +517,26 @@ class UpgradePresenterImpl
             }
         }
 
-        private suspend fun postPromoPaymentConfirmation() {
-            try {
-                val result =
-                    result<GenericSuccess> {
-                        apiCallManager.postPromoPaymentConfirmation(mPushNotificationAction?.pcpID ?: "")
-                    }
-                when (result) {
-                    is CallResult.Error -> {
-                        presenterLog.debug(
-                            String.format(
-                                "Error posting promo payment confirmation : %s",
-                                result.errorMessage,
-                            ),
-                        )
-                        return
-                    }
-
-                    is CallResult.Success -> {
-                        presenterLog.debug("Successfully posted promo payment confirmation.")
-                        return
-                    }
-                }
-            } catch (e: Exception) {
-                presenterLog.debug(String.format("Error posting promo payment confirmation : %s", e.message))
-            }
-        }
-
         private fun saveAmazonSubscriptionRecord(amazonPurchase: AmazonPurchase) {
             presenterLog.debug("Saving amazon purchase:{}", amazonPurchase)
             val purchaseJson = Gson().toJson(amazonPurchase)
             preferencesHelper.amazonPurchasedItem = purchaseJson
         }
 
-        private fun showBillingError(
-            errorCode: Int,
-            error: String,
-        ) {
-            presenterLog.info(error)
-            upgradeView?.showBillingError(error)
-            if (errorCode == 4005) {
-                presenterLog.debug("Purchase flow: Token was already verified once. Ignore")
-                preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
-            }
-        }
-
-        private suspend fun updateUserStatus() {
-            try {
-                val userSessionResponse = getUserSessionData()
-                userRepository.reload(userSessionResponse, null)
-                serverListRepository.load()
-            } catch (throwable: Throwable) {
-                presenterLog.debug(
-                    "Error updating user status table. " +
-                        instance.convertThrowableToString(throwable),
-                )
-            }
-        }
-
-        private fun upgradeUserAccount() {
-            presenterLog.info("Updating server locations,credentials, server config and port map...")
-            upgradeView?.showProgressBar("#Upgrading to pro...")
-            // Run the post-purchase sync on the application scope so it completes even if the upgrade
-            // activity is destroyed mid-flow (otherwise the activity scope is cancelled and the sync
-            // dies with a phantom "Failed to get session"). UI/navigation is then done back on the
-            // activity scope, which is skipped automatically if the activity is already gone.
-            Windscribe.applicationScope.launch(Dispatchers.IO) {
-                try {
-                    if (mPushNotificationAction != null) {
-                        postPromoPaymentConfirmation()
-                    }
-
-                    connectionDataRepository.update()
-                    preferencesHelper.migrationRequired = true
-                    serverListRepository.update()
-                    updateUserStatus()
-
-                    activityScope.launch(Dispatchers.Main) {
-                        setPurchaseFlowState(PurchaseState.FINISHED)
-                        upgradeView?.hideProgressBar()
-                        presenterLog.info("User status before going to Home: ${preferencesHelper.userStatus}")
-                        val ghostMode = preferencesHelper.userIsInGhostMode()
-                        upgradeView?.goToSuccessfulUpgrade(ghostMode)
-                    }
-                } catch (e: Throwable) {
-                    activityScope.launch(Dispatchers.Main) {
-                        presenterLog.debug(
-                            "Could not modify the server list data..." +
-                                instance.convertThrowableToString(e),
-                        )
-                        upgradeView?.hideProgressBar()
-                        val ghostMode = preferencesHelper.userIsInGhostMode()
-                        upgradeView?.goToSuccessfulUpgrade(ghostMode)
-                    }
-                }
-            }
-        }
-
         private fun verifyAmazonReceipt(amazonPurchase: AmazonPurchase) {
             presenterLog.debug("Verifying amazon receipt.")
             upgradeView?.showProgressBar("#Verifying purchase...")
-            activityScope.launch(Dispatchers.IO) {
-                try {
-                    val result =
-                        result<GenericSuccess> {
-                            apiCallManager.verifyPurchaseReceipt(
-                                amazonPurchase.receiptId,
-                                "",
-                                "",
-                                BillingConstants.AMAZON_PURCHASE_TYPE,
-                                amazonPurchase.userId,
-                            )
-                        }
-                    withContext(Dispatchers.Main) {
-                        when (result) {
-                            is CallResult.Error -> {
-                                showBillingError(
-                                    result.code,
-                                    result.errorMessage,
-                                )
-                            }
-
-                            is CallResult.Success -> {
-                                presenterLog.info("Payment verification successful.")
-                                preferencesHelper.amazonPurchasedItem = null
-                                presenterLog.info("Setting item purchased to null & upgrading user account")
-                                mPurchase = null
-                                PurchasingService.notifyFulfillment(
-                                    amazonPurchase.receiptId,
-                                    FulfillmentResult.FULFILLED,
-                                )
-                                upgradeUserAccount()
-                                setPurchaseFlowState(PurchaseState.FINISHED)
-                            }
-                        }
-                    }
-                } catch (e: Throwable) {
-                    withContext(Dispatchers.Main) {
-                        presenterLog.debug(
-                            "Payment verification failed. " + instance.convertThrowableToString(e),
-                        )
-                        upgradeView?.showBillingError("Payment verification failed!")
-                    }
-                }
+            val receipt =
+                ReceiptParams(
+                    purchaseToken = amazonPurchase.receiptId,
+                    type = BillingConstants.AMAZON_PURCHASE_TYPE,
+                    amazonUserId = amazonPurchase.userId,
+                )
+            completePurchase(receipt) {
+                // Amazon-specific success cleanup + fulfillment.
+                preferencesHelper.amazonPurchasedItem = null
+                mPurchase = null
+                PurchasingService.notifyFulfillment(amazonPurchase.receiptId, FulfillmentResult.FULFILLED)
             }
         }
 

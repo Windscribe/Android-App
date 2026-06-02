@@ -229,6 +229,38 @@ class UserRepository(
         }
     }
 
+    /**
+     * Refresh the account after a purchase: re-fetch the session, then update static IPs, connection
+     * data and the server list. Emits progress via [onState]. Suspends until done; the caller decides
+     * the scope (PurchaseManager runs this on the application scope so it survives screen teardown).
+     * Throws on session error so the caller can surface it as a single failure state.
+     */
+    suspend fun refreshAccount(
+        firebaseToken: String? = null,
+        onState: suspend (UserDataState) -> Unit = {},
+    ) {
+        onState(UserDataState.Loading("Getting session"))
+        val backup = preferenceHelper.getBackupParameter()
+        val sessionResult =
+            apiManager.getSessionGeneric(firebaseToken, backup = backup).callResult<UserSessionResponse>()
+        val session =
+            when (sessionResult) {
+                is CallResult.Error -> throw Exception(sessionResult.errorMessage)
+                is CallResult.Success -> sessionResult.data
+            }
+        reload(session, {
+            preferenceHelper.migrationRequired = true
+            if (session.sipCount() > 0) {
+                onState(UserDataState.Loading("Getting static IPs"))
+                staticIpRepository.updateFromApi()
+            }
+            onState(UserDataState.Loading("Getting connection data"))
+            connectionDataRepository.update()
+            onState(UserDataState.Loading("Getting server list"))
+            serverListRepository.update()
+        })
+    }
+
     fun prepareDashboard(firebaseToken: String?): Flow<UserDataState> =
         flow {
             preferenceHelper.loginTime = Date()
