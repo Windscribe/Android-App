@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui.upgrade
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -15,13 +16,16 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,11 +33,14 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AppBackground
@@ -46,7 +53,6 @@ import com.windscribe.mobile.ui.helper.hapticClickableRipple
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font14
-import com.windscribe.mobile.ui.theme.font9
 
 /**
  * Callbacks the upgrade UI can raise. Hoisted out of the composables so the stateless
@@ -83,27 +89,21 @@ fun UpgradeContent(
                     .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            TopBar(state, actions)
-            Image(
-                painter = painterResource(R.drawable.upgrade_logo),
-                contentDescription = null,
-                modifier = Modifier.padding(top = 24.dp),
-            )
-            Hero()
-            Spacer(modifier = Modifier.height(16.dp))
+            HeroSection(state, actions)
             FeatureRow(
                 titleRes = com.windscribe.vpn.R.string.unlimited_everything,
                 subtitleRes = com.windscribe.vpn.R.string.use_on_all_devices_with_no_data_limits,
+                topPadding = 24.dp,
             )
-            Spacer(modifier = Modifier.height(10.dp))
             FeatureRow(
                 titleRes = com.windscribe.vpn.R.string.all_vpn_locations,
                 subtitleRes = com.windscribe.vpn.R.string.servers_in_cities_more_than_any_other_vpn,
+                topPadding = 10.dp,
             )
-            Spacer(modifier = Modifier.height(10.dp))
             FeatureRow(
                 titleRes = com.windscribe.vpn.R.string.increased_speed_and_security,
                 subtitleRes = com.windscribe.vpn.R.string.blocks_malicious_websites_trackers,
+                topPadding = 10.dp,
             )
             PlansRow(state, actions)
             PrimaryButton(
@@ -114,9 +114,8 @@ fun UpgradeContent(
             )
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.subscriptions_info),
-                style = font9,
+                style = font12.copy(fontSize = 10.sp, textAlign = TextAlign.Start),
                 color = AppColors.white.copy(alpha = 0.5f),
-                textAlign = TextAlign.Center,
                 modifier =
                     Modifier
                         .fillMaxWidth()
@@ -132,66 +131,95 @@ fun UpgradeContent(
     }
 }
 
+/**
+ * Top section: a single tall box so the [StarsView] starfield fills the whole upper region —
+ * behind the close row, the logo and the hero plane — matching the original constraint where the
+ * stars span from the top of the screen to the bottom of the hero image.
+ */
 @Composable
-private fun TopBar(
+private fun HeroSection(
     state: UpgradeState,
     actions: UpgradeActions,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(top = 48.dp, start = 8.dp, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ic_close_no_background),
-            contentDescription = null,
-            modifier =
-                Modifier
-                    .hapticClickableRipple { actions.onClose() }
-                    .padding(8.dp),
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        if (state.showRestore) {
-            Text(
-                text = stringResource(com.windscribe.vpn.R.string.restore),
-                style = font14,
-                color = AppColors.white.copy(alpha = 0.8f),
-                modifier =
-                    Modifier
-                        .hapticClickable { actions.onRestore() }
-                        .padding(8.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun Hero() {
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .padding(top = 16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
+    // No fixed height: the box wraps its content (close row + logo + hero) so the StarsView
+    // starfield (matchParentSize) covers exactly that region and the feature list follows
+    // immediately — a fixed height left a dead gap between the hero and "Unlimited Everything".
+    Box(modifier = Modifier.fillMaxWidth()) {
         AndroidView(
             factory = { context -> StarsView(context) },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.matchParentSize(),
         )
-        Image(
-            painter = painterResource(R.drawable.upgrade_hero_grid),
-            contentDescription = null,
+        Column(
             modifier = Modifier.fillMaxWidth(),
-        )
-        Image(
-            painter = painterResource(R.drawable.upgrade_hero),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxSize(),
-        )
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 48.dp, start = 8.dp, end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.ic_close_no_background),
+                    contentDescription = null,
+                    modifier =
+                        Modifier
+                            .hapticClickableRipple { actions.onClose() }
+                            .padding(8.dp),
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (state.showRestore) {
+                    Text(
+                        text = stringResource(com.windscribe.vpn.R.string.restore),
+                        style = font14.copy(fontWeight = FontWeight.SemiBold),
+                        color = AppColors.white.copy(alpha = 0.8f),
+                        modifier =
+                            Modifier
+                                .hapticClickable { actions.onRestore() }
+                                .padding(8.dp),
+                    )
+                }
+            }
+            Image(
+                painter = painterResource(R.drawable.upgrade_logo),
+                contentDescription = null,
+                modifier = Modifier.padding(top = 24.dp),
+            )
+            // Hero region (matches activity_upgrade.xml): the perspective-floor grid
+            // (upgrade_hero_grid, 458x82dp) sits 105dp down from the hero top — wider than the
+            // screen and low, so it reads as a receding horizon — with the plane drawn on top of
+            // it. The grid must keep its intrinsic 458x82 size (not fillMaxWidth) and must NOT be
+            // covered by the plane, otherwise the floor disappears (the previous bug).
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .padding(top = 16.dp),
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.upgrade_hero_grid),
+                    contentDescription = null,
+                    contentScale = ContentScale.FillBounds,
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 105.dp)
+                            .width(458.dp)
+                            .height(82.dp),
+                )
+                Image(
+                    painter = painterResource(R.drawable.upgrade_hero),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier =
+                        Modifier
+                            .align(Alignment.Center)
+                            .fillMaxSize(),
+                )
+            }
+        }
     }
 }
 
@@ -199,25 +227,26 @@ private fun Hero() {
 private fun FeatureRow(
     titleRes: Int,
     subtitleRes: Int,
+    topPadding: Dp,
 ) {
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = topPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(titleRes),
-                style = font14,
+                style = font14.copy(textAlign = TextAlign.Start),
                 color = AppColors.white,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = stringResource(subtitleRes),
-                style = font12,
-                color = AppColors.white.copy(alpha = 0.8f),
+                style = font12.copy(textAlign = TextAlign.Start),
+                color = AppColors.white.copy(alpha = 0.5f),
             )
         }
         Image(
@@ -281,62 +310,54 @@ private fun PlanTileView(
         AndroidView(
             factory = { context -> PlanUpgradeStarsBackgroundView(context) },
             update = { it.active = selected },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.matchParentSize(),
         )
+        // Original tile (activity_upgrade.xml): title pinned top, price directly below it
+        // (marginTop 2dp), and the billed line pinned to the BOTTOM. So price belongs to the top
+        // group and only the billed line floats down — not price+billed pushed down together.
         Column(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(titleRes),
-                    style = font14,
+                    style = font14.copy(fontWeight = FontWeight.Normal, textAlign = TextAlign.Start),
                     color = AppColors.white,
                 )
                 tile.discountLabel?.let { label ->
                     Text(
                         text = label,
-                        style = font9,
+                        style =
+                            font14.copy(
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                            ),
                         color = AppColors.deepBlue,
                         modifier =
                             Modifier
                                 .padding(start = 8.dp)
                                 .background(
-                                    color = AppColors.neonGreen,
+                                    color = AppColors.white,
                                     shape = RoundedCornerShape(4.dp),
                                 ).padding(horizontal = 4.dp, vertical = 2.dp),
                     )
                 }
-                Spacer(modifier = Modifier.weight(1f))
-                if (showRadio) {
-                    Box(
-                        modifier =
-                            Modifier
-                                .size(20.dp)
-                                .background(
-                                    color =
-                                        if (selected) {
-                                            AppColors.neonGreen
-                                        } else {
-                                            AppColors.white.copy(alpha = 0.2f)
-                                        },
-                                    shape = RoundedCornerShape(10.dp),
-                                ),
-                    )
-                }
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = tile.price,
-                style = font14,
+                style =
+                    font14.copy(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Start,
+                    ),
                 color = AppColors.white,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text =
                     buildAnnotatedString {
@@ -348,22 +369,53 @@ private fun PlanTileView(
                         }
                         append(tile.billedLabel.text)
                     },
-                style = font9,
-                color = AppColors.white.copy(alpha = 0.8f),
+                style =
+                    font14.copy(
+                        fontWeight = FontWeight.Normal,
+                        textAlign = TextAlign.Start,
+                    ),
+                color = AppColors.white,
                 maxLines = 2,
             )
         }
+        if (showRadio) {
+            Box(modifier = Modifier.align(Alignment.TopEnd).padding(top = 16.dp, end = 16.dp)) {
+                if (selected) {
+                    Image(
+                        painter = painterResource(R.drawable.checked_radio_circle),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                } else {
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(20.dp)
+                                .border(
+                                    width = 2.dp,
+                                    color = AppColors.white.copy(alpha = 0.5f),
+                                    shape = CircleShape,
+                                ),
+                    )
+                }
+            }
+        }
         tile.promoLabel?.let { promo ->
             Text(
-                text = promo,
-                style = font9,
-                color = AppColors.deepBlue,
+                text = promo.uppercase(),
+                style =
+                    font14.copy(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                color = AppColors.black,
                 modifier =
                     Modifier
                         .align(Alignment.TopEnd)
+                        .padding(top = 8.dp, end = 8.dp)
                         .background(
-                            color = AppColors.neonGreen,
-                            shape = RoundedCornerShape(bottomStart = 8.dp, topEnd = 12.dp),
+                            color = Color(0xFFCADFF2),
+                            shape = RoundedCornerShape(4.dp),
                         ).padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }
@@ -409,8 +461,7 @@ private fun TermsLine(actions: UpgradeActions) {
         }
     Text(
         text = annotated,
-        style = font9,
-        textAlign = TextAlign.Center,
+        style = font12.copy(fontSize = 10.sp, textAlign = TextAlign.Start),
         modifier =
             Modifier
                 .fillMaxWidth()
@@ -481,11 +532,11 @@ private fun UpgradeContentPreview() {
                             sku = "yearly_sku",
                             title = "Yearly",
                             price = "USD 69.00",
-                            billedLabel = PlanBilledLabel(text = "$5.75/month, Billed Annually"),
-                            discountLabel = "33%",
+                            billedLabel = PlanBilledLabel(text = "$ 8.00/month, Billed Annually"),
+                            discountLabel = "-33%",
                         ),
                     isPromo = false,
-                    monthlySelected = false,
+                    monthlySelected = true,
                     showRestore = true,
                 ),
             actions = UpgradeActions(),
