@@ -4,6 +4,9 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -59,6 +62,8 @@ import com.windscribe.mobile.ui.preferences.network_options.NetworkOptionsScreen
 import com.windscribe.mobile.ui.preferences.robert.RobertScreen
 import com.windscribe.mobile.ui.preferences.split_tunnel.SplitTunnelScreen
 import com.windscribe.mobile.ui.preferences.ticket.TicketScreen
+import com.windscribe.mobile.ui.upgrade.UpgradeScreen
+import com.windscribe.mobile.ui.upgrade.UpgradeSuccessScreen
 
 val LocalNavController =
     staticCompositionLocalOf<NavController> {
@@ -85,6 +90,15 @@ fun NavigationStack(startDestination: Screen) {
     val navController = rememberNavController()
     val activity = LocalActivity.current as AppStartActivity
     activity.navController = navController
+    // Honour deep links the host activity stashed from an intent (e.g. a promo push -> Upgrade).
+    // Collected here because the intent is handled in onCreate before this NavHost composes.
+    val pendingDeepLink by activity.viewmodel.pendingDeepLinkRoute.collectAsState()
+    LaunchedEffect(pendingDeepLink) {
+        pendingDeepLink?.let { route ->
+            navController.navigate(route)
+            activity.viewmodel.clearPendingDeepLink()
+        }
+    }
     CompositionLocalProvider(LocalNavController provides navController) {
         NavHost(navController = navController, startDestination = startDestination.route) {
             addNavigationScreens()
@@ -231,6 +245,14 @@ private fun NavGraphBuilder.addNavigationScreens() {
         val latestVersion = savedStateHandle?.get<String?>("latest_version")
         val force = savedStateHandle?.get<Boolean>("force_upgrade") ?: false
         UpdateAvailableScreen(latestVersion, force)
+    }
+    composable(route = Screen.Upgrade.route) {
+        UpgradeScreen()
+    }
+    composable(route = Screen.UpgradeSuccess.route) {
+        val savedStateHandle = navArgs()
+        val isGhostAccount = savedStateHandle?.get<Boolean>("isGhostAccount") ?: false
+        UpgradeSuccessScreen(isGhostAccount)
     }
     composable(route = Screen.EditCustomConfig.route) {
         val viewModel: EditCustomConfigViewmodel = hiltViewModel<EditCustomConfigViewmodelImpl>()

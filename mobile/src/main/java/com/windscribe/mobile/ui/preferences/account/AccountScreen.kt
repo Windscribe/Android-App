@@ -61,7 +61,6 @@ import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
-import com.windscribe.mobile.ui.common.safeStartActivity
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -78,9 +77,8 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.R
-import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -668,7 +666,7 @@ private fun RowScope.ValueItem(value: String) {
 
 @Composable
 private fun PlanInfo(accountState: AccountState) {
-    val activity = LocalActivity.current as? AppStartActivity
+    val navController = LocalNavController.current
     if (accountState !is AccountState.Account) {
         return
     }
@@ -810,7 +808,7 @@ private fun PlanInfo(accountState: AccountState) {
                 textColor = AppColors.cyberBlue,
                 backgroundColor = AppColors.cyberBlue.copy(alpha = 0.05f),
             ) {
-                activity?.let { it.startActivity(UpgradeActivity.getStartIntent(it)) }
+                navController.navigate(Screen.Upgrade.route)
             }
         }
     }
@@ -936,6 +934,7 @@ private fun LazyLogin(onLazyLoginClicked: () -> Unit) {
 @Composable
 private fun HandleGoto(gotoFlow: Flow<AccountGoTo>) {
     val activity = LocalActivity.current as? AppStartActivity
+    val navController = LocalNavController.current
     val goto by gotoFlow.collectAsState(initial = AccountGoTo.None)
     LaunchedEffect(goto) {
         when (goto) {
@@ -953,11 +952,11 @@ private fun HandleGoto(gotoFlow: Flow<AccountGoTo>) {
             }
 
             is AccountGoTo.Upgrade -> {
-                activity?.let {
-                    val startIntent = UpgradeActivity.getStartIntent(it)
-                    startIntent.putExtra(PROMO_EXTRA, (goto as AccountGoTo.Upgrade).promoAction)
-                    it.safeStartActivity(startIntent)
-                }
+                // The upgrade view model reads the promo from the app lifecycle observer, so stash it
+                // there before routing (replaces the old PROMO_EXTRA intent extra).
+                appContext.appLifeCycleObserver.pushNotificationAction =
+                    (goto as AccountGoTo.Upgrade).promoAction
+                navController.navigate(Screen.Upgrade.route)
             }
 
             else -> {}

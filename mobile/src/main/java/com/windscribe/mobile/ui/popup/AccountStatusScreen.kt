@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.popup
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -10,7 +9,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.PopupContainer
 import com.windscribe.mobile.ui.common.PopupDescription
 import com.windscribe.mobile.ui.common.PopupHeroImage
@@ -20,12 +18,11 @@ import com.windscribe.mobile.ui.common.PopupTitle
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
+import com.windscribe.mobile.ui.nav.Screen
 
 @Composable
 fun AccountStatusScreen(data: AccountStatusDialogData) {
     val navController = LocalNavController.current
-    val activity = LocalActivity.current as? AppStartActivity
     PopupContainer {
         Spacer(Modifier.weight(1f))
         PopupHeroImage(data.icon)
@@ -36,8 +33,8 @@ fun AccountStatusScreen(data: AccountStatusDialogData) {
         Spacer(Modifier.height(32.dp))
         if (data.showPrimaryButton) {
             PopupPrimaryActionButton(modifier = Modifier, data.primaryText) {
-                activity?.let { it.startActivity(UpgradeActivity.getStartIntent(it)) }
                 navController.popBackStack()
+                navController.navigate(Screen.Upgrade.route)
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
