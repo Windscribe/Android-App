@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -95,23 +94,21 @@ fun UpgradeSuccessScreen(isGhostAccount: Boolean) {
             )
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.welcome_to_windscribe_pro),
-                style = font22,
+                style = font22.copy(textAlign = TextAlign.Center),
                 color = AppColors.white,
-                textAlign = TextAlign.Center,
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                        .padding(top = 16.dp, start = 24.dp, end = 24.dp),
             )
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.thanks_for_upgrading),
-                style = font16,
+                style = font16.copy(textAlign = TextAlign.Center),
                 color = AppColors.white.copy(alpha = 0.8f),
-                textAlign = TextAlign.Center,
                 modifier =
                     Modifier
-                        .widthIn(max = 295.dp)
-                        .padding(top = 16.dp),
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, start = 24.dp, end = 24.dp),
             )
             FeatureTitleRow(com.windscribe.vpn.R.string.set_up_on_all_your_devices)
             FeatureTitleRow(com.windscribe.vpn.R.string.connect_to_any_location)
@@ -124,12 +121,12 @@ fun UpgradeSuccessScreen(isGhostAccount: Boolean) {
             )
             Text(
                 text = stringResource(com.windscribe.vpn.R.string.share),
-                style = font12,
+                style = font12.copy(textAlign = TextAlign.Start),
                 color = AppColors.white,
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp, start = 24.dp, end = 16.dp),
+                        .padding(top = 8.dp, start = 16.dp, end = 16.dp),
             )
             SocialLinkRow(
                 iconRes = R.drawable.discord,
@@ -179,7 +176,7 @@ private fun FeatureTitleRow(titleRes: Int) {
     ) {
         Text(
             text = stringResource(titleRes),
-            style = font14,
+            style = font14.copy(textAlign = TextAlign.Start),
             color = AppColors.white,
             modifier = Modifier.weight(1f),
         )
@@ -196,6 +193,10 @@ private fun SocialLinkRow(
     titleRes: Int,
     onClick: () -> Unit,
 ) {
+    // Mirrors the original icon_link_item_view.xml geometry: row wrapper marginStart=8dp /
+    // marginEnd=16dp, container paddingStart=8dp, the left icon carries its own 8dp internal
+    // padding, the title sits 8dp after the icon, and the forward arrow has an additional 16dp
+    // end margin (so it is inset from the row's right edge).
     Row(
         modifier =
             Modifier
@@ -209,20 +210,25 @@ private fun SocialLinkRow(
         Image(
             painter = painterResource(iconRes),
             contentDescription = null,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
         )
         Text(
             text = stringResource(titleRes),
-            style = font14,
+            style = font14.copy(textAlign = TextAlign.Start),
             color = AppColors.white,
             modifier =
                 Modifier
                     .weight(1f)
-                    .padding(start = 16.dp),
+                    .padding(start = 8.dp),
         )
         Image(
             painter = painterResource(R.drawable.ic_forward_arrow_white),
             contentDescription = null,
+            contentScale = ContentScale.FillHeight,
+            modifier =
+                Modifier
+                    .height(16.dp)
+                    .padding(end = 16.dp),
         )
     }
 }
