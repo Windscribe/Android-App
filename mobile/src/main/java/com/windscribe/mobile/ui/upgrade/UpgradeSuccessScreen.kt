@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AppBackground
-import com.windscribe.mobile.ui.common.PrimaryButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.hapticClickable
@@ -148,7 +147,7 @@ fun UpgradeSuccessScreen(isGhostAccount: Boolean) {
                 titleRes = com.windscribe.vpn.R.string.follow_us_on_x,
                 onClick = { openUrl("https://x.com/windscribecom") },
             )
-            PrimaryButton(
+            GradientGlareButton(
                 modifier = Modifier.padding(top = 24.dp, start = 16.dp, end = 16.dp),
                 text = stringResource(com.windscribe.vpn.R.string.start_using_pro),
                 onClick = {

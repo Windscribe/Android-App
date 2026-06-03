@@ -45,7 +45,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
-import com.windscribe.mobile.ui.common.PrimaryButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.hapticClickable
@@ -106,7 +105,7 @@ fun UpgradeContent(
                 topPadding = 10.dp,
             )
             PlansRow(state, actions)
-            PrimaryButton(
+            GradientGlareButton(
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
                 text = stringResource(com.windscribe.vpn.R.string.subscribe),
                 enabled = state.selectedSku != null,
