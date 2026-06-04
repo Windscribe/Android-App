@@ -6,7 +6,6 @@ import androidx.work.Configuration
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.preferences.icons.AppIconManager
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
@@ -62,8 +61,15 @@ class PhoneApplication :
         get() = getActiveLauncherIntent()
     override val splashIntent: Intent
         get() = getActiveLauncherIntent()
+
+    // Upgrade is now a Compose destination inside AppStartActivity rather than a standalone
+    // activity. Launch the host and deep-link to the Upgrade route via an extra; any promo is read
+    // from appLifeCycleObserver.pushNotificationAction (set by the caller before launching).
     override val upgradeIntent: Intent
-        get() = Intent(appContext, UpgradeActivity::class.java)
+        get() =
+            Intent(appContext, AppStartActivity::class.java).apply {
+                putExtra("type", "upgrade")
+            }
     override val welcomeIntent: Intent
         get() = getActiveLauncherIntent()
     override val isTV: Boolean

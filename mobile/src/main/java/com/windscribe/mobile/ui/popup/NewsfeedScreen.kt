@@ -44,6 +44,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.ActionButtonLighter
 import com.windscribe.mobile.ui.common.AppBackground
@@ -52,12 +53,12 @@ import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
+import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 
 /**
  * Callbacks the newsfeed UI can raise. Hoisted out of the composables so the stateless
@@ -81,7 +82,7 @@ fun NewsfeedScreen(viewModel: NewsfeedViewmodel = hiltViewModel()) {
     val navController = LocalNavController.current
     viewModel.arguments =
         navController.previousBackStackEntry?.savedStateHandle?.get<NewsfeedArguments>("arguments")
-    LaunchedEffect(goToRoute) { handleActions(context, goToRoute, viewModel) }
+    LaunchedEffect(goToRoute) { handleActions(context, goToRoute, viewModel, navController) }
 
     NewsfeedContent(
         state = state,
@@ -137,6 +138,7 @@ private fun handleActions(
     context: Context,
     goToRoute: GoToRoute,
     viewModel: NewsfeedViewmodel,
+    navController: NavController,
 ) {
     when (goToRoute) {
         is GoToRoute.Browser -> {
@@ -145,9 +147,9 @@ private fun handleActions(
 
         is GoToRoute.Upgrade -> {
             openUpgradeScreen(
-                context,
                 goToRoute.pushNotificationAction,
                 viewModel,
+                navController,
             )
         }
 
@@ -172,15 +174,14 @@ private fun openBrowser(
 }
 
 private fun openUpgradeScreen(
-    context: Context,
     promo: PushNotificationAction,
     viewModel: NewsfeedViewmodel,
+    navController: NavController,
 ) {
-    val launchIntent =
-        UpgradeActivity.getStartIntent(context).apply {
-            putExtra(PROMO_EXTRA, promo)
-        }
-    context.startActivity(launchIntent)
+    // The upgrade view model reads the promo from the app lifecycle observer, so stash it there
+    // before routing (replaces the old PROMO_EXTRA intent extra).
+    appContext.appLifeCycleObserver.pushNotificationAction = promo
+    navController.navigate(Screen.Upgrade.route)
     viewModel.clearGoToRoute()
 }
 

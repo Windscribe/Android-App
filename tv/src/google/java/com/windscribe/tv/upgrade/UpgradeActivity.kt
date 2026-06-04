@@ -86,11 +86,23 @@ class UpgradeActivity :
         }
         setBillingType()
         if (billingType == BillingType.Amazon) {
-            lifecycle.addObserver(amazonBillingManager)
             initAmazonBillingLifecycleListeners()
+            registerBillingObserverWhenStarted(amazonBillingManager)
         } else {
-            lifecycle.addObserver(googleBillingManager)
             initBillingLifecycleListeners()
+            registerBillingObserverWhenStarted(googleBillingManager)
+        }
+    }
+
+    private fun registerBillingObserverWhenStarted(observer: androidx.lifecycle.DefaultLifecycleObserver) {
+        var added = false
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (!added) {
+                    added = true
+                    lifecycle.addObserver(observer)
+                }
+            }
         }
     }
 

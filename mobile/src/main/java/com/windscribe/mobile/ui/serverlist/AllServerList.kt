@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.serverlist
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -55,7 +54,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.DataCenterFavouriteIcon
 import com.windscribe.mobile.ui.common.DataCenterIcon
 import com.windscribe.mobile.ui.common.DataCenterLatencyIcon
@@ -67,6 +65,8 @@ import com.windscribe.mobile.ui.helper.HandleScrollHaptic
 import com.windscribe.mobile.ui.helper.latencyArcStart
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.home.UserState
+import com.windscribe.mobile.ui.nav.LocalNavController
+import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
 import com.windscribe.mobile.ui.theme.font12
@@ -75,7 +75,6 @@ import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.ui.theme.isDark
 import com.windscribe.mobile.ui.theme.serverItemTextColor
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterStatus
@@ -158,7 +157,7 @@ fun AllServerList(
 
 @Composable
 fun UpgradeBar(viewModel: HomeViewmodel) {
-    val activity = LocalActivity.current as AppStartActivity
+    val navController = LocalNavController.current
     val userState by viewModel.userState.collectAsState()
     val hapticFeedbackEnabled by viewModel.hapticFeedbackEnabled.collectAsState()
     val haptic = LocalHapticFeedback.current
@@ -184,7 +183,7 @@ fun UpgradeBar(viewModel: HomeViewmodel) {
                         .background(color = AppColors.midnightNavy, shape = RoundedCornerShape(8.dp))
                         .clickable {
                             if (hapticFeedbackEnabled) haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                            activity.startActivity(UpgradeActivity.getStartIntent(activity))
+                            navController.navigate(Screen.Upgrade.route)
                         }.border(
                             width = 1.dp,
                             color = AppColors.white.copy(alpha = 0.1f),

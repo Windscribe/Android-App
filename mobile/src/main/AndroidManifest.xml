@@ -20,9 +20,6 @@
             android:excludeFromRecents="true"
             android:theme="@style/blinkt.dialog" />
         <activity
-            android:name=".upgradeactivity.UpgradeActivity"/>
-        <activity android:name=".upgradeactivity.UpgradeSuccessActivity" />
-        <activity
             android:name=".ui.AppStartActivity"
             android:exported="true"
             android:theme="@style/AppTheme.WindLauncher" >

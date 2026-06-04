@@ -26,7 +26,6 @@ import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.popup.EncryptionWarningDialog
 import com.windscribe.mobile.ui.theme.AndroidTheme
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DARK_THEME
@@ -108,8 +107,11 @@ class AppStartActivity : AppCompatActivity() {
         val extras = intent?.extras ?: return
         val type = extras.getString("type") ?: return
 
-        // Security check: Verify the intent is from a trusted source
-        if (!isIntentSecure(intent)) {
+        // "upgrade" only opens the (non-sensitive) purchase screen and carries no payload. It
+        // replaces the old standalone upgradeIntent, which was ungated, so it is intentionally
+        // exempt from the external-intent security check. All other types must be from a trusted
+        // source.
+        if (type != "upgrade" && !isIntentSecure(intent)) {
             // Log the security violation attempt (optional)
             android.util.Log.w("AppStartActivity", "Rejected untrusted intent with type: $type")
             return
@@ -127,8 +129,14 @@ class AppStartActivity : AppCompatActivity() {
                             promoCode,
                             type,
                         )
-                    startActivity(UpgradeActivity.getStartIntent(this))
+                    viewmodel.requestDeepLink(Screen.Upgrade.route)
                 }
+            }
+
+            "upgrade" -> {
+                // External entry (e.g. promo push): the promo, if any, is already on the app
+                // lifecycle observer. Deep-link the NavHost to the Upgrade route once it composes.
+                viewmodel.requestDeepLink(Screen.Upgrade.route)
             }
 
             "user_expired" -> {

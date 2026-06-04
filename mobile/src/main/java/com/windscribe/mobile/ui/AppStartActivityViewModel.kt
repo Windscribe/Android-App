@@ -43,6 +43,17 @@ abstract class AppStartActivityViewModel : ViewModel() {
     abstract val hapticFeedback: StateFlow<Boolean>
     abstract val showEncryptionWarning: StateFlow<Boolean>
 
+    /**
+     * A nav route the host activity wants the [com.windscribe.mobile.ui.nav.NavigationStack] to
+     * open once it is composed — used for deep links arriving via intent (e.g. a promo push routes
+     * to the Upgrade screen). The stack navigates then calls [clearPendingDeepLink].
+     */
+    abstract val pendingDeepLinkRoute: StateFlow<String?>
+
+    abstract fun requestDeepLink(route: String)
+
+    abstract fun clearPendingDeepLink()
+
     abstract fun acknowledgeEncryptionWarning()
 
     abstract fun enableDecoyTraffic()
@@ -73,6 +84,17 @@ class AppStartActivityViewModelImpl
 
         private val _showEncryptionWarning = MutableStateFlow(false)
         override val showEncryptionWarning: StateFlow<Boolean> = _showEncryptionWarning
+
+        private val _pendingDeepLinkRoute = MutableStateFlow<String?>(null)
+        override val pendingDeepLinkRoute: StateFlow<String?> = _pendingDeepLinkRoute
+
+        override fun requestDeepLink(route: String) {
+            _pendingDeepLinkRoute.value = route
+        }
+
+        override fun clearPendingDeepLink() {
+            _pendingDeepLinkRoute.value = null
+        }
 
         private val logger = LoggerFactory.getLogger("ui")
 
