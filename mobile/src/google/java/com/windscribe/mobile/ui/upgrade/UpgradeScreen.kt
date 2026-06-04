@@ -48,8 +48,8 @@ fun UpgradeScreen(viewModel: UpgradeViewModel = hiltViewModel()) {
             } else {
                 viewModel.googleBillingManager
             }
-        lifecycleOwner.lifecycle.addObserver(manager)
         viewModel.start(billingType, appContext.appLifeCycleObserver.pushNotificationAction)
+        lifecycleOwner.lifecycle.addObserver(manager)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(manager)
         }
