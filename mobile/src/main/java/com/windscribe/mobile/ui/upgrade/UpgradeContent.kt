@@ -156,7 +156,7 @@ private fun HeroSection(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 48.dp, start = 8.dp, end = 8.dp),
+                        .padding(top = 24.dp, start = 8.dp, end = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
