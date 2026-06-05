@@ -581,7 +581,7 @@ class UpgradeViewModel
 
         private fun setPurchaseFlowState(state: PurchaseState) {
             preferencesHelper.purchaseFlowState = state.name
-            logger.debug("Purchase flow: state changed To: ${preferencesHelper.purchaseFlowState}")
+            logger.debug("Purchase flow: state changed To: ${state.name}")
         }
 
         // region Plan -> UI model mapping ------------------------------------------------------
