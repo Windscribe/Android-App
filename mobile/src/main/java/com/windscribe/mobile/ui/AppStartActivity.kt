@@ -111,7 +111,7 @@ class AppStartActivity : AppCompatActivity() {
         // replaces the old standalone upgradeIntent, which was ungated, so it is intentionally
         // exempt from the external-intent security check. All other types must be from a trusted
         // source.
-        if (type != "upgrade" && !isIntentSecure(intent)) {
+        if (type != "promo" && !isIntentSecure(intent)) {
             // Log the security violation attempt (optional)
             android.util.Log.w("AppStartActivity", "Rejected untrusted intent with type: $type")
             return
