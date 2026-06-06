@@ -51,6 +51,10 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
                     if (pushNotificationAction != null) {
                         val launchIntent = appContext.applicationInterface.upgradeIntent
                         launchIntent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+                        // Add promo data to intent extras so AppStartActivity can handle it
+                        launchIntent.putExtra("type", "promo")
+                        launchIntent.putExtra("pcpid", pushNotificationAction.pcpID)
+                        launchIntent.putExtra("promo_code", pushNotificationAction.promoCode)
                         appContext.appLifeCycleObserver.pushNotificationAction = pushNotificationAction
                         try {
                             startActivity(launchIntent)

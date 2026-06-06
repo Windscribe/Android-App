@@ -101,18 +101,23 @@ class AppStartActivity : AppCompatActivity() {
         handleIntent(intent)
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
     fun Context.isTablet(): Boolean = resources.configuration.screenWidthDp >= 600
 
     private fun handleIntent(intent: Intent?) {
         val extras = intent?.extras ?: return
         val type = extras.getString("type") ?: return
 
-        // "upgrade" only opens the (non-sensitive) purchase screen and carries no payload. It
-        // replaces the old standalone upgradeIntent, which was ungated, so it is intentionally
-        // exempt from the external-intent security check. All other types must be from a trusted
-        // source.
-        if (type != "promo" && !isIntentSecure(intent)) {
-            // Log the security violation attempt (optional)
+        // Valid types from our FCM backend are trusted
+        val validFcmTypes = setOf("promo", "user_expired", "user_downgraded")
+
+        // Only validate security for types that aren't from our FCM backend
+        if (type !in validFcmTypes && !isIntentSecure(intent)) {
             android.util.Log.w("AppStartActivity", "Rejected untrusted intent with type: $type")
             return
         }
@@ -131,12 +136,6 @@ class AppStartActivity : AppCompatActivity() {
                         )
                     viewmodel.requestDeepLink(Screen.Upgrade.route)
                 }
-            }
-
-            "upgrade" -> {
-                // External entry (e.g. promo push): the promo, if any, is already on the app
-                // lifecycle observer. Deep-link the NavHost to the Upgrade route once it composes.
-                viewmodel.requestDeepLink(Screen.Upgrade.route)
             }
 
             "user_expired" -> {
