@@ -104,6 +104,15 @@ class UpgradeViewModel
         private var started = false
 
         /**
+         * Purchase tokens we have already started handling. Google's PurchasesUpdatedListener and the
+         * getRecentPurchases() query can both deliver the same purchase more than once (we have seen
+         * three OK callbacks for one purchase within a few ms). Without this guard each delivery fires
+         * a fresh acknowledgePurchase() on the same token; the duplicates race the first ack, come back
+         * with an error response, and surface a false "billing error" after a successful purchase.
+         */
+        private val handledPurchaseTokens = mutableSetOf<String>()
+
+        /**
          * Called once by the screen after it has resolved the install source (Amazon vs Google) and
          * registered the matching billing manager on the activity lifecycle. Idempotent.
          */
@@ -364,8 +373,17 @@ class UpgradeViewModel
                     billingProcessFinished = true
                 }
                 BillingResponseCode.OK -> {
-                    logger.info("Purchase successful...Need to consume the product...")
                     val purchase = purchases?.firstOrNull() ?: return
+                    // Only act on a fully completed purchase, and only once per token. A duplicate
+                    // delivery (second listener callback or getRecentPurchases re-query) is ignored
+                    // so we never acknowledge the same token twice.
+                    if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
+                    if (purchase.isAcknowledged) return
+                    if (!handledPurchaseTokens.add(purchase.purchaseToken)) {
+                        logger.debug("Ignoring duplicate purchase update for already-handled token.")
+                        return
+                    }
+                    logger.info("Purchase successful...Need to consume the product...")
                     if (selectedProductDetails?.oneTimePurchaseOfferDetails != null) {
                         googleBillingManager.InAppConsume(purchase)
                     } else {
@@ -404,6 +422,18 @@ class UpgradeViewModel
             responseCode: Int,
             purchase: Purchase,
         ) {
+            // A purchase that Google already considers acknowledged/owned is not a real failure: the
+            // entitlement exists, so a redundant ack returning these codes must not show an error.
+            // Persist the receipt and let the durable verifier finish the upgrade instead.
+            if (purchase.isAcknowledged ||
+                responseCode == BillingResponseCode.ITEM_ALREADY_OWNED ||
+                responseCode == BillingResponseCode.ITEM_NOT_OWNED
+            ) {
+                logger.debug("Consume reported a redundant ack (code=$responseCode); verifying purchase instead of erroring.")
+                preferencesHelper.purchasedItem = purchase.originalJson
+                receiptValidator.checkPendingAccountUpgrades()
+                return
+            }
             logger.debug(
                 "Failed to consume the purchased product. Saving purchased product for later update. " +
                     "[Product Token]: ${purchase.packageName}-${purchase.purchaseToken}",
@@ -551,7 +581,7 @@ class UpgradeViewModel
 
         private fun setPurchaseFlowState(state: PurchaseState) {
             preferencesHelper.purchaseFlowState = state.name
-            logger.debug("Purchase flow: state changed To: ${preferencesHelper.purchaseFlowState}")
+            logger.debug("Purchase flow: state changed To: ${state.name}")
         }
 
         // region Plan -> UI model mapping ------------------------------------------------------
