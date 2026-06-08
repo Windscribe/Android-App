@@ -165,8 +165,10 @@ class ProxyDNSManager(
     }
 
     suspend fun stopControlD() {
-        cdLib.stopCd(true, 0)
-        controlDJob?.join()
-        invalidConfig = false
+        if (isRunning.get()) {
+            cdLib.stopCd(true, 0)
+            controlDJob?.join()
+            invalidConfig = false
+        }
     }
 }
