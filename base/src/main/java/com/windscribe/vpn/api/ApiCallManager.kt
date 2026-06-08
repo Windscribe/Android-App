@@ -395,7 +395,7 @@ open class ApiCallManager
                         captchaSolution ?: "",
                         captchaTrailX,
                         captchaTrailY,
-                        ""
+                        "",
                     ) { code, json ->
                         buildResponse(continuation, code, json, UserRegistrationResponse::class.java)
                     }
