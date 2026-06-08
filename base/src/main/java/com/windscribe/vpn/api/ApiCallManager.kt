@@ -395,6 +395,7 @@ open class ApiCallManager
                         captchaSolution ?: "",
                         captchaTrailX,
                         captchaTrailY,
+                        ""
                     ) { code, json ->
                         buildResponse(continuation, code, json, UserRegistrationResponse::class.java)
                     }
@@ -421,7 +422,7 @@ open class ApiCallManager
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
                 val callback =
-                    api.signupUsingToken(token) { code, json ->
+                    api.signupUsingToken(token, "") { code, json ->
                         buildResponse(continuation, code, json, UserRegistrationResponse::class.java)
                     }
                 continuation.invokeOnCancellation { callback.cancel() }
@@ -635,7 +636,7 @@ open class ApiCallManager
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
                 val callback =
-                    api.sso(provider, token) { code, json ->
+                    api.sso(provider, token, "") { code, json ->
                         buildResponse(continuation, code, json, SsoResponse::class.java)
                     }
                 continuation.invokeOnCancellation { callback.cancel() }
