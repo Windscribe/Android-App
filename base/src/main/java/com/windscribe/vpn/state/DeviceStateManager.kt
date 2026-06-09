@@ -237,14 +237,29 @@ class DeviceStateManager
         /**
          * Gets the active network with a defensive fallback for Fire OS / modified Android
          * builds where activeNetwork can throw.
+         *
+         * Additional fallback: If activeNetwork is null, find the first network with
+         * internet capability, as activeNetwork can temporarily be null during network transitions.
          */
         @Suppress("DEPRECATION")
         private fun ConnectivityManager.getActiveNetworkCompat(): Network? =
             try {
-                activeNetwork
+                activeNetwork ?: run {
+                    // Fallback: activeNetwork can be null during network transitions
+                    // Find first network with internet capability
+                    allNetworks.firstOrNull { network ->
+                        getNetworkCapabilities(network)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+                    }
+                }
             } catch (e: Exception) {
                 logger.warn("getActiveNetwork() failed, using fallback: ${e.message}")
-                getAllNetworks().firstOrNull()
+                allNetworks.firstOrNull { network ->
+                    try {
+                        getNetworkCapabilities(network)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+                    } catch (_: Exception) {
+                        false
+                    }
+                }
             }
 
         /**
@@ -258,12 +273,11 @@ class DeviceStateManager
                 val caps = connectivityManager?.getNetworkCapabilities(activeNetwork) ?: return false
 
                 val hasInternet = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                val isValidated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
                 val hasWifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
                 val hasCellular = caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
                 val hasEthernet = caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
                 val hasTransport = hasWifi || hasCellular || hasEthernet
-                hasInternet && hasTransport && isValidated
+                hasInternet && hasTransport
             } catch (e: SecurityException) {
                 logger.error("SecurityException when checking connectivity: ${e.message}")
                 false
@@ -410,13 +424,8 @@ class DeviceStateManager
                     intentFilter,
                     Context.RECEIVER_NOT_EXPORTED,
                 )
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.registerReceiver(
-                    screenStateReceiver,
-                    intentFilter,
-                    Context.RECEIVER_NOT_EXPORTED,
-                )
             } else {
+                @Suppress("UnspecifiedRegisterReceiverFlag")
                 context.registerReceiver(screenStateReceiver, intentFilter)
             }
         }
@@ -492,6 +501,7 @@ class DeviceStateManager
                     isOnline.collect { online ->
                         withContext(Dispatchers.Main) {
                             wsNetWrapper.withWSNet { wsNet ->
+                                logger.info("Updated wsnet network status to $online")
                                 wsNet.setConnectivityState(online)
                             }
                         }
