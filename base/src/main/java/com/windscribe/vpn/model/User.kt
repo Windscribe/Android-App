@@ -5,7 +5,6 @@
 package com.windscribe.vpn.model
 
 import com.windscribe.vpn.api.response.UserSessionResponse
-import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.model.User.AccountStatus.Banned
 import com.windscribe.vpn.model.User.AccountStatus.Expired
 import com.windscribe.vpn.model.User.AccountStatus.Okay
@@ -67,12 +66,12 @@ class User(
         get() = sessionResponse.isPremium == 1
     val userStatusInt: Int
         get() = sessionResponse.isPremium ?: 0
-    val dataLeft: Float
+    val dataLeft: Long
         get() {
             if (dataUsed > maxData) {
-                return 0F
+                return 0L
             }
-            return (maxData - dataUsed) / UserStatusConstants.GB_DATA.toFloat()
+            return maxData - dataUsed
         }
 
     enum class AccountStatus {

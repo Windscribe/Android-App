@@ -2,7 +2,6 @@ package com.windscribe.mobile.ui.preferences.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.preferences.account.EmailState.Email
 import com.windscribe.mobile.ui.preferences.account.EmailState.NoEmail
@@ -14,8 +13,8 @@ import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.api.response.VerifyExpressLoginResponse
 import com.windscribe.vpn.api.response.WebSession
 import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
@@ -30,7 +29,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
-import java.util.Locale
 import javax.inject.Inject
 
 sealed interface AccountType {
@@ -208,9 +206,9 @@ class AccountViewModelImpl
                         val dataLeft = maxOf(0, it.maxData - it.dataUsed)
                         val accountType =
                             if (it.alcList != null) {
-                                AccountType.AlcCustom("${it.maxData / UserStatusConstants.GB_DATA.toFloat()} GB")
+                                AccountType.AlcCustom(it.maxData.toLabel())
                             } else {
-                                AccountType.Free("${it.maxData / UserStatusConstants.GB_DATA.toFloat()} GB")
+                                AccountType.Free(it.maxData.toLabel())
                             }
                         _accountState.value =
                             AccountState.Account(
@@ -218,11 +216,7 @@ class AccountViewModelImpl
                                 it.userName,
                                 emailState,
                                 DateType.Reset(it.resetDate ?: ""),
-                                String.format(
-                                    Locale.getDefault(),
-                                    "%.2f GB",
-                                    dataLeft.toDouble() / (1024 * 1024 * 1024),
-                                ),
+                                dataLeft.toLabel(),
                             )
                     }
                 }

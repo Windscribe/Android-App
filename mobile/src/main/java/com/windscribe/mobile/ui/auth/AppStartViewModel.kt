@@ -62,6 +62,7 @@ class AppStartViewModelImpl
         private val googleSignInManager: GoogleSignInManager,
         private val firebaseManager: FirebaseManager,
         private val userRepository: UserRepository,
+        private val playIntegrityManager: com.windscribe.vpn.backend.PlayIntegrityManager,
     ) : AppStartViewModel() {
         private val _isConnected = MutableStateFlow(false)
         override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
@@ -101,7 +102,12 @@ class AppStartViewModelImpl
 
         private fun ssoLogin(token: String) {
             viewModelScope.launch {
-                when (val result = result<SsoResponse> { api.sso("google", token) }) {
+                // Request Play Integrity token for device attestation
+                val integrityToken = playIntegrityManager.requestIntegrityToken()
+                if (integrityToken != null) {
+                    logger.debug("Using Play Integrity token for SSO login")
+                }
+                when (val result = result<SsoResponse> { api.sso("google", token, integrityToken) }) {
                     is CallResult.Error -> {
                         logger.error("Sso login failed with error: ${result.errorMessage}")
                         updateState(SsoLoginState.Error(result.errorMessage))
