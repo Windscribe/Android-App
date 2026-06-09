@@ -120,11 +120,15 @@ interface IApiCallManager {
         captchaSolution: String?,
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray,
+        integrityToken: String? = null,
     ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
 
     suspend fun claimVoucherCode(voucherCode: String): GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>
 
-    suspend fun signUpUsingToken(token: String): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
+    suspend fun signUpUsingToken(
+        token: String,
+        integrityToken: String? = null,
+    ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
 
     suspend fun verifyPurchaseReceipt(
         purchaseToken: String,
@@ -175,6 +179,7 @@ interface IApiCallManager {
     suspend fun sso(
         provider: String,
         token: String,
+        integrityToken: String? = null,
     ): GenericResponseClass<SsoResponse?, ApiErrorResponse?>
 
     suspend fun authTokenSignup(

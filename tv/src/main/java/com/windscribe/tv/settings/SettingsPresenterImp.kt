@@ -36,6 +36,7 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
@@ -559,9 +560,8 @@ class SettingsPresenterImp
                         resourceHelper.getString(com.windscribe.vpn.R.string.unlimited_data),
                     )
                 } else {
-                    val maxTrafficData: Long = user.maxData / UserStatusConstants.GB_DATA
                     settingView.setPlanName(
-                        maxTrafficData.toString() + resourceHelper.getString(com.windscribe.vpn.R.string.gb_per_month),
+                        user.maxData.toLabel() + "/Month",
                     )
                 }
             }

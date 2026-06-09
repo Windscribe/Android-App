@@ -15,6 +15,7 @@ import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.api.response.XPressLoginCodeResponse
 import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.ResourceHelper
@@ -58,6 +59,7 @@ class WelcomePresenterImpl
         private val workManager: WindScribeWorkManager,
         private val resourceHelper: ResourceHelper,
         private val logRepository: LogRepository,
+        private val playIntegrityManager: PlayIntegrityManager,
     ) : WelcomePresenter {
         private lateinit var welcomeView: WelcomeView
         private lateinit var activityScope: CoroutineScope
@@ -363,6 +365,11 @@ class WelcomePresenterImpl
                     withContext(Dispatchers.Main) {
                         welcomeView.updateCurrentProcess("Signing up")
                     }
+                    // Request Play Integrity token for device attestation
+                    val integrityToken = playIntegrityManager.requestIntegrityToken()
+                    if (integrityToken != null) {
+                        logger.debug("Using Play Integrity token for TV signup")
+                    }
                     val result =
                         result<UserRegistrationResponse> {
                             apiCallManager.signUserIn(
@@ -375,6 +382,7 @@ class WelcomePresenterImpl
                                 captcha,
                                 floatArrayOf(),
                                 floatArrayOf(),
+                                integrityToken,
                             )
                         }
                     withContext(Dispatchers.Main) {

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.repository.UserRepository
@@ -22,7 +23,6 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
-import java.util.Locale
 import javax.inject.Inject
 
 sealed class HomeGoto {
@@ -211,11 +211,7 @@ class HomeViewmodelImpl
                         logger.info("Data left: $dataLeft, Angle: $angle Max: ${it.maxData}")
                         _userState.emit(
                             UserState.Free(
-                                String.format(
-                                    Locale.getDefault(),
-                                    "%.2f\nGB",
-                                    dataLeft.toDouble() / (1024 * 1024 * 1024),
-                                ),
+                                dataLeft.toLabel().replace(" ", "\n"),
                                 angle,
                                 it.isGhost,
                                 it.daysRegisteredSince,

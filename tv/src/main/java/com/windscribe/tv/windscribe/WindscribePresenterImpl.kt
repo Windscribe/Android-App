@@ -21,12 +21,12 @@ import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.RateDialogConstants
-import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
@@ -819,7 +819,7 @@ class WindscribePresenterImpl
         private fun setUserStatus(user: User) {
             if (user.maxData != -1L) {
                 user.dataLeft.let {
-                    val dataRemaining = resourceHelper.getDataLeftString(com.windscribe.vpn.R.string.data_left, it)
+                    val dataRemaining = it.toLabel() + " Left"
                     windscribeView.setupLayoutForFreeUser(
                         dataRemaining,
                         getDataRemainingColor(it, user.maxData),
@@ -831,20 +831,17 @@ class WindscribePresenterImpl
         }
 
         private fun getDataRemainingColor(
-            dataRemaining: Float,
+            dataRemaining: Long,
             maxData: Long,
         ): Int =
             if (maxData != -1L) {
+                val dataRemainingPercentage = dataRemaining.toFloat() / maxData.toFloat()
                 when {
-                    dataRemaining < BillingConstants.DATA_LOW_PERCENTAGE * (
-                        maxData /
-                            UserStatusConstants.GB_DATA.toFloat()
-                    ) -> {
+                    dataRemainingPercentage < BillingConstants.DATA_LOW_PERCENTAGE -> {
                         resourceHelper.getColorResource(color.colorRed)
                     }
 
-                    dataRemaining
-                        < BillingConstants.DATA_WARNING_PERCENTAGE * (maxData / UserStatusConstants.GB_DATA.toFloat()) -> {
+                    dataRemainingPercentage < BillingConstants.DATA_WARNING_PERCENTAGE -> {
                         resourceHelper.getColorResource(color.colorYellow)
                     }
 
