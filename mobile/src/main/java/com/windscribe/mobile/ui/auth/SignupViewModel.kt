@@ -20,6 +20,7 @@ import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.exceptions.ApiFailure
+import com.windscribe.vpn.installer.AppInstallerDetector
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.repository.UserRepository
@@ -65,6 +66,7 @@ class SignupViewModel
         private val firebaseManager: FirebaseManager,
         private val userRepository: UserRepository,
         private val playIntegrityManager: PlayIntegrityManager,
+        private val appInstallerDetector: AppInstallerDetector,
     ) : ViewModel() {
         private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
         val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
@@ -494,6 +496,7 @@ class SignupViewModel
                             floatArrayOf(),
                             floatArrayOf(),
                             integrityToken,
+                            appInstallerDetector.getInstallerIdentifier(),
                         )
                     }
 
@@ -541,6 +544,7 @@ class SignupViewModel
                         trailX,
                         trailY,
                         integrityToken,
+                        appInstallerDetector.getInstallerIdentifier(),
                     )
                 }
             when (result) {

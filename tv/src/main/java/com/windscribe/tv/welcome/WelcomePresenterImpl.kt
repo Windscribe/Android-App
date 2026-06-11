@@ -22,6 +22,7 @@ import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.SessionErrorHandler
+import com.windscribe.vpn.installer.AppInstallerDetector
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.LogRepository
@@ -60,6 +61,7 @@ class WelcomePresenterImpl
         private val resourceHelper: ResourceHelper,
         private val logRepository: LogRepository,
         private val playIntegrityManager: PlayIntegrityManager,
+        private val appInstallerDetector: AppInstallerDetector,
     ) : WelcomePresenter {
         private lateinit var welcomeView: WelcomeView
         private lateinit var activityScope: CoroutineScope
@@ -315,6 +317,7 @@ class WelcomePresenterImpl
                             captcha,
                             floatArrayOf(),
                             floatArrayOf(),
+                            appInstallerDetector.getInstallerIdentifier(),
                         )
                     }
                 withContext(Dispatchers.Main) {
@@ -383,6 +386,7 @@ class WelcomePresenterImpl
                                 floatArrayOf(),
                                 floatArrayOf(),
                                 integrityToken,
+                                appInstallerDetector.getInstallerIdentifier(),
                             )
                         }
                     withContext(Dispatchers.Main) {

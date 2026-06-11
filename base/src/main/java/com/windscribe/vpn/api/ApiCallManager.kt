@@ -291,7 +291,9 @@ open class ApiCallManager
             captchaSolution: String?,
             captchaTrailX: FloatArray,
             captchaTrailY: FloatArray,
+            installer: String?,
         ): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?> {
+            // installer parameter accepted but not sent to wsnet yet
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
                 val callback =
@@ -381,7 +383,9 @@ open class ApiCallManager
             captchaTrailX: FloatArray,
             captchaTrailY: FloatArray,
             integrityToken: String?,
+            installer: String?,
         ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?> {
+            // installer parameter accepted but not sent to wsnet yet
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
                 val callback =
@@ -637,7 +641,9 @@ open class ApiCallManager
             provider: String,
             token: String,
             integrityToken: String?,
+            installer: String?,
         ): GenericResponseClass<SsoResponse?, ApiErrorResponse?> {
+            // installer parameter accepted but not sent to wsnet yet
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
                 val callback =
