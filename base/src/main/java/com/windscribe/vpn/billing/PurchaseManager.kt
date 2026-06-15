@@ -33,6 +33,12 @@ data class ReceiptParams(
     val amazonUserId: String = "",
 )
 
+fun String.truncatedBillingToken(): String =
+    when {
+        length <= 8 -> "<redacted>"
+        else -> "${take(4)}...${takeLast(4)}"
+    }
+
 /**
  * Owns the durable post-purchase pipeline: verify receipt -> (optional) promo confirmation ->
  * account refresh. The work runs on the injected application scope, so it completes even if the
@@ -75,7 +81,7 @@ class PurchaseManager(
             try {
                 // Check if already verified (deduplication)
                 if (preferencesHelper.verifiedPurchaseTokens.contains(token)) {
-                    logger.debug("Receipt $token already verified, skipping")
+                    logger.debug("Receipt ${token.truncatedBillingToken()} already verified, skipping")
                     states.emit(UserDataState.Success)
                     return@launch
                 }
@@ -83,7 +89,7 @@ class PurchaseManager(
                 // Check if verification in progress (concurrency control)
                 mutex.withLock {
                     if (inFlightTokens.contains(token)) {
-                        logger.debug("Receipt $token verification already in progress")
+                        logger.debug("Receipt ${token.truncatedBillingToken()} verification already in progress")
                         states.emit(UserDataState.Error(error = "Verification already in progress"))
                         return@launch
                     }
@@ -93,7 +99,7 @@ class PurchaseManager(
                 try {
                     states.emit(UserDataState.Loading("Verifying purchase"))
                     // Step 1: Verify receipt with backend
-                    logger.info("Verifying receipt: $token")
+                    logger.info("Verifying receipt: ${token.truncatedBillingToken()}")
                     val verify =
                         result<GenericSuccess> {
                             apiCallManager.verifyPurchaseReceipt(

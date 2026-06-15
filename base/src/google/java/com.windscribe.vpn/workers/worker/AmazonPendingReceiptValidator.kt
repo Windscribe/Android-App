@@ -10,11 +10,13 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.billing.ReceiptParams
+import com.windscribe.vpn.billing.truncatedBillingToken
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.UserDataState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import org.slf4j.LoggerFactory
 
 @HiltWorker
@@ -46,7 +48,7 @@ class AmazonPendingReceiptValidator
             }
 
         private suspend fun verifyPurchase(amazonPurchase: AmazonPurchase): Boolean {
-            logger.debug("Verifying amazon receipt: ${amazonPurchase.receiptId}")
+            logger.debug("Verifying amazon receipt: ${amazonPurchase.receiptId.truncatedBillingToken()}")
 
             val receipt =
                 ReceiptParams(
@@ -55,23 +57,24 @@ class AmazonPendingReceiptValidator
                     amazonUserId = amazonPurchase.userId,
                 )
 
-            // Use PurchaseManager - single source of truth!
-            var success = false
-            purchaseManager.completePurchase(receipt).collect { state ->
-                when (state) {
-                    is UserDataState.Success -> {
-                        logger.info("Amazon purchase verified successfully")
-                        success = true
+            // Use PurchaseManager - single source of truth. The returned SharedFlow is hot and
+            // never completes, so workers must await one terminal state instead of collecting forever.
+            return when (
+                val state =
+                    purchaseManager.completePurchase(receipt).first {
+                        it is UserDataState.Success || it is UserDataState.Error
                     }
-                    is UserDataState.Error -> {
-                        logger.debug("Amazon verification failed: ${state.error}")
-                        success = false
-                    }
-                    else -> {}
+            ) {
+                is UserDataState.Success -> {
+                    logger.info("Amazon purchase verified successfully")
+                    true
                 }
+                is UserDataState.Error -> {
+                    logger.debug("Amazon verification failed: ${state.error}")
+                    false
+                }
+                else -> false
             }
-
-            return success
         }
 
         private fun getPendingAmazonPurchase(): AmazonPurchase {

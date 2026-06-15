@@ -28,6 +28,7 @@ import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.GoogleProducts
 import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.billing.ReceiptParams
+import com.windscribe.vpn.billing.truncatedBillingToken
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.BillingConstants.PLAY_STORE_UPDATE
@@ -243,13 +244,11 @@ class UpgradePresenterImpl
             responseCode: Int,
             purchase: Purchase,
         ) {
-            logger
-                .debug(
-                    "Failed to consume the purchased product. If product token is [null] then play billing did not return " +
-                        "the purchased item. " +
-                        "User will be asked to contact support. [Product Token]: " + purchase.packageName + "-" +
-                        purchase.purchaseToken,
-                )
+            logger.debug(
+                "Failed to consume the purchased product. " +
+                    "User will be asked to contact support. [Product Token]: " + purchase.packageName + "-" +
+                    purchase.purchaseToken.truncatedBillingToken(),
+            )
             logger.info("Saving purchased product for later update...")
             preferencesHelper.purchasedItem = purchase.originalJson
             onBillingSetupFailed(responseCode)

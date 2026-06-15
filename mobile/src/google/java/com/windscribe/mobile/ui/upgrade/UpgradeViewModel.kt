@@ -35,6 +35,7 @@ import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.billing.ReceiptParams
 import com.windscribe.vpn.billing.WindscribeInAppProduct
+import com.windscribe.vpn.billing.truncatedBillingToken
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.constants.BillingConstants
@@ -433,7 +434,7 @@ class UpgradeViewModel
             }
             logger.debug(
                 "Failed to consume the purchased product. Saving purchased product for later update. " +
-                    "[Product Token]: ${purchase.packageName}-${purchase.purchaseToken}",
+                    "[Product Token]: ${purchase.packageName}-${purchase.purchaseToken.truncatedBillingToken()}",
             )
             preferencesHelper.purchasedItem = purchase.originalJson
             showBillingError(getBillingErrorMessage(responseCode))

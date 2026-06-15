@@ -15,10 +15,12 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.billing.ReceiptParams
+import com.windscribe.vpn.billing.truncatedBillingToken
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.UserDataState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
@@ -58,7 +60,7 @@ class GooglePendingReceiptValidator
             }
 
         private suspend fun verifyPurchase(purchase: Purchase): Boolean {
-            logger.info("Verifying purchase: ${purchase.purchaseToken}")
+            logger.info("Verifying purchase: ${purchase.purchaseToken.truncatedBillingToken()}")
             tryToAcknowledgeProduct(purchase)
             val receipt =
                 ReceiptParams(
@@ -66,22 +68,24 @@ class GooglePendingReceiptValidator
                     gpPackageName = "com.windscribe.vpn",
                     gpProductId = purchase.products[0],
                 )
-            var success = false
-            purchaseManager.completePurchase(receipt).collect { state ->
-                when (state) {
-                    is UserDataState.Success -> {
-                        logger.info("Purchase verified successfully")
-                        success = true
-                    }
-                    is UserDataState.Error -> {
-                        logger.debug("Purchase verification failed: ${state.error}")
-                        success = false
-                    }
-                    else -> {}
-                }
-            }
 
-            return success
+            // PurchaseManager returns a hot SharedFlow; workers need a finite result.
+            return when (
+                val state =
+                    purchaseManager.completePurchase(receipt).first {
+                        it is UserDataState.Success || it is UserDataState.Error
+                    }
+            ) {
+                is UserDataState.Success -> {
+                    logger.info("Purchase verified successfully")
+                    true
+                }
+                is UserDataState.Error -> {
+                    logger.debug("Purchase verification failed: ${state.error}")
+                    false
+                }
+                else -> false
+            }
         }
 
         private suspend fun initBillingClient() =
