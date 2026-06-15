@@ -26,6 +26,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.billing.AmazonProducts
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.GoogleProducts
+import com.windscribe.vpn.billing.PURCHASE_VERIFICATION_IN_PROGRESS
 import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.billing.ReceiptParams
 import com.windscribe.vpn.billing.truncatedBillingToken
@@ -364,6 +365,10 @@ class UpgradePresenterImpl
                                 }
                             }
                             is UserDataState.Error -> {
+                                if (state.error == PURCHASE_VERIFICATION_IN_PROGRESS) {
+                                    logger.debug("Purchase verification already in progress; ignoring duplicate callback.")
+                                    return@collect
+                                }
                                 logger.debug("Purchase completion failed: ${state.error}")
                                 upgradeView.showBillingErrorDialog("Payment verification failed!")
                             }

@@ -39,6 +39,8 @@ fun String.truncatedBillingToken(): String =
         else -> "${take(4)}...${takeLast(4)}"
     }
 
+const val PURCHASE_VERIFICATION_IN_PROGRESS = "Verification already in progress"
+
 /**
  * Owns the durable post-purchase pipeline: verify receipt -> (optional) promo confirmation ->
  * account refresh. The work runs on the injected application scope, so it completes even if the
@@ -90,7 +92,7 @@ class PurchaseManager(
                 mutex.withLock {
                     if (inFlightTokens.contains(token)) {
                         logger.debug("Receipt ${token.truncatedBillingToken()} verification already in progress")
-                        states.emit(UserDataState.Error(error = "Verification already in progress"))
+                        states.emit(UserDataState.Error(error = PURCHASE_VERIFICATION_IN_PROGRESS))
                         return@launch
                     }
                     inFlightTokens.add(token)

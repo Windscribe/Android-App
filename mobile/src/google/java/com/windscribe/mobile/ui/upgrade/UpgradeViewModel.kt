@@ -31,6 +31,7 @@ import com.windscribe.vpn.billing.AmazonProducts
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.GoogleBillingManager
 import com.windscribe.vpn.billing.GoogleProducts
+import com.windscribe.vpn.billing.PURCHASE_VERIFICATION_IN_PROGRESS
 import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.billing.ReceiptParams
@@ -535,6 +536,10 @@ class UpgradeViewModel
                                 emit(UpgradeEvent.Success(preferencesHelper.userIsInGhostMode()))
                             }
                             is UserDataState.Error -> {
+                                if (state.error == PURCHASE_VERIFICATION_IN_PROGRESS) {
+                                    logger.debug("Purchase verification already in progress; ignoring duplicate callback.")
+                                    return@collect
+                                }
                                 logger.debug("Purchase completion failed: ${state.error}")
                                 showBillingError("Payment verification failed!")
                             }
