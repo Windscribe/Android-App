@@ -400,7 +400,7 @@ open class ApiCallManager
                         captchaTrailX,
                         captchaTrailY,
                         integrityToken ?: "",
-                        installer ?: ""
+                        installer ?: "",
                     ) { code, json ->
                         buildResponse(continuation, code, json, UserRegistrationResponse::class.java)
                     }
@@ -437,7 +437,7 @@ open class ApiCallManager
         override suspend fun signUpUsingToken(
             token: String,
             integrityToken: String?,
-            installer: String?
+            installer: String?,
         ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?> {
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->

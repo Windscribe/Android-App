@@ -141,7 +141,7 @@ interface IApiCallManager {
     suspend fun signUpUsingToken(
         token: String,
         integrityToken: String? = null,
-        installer: String? = null
+        installer: String? = null,
     ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
 
     suspend fun verifyPurchaseReceipt(
