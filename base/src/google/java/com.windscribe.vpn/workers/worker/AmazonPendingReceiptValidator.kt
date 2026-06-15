@@ -6,18 +6,17 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.billing.AmazonPurchase
-import com.windscribe.vpn.billing.PurchaseState
-import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.billing.PurchaseManager
+import com.windscribe.vpn.billing.ReceiptParams
+import com.windscribe.vpn.billing.truncatedBillingToken
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.exceptions.WindScribeException
-import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.UserDataState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import org.slf4j.LoggerFactory
 
 @HiltWorker
@@ -26,30 +25,55 @@ class AmazonPendingReceiptValidator
     constructor(
         @Assisted appContext: Context,
         @Assisted params: WorkerParameters,
-        private val apiManager: IApiCallManager,
+        private val purchaseManager: PurchaseManager,
         private val preferencesHelper: PreferencesHelper,
     ) : CoroutineWorker(appContext, params) {
         private val logger = LoggerFactory.getLogger("billing")
 
-        override suspend fun doWork(): Result {
-            val state = preferencesHelper.purchaseFlowState
-            if (state == PurchaseState.FINISHED.name) {
-                return Result.success()
-            }
-            return try {
-                val result = verifyPayment(getPendingAmazonPurchase())
-                return if (result) {
-                    logger.debug("Successfully verified purchase receipt")
-                    preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
-                    Windscribe.appContext.workManager.updateSession()
+        override suspend fun doWork(): Result =
+            try {
+                val amazonPurchase = getPendingAmazonPurchase()
+                val verified = verifyPurchase(amazonPurchase)
+
+                if (verified) {
+                    logger.debug("Amazon purchase verified successfully")
                     Result.success()
                 } else {
-                    logger.debug("Failure to verify receipt")
+                    logger.debug("Amazon purchase verification failed")
                     Result.failure()
                 }
             } catch (e: Exception) {
                 logger.debug(e.message)
                 Result.failure()
+            }
+
+        private suspend fun verifyPurchase(amazonPurchase: AmazonPurchase): Boolean {
+            logger.debug("Verifying amazon receipt: ${amazonPurchase.receiptId.truncatedBillingToken()}")
+
+            val receipt =
+                ReceiptParams(
+                    purchaseToken = amazonPurchase.receiptId,
+                    type = BillingConstants.AMAZON_PURCHASE_TYPE,
+                    amazonUserId = amazonPurchase.userId,
+                )
+
+            // Use PurchaseManager - single source of truth. The returned SharedFlow is hot and
+            // never completes, so workers must await one terminal state instead of collecting forever.
+            return when (
+                val state =
+                    purchaseManager.completePurchase(receipt).first {
+                        it is UserDataState.Success || it is UserDataState.Error
+                    }
+            ) {
+                is UserDataState.Success -> {
+                    logger.info("Amazon purchase verified successfully")
+                    true
+                }
+                is UserDataState.Error -> {
+                    logger.debug("Amazon verification failed: ${state.error}")
+                    false
+                }
+                else -> false
             }
         }
 
@@ -61,32 +85,6 @@ class AmazonPendingReceiptValidator
                 return Gson().fromJson(json, AmazonPurchase::class.java)
             } catch (jsonException: JsonSyntaxException) {
                 throw WindScribeException("Fatal error: Invalid purchase response saved.")
-            }
-        }
-
-        private suspend fun verifyPayment(amazonPurchase: AmazonPurchase): Boolean {
-            logger.debug("Verifying amazon receipt.")
-            return when (
-                val result =
-                    result<GenericSuccess> {
-                        apiManager.verifyPurchaseReceipt(
-                            amazonPurchase.receiptId,
-                            "",
-                            "",
-                            BillingConstants.AMAZON_PURCHASE_TYPE,
-                            amazonPurchase.userId,
-                        )
-                    }
-            ) {
-                is CallResult.Error -> {
-                    logger.debug("Payment verification failed: ${result.errorMessage}")
-                    false
-                }
-
-                is CallResult.Success -> {
-                    logger.info("Payment verification successful.")
-                    true
-                }
             }
         }
     }

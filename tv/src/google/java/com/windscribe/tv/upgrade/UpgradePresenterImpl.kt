@@ -26,9 +26,10 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.billing.AmazonProducts
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.GoogleProducts
+import com.windscribe.vpn.billing.PURCHASE_VERIFICATION_IN_PROGRESS
 import com.windscribe.vpn.billing.PurchaseManager
-import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.billing.ReceiptParams
+import com.windscribe.vpn.billing.truncatedBillingToken
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.BillingConstants.PLAY_STORE_UPDATE
@@ -244,13 +245,11 @@ class UpgradePresenterImpl
             responseCode: Int,
             purchase: Purchase,
         ) {
-            logger
-                .debug(
-                    "Failed to consume the purchased product. If product token is [null] then play billing did not return " +
-                        "the purchased item. " +
-                        "User will be asked to contact support. [Product Token]: " + purchase.packageName + "-" +
-                        purchase.purchaseToken,
-                )
+            logger.debug(
+                "Failed to consume the purchased product. " +
+                    "User will be asked to contact support. [Product Token]: " + purchase.packageName + "-" +
+                    purchase.purchaseToken.truncatedBillingToken(),
+            )
             logger.info("Saving purchased product for later update...")
             preferencesHelper.purchasedItem = purchase.originalJson
             onBillingSetupFailed(responseCode)
@@ -331,8 +330,6 @@ class UpgradePresenterImpl
                     gpProductId = purchase.products[0],
                 )
             completePurchase(receipt) {
-                // Google-specific success cleanup.
-                preferencesHelper.purchasedItem = null
                 mPurchase = null
             }
         }
@@ -351,12 +348,14 @@ class UpgradePresenterImpl
                     .completePurchase(receipt, promoPcpId = notificationAction?.pcpID)
                     .collect { state ->
                         when (state) {
-                            is UserDataState.Loading -> {}
+                            is UserDataState.Loading -> {
+                                // Show loading state from PurchaseManager
+                                upgradeView.showProgressBar(state.status)
+                            }
                             is UserDataState.Success -> {
                                 logger.info("Payment verification + account upgrade successful.")
                                 onVerified()
                                 updateUserStatus()
-                                setPurchaseFlowState(PurchaseState.FINISHED)
                                 upgradeView.hideProgressBar()
                                 // Navigates and finishes the activity, so do this last.
                                 if (preferencesHelper.userIsInGhostMode()) {
@@ -366,6 +365,10 @@ class UpgradePresenterImpl
                                 }
                             }
                             is UserDataState.Error -> {
+                                if (state.error == PURCHASE_VERIFICATION_IN_PROGRESS) {
+                                    logger.debug("Purchase verification already in progress; ignoring duplicate callback.")
+                                    return@collect
+                                }
                                 logger.debug("Purchase completion failed: ${state.error}")
                                 upgradeView.showBillingErrorDialog("Payment verification failed!")
                             }
@@ -421,7 +424,6 @@ class UpgradePresenterImpl
         ) {
             when (responseCode) {
                 BillingResponseCode.USER_CANCELED -> {
-                    setPurchaseFlowState(PurchaseState.FINISHED)
                     logger.info("User cancelled the purchase...")
                     upgradeView.showToast(
                         appContext.resources.getString(com.windscribe.vpn.R.string.purchase_cancelled),
@@ -441,7 +443,6 @@ class UpgradePresenterImpl
                 }
 
                 else -> {
-                    setPurchaseFlowState(PurchaseState.FINISHED)
                     logger.debug(
                         "Showing dialog for error. Purchase failed with response code: " + responseCode +
                             " Error Message: " + getBillingErrorMessage(responseCode),
@@ -512,13 +513,6 @@ class UpgradePresenterImpl
                     logger.debug("Error while making get session call:" + e.message)
                 }
             }
-        }
-
-        override fun setPurchaseFlowState(state: PurchaseState) {
-            preferencesHelper.purchaseFlowState = state.name
-            logger.debug(
-                "Purchase flow: state changed To: " + preferencesHelper.purchaseFlowState,
-            )
         }
 
         override fun setPushNotificationAction(pushNotificationAction: PushNotificationAction) {
@@ -720,8 +714,6 @@ class UpgradePresenterImpl
                     amazonUserId = amazonPurchase.userId,
                 )
             completePurchase(receipt) {
-                // Amazon-specific success cleanup + fulfillment.
-                preferencesHelper.amazonPurchasedItem = null
                 mPurchase = null
                 PurchasingService.notifyFulfillment(amazonPurchase.receiptId, FulfillmentResult.FULFILLED)
             }

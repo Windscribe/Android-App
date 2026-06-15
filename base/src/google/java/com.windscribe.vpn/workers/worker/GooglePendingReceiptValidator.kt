@@ -12,16 +12,15 @@ import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryPurchasesParams
-import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.api.ApiCallManager
-import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.billing.PurchaseState
-import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.billing.PurchaseManager
+import com.windscribe.vpn.billing.ReceiptParams
+import com.windscribe.vpn.billing.truncatedBillingToken
 import com.windscribe.vpn.exceptions.WindScribeException
-import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.UserDataState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
@@ -32,43 +31,60 @@ class GooglePendingReceiptValidator
     constructor(
         @Assisted appContext: Context,
         @Assisted params: WorkerParameters,
-        private val apiManager: ApiCallManager,
+        private val purchaseManager: PurchaseManager,
         private val preferencesHelper: PreferencesHelper,
     ) : CoroutineWorker(appContext, params) {
         private val logger = LoggerFactory.getLogger("billing")
         private var billingClient: BillingClient? = null
 
-        override suspend fun doWork(): Result {
-            val state = preferencesHelper.purchaseFlowState
-            if (state == PurchaseState.FINISHED.name) {
-                return Result.success()
-            }
-            return try {
-                val result =
-                    initBillingClient().takeIf { true }.run {
-                        logger.debug("Getting product history.")
-                        getProductHistory()
-                            .map {
-                                logger.debug("Consuming product.")
-                                tryToAcknowledgeProduct(it)
-                            }.map {
-                                logger.debug("Verifying product.")
-                                verifyPayment(it)
-                            }.toList()
-                            .first { true }
+        override suspend fun doWork(): Result =
+            try {
+                initBillingClient()
+                logger.debug("Getting product history.")
+                val purchases = getProductHistory()
+                val allVerified =
+                    purchases.all { purchase ->
+                        verifyPurchase(purchase)
                     }
-                return if (result) {
-                    logger.debug("Successfully verified purchase receipt")
-                    preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
-                    Windscribe.appContext.workManager.updateSession()
+
+                if (allVerified) {
+                    logger.debug("All purchases verified successfully")
                     Result.success()
                 } else {
-                    logger.debug("Failure to verify receipt")
+                    logger.debug("Some purchases failed verification")
                     Result.failure()
                 }
             } catch (e: Exception) {
                 logger.debug(e.message)
                 Result.failure()
+            }
+
+        private suspend fun verifyPurchase(purchase: Purchase): Boolean {
+            logger.info("Verifying purchase: ${purchase.purchaseToken.truncatedBillingToken()}")
+            tryToAcknowledgeProduct(purchase)
+            val receipt =
+                ReceiptParams(
+                    purchaseToken = purchase.purchaseToken,
+                    gpPackageName = "com.windscribe.vpn",
+                    gpProductId = purchase.products[0],
+                )
+
+            // PurchaseManager returns a hot SharedFlow; workers need a finite result.
+            return when (
+                val state =
+                    purchaseManager.completePurchase(receipt).first {
+                        it is UserDataState.Success || it is UserDataState.Error
+                    }
+            ) {
+                is UserDataState.Success -> {
+                    logger.info("Purchase verified successfully")
+                    true
+                }
+                is UserDataState.Error -> {
+                    logger.debug("Purchase verification failed: ${state.error}")
+                    false
+                }
+                else -> false
             }
         }
 
@@ -147,7 +163,6 @@ class GooglePendingReceiptValidator
                 billingClient?.queryPurchasesAsync(params) { billingResult: BillingResult, purchasesList: List<Purchase> ->
                     if (BillingClient.BillingResponseCode.OK == billingResult.responseCode) {
                         if (purchasesList.isEmpty()) {
-                            preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
                             it.resumeWith(kotlin.Result.failure(WindScribeException("No purchase history found.")))
                         } else {
                             it.resumeWith(kotlin.Result.success(purchasesList))
@@ -157,30 +172,4 @@ class GooglePendingReceiptValidator
                     }
                 }
             }
-
-        private suspend fun verifyPayment(itemPurchased: Purchase): Boolean {
-            logger.info("Verifying payment for purchased item: " + itemPurchased.originalJson)
-            return when (
-                val result =
-                    result<GenericSuccess> {
-                        apiManager.verifyPurchaseReceipt(
-                            itemPurchased.purchaseToken,
-                            "com.windscribe.vpn",
-                            itemPurchased.products[0],
-                            "",
-                            "",
-                        )
-                    }
-            ) {
-                is CallResult.Error -> {
-                    logger.debug("Payment verification failed: ${result.errorMessage}")
-                    false
-                }
-
-                is CallResult.Success -> {
-                    logger.info("Payment verification successful.")
-                    true
-                }
-            }
-        }
     }

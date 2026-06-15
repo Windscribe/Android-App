@@ -31,10 +31,12 @@ import com.windscribe.vpn.billing.AmazonProducts
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.GoogleBillingManager
 import com.windscribe.vpn.billing.GoogleProducts
+import com.windscribe.vpn.billing.PURCHASE_VERIFICATION_IN_PROGRESS
 import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.billing.ReceiptParams
 import com.windscribe.vpn.billing.WindscribeInAppProduct
+import com.windscribe.vpn.billing.truncatedBillingToken
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.constants.BillingConstants
@@ -201,7 +203,6 @@ class UpgradeViewModel
             }
             val params = listOf(builder.build())
             logger.info("Starting purchase flow...")
-            setPurchaseFlowState(PurchaseState.IN_PROCESS)
             val flowBuilder = BillingFlowParams.newBuilder().setProductDetailsParamsList(params)
             val obfuscatedId = paymentToken ?: preferencesHelper.deviceUuid
             if (!obfuscatedId.isNullOrEmpty()) {
@@ -367,7 +368,6 @@ class UpgradeViewModel
         ) {
             when (responseCode) {
                 BillingResponseCode.USER_CANCELED -> {
-                    setPurchaseFlowState(PurchaseState.FINISHED)
                     logger.info("User cancelled the purchase...")
                     emit(UpgradeEvent.Toast(string(com.windscribe.vpn.R.string.purchase_cancelled)))
                     billingProcessFinished = true
@@ -395,7 +395,6 @@ class UpgradeViewModel
                     receiptValidator.checkPendingAccountUpgrades()
                 }
                 else -> {
-                    setPurchaseFlowState(PurchaseState.FINISHED)
                     showBillingError(getBillingErrorMessage(responseCode))
                 }
             }
@@ -413,7 +412,7 @@ class UpgradeViewModel
                     gpProductId = purchase.products[0],
                 )
             completePurchase(receipt) {
-                preferencesHelper.purchasedItem = null
+                // PurchaseManager now handles clearing purchasedItem
                 mPurchase = null
             }
         }
@@ -436,7 +435,7 @@ class UpgradeViewModel
             }
             logger.debug(
                 "Failed to consume the purchased product. Saving purchased product for later update. " +
-                    "[Product Token]: ${purchase.packageName}-${purchase.purchaseToken}",
+                    "[Product Token]: ${purchase.packageName}-${purchase.purchaseToken.truncatedBillingToken()}",
             )
             preferencesHelper.purchasedItem = purchase.originalJson
             showBillingError(getBillingErrorMessage(responseCode))
@@ -505,7 +504,7 @@ class UpgradeViewModel
                     amazonUserId = amazonPurchase.userId,
                 )
             completePurchase(receipt) {
-                preferencesHelper.amazonPurchasedItem = null
+                // PurchaseManager now handles clearing amazonPurchasedItem
                 mPurchase = null
                 PurchasingService.notifyFulfillment(amazonPurchase.receiptId, FulfillmentResult.FULFILLED)
             }
@@ -526,15 +525,21 @@ class UpgradeViewModel
                     .completePurchase(receipt, promoPcpId = pushNotificationAction?.pcpID)
                     .collect { state ->
                         when (state) {
-                            is UserDataState.Loading -> {}
+                            is UserDataState.Loading -> {
+                                // Show loading state from PurchaseManager
+                                showProgress(state.status)
+                            }
                             is UserDataState.Success -> {
                                 logger.info("Payment verification + account upgrade successful.")
                                 onVerified()
-                                setPurchaseFlowState(PurchaseState.FINISHED)
                                 hideProgress()
                                 emit(UpgradeEvent.Success(preferencesHelper.userIsInGhostMode()))
                             }
                             is UserDataState.Error -> {
+                                if (state.error == PURCHASE_VERIFICATION_IN_PROGRESS) {
+                                    logger.debug("Purchase verification already in progress; ignoring duplicate callback.")
+                                    return@collect
+                                }
                                 logger.debug("Purchase completion failed: ${state.error}")
                                 showBillingError("Payment verification failed!")
                             }
@@ -577,11 +582,6 @@ class UpgradeViewModel
                 "pro_yearly" -> russianPlan.proYearly
                 else -> null
             }
-        }
-
-        private fun setPurchaseFlowState(state: PurchaseState) {
-            preferencesHelper.purchaseFlowState = state.name
-            logger.debug("Purchase flow: state changed To: ${state.name}")
         }
 
         // region Plan -> UI model mapping ------------------------------------------------------

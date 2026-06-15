@@ -31,7 +31,6 @@ import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.AmazonBillingManager
 import com.windscribe.vpn.billing.BillingFragmentCallback
 import com.windscribe.vpn.billing.GoogleBillingManager
-import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.billing.WindscribeInAppProduct
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import dagger.hilt.android.AndroidEntryPoint
@@ -273,7 +272,6 @@ class UpgradeActivity :
         if (!obfuscatedId.isNullOrEmpty()) {
             builder.setObfuscatedAccountId(obfuscatedId)
         }
-        presenter.setPurchaseFlowState(PurchaseState.IN_PROCESS)
         googleBillingManager.launchBillingFlow(this, builder.build())
     }
 
