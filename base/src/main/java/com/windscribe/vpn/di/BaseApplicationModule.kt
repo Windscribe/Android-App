@@ -8,7 +8,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -440,7 +439,8 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         apiManager: IApiCallManager,
         userRepository: UserRepository,
-    ): PurchaseManager = PurchaseManager(scope, apiManager, userRepository)
+        preferencesHelper: PreferencesHelper,
+    ): PurchaseManager = PurchaseManager(scope, apiManager, userRepository, preferencesHelper)
 
     @Provides
     @Singleton

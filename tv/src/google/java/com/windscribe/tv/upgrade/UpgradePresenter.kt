@@ -10,7 +10,6 @@ import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.AmazonPurchase
-import com.windscribe.vpn.billing.PurchaseState
 import kotlinx.coroutines.CoroutineScope
 
 interface UpgradePresenter {
@@ -65,8 +64,6 @@ interface UpgradePresenter {
     fun restorePurchase()
 
     fun setLayoutFromApiSession()
-
-    fun setPurchaseFlowState(state: PurchaseState)
 
     fun setPushNotificationAction(pushNotificationAction: PushNotificationAction)
 }

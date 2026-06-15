@@ -4,6 +4,7 @@
 package com.windscribe.vpn.di
 
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.AndroidDeviceIdentity
 import com.windscribe.vpn.backend.AndroidDeviceIdentityImpl
 import com.windscribe.vpn.backend.PlayIntegrityManager
@@ -27,8 +28,9 @@ object ApplicationModule {
     @Singleton
     fun provideReceiptValidator(
         app: Windscribe,
+        preferencesHelper: PreferencesHelper,
         manager: WindScribeWorkManager,
-    ): ReceiptValidator = ReceiptValidator(app, null, null)
+    ): ReceiptValidator = ReceiptValidator(app, preferencesHelper, null, null)
 
     @Provides
     @Singleton
