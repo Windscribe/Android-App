@@ -15,6 +15,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.SecurePreferences
 import com.windscribe.vpn.apppreference.windscribeDataStore
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
+import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
@@ -52,6 +53,7 @@ import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.LogRepository
 import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
@@ -773,7 +775,6 @@ open class BaseApplicationModule {
     fun provideLogRepository(
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
-    ): com.windscribe.vpn.repository.LogRepository =
-        com.windscribe.vpn.repository
-            .LogRepository(preferencesHelper, apiCallManager)
+        playIntegrityManager: PlayIntegrityManager,
+    ): LogRepository = LogRepository(preferencesHelper, apiCallManager, playIntegrityManager)
 }

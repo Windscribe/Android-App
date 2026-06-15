@@ -8,6 +8,7 @@ import com.windscribe.vpn.api.response.SsoResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState.Status.Connected
 import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.installer.AppInstallerDetector
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.repository.UserRepository
@@ -63,6 +64,7 @@ class AppStartViewModelImpl
         private val firebaseManager: FirebaseManager,
         private val userRepository: UserRepository,
         private val playIntegrityManager: com.windscribe.vpn.backend.PlayIntegrityManager,
+        private val appInstallerDetector: AppInstallerDetector,
     ) : AppStartViewModel() {
         private val _isConnected = MutableStateFlow(false)
         override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
@@ -107,7 +109,17 @@ class AppStartViewModelImpl
                 if (integrityToken != null) {
                     logger.debug("Using Play Integrity token for SSO login")
                 }
-                when (val result = result<SsoResponse> { api.sso("google", token, integrityToken) }) {
+                when (
+                    val result =
+                        result<SsoResponse> {
+                            api.sso(
+                                "google",
+                                token,
+                                integrityToken,
+                                appInstallerDetector.getInstallerIdentifier(),
+                            )
+                        }
+                ) {
                     is CallResult.Error -> {
                         logger.error("Sso login failed with error: ${result.errorMessage}")
                         updateState(SsoLoginState.Error(result.errorMessage))

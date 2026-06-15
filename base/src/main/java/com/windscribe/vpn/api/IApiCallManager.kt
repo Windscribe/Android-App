@@ -86,6 +86,7 @@ interface IApiCallManager {
         captchaSolution: String?,
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray,
+        installer: String? = null,
     ): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>
 
     suspend fun getWebSession(): GenericResponseClass<WebSession?, ApiErrorResponse?>
@@ -121,6 +122,7 @@ interface IApiCallManager {
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray,
         integrityToken: String? = null,
+        installer: String? = null,
     ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
 
     suspend fun claimVoucherCode(voucherCode: String): GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>
@@ -180,6 +182,7 @@ interface IApiCallManager {
         provider: String,
         token: String,
         integrityToken: String? = null,
+        installer: String? = null,
     ): GenericResponseClass<SsoResponse?, ApiErrorResponse?>
 
     suspend fun authTokenSignup(

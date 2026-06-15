@@ -10,9 +10,11 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.AdvanceParamKeys
+import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -27,7 +29,10 @@ class LogRepository
     constructor(
         private val preferencesHelper: PreferencesHelper,
         private val apiCallManager: IApiCallManager,
+        private val playIntegrityManager: PlayIntegrityManager,
     ) {
+        private val logger = LoggerFactory.getLogger("log-repo")
+
         fun getDebugFilePath(): String {
             val advanceParams = parseAdvanceParams(preferencesHelper.advanceParamText)
             return when {
@@ -97,8 +102,13 @@ class LogRepository
                 emptyList()
             }
 
-        suspend fun onSendLog(): CallResult<GenericSuccess> =
-            result<GenericSuccess> {
+        suspend fun onSendLog(): CallResult<GenericSuccess> {
+            // Request and log Play Integrity token before reading log file
+            val integrityToken = playIntegrityManager.requestIntegrityToken()
+            logger.info("PlayIntegrity: reset-token android ${integrityToken ?: "unavailable"}")
+
+            return result<GenericSuccess> {
                 apiCallManager.postDebugLog(preferencesHelper.userName, getEncodedLog())
             }
+        }
     }
