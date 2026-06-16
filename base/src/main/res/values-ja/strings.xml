@@ -257,8 +257,8 @@
     <string name="knowledge_base_description">Windscribeについて知っておくべきことすべて。</string>
     <string name="talk_to_garry">ギャリーと会話する</string>
     <string name="talk_to_garry_description">Siriのようにスマートではありませんが、質問に答えることができます。</string>
-    <string name="contact_humans">人間に連絡する</string>
-    <string name="contact_humans_description">Garryが解決できない問題がありますか? 人間のサポートに連絡してください。</string>
+    <string name="contact_humans">「人間」に問い合わせる</string>
+    <string name="contact_humans_description">Garry が解決できない問題がありますか？そんな問題はありません。</string>
     <string name="community_support">コミュニティサポート</string>
     <string name="community_support_description">他のユーザーを助けたり助けたりするのに最適な場所。</string>
     <string name="how_to_send_ticket">以下のフィールドに入力すると、サポートエージェントの1人がすぐに™個人的に返信します</string>

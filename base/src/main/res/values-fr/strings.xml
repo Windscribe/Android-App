@@ -257,8 +257,8 @@
     <string name="knowledge_base_description">Tout ce que vous devez savoir sur Windscribe.</string>
     <string name="talk_to_garry">Parlez à Garry</string>
     <string name="talk_to_garry_description">Pas Siri intelligent mais peut toujours répondre aux questions.</string>
-    <string name="contact_humans">Contacter le support</string>
-    <string name="contact_humans_description">Un problème que Garry ne peut pas résoudre? Contactez le support client.</string>
+    <string name="contact_humans">Contacter des « humains »</string>
+    <string name="contact_humans_description">Un problème que Garry ne peut pas résoudre ? Ce problème n’existe pas.</string>
     <string name="community_support">Soutien de la communauté</string>
     <string name="community_support_description">Les meilleurs endroits pour aider et obtenir de l’aide d’autres utilisateurs.</string>
     <string name="how_to_send_ticket">Remplissez les champs ci-dessous et l’un de nos agents de support vous répondra personnellement très rapidement™</string>

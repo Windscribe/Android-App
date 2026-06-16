@@ -258,8 +258,8 @@
     <string name="knowledge_base_description">所有您需要知道关于 Windscribe 的一切都在这里。</string>
     <string name="talk_to_garry">与 Garry 对话</string>
     <string name="talk_to_garry_description">虽然没有 Siri 智能，但仍然可以回答问题。</string>
-    <string name="contact_humans">联系人类</string>
-    <string name="contact_humans_description">遇到Garry无法解决的问题？请联系人工支持。</string>
+    <string name="contact_humans">联系“人类”</string>
+    <string name="contact_humans_description">有 Garry 解决不了的问题？不存在这种问题。</string>
     <string name="community_support">社区支持</string>
     <string name="community_support_description">帮助和从其他用户那里获得帮助的最佳场所。</string>
     <string name="how_to_send_ticket">填写下面的字段，我们的一位支持代理将很快™亲自回复您</string>

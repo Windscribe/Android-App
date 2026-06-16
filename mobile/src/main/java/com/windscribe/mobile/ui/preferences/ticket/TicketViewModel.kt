@@ -1,14 +1,11 @@
 package com.windscribe.mobile.ui.preferences.ticket
 
+import android.net.Uri
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.api.response.QueryType
-import com.windscribe.vpn.api.response.TicketResponse
-import com.windscribe.vpn.commonutils.Ext.result
-import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +32,8 @@ abstract class TicketViewModel : ViewModel() {
     abstract fun onMessageChanged(message: String)
 
     abstract fun onSendTicketClicked()
+
+    abstract fun onGarryOpened()
 }
 
 sealed class SubmitTicketState {
@@ -42,8 +41,8 @@ sealed class SubmitTicketState {
 
     object Loading : SubmitTicketState()
 
-    data class Success(
-        val message: String,
+    data class OpenGarry(
+        val url: String,
     ) : SubmitTicketState()
 
     data class Error(
@@ -56,7 +55,6 @@ class TicketViewModelImpl
     @Inject
     constructor(
         val userRepository: UserRepository,
-        val api: IApiCallManager,
     ) : TicketViewModel() {
         private val _buttonEnabled = MutableStateFlow(false)
         override val buttonEnabled: StateFlow<Boolean> = _buttonEnabled
@@ -70,7 +68,6 @@ class TicketViewModelImpl
         override val message: MutableStateFlow<String> = _message
         private val _queryType = MutableStateFlow(QueryType.Account)
         override val queryType: MutableStateFlow<QueryType> = _queryType
-        private var username = ""
         private val logger = LoggerFactory.getLogger("basic")
 
         init {
@@ -78,7 +75,6 @@ class TicketViewModelImpl
                 userRepository.user.filterNotNull().collect {
                     logger.info("User info: ${it.email}")
                     _email.value = it.email ?: ""
-                    username = it.userName
                     validateInput()
                 }
             }
@@ -112,37 +108,26 @@ class TicketViewModelImpl
 
         override fun onSendTicketClicked() {
             viewModelScope.launch {
-                _submitTicketState.emit(SubmitTicketState.Loading)
-                val result =
-                    result<TicketResponse> {
-                        api.sendTicket(
-                            email.value,
-                            username,
-                            subject.value,
-                            message.value,
-                            queryType.value.toString(),
-                            queryType.value.name,
-                            "app_android",
-                        )
-                    }
-                when (result) {
-                    is CallResult.Error -> {
-                        if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA ||
-                            result.code == NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
-                        ) {
-                            _submitTicketState.emit(SubmitTicketState.Error("Failed to submit ticket. Check your network & try again."))
-                        } else {
-                            _submitTicketState.emit(SubmitTicketState.Error(result.errorMessage))
-                        }
-                    }
-
-                    is CallResult.Success -> {
-                        _submitTicketState.emit(
-                            SubmitTicketState.Success("Sweet, we’ll get back to you as soon as one of our agents is back from lunch."),
-                        )
-                    }
-                }
+                _submitTicketState.emit(SubmitTicketState.OpenGarry(getKnowledgeBaseGarryUrl()))
             }
+        }
+
+        override fun onGarryOpened() {
+            viewModelScope.launch {
+                _submitTicketState.emit(SubmitTicketState.Idle)
+            }
+        }
+
+        private fun getKnowledgeBaseGarryUrl(): String {
+            val host = if (BuildConfig.DEV) "www-staging.windscribe.com" else "windscribe.com"
+            return Uri
+                .Builder()
+                .scheme("https")
+                .authority(host)
+                .path("knowledge-base")
+                .appendQueryParameter("yo_garry", message.value)
+                .build()
+                .toString()
         }
 
         private fun validEmail(email: String): Boolean = email.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()

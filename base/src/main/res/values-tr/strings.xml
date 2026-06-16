@@ -257,8 +257,8 @@
     <string name="knowledge_base_description">Windscribe hakkında bilmeniz gereken her şey.</string>
     <string name="talk_to_garry">Garry ile konuş</string>
     <string name="talk_to_garry_description">Siri akıllı değil ama yine de soruları yanıtlayabilir.</string>
-    <string name="contact_humans">Destek Ekibiyle İletişime Geçin</string>
-    <string name="contact_humans_description">Garry\'nin çözemediği bir Sorun mu var? İnsan desteğiyle iletişime geçin.</string>
+    <string name="contact_humans">\"İnsanlarla\" İletişime Geçin</string>
+    <string name="contact_humans_description">Garry\'nin çözemediği bir sorununuz mu var? Öyle bir sorun yok.</string>
     <string name="community_support">Topluluk Desteği</string>
     <string name="community_support_description">Yardım etmek ve diğer kullanıcılardan yardım almak için en iyi yerler.</string>
     <string name="how_to_send_ticket">Aşağıdaki alanları doldurun ve destek temsilcilerimizden biri çok yakında™ size kişisel olarak geri dönecektir</string>

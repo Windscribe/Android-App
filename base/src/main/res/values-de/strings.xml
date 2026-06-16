@@ -258,8 +258,8 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="knowledge_base_description">Alles was du über Windscribe wissen musst.</string>
     <string name="talk_to_garry">Unterhalte dich mit Garry</string>
     <string name="talk_to_garry_description">Nicht so smart wie Siri, kann aber trotzdem deine Fragen beantworten.</string>
-    <string name="contact_humans">Kontaktieren Sie den Support</string>
-    <string name="contact_humans_description">Haben Sie ein Problem, das Garry nicht lösen kann? Kontaktieren Sie den menschlichen Support.</string>
+    <string name="contact_humans">„Menschen“ kontaktieren</string>
+    <string name="contact_humans_description">Hast du ein Problem, das Garry nicht lösen kann? So ein Problem gibt es nicht.</string>
     <string name="community_support">Community Unterstützung</string>
     <string name="community_support_description">Die besten Orte, um zu helfen und Hilfe von anderen Benutzern zu erhalten.</string>
     <string name="how_to_send_ticket">Fülle die folgenden Felder aus und einer unserer Support-Mitarbeiter wird sich in Kürze™ persönlich bei dir melden</string>

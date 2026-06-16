@@ -257,8 +257,8 @@
     <string name="knowledge_base_description">Tất cả những gì bạn cần biết về Windscribe.</string>
     <string name="talk_to_garry">Nói chuyện với Garry</string>
     <string name="talk_to_garry_description">Không thông minh Siri nhưng vẫn có thể trả lời các câu hỏi.</string>
-    <string name="contact_humans">Liên hệ với bộ phận Hỗ trợ</string>
-    <string name="contact_humans_description">Có vấn đề mà Garry không giải quyết được? Liên hệ với bộ phận hỗ trợ.</string>
+    <string name="contact_humans">Liên hệ với \"con người\"</string>
+    <string name="contact_humans_description">Có vấn đề mà Garry không giải quyết được? Không có vấn đề như vậy đâu.</string>
     <string name="community_support">Hỗ trợ cộng đồng</string>
     <string name="community_support_description">Nơi tốt nhất để trợ giúp và nhận trợ giúp từ những người dùng khác.</string>
     <string name="how_to_send_ticket">Điền vào các trường dưới đây và một trong những nhân viên hỗ trợ của chúng tôi sẽ sớm liên hệ lại với bạn™</string>
