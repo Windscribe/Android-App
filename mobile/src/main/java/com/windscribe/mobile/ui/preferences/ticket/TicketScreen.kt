@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -45,6 +46,7 @@ import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.ScreenDescription
+import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.model.DropDownStringItem
@@ -61,6 +63,7 @@ class TicketActions(
     val onSubjectChanged: (String) -> Unit = {},
     val onMessageChanged: (String) -> Unit = {},
     val onSendTicketClicked: () -> Unit = {},
+    val onGarryOpened: () -> Unit = {},
 )
 
 @Composable
@@ -79,6 +82,7 @@ fun TicketScreen(viewModel: TicketViewModel = hiltViewModel<TicketViewModelImpl>
                 onSubjectChanged = viewModel::onSubjectChanged,
                 onMessageChanged = viewModel::onMessageChanged,
                 onSendTicketClicked = viewModel::onSendTicketClicked,
+                onGarryOpened = viewModel::onGarryOpened,
             ),
     )
 }
@@ -170,20 +174,20 @@ fun TicketContent(
         if (submitTicketState is SubmitTicketState.Loading) {
             PreferenceProgressBar(true)
         }
-        HandleState(submitTicketState)
+        HandleState(submitTicketState, actions.onGarryOpened)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HandleState(submitTicketState: SubmitTicketState) {
+private fun HandleState(
+    submitTicketState: SubmitTicketState,
+    onGarryOpened: () -> Unit,
+) {
+    val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
     val message =
         when (submitTicketState) {
-            is SubmitTicketState.Success -> {
-                submitTicketState.message
-            }
-
             is SubmitTicketState.Error -> {
                 submitTicketState.message
             }
@@ -193,8 +197,17 @@ private fun HandleState(submitTicketState: SubmitTicketState) {
             }
         }
     LaunchedEffect(submitTicketState) {
-        if (submitTicketState is SubmitTicketState.Success || submitTicketState is SubmitTicketState.Error) {
-            showDialog.value = true
+        when (submitTicketState) {
+            is SubmitTicketState.OpenGarry -> {
+                context.openUrl(submitTicketState.url)
+                onGarryOpened()
+            }
+
+            is SubmitTicketState.Error -> {
+                showDialog.value = true
+            }
+
+            else -> Unit
         }
     }
     if (showDialog.value) {
