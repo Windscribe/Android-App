@@ -496,7 +496,7 @@ class SignupViewModel
                             floatArrayOf(),
                             floatArrayOf(),
                             integrityToken,
-                            appInstallerDetector.getInstallerIdentifier(),
+                            appInstallerDetector.getInstallerPackageName(),
                         )
                     }
 
@@ -544,7 +544,7 @@ class SignupViewModel
                         trailX,
                         trailY,
                         integrityToken,
-                        appInstallerDetector.getInstallerIdentifier(),
+                        appInstallerDetector.getInstallerPackageName(),
                     )
                 }
             when (result) {

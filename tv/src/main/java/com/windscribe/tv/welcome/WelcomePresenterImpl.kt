@@ -317,7 +317,7 @@ class WelcomePresenterImpl
                             captcha,
                             floatArrayOf(),
                             floatArrayOf(),
-                            appInstallerDetector.getInstallerIdentifier(),
+                            appInstallerDetector.getInstallerPackageName(),
                         )
                     }
                 withContext(Dispatchers.Main) {
@@ -386,7 +386,7 @@ class WelcomePresenterImpl
                                 floatArrayOf(),
                                 floatArrayOf(),
                                 integrityToken,
-                                appInstallerDetector.getInstallerIdentifier(),
+                                appInstallerDetector.getInstallerPackageName(),
                             )
                         }
                     withContext(Dispatchers.Main) {

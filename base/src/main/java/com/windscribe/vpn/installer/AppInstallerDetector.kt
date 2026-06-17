@@ -10,18 +10,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Enum representing different app installer sources
- */
-enum class AppInstaller {
-    GOOGLE_PLAY,
-    FDROID,
-    AMAZON,
-    SAMSUNG,
-    HUAWEI,
-    UNKNOWN,
-}
-
-/**
  * Detector class to identify where the app was installed from
  * Can be injected via Hilt
  */
@@ -32,11 +20,13 @@ class AppInstallerDetector
         @ApplicationContext private val context: Context,
     ) {
         /**
-         * Detects the installer source of the application
+         * Get raw installer package name for API calls
+         * Returns the actual package name of the installer, or "none" if not available
+         * Server will classify this into appropriate categories
          *
-         * @return AppInstaller enum indicating the installation source
+         * @return Raw installer package name (e.g., "com.android.vending") or "none" for sideloaded apps
          */
-        private fun getInstaller(): AppInstaller {
+        fun getInstallerPackageName(): String {
             val packageName = context.packageName
             val installerPackageName =
                 try {
@@ -52,30 +42,7 @@ class AppInstallerDetector
                     null
                 }
 
-            return when (installerPackageName) {
-                "com.android.vending" -> AppInstaller.GOOGLE_PLAY
-                "org.fdroid.fdroid" -> AppInstaller.FDROID
-                "org.fdroid.fdroid.privileged" -> AppInstaller.FDROID
-                "com.amazon.venezia" -> AppInstaller.AMAZON
-                "com.sec.android.app.samsungapps" -> AppInstaller.SAMSUNG
-                "com.huawei.appmarket" -> AppInstaller.HUAWEI
-                else -> AppInstaller.UNKNOWN
-            }
+            // Return "none" for null (sideloaded apps), otherwise return the package name
+            return installerPackageName ?: "none"
         }
-
-        /**
-         * Get installer identifier for API calls
-         * Returns lowercase string representation suitable for server-side comparison
-         *
-         * @return Lowercase installer identifier (e.g., "google_play", "fdroid", "unknown")
-         */
-        fun getInstallerIdentifier(): String =
-            when (getInstaller()) {
-                AppInstaller.GOOGLE_PLAY -> "google_play"
-                AppInstaller.FDROID -> "fdroid"
-                AppInstaller.AMAZON -> "amazon"
-                AppInstaller.SAMSUNG -> "samsung"
-                AppInstaller.HUAWEI -> "huawei"
-                AppInstaller.UNKNOWN -> "unknown"
-            }
     }

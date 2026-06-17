@@ -116,7 +116,7 @@ class AppStartViewModelImpl
                                 "google",
                                 token,
                                 integrityToken,
-                                appInstallerDetector.getInstallerIdentifier(),
+                                appInstallerDetector.getInstallerPackageName(),
                             )
                         }
                 ) {
