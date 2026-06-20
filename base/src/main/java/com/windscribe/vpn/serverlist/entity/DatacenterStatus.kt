@@ -31,40 +31,24 @@ enum class DatacenterStatus {
  * Helper object to determine datacenter status based on various conditions.
  */
 object DatacenterStatusHelper {
-    /**
-     * Determines the status of a datacenter based on status field, server count, and user status.
-     *
-     * Logic:
-     * - For free users: If location is both Pro-only AND under maintenance, show "Pro" to indicate upgrade needed
-     * - Pro: Location marked as pro-only (datacenter.pro == 1) OR (status == 1 AND no servers)
-     * - UnderMaintenance: status == 2 (maintenance) AND no servers available
-     * - Available: Has servers
-     *
-     * @param datacenter The datacenter to check
-     * @param serverCount Number of servers available in this datacenter
-     * @param isPro Whether the user has Pro subscription
-     * @return The determined status
-     */
     fun getStatus(
         datacenter: Datacenter,
         serverCount: Int,
         isPro: Boolean,
+        hasAlcAccess: Boolean = false,
     ): DatacenterStatus {
-        val hasServers = serverCount > 0
+        val hasAtLeastOneServer = serverCount > 0
+        val isEnabled = datacenter.status == 1
+        val hasAccess = isPro || hasAlcAccess
+        val isPremiumLocation = datacenter.pro == 1
 
         return when {
-            // If user is free and location is pro-only, always show Pro status
-            // (even if it's also under maintenance - upgrade is more important message)
-            !isPro && datacenter.pro == 1 && !hasServers -> DatacenterStatus.Pro
-
-            // Pro required: enabled but no servers available
-            datacenter.status == 1 && !hasServers -> DatacenterStatus.Pro
-
-            // Under maintenance: status 2 with no servers
-            datacenter.status == 2 && !hasServers -> DatacenterStatus.UnderMaintenance
-
-            // Available: has servers
-            else -> DatacenterStatus.Available
+            // Enabled only when the location is active (status == 1) and has at least one server in inventory.
+            isEnabled && hasAtLeastOneServer -> DatacenterStatus.Available
+            // User without access (no Pro/ALC) on a premium location: prompt upgrade.
+            !hasAccess && isPremiumLocation -> DatacenterStatus.Pro
+            // Everything else disabled: down/empty location, or access user with no servers.
+            else -> DatacenterStatus.UnderMaintenance
         }
     }
 
@@ -80,7 +64,8 @@ object DatacenterStatusHelper {
         datacenter: Datacenter,
         serverCount: Int,
         isPro: Boolean,
-    ): Boolean = getStatus(datacenter, serverCount, isPro) == DatacenterStatus.Available
+        hasAlcAccess: Boolean = false,
+    ): Boolean = getStatus(datacenter, serverCount, isPro, hasAlcAccess) == DatacenterStatus.Available
 
     /**
      * Checks if a datacenter requires Pro subscription.
@@ -94,7 +79,8 @@ object DatacenterStatusHelper {
         datacenter: Datacenter,
         serverCount: Int,
         isPro: Boolean,
-    ): Boolean = getStatus(datacenter, serverCount, isPro) == DatacenterStatus.Pro
+        hasAlcAccess: Boolean = false,
+    ): Boolean = getStatus(datacenter, serverCount, isPro, hasAlcAccess) == DatacenterStatus.Pro
 
     /**
      * Checks if a datacenter is under maintenance.
@@ -108,5 +94,6 @@ object DatacenterStatusHelper {
         datacenter: Datacenter,
         serverCount: Int,
         isPro: Boolean,
-    ): Boolean = getStatus(datacenter, serverCount, isPro) == DatacenterStatus.UnderMaintenance
+        hasAlcAccess: Boolean = false,
+    ): Boolean = getStatus(datacenter, serverCount, isPro, hasAlcAccess) == DatacenterStatus.UnderMaintenance
 }

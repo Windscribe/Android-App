@@ -257,8 +257,8 @@
     <string name="knowledge_base_description">विंडस्क्राइब के बारे में आपको जो कुछ भी जानने की जरूरत है।</string>
     <string name="talk_to_garry">गैरी से बात करें</string>
     <string name="talk_to_garry_description">सिरी स्मार्ट नहीं है, लेकिन अभी भी सवालों के जवाब दे सकता है।</string>
-    <string name="contact_humans">मानव से संपर्क करें</string>
-    <string name="contact_humans_description">क्या आपकी कोई समस्या है जो गैरी हल नहीं कर सकता? मानव सहायता से संपर्क करें।</string>
+    <string name="contact_humans">\"इंसानों\" से संपर्क करें</string>
+    <string name="contact_humans_description">कोई समस्या है जिसे Garry हल नहीं कर सकता? ऐसी कोई समस्या नहीं है।</string>
     <string name="community_support">सामुदायिक समर्थन</string>
     <string name="community_support_description">अन्य उपयोगकर्ताओं की मदद करने और उनसे मदद प्राप्त करने के लिए सर्वोत्तम स्थान।</string>
     <string name="how_to_send_ticket">खेतों को भरें और हमारे सहायता एजेंटों में से एक व्यक्तिगत रूप से बहुत जल्द™ आपके पास वापस आ जाएगा</string>

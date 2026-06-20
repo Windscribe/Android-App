@@ -258,8 +258,8 @@
     <string name="knowledge_base_description">Все, что вам нужно знать о Windscribe.</string>
     <string name="talk_to_garry">Поговорите с Гарри</string>
     <string name="talk_to_garry_description">Не такой умный, как человек, но все же может ответить на ваши вопросы.</string>
-    <string name="contact_humans">Обратиться в службу поддержки</string>
-    <string name="contact_humans_description">У вас возникла проблема, с которой не может справиться Гарри? Обратитесь в поддержку к оператору.</string>
+    <string name="contact_humans">Связаться с «людьми»</string>
+    <string name="contact_humans_description">Есть проблема, которую Garry не может решить? Такой проблемы не существует.</string>
     <string name="community_support">Поддержка силами сообщества</string>
     <string name="community_support_description">Места, где можно помочь и получить помощь от других пользователей.</string>
     <string name="how_to_send_ticket">Заполните поля ниже, и один из наших агентов поддержки лично свяжется с вами очень скоро™</string>

@@ -86,6 +86,7 @@ interface IApiCallManager {
         captchaSolution: String?,
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray,
+        installer: String? = null,
     ): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>
 
     suspend fun getWebSession(): GenericResponseClass<WebSession?, ApiErrorResponse?>
@@ -120,11 +121,28 @@ interface IApiCallManager {
         captchaSolution: String?,
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray,
+        integrityToken: String? = null,
+        installer: String? = null,
     ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
 
     suspend fun claimVoucherCode(voucherCode: String): GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>
 
-    suspend fun signUpUsingToken(token: String): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
+    /**
+     * Sign up using a token from getReg() API.
+     *
+     * This was used for "ghost account" registration from the "Get Started" button in the welcome flow.
+     * Removed from UI in commits 0c469a32 (mobile, June 2025) and 6087a3cb (TV, July 2025).
+     * Kept in API layer for potential future use.
+     *
+     * @deprecated No longer used in the app since ghost account feature was removed.
+     *             May be needed in the future if ghost account functionality is re-introduced.
+     */
+    @Deprecated("Ghost account feature removed. Kept for potential future use.")
+    suspend fun signUpUsingToken(
+        token: String,
+        integrityToken: String? = null,
+        installer: String? = null,
+    ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
 
     suspend fun verifyPurchaseReceipt(
         purchaseToken: String,
@@ -175,6 +193,8 @@ interface IApiCallManager {
     suspend fun sso(
         provider: String,
         token: String,
+        integrityToken: String? = null,
+        installer: String? = null,
     ): GenericResponseClass<SsoResponse?, ApiErrorResponse?>
 
     suspend fun authTokenSignup(

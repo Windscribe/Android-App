@@ -15,12 +15,14 @@ import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.api.response.XPressLoginCodeResponse
 import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.SessionErrorHandler
+import com.windscribe.vpn.installer.AppInstallerDetector
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.LogRepository
@@ -58,6 +60,8 @@ class WelcomePresenterImpl
         private val workManager: WindScribeWorkManager,
         private val resourceHelper: ResourceHelper,
         private val logRepository: LogRepository,
+        private val playIntegrityManager: PlayIntegrityManager,
+        private val appInstallerDetector: AppInstallerDetector,
     ) : WelcomePresenter {
         private lateinit var welcomeView: WelcomeView
         private lateinit var activityScope: CoroutineScope
@@ -313,6 +317,7 @@ class WelcomePresenterImpl
                             captcha,
                             floatArrayOf(),
                             floatArrayOf(),
+                            appInstallerDetector.getInstallerPackageName(),
                         )
                     }
                 withContext(Dispatchers.Main) {
@@ -363,6 +368,11 @@ class WelcomePresenterImpl
                     withContext(Dispatchers.Main) {
                         welcomeView.updateCurrentProcess("Signing up")
                     }
+                    // Request Play Integrity token for device attestation
+                    val integrityToken = playIntegrityManager.requestIntegrityToken()
+                    if (integrityToken != null) {
+                        logger.debug("Using Play Integrity token for TV signup")
+                    }
                     val result =
                         result<UserRegistrationResponse> {
                             apiCallManager.signUserIn(
@@ -375,6 +385,8 @@ class WelcomePresenterImpl
                                 captcha,
                                 floatArrayOf(),
                                 floatArrayOf(),
+                                integrityToken,
+                                appInstallerDetector.getInstallerPackageName(),
                             )
                         }
                     withContext(Dispatchers.Main) {

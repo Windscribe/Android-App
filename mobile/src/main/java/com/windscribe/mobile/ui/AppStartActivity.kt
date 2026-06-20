@@ -26,7 +26,6 @@ import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.popup.EncryptionWarningDialog
 import com.windscribe.mobile.ui.theme.AndroidTheme
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DARK_THEME
@@ -50,7 +49,14 @@ class AppStartActivity : AppCompatActivity() {
         }
         val splashScreen = installSplashScreen()
         splashScreen.setOnExitAnimationListener { splashScreenView ->
-            splashScreenView.remove()
+            if (isFinishing || isDestroyed) {
+                return@setOnExitAnimationListener
+            }
+            try {
+                splashScreenView.remove()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         val navigationBarStyle =
             if (isDark) {
@@ -95,75 +101,44 @@ class AppStartActivity : AppCompatActivity() {
         handleIntent(intent)
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
     fun Context.isTablet(): Boolean = resources.configuration.screenWidthDp >= 600
 
+    /**
+     * Handles intent extras from FCM push notifications and external app launches.
+     *
+     * Security Note: This activity is exported and can be launched by any app. We intentionally
+     * keep this handler simple and permissive because:
+     * - AppStartActivity is the launcher activity, so external apps can already launch it
+     * - "promo" only deep-links to the upgrade screen (non-sensitive)
+     * - "user_expired"/"user_downgraded" trigger server verification before any action
+     *
+     * SessionWorker validates account status with the server and only disconnects the VPN
+     * if the server confirms the account is actually expired/banned. This prevents malicious
+     * apps from forcing VPN disconnects.
+     */
     private fun handleIntent(intent: Intent?) {
         val extras = intent?.extras ?: return
         val type = extras.getString("type") ?: return
-
-        // Security check: Verify the intent is from a trusted source
-        if (!isIntentSecure(intent)) {
-            // Log the security violation attempt (optional)
-            android.util.Log.w("AppStartActivity", "Rejected untrusted intent with type: $type")
-            return
-        }
-
         when (type) {
             "promo" -> {
                 val pcpid = extras.getString("pcpid")
                 val promoCode = extras.getString("promo_code")
-
                 if (pcpid != null && promoCode != null) {
                     appContext.appLifeCycleObserver.pushNotificationAction =
-                        PushNotificationAction(
-                            pcpid,
-                            promoCode,
-                            type,
-                        )
-                    startActivity(UpgradeActivity.getStartIntent(this))
+                        PushNotificationAction(pcpid, promoCode, type)
+                    viewmodel.requestDeepLink(Screen.Upgrade.route)
                 }
             }
-
-            "user_expired" -> {
-                if (appContext.vpnConnectionStateManager.isVPNConnected()) {
-                    appContext.vpnController.disconnectAsync()
-                }
-                appContext.workManager.updateSession()
-            }
-
-            "user_downgraded" -> {
+            "user_expired", "user_downgraded" -> {
                 appContext.workManager.updateSession()
             }
         }
-    }
-
-    private fun isIntentSecure(intent: Intent): Boolean {
-        // Allow if the intent has our signature-protected permission
-        val permissionName = "com.windscribe.mobile.permission.INTERNAL_INTENT"
-
-        // Check if the calling package has the permission (only our app can have signature permission)
-        if (callingActivity != null) {
-            try {
-                val callingPackage = callingActivity!!.packageName
-                val pm = packageManager
-                val result = pm.checkPermission(permissionName, callingPackage)
-                if (result == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    return true
-                }
-            } catch (e: Exception) {
-                // Permission check failed
-            }
-        }
-
-        // Additional check: Allow if intent came from a PendingIntent created by our app
-        // PendingIntents from notifications will have the creator UID matching our app
-        val creatorPackage = intent.getStringExtra("android.intent.extra.REFERRER_NAME")
-        if (creatorPackage == packageName) {
-            return true
-        }
-
-        // Reject all other intents (including external app intents)
-        return false
     }
 
     override fun attachBaseContext(newBase: Context) {

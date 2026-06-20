@@ -62,8 +62,16 @@ android {
     namespace = "com.windscribe.vpn"
     flavorDimensions += "dim"
     productFlavors {
-        create("fdroid") { dimension = "dim" }
-        create("google") { dimension = "dim" }
+        create("fdroid") {
+            dimension = "dim"
+            buildConfigField("String", "CLOUD_PROJECT_NUMBER", "\"\"")
+        }
+        create("google") {
+            dimension = "dim"
+            // Play Integrity API cloud project number
+            val cloudProjectNumber = System.getenv("CLOUD_PROJECT_NUMBER") ?: ""
+            buildConfigField("String", "CLOUD_PROJECT_NUMBER", "\"${cloudProjectNumber}\"")
+        }
     }
 }
 
@@ -127,4 +135,5 @@ dependencies {
     "googleApi"("com.google.android.gms:play-services-appset:16.0.2")
     "googleApi"("com.google.android.play:review-ktx:2.0.2")
     "googleApi"("com.google.android.gms:play-services-auth:21.4.0")
+    "googleApi"("com.google.android.play:integrity:1.4.0")
 }

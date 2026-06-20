@@ -56,8 +56,9 @@ class DetailViewAdapter(
             }
             // Determine datacenter status
             val serverCount = dataDetails.serverCountMap[city.id] ?: 0
-            val status = DatacenterStatusHelper.getStatus(city, serverCount, isPremiumUser)
-            val requiresPro = DatacenterStatusHelper.requiresPro(city, serverCount, isPremiumUser)
+            val hasAlcAccess = countryCode != null && alcCountryCodes.contains(countryCode)
+            val status = DatacenterStatusHelper.getStatus(city, serverCount, isPremiumUser, hasAlcAccess)
+            val requiresPro = DatacenterStatusHelper.requiresPro(city, serverCount, isPremiumUser, hasAlcAccess)
 
             // Show pro icon if user is not premium and datacenter requires Pro
             if (isPremiumUser) {
@@ -163,6 +164,8 @@ class DetailViewAdapter(
     private val dataDetails: ServerListData
     private val favStates = SparseIntArray()
     private var isPremiumUser = false
+    private var countryCode: String? = null
+    private var alcCountryCodes: Set<String> = emptySet()
     private val listener: DetailListener
 
     @SuppressLint("NotifyDataSetChanged")
@@ -218,6 +221,16 @@ class DetailViewAdapter(
 
     fun setPremiumUser(isPremiumUser: Boolean) {
         this.isPremiumUser = isPremiumUser
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setAlcAccess(
+        countryCode: String?,
+        alcCountryCodes: Set<String>,
+    ) {
+        this.countryCode = countryCode
+        this.alcCountryCodes = alcCountryCodes
+        notifyDataSetChanged()
     }
 
     private fun getPingTime(city: Datacenter): Int {

@@ -266,8 +266,8 @@
     <string name="knowledge_base_description">Windscribe에 대해 알아야 할 모든 것.</string>
     <string name="talk_to_garry">Garry와 대화하기</string>
     <string name="talk_to_garry_description">도움이 필요하신가요? Garry가 대부분의 문제를 도와드릴 수 있습니다.</string>
-    <string name="contact_humans">사람에게 문의하기</string>
-    <string name="contact_humans_description">Garry가 해결할 수 없는 문제가 있나요? 실제 상담원에게 문의하세요.</string>
+    <string name="contact_humans">\"사람\"에게 문의하기</string>
+    <string name="contact_humans_description">Garry가 해결할 수 없는 문제가 있나요? 그런 문제는 없습니다.</string>
     <string name="community_support">커뮤니티 지원</string>
     <string name="community_support_description">다른 사용자에게 도움을 주고받을 수 있는 최고의 장소입니다.</string>
     <string name="how_to_send_ticket">아래 항목을 작성해 주시면 지원 담당자가 곧 연락드리겠습니다.</string>

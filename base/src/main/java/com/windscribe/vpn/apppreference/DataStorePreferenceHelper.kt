@@ -697,6 +697,16 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getString(DataStoreKeys.PURCHASE_FLOW_STATE_KEY, "FINISHED") }
         set(value) = setString(DataStoreKeys.PURCHASE_FLOW_STATE_KEY, value)
 
+    override var verifiedPurchaseTokens: Set<String>
+        get() =
+            runBlocking {
+                getString(DataStoreKeys.VERIFIED_PURCHASE_TOKENS, "")
+                    .split(",")
+                    .filter { it.isNotEmpty() }
+                    .toSet()
+            }
+        set(value) = setString(DataStoreKeys.VERIFIED_PURCHASE_TOKENS, value.joinToString(","))
+
     override var selection: String
         get() =
             runBlocking {

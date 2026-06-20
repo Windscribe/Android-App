@@ -4,8 +4,11 @@
 package com.windscribe.vpn.di
 
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.AndroidDeviceIdentity
 import com.windscribe.vpn.backend.AndroidDeviceIdentityImpl
+import com.windscribe.vpn.backend.PlayIntegrityManager
+import com.windscribe.vpn.backend.PlayIntegrityManagerImpl
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.services.firebasecloud.FirebaseManagerImpl
@@ -25,8 +28,9 @@ object ApplicationModule {
     @Singleton
     fun provideReceiptValidator(
         app: Windscribe,
+        preferencesHelper: PreferencesHelper,
         manager: WindScribeWorkManager,
-    ): ReceiptValidator = ReceiptValidator(app, null, null)
+    ): ReceiptValidator = ReceiptValidator(app, preferencesHelper, null, null)
 
     @Provides
     @Singleton
@@ -39,4 +43,8 @@ object ApplicationModule {
     @Provides
     @Singleton
     fun providesGoogleSignInManager(app: Windscribe): GoogleSignInManager = GoogleSignInManagerImpl(app)
+
+    @Provides
+    @Singleton
+    fun providePlayIntegrityManager(): PlayIntegrityManager = PlayIntegrityManagerImpl()
 }

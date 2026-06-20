@@ -109,7 +109,6 @@ import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font26
 import com.windscribe.mobile.ui.theme.font9
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
@@ -210,7 +209,7 @@ private fun HandleGotoAction(
         }
 
         is HomeGoto.Upgrade -> {
-            context.startActivity(UpgradeActivity.getStartIntent(context))
+            navController.navigate(Screen.Upgrade.route)
             didNavigate = true
         }
 

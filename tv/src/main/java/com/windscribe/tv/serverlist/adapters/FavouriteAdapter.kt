@@ -3,6 +3,7 @@
  */
 package com.windscribe.tv.serverlist.adapters
 
+import android.annotation.SuppressLint
 import android.graphics.PorterDuff
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +39,7 @@ class FavouriteAdapter(
         private val nodeNameLabel: TextView = itemView.findViewById(R.id.nodeName)
         private val nodeNickNameLabel: TextView = itemView.findViewById(R.id.nodeNickName)
 
+        @SuppressLint("StringFormatInvalid")
         fun bind(city: Datacenter) {
             btnFav.setState(2)
             nodeNameLabel.text = city.nodeName
@@ -50,8 +52,10 @@ class FavouriteAdapter(
             }
             // Determine datacenter status
             val serverCount = serverListData.serverCountMap[city.id] ?: 0
-            val status = DatacenterStatusHelper.getStatus(city, serverCount, isPremiumUser)
-            val requiresPro = DatacenterStatusHelper.requiresPro(city, serverCount, isPremiumUser)
+            val countryCode = regionCountryCodes[city.region_id]
+            val hasAlcAccess = countryCode != null && alcCountryCodes.contains(countryCode)
+            val status = DatacenterStatusHelper.getStatus(city, serverCount, isPremiumUser, hasAlcAccess)
+            val requiresPro = DatacenterStatusHelper.requiresPro(city, serverCount, isPremiumUser, hasAlcAccess)
 
             // Show pro icon if user is not premium and datacenter requires Pro
             if (isPremiumUser) {
@@ -150,6 +154,8 @@ class FavouriteAdapter(
 
     private val serverListData: ServerListData
     private var isPremiumUser = false
+    private var regionCountryCodes: Map<Int, String> = emptyMap()
+    private var alcCountryCodes: Set<String> = emptySet()
 
     override fun getItemCount(): Int = locations.size
 
@@ -176,6 +182,14 @@ class FavouriteAdapter(
 
     fun setPremiumUser(isPremiumUser: Boolean) {
         this.isPremiumUser = isPremiumUser
+    }
+
+    fun setAlcAccess(
+        regionCountryCodes: Map<Int, String>,
+        alcCountryCodes: Set<String>,
+    ) {
+        this.regionCountryCodes = regionCountryCodes
+        this.alcCountryCodes = alcCountryCodes
     }
 
     private fun getPingTime(city: Datacenter): Int {

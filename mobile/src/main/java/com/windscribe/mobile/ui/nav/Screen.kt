@@ -88,4 +88,8 @@ sealed class Screen(
     object IpActionResult : Screen("ip_action_result")
 
     object UpdateAvailable : Screen("update_available")
+
+    object Upgrade : Screen("upgrade")
+
+    object UpgradeSuccess : Screen("upgrade_success")
 }

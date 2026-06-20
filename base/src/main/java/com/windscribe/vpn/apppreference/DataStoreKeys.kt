@@ -142,6 +142,7 @@ object DataStoreKeys {
     // Purchase & Review
     val PURCHASE_FLOW_STATE_KEY =
         stringPreferencesKey(PreferencesKeyConstants.PURCHASE_FLOW_STATE_KEY)
+    val VERIFIED_PURCHASE_TOKENS = stringPreferencesKey("verified_purchase_tokens")
     val ALREADY_SHOWN_SHARE_APP_LINK =
         booleanPreferencesKey(PreferencesKeyConstants.ALREADY_SHOWN_SHARE_APP_LINK)
     val PURCHASED_ITEM = stringPreferencesKey(PreferencesKeyConstants.PURCHASED_ITEM)

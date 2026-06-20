@@ -257,8 +257,8 @@
     <string name="knowledge_base_description">所有你需要知道的关于Windscribe。</string>
     <string name="talk_to_garry">与加里对话</string>
     <string name="talk_to_garry_description">不是Siri智能，但仍然可以回答问题。</string>
-    <string name="contact_humans">聯絡支援</string>
-    <string name="contact_humans_description">Garry 無法解決的問題嗎？請聯繫人工支援。</string>
+    <string name="contact_humans">聯絡「人類」</string>
+    <string name="contact_humans_description">有 Garry 解決不了的問題？沒有這種問題。</string>
     <string name="community_support">社区支持</string>
     <string name="community_support_description">帮助和从其他用户那里获得帮助的最佳场所。</string>
     <string name="how_to_send_ticket">填写下面的字段，我们的一位支持代理将很快™亲自回复您</string>

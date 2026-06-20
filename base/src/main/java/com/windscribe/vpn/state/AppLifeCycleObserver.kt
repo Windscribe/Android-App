@@ -54,11 +54,11 @@ class AppLifeCycleObserver
         override fun onPause(owner: LifecycleOwner) {
             isInForeground = false
             workManager.onAppMovedToBackground()
-            if (!vpnConnectionStateManager.isVPNActive()) {
-                applicationScope.launch {
-                    proxyDNSManager.stopControlD()
-                }
-            }
+//            if (!vpnConnectionStateManager.isVPNActive()) {
+//                applicationScope.launch {
+//                    proxyDNSManager.stopControlD()
+//                }
+//            }
             // Only save WSNet settings if it's already initialized to avoid forcing initialization
             wsNetWrapper.withWSNet { wsNet ->
                 appContext.preference.wsNetSettings = wsNet.currentPersistentSettings()

@@ -85,6 +85,7 @@ interface PreferencesHelper {
     var portMapVersion: Int
     var serverRevision: Long
     var purchaseFlowState: String
+    var verifiedPurchaseTokens: Set<String>
     var savedLanguage: String
     var savedProtocol: String
     var savedSTEALTHPort: String

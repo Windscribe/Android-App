@@ -253,8 +253,8 @@
     <string name="knowledge_base_description">همه چیزهایی که باید در مورد Windscribe بدانید</string>
     <string name="talk_to_garry">با گری صحبت کنید</string>
     <string name="talk_to_garry_description">سیری هوشمند نیست اما هنوز هم می تواند به سوالات پاسخ دهد.</string>
-    <string name="contact_humans">تماس با انسان‌ها</string>
-    <string name="contact_humans_description">مشکلی دارید که گری نمی‌تواند حل کند؟ با پشتیبانی انسانی تماس بگیرید.</string>
+    <string name="contact_humans">تماس با «انسان‌ها»</string>
+    <string name="contact_humans_description">مشکلی دارید که Garry نمی‌تواند حل کند؟ چنین مشکلی وجود ندارد.</string>
     <string name="community_support">پشتیبانی جامعه</string>
     <string name="community_support_description">بهترین مکان ها برای کمک و دریافت کمک از کاربران دیگر.</string>
     <string name="how_to_send_ticket">فیلدهای زیر را پر کنید و یکی از نمایندگان پشتیبانی ما به زودی™ به شما باز خواهد گشت</string>

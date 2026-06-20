@@ -5,7 +5,6 @@
 package com.windscribe.vpn.model
 
 import com.windscribe.vpn.api.response.UserSessionResponse
-import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.model.User.AccountStatus.Banned
 import com.windscribe.vpn.model.User.AccountStatus.Expired
 import com.windscribe.vpn.model.User.AccountStatus.Okay
@@ -34,6 +33,17 @@ class User(
             }
             return null
         }
+
+    val alcCountryCodes: Set<String>
+        get() =
+            sessionResponse.alcList
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                ?.toSet()
+                ?: emptySet()
+
+    fun hasAlcAccess(countryCode: String?): Boolean = countryCode != null && alcCountryCodes.contains(countryCode)
+
     val isOurIp: Boolean
         get() = sessionResponse.ourIp != null && sessionResponse.ourIp == 0
     val locationRevision: String
@@ -56,12 +66,12 @@ class User(
         get() = sessionResponse.isPremium == 1
     val userStatusInt: Int
         get() = sessionResponse.isPremium ?: 0
-    val dataLeft: Float
+    val dataLeft: Long
         get() {
             if (dataUsed > maxData) {
-                return 0F
+                return 0L
             }
-            return (maxData - dataUsed) / UserStatusConstants.GB_DATA.toFloat()
+            return maxData - dataUsed
         }
 
     enum class AccountStatus {

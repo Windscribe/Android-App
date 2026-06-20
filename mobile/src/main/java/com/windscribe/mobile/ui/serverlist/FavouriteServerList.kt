@@ -150,8 +150,9 @@ private fun ListItemView(
     )
     val userState by homeViewmodel.userState.collectAsState()
     val healthColor = healthColor(health)
-    val requiresPro = DatacenterStatusHelper.requiresPro(item.city, serverCount, userState is UserState.Pro)
-    val isAvailable = DatacenterStatusHelper.isAvailable(item.city, serverCount, userState is UserState.Pro)
+    val hasAlcAccess = viewModel.hasAlcAccessForCountry(item.countryCode)
+    val requiresPro = DatacenterStatusHelper.requiresPro(item.city, serverCount, userState is UserState.Pro, hasAlcAccess)
+    val isAvailable = DatacenterStatusHelper.isAvailable(item.city, serverCount, userState is UserState.Pro, hasAlcAccess)
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier =

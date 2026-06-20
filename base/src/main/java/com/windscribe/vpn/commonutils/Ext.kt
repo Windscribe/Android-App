@@ -2,11 +2,13 @@ package com.windscribe.vpn.commonutils
 
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.constants.NetworkErrorCodes
+import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.repository.CallResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import java.util.Locale
 
 object Ext {
     /**
@@ -38,4 +40,30 @@ object Ext {
             action()
         }
     }
+
+    fun Long.toLabel(): String =
+        when {
+            this >= UserStatusConstants.GB_DATA -> {
+                String.format(
+                    Locale.getDefault(),
+                    "%.2f GB",
+                    this.toDouble() / UserStatusConstants.GB_DATA,
+                )
+            }
+            this >= UserStatusConstants.MB_DATA -> {
+                String.format(
+                    Locale.getDefault(),
+                    "%.2f MB",
+                    this.toDouble() / UserStatusConstants.MB_DATA,
+                )
+            }
+            this >= UserStatusConstants.KB_DATA -> {
+                String.format(
+                    Locale.getDefault(),
+                    "%.2f KB",
+                    this.toDouble() / UserStatusConstants.KB_DATA,
+                )
+            }
+            else -> "$this B"
+        }
 }

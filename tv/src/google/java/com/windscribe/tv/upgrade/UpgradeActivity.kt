@@ -31,7 +31,6 @@ import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.AmazonBillingManager
 import com.windscribe.vpn.billing.BillingFragmentCallback
 import com.windscribe.vpn.billing.GoogleBillingManager
-import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.billing.WindscribeInAppProduct
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import dagger.hilt.android.AndroidEntryPoint
@@ -86,11 +85,23 @@ class UpgradeActivity :
         }
         setBillingType()
         if (billingType == BillingType.Amazon) {
-            lifecycle.addObserver(amazonBillingManager)
             initAmazonBillingLifecycleListeners()
+            registerBillingObserverWhenStarted(amazonBillingManager)
         } else {
-            lifecycle.addObserver(googleBillingManager)
             initBillingLifecycleListeners()
+            registerBillingObserverWhenStarted(googleBillingManager)
+        }
+    }
+
+    private fun registerBillingObserverWhenStarted(observer: androidx.lifecycle.DefaultLifecycleObserver) {
+        var added = false
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (!added) {
+                    added = true
+                    lifecycle.addObserver(observer)
+                }
+            }
         }
     }
 
@@ -261,7 +272,6 @@ class UpgradeActivity :
         if (!obfuscatedId.isNullOrEmpty()) {
             builder.setObfuscatedAccountId(obfuscatedId)
         }
-        presenter.setPurchaseFlowState(PurchaseState.IN_PROCESS)
         googleBillingManager.launchBillingFlow(this, builder.build())
     }
 

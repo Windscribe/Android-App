@@ -13,12 +13,14 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.UserRegistrationResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.HashUtils
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.exceptions.ApiFailure
+import com.windscribe.vpn.installer.AppInstallerDetector
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.repository.UserRepository
@@ -63,6 +65,8 @@ class SignupViewModel
         private val preferenceHelper: PreferencesHelper,
         private val firebaseManager: FirebaseManager,
         private val userRepository: UserRepository,
+        private val playIntegrityManager: PlayIntegrityManager,
+        private val appInstallerDetector: AppInstallerDetector,
     ) : ViewModel() {
         private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
         val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
@@ -473,6 +477,12 @@ class SignupViewModel
                     )
                 updateState(SignupState.Captcha(request))
             } else {
+                // Request Play Integrity token for device attestation
+                val integrityToken = playIntegrityManager.requestIntegrityToken()
+                if (integrityToken != null) {
+                    logger.debug("Using Play Integrity token for signup")
+                }
+
                 val result =
                     result<UserRegistrationResponse> {
                         apiCallManager.signUserIn(
@@ -485,6 +495,8 @@ class SignupViewModel
                             null,
                             floatArrayOf(),
                             floatArrayOf(),
+                            integrityToken,
+                            appInstallerDetector.getInstallerPackageName(),
                         )
                     }
 
@@ -512,6 +524,14 @@ class SignupViewModel
         private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
             val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
             val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
+
+            // Request Play Integrity token for device attestation
+            val integrityToken = playIntegrityManager.requestIntegrityToken()
+            if (integrityToken != null) {
+                logger.debug("Using Play Integrity token for signup with captcha")
+            }
+        }
+
             val result =
                 result<UserRegistrationResponse> {
                     apiCallManager.signUserIn(
@@ -524,6 +544,8 @@ class SignupViewModel
                         "${captchaSolution.leftOffset}",
                         trailX,
                         trailY,
+                        integrityToken,
+                        appInstallerDetector.getInstallerPackageName(),
                     )
                 }
             when (result) {

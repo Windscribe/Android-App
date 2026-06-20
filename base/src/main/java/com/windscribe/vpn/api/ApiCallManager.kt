@@ -291,7 +291,9 @@ open class ApiCallManager
             captchaSolution: String?,
             captchaTrailX: FloatArray,
             captchaTrailY: FloatArray,
+            installer: String?,
         ): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?> {
+            // installer parameter accepted but not sent to wsnet yet
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
                 val callback =
@@ -380,6 +382,8 @@ open class ApiCallManager
             captchaSolution: String?,
             captchaTrailX: FloatArray,
             captchaTrailY: FloatArray,
+            integrityToken: String?,
+            installer: String?,
         ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?> {
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
@@ -395,6 +399,8 @@ open class ApiCallManager
                         captchaSolution ?: "",
                         captchaTrailX,
                         captchaTrailY,
+                        integrityToken ?: "",
+                        installer ?: "",
                     ) { code, json ->
                         buildResponse(continuation, code, json, UserRegistrationResponse::class.java)
                     }
@@ -417,11 +423,26 @@ open class ApiCallManager
             }
         }
 
-        override suspend fun signUpUsingToken(token: String): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?> {
+        /**
+         * Sign up using a token from getReg() API.
+         *
+         * This was used for "ghost account" registration from the "Get Started" button in the welcome flow.
+         * Removed from UI in commits 0c469a32 (mobile, June 2025) and 6087a3cb (TV, July 2025).
+         * Kept in API layer for potential future use.
+         *
+         * @deprecated No longer used in the app since ghost account feature was removed.
+         *             May be needed in the future if ghost account functionality is re-introduced.
+         */
+        @Deprecated("Ghost account feature removed. Kept for potential future use.")
+        override suspend fun signUpUsingToken(
+            token: String,
+            integrityToken: String?,
+            installer: String?,
+        ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?> {
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
                 val callback =
-                    api.signupUsingToken(token) { code, json ->
+                    api.signupUsingToken(token, integrityToken ?: "", installer ?: "") { code, json ->
                         buildResponse(continuation, code, json, UserRegistrationResponse::class.java)
                     }
                 continuation.invokeOnCancellation { callback.cancel() }
@@ -631,11 +652,13 @@ open class ApiCallManager
         override suspend fun sso(
             provider: String,
             token: String,
+            integrityToken: String?,
+            installer: String?,
         ): GenericResponseClass<SsoResponse?, ApiErrorResponse?> {
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
                 val callback =
-                    api.sso(provider, token) { code, json ->
+                    api.sso(provider, token, integrityToken ?: "", installer ?: "") { code, json ->
                         buildResponse(continuation, code, json, SsoResponse::class.java)
                     }
                 continuation.invokeOnCancellation { callback.cancel() }

@@ -257,9 +257,8 @@
     <string name="knowledge_base_description">Все, що вам потрібно знати про Windscribe.</string>
     <string name="talk_to_garry">Поговоріть з Гаррі</string>
     <string name="talk_to_garry_description">Не Siri розумна, але все одно може відповідати на запитання.</string>
-    <string name="contact_humans">Звернутися до людей</string>
-    <string name="contact_humans_description">Вибачте за непорозуміння. Ось вірний переклад:
-У вас виникла проблема, з якою не може впоратися Гаррі? Зверніться до служби підтримки.</string>
+    <string name="contact_humans">Зв’язатися з «людьми»</string>
+    <string name="contact_humans_description">Є проблема, яку Garry не може вирішити? Такої проблеми не існує.</string>
     <string name="community_support">Підтримка спільноти</string>
     <string name="community_support_description">Найкращі місця, де можна допомогти та отримати допомогу від інших користувачів.</string>
     <string name="how_to_send_ticket">Заповніть поля нижче, і один з наших агентів підтримки особисто зв\яжеться з вами дуже скоро™</string>

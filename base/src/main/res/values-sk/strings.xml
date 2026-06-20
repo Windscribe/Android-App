@@ -266,8 +266,8 @@
     <string name="knowledge_base_description">Všetko, čo potrebujete vedieť o Windscribe.</string>
     <string name="talk_to_garry">Porozprávať sa s Garrym</string>
     <string name="talk_to_garry_description">Potrebujete pomoc? Garry vám môže pomôcť s väčšinou problémov, porozprávajte sa s ním.</string>
-    <string name="contact_humans">Kontaktovať ľudí</string>
-    <string name="contact_humans_description">Máte problém, ktorý Garry nevie vyriešiť? Kontaktujte ľudskú podporu.</string>
+    <string name="contact_humans">Kontaktovať „ľudí“</string>
+    <string name="contact_humans_description">Máte problém, ktorý Garry nevie vyriešiť? Taký problém neexistuje.</string>
     <string name="community_support">Komunitná podpora</string>
     <string name="community_support_description">Najlepšie miesta na pomoc a získanie pomoci od iných používateľov.</string>
     <string name="how_to_send_ticket">Vyplňte polia nižšie a jeden z našich podporných agentov sa vám osobne ozve veľmi skoro™</string>

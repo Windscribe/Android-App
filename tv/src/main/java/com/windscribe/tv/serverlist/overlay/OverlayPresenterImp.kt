@@ -22,6 +22,7 @@ import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
+import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.Location
@@ -49,6 +50,7 @@ class OverlayPresenterImp
         private val serverListRepository: ServerListRepository,
         private val staticIpRepository: StaticIpRepository,
         private val latencyRepository: LatencyRepository,
+        private val userRepository: UserRepository,
     ) : OverlayPresenter,
         DatacenterClickListener {
         private lateinit var overlayView: OverlayView
@@ -262,6 +264,20 @@ class OverlayPresenterImp
                     if (favourites.isNotEmpty()) {
                         try {
                             val cities = localDbInterface.getDatacenterByID(favourites)
+                            val regionCountryCodes =
+                                cities
+                                    .map { it.region_id }
+                                    .distinct()
+                                    .mapNotNull { regionId ->
+                                        val code =
+                                            try {
+                                                localDbInterface.getLocationById(regionId)?.countryCode
+                                            } catch (e: Exception) {
+                                                null
+                                            }
+                                        code?.let { regionId to it }
+                                    }.toMap()
+                            val alcCountryCodes = userRepository.user.value?.alcCountryCodes ?: emptySet()
                             favouriteAdapter =
                                 FavouriteAdapter(
                                     cities.toMutableList(),
@@ -270,6 +286,7 @@ class OverlayPresenterImp
                                 )
                             favouriteAdapter?.let {
                                 it.setPremiumUser(preferencesHelper.userStatus == 1)
+                                it.setAlcAccess(regionCountryCodes, alcCountryCodes)
                                 overlayView.setFavouriteAdapter(it)
                             }
                             overlayView.setState(
