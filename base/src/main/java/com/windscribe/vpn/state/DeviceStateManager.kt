@@ -191,6 +191,7 @@ class DeviceStateManager
                     logger.info("Network changed from ${currentDetail?.name} to ${detail?.name} - clearing whitelist")
                     whitelistedNetworkName = null
                 }
+            }
 
             // Update whitelisted network state
             updateWhitelistedNetworkState(detail)

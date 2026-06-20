@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.serverlist
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image

@@ -530,7 +530,6 @@ class SignupViewModel
             if (integrityToken != null) {
                 logger.debug("Using Play Integrity token for signup with captcha")
             }
-        }
 
             val result =
                 result<UserRegistrationResponse> {
