@@ -499,6 +499,43 @@ class VPNProfileCreator
             }
         }
 
+        /**
+         * Copies all AmneziaWG parameters from the original interface to the interface builder.
+         * This preserves any obfuscation parameters (Jc, Jmin, Jmax, S1-S4, H1-H4, I1-I5)
+         * that were present in the custom config file. Only copies parameters that are present.
+         */
+        private fun copyAmneziaWgParams(
+            originalInterface: Interface,
+            builder: Builder,
+        ) {
+            // Copy junk packet parameters
+            originalInterface.junkPacketCount.ifPresent { builder.setJunkPacketCount(it) }
+            originalInterface.junkPacketMinSize.ifPresent { builder.setJunkPacketMinSize(it) }
+            originalInterface.junkPacketMaxSize.ifPresent { builder.setJunkPacketMaxSize(it) }
+
+            // Copy packet junk size parameters (S1-S4)
+            originalInterface.initPacketJunkSize.ifPresent { builder.setInitPacketJunkSize(it) }
+            originalInterface.responsePacketJunkSize.ifPresent { builder.setResponsePacketJunkSize(it) }
+            originalInterface.cookieReplyPacketJunkSize.ifPresent { builder.setCookieReplyPacketJunkSize(it) }
+            originalInterface.transportPacketJunkSize.ifPresent { builder.setTransportPacketJunkSize(it) }
+
+            // Copy magic header parameters (H1-H4)
+            originalInterface.initPacketMagicHeader.ifPresent { builder.setInitPacketMagicHeader(it) }
+            originalInterface.responsePacketMagicHeader.ifPresent { builder.setResponsePacketMagicHeader(it) }
+            originalInterface.underloadPacketMagicHeader.ifPresent { builder.setUnderloadPacketMagicHeader(it) }
+            originalInterface.transportPacketMagicHeader.ifPresent { builder.setTransportPacketMagicHeader(it) }
+
+            // Copy special junk parameters (I1-I5)
+            originalInterface.specialJunkI1.ifPresent { builder.setSpecialJunkI1(it) }
+            originalInterface.specialJunkI2.ifPresent { builder.setSpecialJunkI2(it) }
+            originalInterface.specialJunkI3.ifPresent { builder.setSpecialJunkI3(it) }
+            originalInterface.specialJunkI4.ifPresent { builder.setSpecialJunkI4(it) }
+            originalInterface.specialJunkI5.ifPresent { builder.setSpecialJunkI5(it) }
+
+            // Copy listen port if present
+            originalInterface.listenPort.ifPresent { builder.setListenPort(it) }
+        }
+
         private fun createVpnProfileFromWireGuardConfig(configFile: ConfigFile): String {
             val mPreferencesHelper = appContext.preference
             val interFaceBuilder = Builder()
@@ -533,6 +570,10 @@ class VPNProfileCreator
                     .toBase64(),
             )
             interFaceBuilder.addAddresses(config.getInterface().addresses)
+
+            // Copy all AmneziaWG parameters from the original config
+            copyAmneziaWgParams(config.getInterface(), interFaceBuilder)
+
             if (!mPreferencesHelper.isPackageSizeModeAuto) {
                 interFaceBuilder.setMtu(mPreferencesHelper.packetSize)
             }
@@ -557,13 +598,8 @@ class VPNProfileCreator
             val lastSelectedLocation =
                 LastSelectedLocation(configFile.primaryKey, nickName = configFile.name ?: "")
             saveSelectedLocation(lastSelectedLocation)
-            if (preferencesHelper.isProtocolTweaksEnabled) {
-                saveProfile(WireGuardVpnProfile(config.toWgQuickString()))
-                return "Custom Config: ${config.toWgQuickString()}"
-            } else {
-                saveProfile(WireGuardVpnProfile(configWithSettings.toWgQuickString()))
-                return "Custom Config: ${configWithSettings.toWgQuickString()}"
-            }
+            saveProfile(WireGuardVpnProfile(configWithSettings.toWgQuickString()))
+            return "Custom Config: ${configWithSettings.toWgQuickString()}"
         }
 
         suspend fun createVpnProfileFromWireGuardProfile(
