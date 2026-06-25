@@ -342,6 +342,8 @@ public final class GoBackend implements Backend {
 
             builder.setMtu(config.getInterface().getMtu().orElse(1280));
 
+            service.applyExcludedRoutes(builder);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 builder.setMetered(false);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -453,6 +455,9 @@ public final class GoBackend implements Backend {
 
         public Builder getBuilder() {
             return new Builder();
+        }
+
+        protected void applyExcludedRoutes(Builder builder) {
         }
 
         @Override

@@ -153,6 +153,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	abstract protected Class<?> getMainActivityClass();
 	abstract protected Notification buildNotification(boolean publicVersion);
 	abstract protected int getNotificationID();
+	abstract protected void applyExcludedRoutes(Builder builder);
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
@@ -1468,6 +1469,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 				}
 			}
 			builder.setMtu(mMtu);
+			applyExcludedRoutes(builder);
 		}
 	}
 

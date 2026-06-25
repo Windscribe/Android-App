@@ -144,6 +144,8 @@ public abstract class OpenVPNService extends VpnService implements StateListener
     // Returns if service should keep running
     protected abstract boolean onProcessRestore();
 
+    protected abstract void applyExcludedRoutes(Builder builder);
+
     // From: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
     public static String humanReadableByteCount(long bytes, boolean speed, Resources res) {
         if (speed)
@@ -1019,6 +1021,8 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         mDomain = null;
 
         builder.setConfigureIntent(getGraphPendingIntent());
+
+        applyExcludedRoutes(builder);
 
         try {
             //Debug.stopMethodTracing();

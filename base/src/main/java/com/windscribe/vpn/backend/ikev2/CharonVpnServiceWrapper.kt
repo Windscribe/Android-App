@@ -12,6 +12,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
+import com.windscribe.vpn.backend.utils.ExcludedIpHolder
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.utils.startForegroundImmediately
@@ -53,6 +54,9 @@ class CharonVpnServiceWrapper : CharonVpnService() {
 
     @Inject
     lateinit var scope: CoroutineScope
+
+    @Inject
+    lateinit var excludedIpHolder: ExcludedIpHolder
 
     private var logger = LoggerFactory.getLogger("vpn")
 
@@ -246,5 +250,9 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         logger.debug("CharonVpnServiceWrapper close() called")
         iKev2VpnBackend.getTunnel().onStateChange(IKev2Tunnel.State.DOWN)
         stopSelf()
+    }
+
+    override fun applyExcludedRoutes(builder: Builder) {
+        excludedIpHolder.applyExcludedRoutes(builder)
     }
 }

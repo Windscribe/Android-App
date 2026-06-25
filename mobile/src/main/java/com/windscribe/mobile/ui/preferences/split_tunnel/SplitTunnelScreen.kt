@@ -76,6 +76,7 @@ data class SplitTunnelState(
     val searchKeyword: String = "",
     val filteredApps: List<InstalledAppsData> = emptyList(),
     val appIconCache: AppIconCache? = null,
+    val isAndroid13Plus: Boolean = false,
 )
 
 /**
@@ -87,6 +88,7 @@ class SplitTunnelActions(
     val onSplitTunnelSettingChanged: () -> Unit = {},
     val onQueryTextChange: (String) -> Unit = {},
     val onShowSystemAppsToggle: () -> Unit = {},
+    val onManageDomainsIps: () -> Unit = {},
 )
 
 /**
@@ -95,6 +97,7 @@ class SplitTunnelActions(
  */
 @Composable
 fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunnelViewModelImpl>()) {
+    val navController = LocalNavController.current
     val showProgress by viewModel.showProgress.collectAsState()
     val selectedModeKey by viewModel.selectedModeKey.collectAsState()
     val isSplitTunnelEnabled by viewModel.isSplitTunnelEnabled.collectAsState()
@@ -113,6 +116,7 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunne
                 searchKeyword = searchKeyword,
                 filteredApps = filteredApps,
                 appIconCache = viewModel.appIconCache,
+                isAndroid13Plus = viewModel.isAndroid13Plus,
             ),
         actions =
             SplitTunnelActions(
@@ -121,6 +125,9 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunne
                 onSplitTunnelSettingChanged = viewModel::onSplitTunnelSettingChanged,
                 onQueryTextChange = viewModel::onQueryTextChange,
                 onShowSystemAppsToggle = viewModel::onShowSystemAppsToggle,
+                onManageDomainsIps = {
+                    navController.navigate("excluded_ips_domains")
+                },
             ),
     )
 }
@@ -155,6 +162,10 @@ fun SplitTunnelContent(
                 actions.onModeSelected,
             )
             Spacer(modifier = Modifier.height(14.dp))
+            if (state.isAndroid13Plus) {
+                DomainsIpsSection(actions.onManageDomainsIps)
+                Spacer(modifier = Modifier.height(14.dp))
+            }
             AppsTitle()
             Spacer(modifier = Modifier.height(8.dp))
             ShowSystemAppsToggle(state.showSystemApps, actions.onShowSystemAppsToggle)
@@ -288,6 +299,46 @@ private fun Mode(
         Spacer(modifier = Modifier.height(1.dp))
         CustomDropDown(R.string.mode, modes, selectedKey, description = modeDescription) {
             onModeSelected(it)
+        }
+    }
+}
+
+@Composable
+private fun DomainsIpsSection(onManageClick: () -> Unit) {
+    Column {
+        Text(
+            text = stringResource(R.string.domains_ips),
+            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
+            style = font16.copy(fontWeight = FontWeight.SemiBold),
+            textAlign = TextAlign.Start,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(12.dp),
+                    ).clickable { onManageClick() }
+                    .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.add_ip_domain),
+                color = MaterialTheme.colorScheme.primaryTextColor,
+                style = font16.copy(fontWeight = FontWeight.Medium),
+                textAlign = TextAlign.Start,
+                modifier = Modifier.weight(1f),
+            )
+            Image(
+                painter = painterResource(android.R.drawable.ic_menu_add),
+                contentDescription = "Add",
+                modifier = Modifier.size(24.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
+            )
         }
     }
 }
