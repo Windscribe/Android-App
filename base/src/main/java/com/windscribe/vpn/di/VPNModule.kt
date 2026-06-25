@@ -3,6 +3,7 @@ package com.windscribe.vpn.di
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VpnBackendHolder
+import com.windscribe.vpn.backend.utils.ExcludedIpHolder
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -38,6 +39,7 @@ class VPNModule {
         localDbInterface: LocalDbInterface,
         preferencesHelper: PreferencesHelper,
         deviceStateManager: DeviceStateManager,
+        excludedIpHolder: ExcludedIpHolder,
     ): WindVpnController =
         WindVpnController(
             coroutineScope,
@@ -52,5 +54,6 @@ class VPNModule {
             emergencyConnectRepository,
             localDbInterface,
             deviceStateManager,
+            excludedIpHolder,
         )
 }

@@ -31,6 +31,7 @@ import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
+import com.windscribe.vpn.localdatabase.ExcludedIpDomainDao
 import com.windscribe.vpn.localdatabase.LocalDatabaseImpl
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.Migrations
@@ -777,4 +778,8 @@ open class BaseApplicationModule {
         apiCallManager: IApiCallManager,
         playIntegrityManager: PlayIntegrityManager,
     ): LogRepository = LogRepository(preferencesHelper, apiCallManager, playIntegrityManager)
+
+    @Provides
+    @Singleton
+    fun provideExcludedIpDomainDao(windscribeDatabase: WindscribeDatabase): ExcludedIpDomainDao = windscribeDatabase.excludedIpDomainDao()
 }

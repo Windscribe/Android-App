@@ -1,5 +1,6 @@
 package com.windscribe.vpn.backend.utils
 
+import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
 import android.util.Log
@@ -81,12 +82,16 @@ class ExcludedIpHolder
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     routes.forEach { ipOrRange ->
                         try {
-                            if (ipOrRange.contains("/")) {
-                                val parts = ipOrRange.split("/")
-                                builder.excludeRoute(parts[0], parts[1].toInt())
-                            } else {
-                                builder.excludeRoute(ipOrRange, 32)
-                            }
+                            val ipPrefix =
+                                if (ipOrRange.contains("/")) {
+                                    val parts = ipOrRange.split("/")
+                                    val address = InetAddress.getByName(parts[0])
+                                    IpPrefix(address, parts[1].toInt())
+                                } else {
+                                    val address = InetAddress.getByName(ipOrRange)
+                                    IpPrefix(address, 32)
+                                }
+                            builder.excludeRoute(ipPrefix)
                         } catch (e: Exception) {
                             Log.e("ExcludedIpHolder", "Failed to exclude route: $ipOrRange", e)
                         }
