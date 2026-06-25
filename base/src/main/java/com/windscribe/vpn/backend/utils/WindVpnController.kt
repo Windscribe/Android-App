@@ -395,8 +395,10 @@ open class WindVpnController
                         return@let it
                     } ?: getProtocolInformationToConnect()
                 logger.info("Protocol: $protocolInformation")
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU && preferencesHelper.splitTunnelToggle) {
                     excludedIpHolder.resolveAndStore()
+                } else {
+                    excludedIpHolder.clear()
                 }
                 val profileToConnect = createVPNProfile(protocolInformation, attempt, hostname)
                 logger.info("Location: $profileToConnect")

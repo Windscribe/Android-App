@@ -119,7 +119,7 @@ private fun InputSection(
                     Text(
                         text = stringResource(R.string.enter_ip_domain_hint),
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
-                        style = font14,
+                        style = font16,
                     )
                 },
                 colors =
@@ -147,7 +147,7 @@ private fun InputSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Image(
-                painter = painterResource(android.R.drawable.ic_menu_add),
+                painter = painterResource(com.windscribe.mobile.R.drawable.ic_add),
                 contentDescription = "Add",
                 modifier =
                     Modifier

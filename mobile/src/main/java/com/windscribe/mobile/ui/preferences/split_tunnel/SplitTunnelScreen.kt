@@ -334,10 +334,10 @@ private fun DomainsIpsSection(onManageClick: () -> Unit) {
                 modifier = Modifier.weight(1f),
             )
             Image(
-                painter = painterResource(android.R.drawable.ic_menu_add),
-                contentDescription = "Add",
-                modifier = Modifier.size(24.dp),
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
+                painter = painterResource(com.windscribe.mobile.R.drawable.arrow_right),
+                contentDescription = "Navigate",
+                modifier = Modifier.size(16.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.4f)),
             )
         }
     }
