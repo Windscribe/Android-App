@@ -21,6 +21,7 @@ import com.windscribe.vpn.serverlist.entity.ServerMapState
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,6 +42,7 @@ import kotlin.collections.filter
 import kotlin.collections.map
 import kotlin.collections.mapNotNull
 import kotlin.collections.sortedBy
+import kotlin.time.Duration.Companion.milliseconds
 
 data class ServerListItem(
     val id: Int,
@@ -202,6 +204,8 @@ class ServerViewModelImpl
         override val isPro: StateFlow<Boolean> = _isPro
 
         private val _alcCountryCodes = MutableStateFlow<Set<String>>(emptySet())
+
+        private var searchJob: Job? = null
 
         init {
             fetchAllLists()
@@ -542,17 +546,19 @@ class ServerViewModelImpl
                 return
             }
             _searchKeyword.value = query
-            viewModelScope.launch(Dispatchers.IO) {
-                _searchListState.emit(ListState.Loading)
-                val items =
-                    (serverListState.value as? ListState.Success<ServerListItem>)?.data ?: emptyList()
-                val sortedItems = items.sortedWith(getComparator(query))
-                val updatedList = sortedItems.mapNotNull { it.filterIfContains(query) }
-                val searchItems = if (updatedList.size < items.size) updatedList else items
-                _searchItemsExpandState.value =
-                    HashMap(searchItems.associate { it.region.name.orEmpty() to true })
-                _searchListState.emit(ListState.Success(searchItems))
-            }
+            searchJob?.cancel()
+            searchJob =
+                viewModelScope.launch(Dispatchers.IO) {
+                    delay(300.milliseconds)
+                    val items =
+                        (serverListState.value as? ListState.Success<ServerListItem>)?.data ?: emptyList()
+                    val sortedItems = items.sortedWith(getComparator(query))
+                    val updatedList = sortedItems.mapNotNull { it.filterIfContains(query) }
+                    val searchItems = if (updatedList.size < items.size) updatedList else items
+                    _searchItemsExpandState.value =
+                        HashMap(searchItems.associate { it.region.name.orEmpty() to true })
+                    _searchListState.emit(ListState.Success(searchItems))
+                }
         }
 
         override fun clearSearch() {

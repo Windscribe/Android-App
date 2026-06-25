@@ -20,9 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -76,7 +76,6 @@ fun SearchServerList(
 ) {
     val state by viewModel.searchListState.collectAsState()
     val expandedStates by viewModel.searchItemsExpandState.collectAsState()
-    val scrollState = rememberScrollState()
 
     Box(
         modifier =
@@ -88,26 +87,44 @@ fun SearchServerList(
                 .clickable { },
     ) {
         SearchListNavigation(viewModel, homeViewmodel)
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .offset(y = 54.dp)
-                    .verticalScroll(scrollState),
-        ) {
-            when (state) {
-                is ListState.Loading -> {
+        when (state) {
+            is ListState.Loading -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .offset(y = 54.dp),
+                ) {
                     ProgressIndicator()
                 }
+            }
 
-                is ListState.Error -> {
+            is ListState.Error -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .offset(y = 54.dp),
+                ) {
                     Text("Error loading server list", color = MaterialTheme.colorScheme.serverListSecondaryColor)
                 }
+            }
 
-                is ListState.Success -> {
-                    LocationCount(viewModel)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    (state as ListState.Success).data.forEach { item ->
+            is ListState.Success -> {
+                LazyColumn(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .offset(y = 54.dp),
+                ) {
+                    item {
+                        LocationCount(viewModel)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    items(
+                        items = (state as ListState.Success).data,
+                        key = { it.id },
+                    ) { item ->
                         LocationItem(
                             viewModel,
                             connectionViewModel,
