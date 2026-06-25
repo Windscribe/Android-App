@@ -9,6 +9,7 @@ import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
+import java.net.Inet4Address
 import java.net.InetAddress
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -43,10 +44,15 @@ class ExcludedIpHolder
                                     try {
                                         val addresses = InetAddress.getAllByName(entry.value)
                                         addresses.forEach { address ->
-                                            val ip = address.hostAddress
-                                            if (ip != null) {
-                                                resolvedIps.add(ip)
-                                                logger.debug("Resolved hostname ${entry.value} to IP: $ip")
+                                            // Only include IPv4 addresses since VPN tunnel is IPv4 only
+                                            if (address is Inet4Address) {
+                                                val ip = address.hostAddress
+                                                if (ip != null) {
+                                                    resolvedIps.add(ip)
+                                                    logger.debug("Resolved hostname ${entry.value} to IPv4: $ip")
+                                                }
+                                            } else {
+                                                logger.debug("Skipping IPv6 address for hostname ${entry.value}")
                                             }
                                         }
                                     } catch (e: Exception) {

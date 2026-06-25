@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.windscribe.vpn.backend.utils.ExcludedIpHolder
 import com.windscribe.vpn.localdatabase.ExcludedIpDomainDao
 import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,7 @@ class ExcludedIpDomainViewModelImpl
     @Inject
     constructor(
         private val excludedIpDomainDao: ExcludedIpDomainDao,
+        private val excludedIpHolder: ExcludedIpHolder,
         @ApplicationContext private val context: Context,
     ) : ExcludedIpDomainViewModel() {
         private val _excludedList = MutableStateFlow<List<ExcludedIpDomain>>(emptyList())
@@ -97,6 +99,7 @@ class ExcludedIpDomainViewModelImpl
                     excludedIpDomainDao.insert(entry)
                     _inputText.emit("")
                     _errorMessage.emit(null)
+                    excludedIpHolder.resolveAndStore()
                 } catch (e: Exception) {
                     _errorMessage.emit("Failed to add entry: ${e.message}")
                 }
@@ -107,6 +110,7 @@ class ExcludedIpDomainViewModelImpl
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     excludedIpDomainDao.delete(entry)
+                    excludedIpHolder.resolveAndStore()
                 } catch (e: Exception) {
                     _errorMessage.emit("Failed to delete entry: ${e.message}")
                 }
@@ -117,6 +121,7 @@ class ExcludedIpDomainViewModelImpl
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     excludedIpDomainDao.deleteAll()
+                    excludedIpHolder.resolveAndStore()
                 } catch (e: Exception) {
                     _errorMessage.emit("Failed to delete all entries: ${e.message}")
                 }
@@ -177,6 +182,8 @@ class ExcludedIpDomainViewModelImpl
                             append(", Failed: $failCount")
                         }
                     }
+                    // Refresh the holder cache so changes take effect immediately
+                    excludedIpHolder.resolveAndStore()
                     _toastMessage.emit(result)
                 } catch (e: Exception) {
                     _toastMessage.emit("Failed to import file: ${e.message}")
