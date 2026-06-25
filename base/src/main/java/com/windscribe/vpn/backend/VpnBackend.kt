@@ -203,7 +203,7 @@ abstract class VpnBackend(
                         }
 
                         wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
-                            if (protocolInformation?.protocol == "wg") {
+                            if (protocolInformation?.protocol == "wg" && !preferencesHelper.isConnectingToConfigured) {
                                 bridgeAPI.setCurrentHost(selectedIp ?: "")
                             } else {
                                 bridgeAPI.setCurrentHost("")
