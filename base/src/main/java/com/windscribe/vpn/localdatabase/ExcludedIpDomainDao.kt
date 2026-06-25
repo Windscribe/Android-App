@@ -16,8 +16,11 @@ interface ExcludedIpDomainDao {
     @Query("SELECT * FROM excluded_ip_domain")
     suspend fun getAll(): List<ExcludedIpDomain>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(entry: ExcludedIpDomain): Long
+
+    @Query("SELECT COUNT(*) FROM excluded_ip_domain WHERE LOWER(value) = LOWER(:value)")
+    suspend fun exists(value: String): Int
 
     @Delete
     suspend fun delete(entry: ExcludedIpDomain)

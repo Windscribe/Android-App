@@ -238,7 +238,7 @@
     <string name="feature_tunnel_mode_inclusive">Apps selected below will go through Windscribe when connected</string>
     <string name="apps">APPS</string>
     <string name="domains_ips">DOMAINS &amp; IPs</string>
-    <string name="domains_ips_description">Exclude specific IPs, IP ranges, or hostnames from VPN tunnel (Android 13+)</string>
+    <string name="domains_ips_description">Exclude specific IPs, IP ranges, or hostnames from VPN tunnel. Traffic to these addresses will bypass the VPN.</string>
     <string name="add_ip_domain">Add IP/Domain</string>
     <string name="enter_ip_domain_hint">Enter IP, IP range (192.168.1.0/24), or hostname</string>
     <string name="ip_domain_added">IP/Domain added</string>

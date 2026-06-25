@@ -1,10 +1,13 @@
 package com.windscribe.mobile.ui.preferences.excluded_ips
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.localdatabase.ExcludedIpDomainDao
 import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +19,19 @@ abstract class ExcludedIpDomainViewModel : ViewModel() {
     abstract val excludedList: StateFlow<List<ExcludedIpDomain>>
     abstract val inputText: StateFlow<String>
     abstract val errorMessage: StateFlow<String?>
+    abstract val toastMessage: StateFlow<String?>
 
     open fun onInputTextChange(text: String) {}
 
     open fun onAddEntry() {}
 
     open fun onDeleteEntry(entry: ExcludedIpDomain) {}
+
+    open fun onDeleteAll() {}
+
+    open fun onImportFromFile(uri: Uri) {}
+
+    open fun clearToastMessage() {}
 }
 
 @HiltViewModel
@@ -29,6 +39,7 @@ class ExcludedIpDomainViewModelImpl
     @Inject
     constructor(
         private val excludedIpDomainDao: ExcludedIpDomainDao,
+        @ApplicationContext private val context: Context,
     ) : ExcludedIpDomainViewModel() {
         private val _excludedList = MutableStateFlow<List<ExcludedIpDomain>>(emptyList())
         override val excludedList: StateFlow<List<ExcludedIpDomain>> = _excludedList.asStateFlow()
@@ -38,6 +49,9 @@ class ExcludedIpDomainViewModelImpl
 
         private val _errorMessage = MutableStateFlow<String?>(null)
         override val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+        private val _toastMessage = MutableStateFlow<String?>(null)
+        override val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
 
         init {
             loadExcludedList()
@@ -60,9 +74,15 @@ class ExcludedIpDomainViewModelImpl
 
         override fun onAddEntry() {
             viewModelScope.launch(Dispatchers.IO) {
-                val value = _inputText.value.trim()
+                val value = _inputText.value.trim().lowercase()
                 if (value.isEmpty()) {
                     _errorMessage.emit("Entry cannot be empty")
+                    return@launch
+                }
+
+                // Check for duplicates
+                if (excludedIpDomainDao.exists(value) > 0) {
+                    _errorMessage.emit("Entry already exists")
                     return@launch
                 }
 
@@ -90,6 +110,83 @@ class ExcludedIpDomainViewModelImpl
                 } catch (e: Exception) {
                     _errorMessage.emit("Failed to delete entry: ${e.message}")
                 }
+            }
+        }
+
+        override fun onDeleteAll() {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    excludedIpDomainDao.deleteAll()
+                } catch (e: Exception) {
+                    _errorMessage.emit("Failed to delete all entries: ${e.message}")
+                }
+            }
+        }
+
+        override fun onImportFromFile(uri: Uri) {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    if (inputStream == null) {
+                        _toastMessage.emit("Failed to open file")
+                        return@launch
+                    }
+
+                    val lines = inputStream.bufferedReader().use { it.readLines() }
+                    var successCount = 0
+                    var duplicateCount = 0
+                    var failCount = 0
+
+                    lines.forEach { line ->
+                        val value = line.trim().lowercase()
+                        if (value.isEmpty() || value.startsWith("#")) {
+                            // Skip empty lines and comments
+                            return@forEach
+                        }
+
+                        // Check for duplicates
+                        if (excludedIpDomainDao.exists(value) > 0) {
+                            duplicateCount++
+                            return@forEach
+                        }
+
+                        val type = detectEntryType(value)
+                        if (type != null) {
+                            try {
+                                val entry = ExcludedIpDomain(value = value, type = type)
+                                val insertResult = excludedIpDomainDao.insert(entry)
+                                if (insertResult > 0) {
+                                    successCount++
+                                } else {
+                                    duplicateCount++
+                                }
+                            } catch (e: Exception) {
+                                failCount++
+                            }
+                        } else {
+                            failCount++
+                        }
+                    }
+
+                    val result = buildString {
+                        append("Imported: $successCount")
+                        if (duplicateCount > 0) {
+                            append(", Skipped: $duplicateCount")
+                        }
+                        if (failCount > 0) {
+                            append(", Failed: $failCount")
+                        }
+                    }
+                    _toastMessage.emit(result)
+                } catch (e: Exception) {
+                    _toastMessage.emit("Failed to import file: ${e.message}")
+                }
+            }
+        }
+
+        override fun clearToastMessage() {
+            viewModelScope.launch {
+                _toastMessage.emit(null)
             }
         }
 
