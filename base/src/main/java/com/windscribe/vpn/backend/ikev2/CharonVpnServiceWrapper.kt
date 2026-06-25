@@ -6,6 +6,7 @@ package com.windscribe.vpn.backend.ikev2
 
 import android.app.Notification
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
@@ -76,6 +77,17 @@ class CharonVpnServiceWrapper : CharonVpnService() {
 
     override fun onDestroy() {
         logger.debug("CharonVpnServiceWrapper onDestroy()")
+        // On Android 11 (API 30) and below, notifications tied to foreground services may not be
+        // removed properly by the parent class due to timing issues with mShowNotification flag.
+        // Explicitly call stopForeground() to ensure notification removal on these versions.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+            try {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            } catch (e: Exception) {
+                logger.error("Failed to stop foreground: ${e.message}", e)
+            }
+        }
         windNotificationBuilder.cancelNotification(NotificationConstants.SERVICE_NOTIFICATION_ID)
         iKev2VpnBackend.serviceDestroyed()
         super.onDestroy()
