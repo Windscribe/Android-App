@@ -269,7 +269,11 @@ class UserRepository(
             onState(UserDataState.Loading("Getting connection data"))
             connectionDataRepository.update()
             onState(UserDataState.Loading("Getting server list"))
-            serverListRepository.update()
+            try {
+                serverListRepository.update()
+            } catch (e: Exception) {
+                logger.error("Failed to update server list: ${e.message}")
+            }
         })
     }
 
