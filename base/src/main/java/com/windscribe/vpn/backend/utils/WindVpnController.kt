@@ -560,15 +560,8 @@ open class WindVpnController
                             vpnConnectionStateManager.setState(vpnState)
                         }
                     }, {
-                        CoroutineScope(context).launch {
-                            disconnect(
-                                error =
-                                    VPNState.Error(
-                                        error = VPNState.ErrorType.UserDisconnect,
-                                        "User cancelled WireGuard key deletion.",
-                                    ),
-                            )
-                        }
+                        logger.info("Cancel clicked")
+                        disconnectAsync()
                     }, title = appContext.getString(R.string.note))
                 }
 
