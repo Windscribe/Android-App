@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import org.slf4j.LoggerFactory
 import java.util.Date
 import java.util.UUID
@@ -62,6 +63,7 @@ class UserRepository(
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user.asStateFlow()
     private val logger = LoggerFactory.getLogger("data")
+    private val logoutMutex = Mutex()
 
     init {
         reload()
@@ -126,6 +128,12 @@ class UserRepository(
     }
 
     fun logout() {
+        // Prevent concurrent logout calls from multiple SessionWorkers or UI triggers
+        if (!logoutMutex.tryLock()) {
+            logger.debug("Logout already in progress, skipping duplicate call")
+            return
+        }
+
         scope
             .launch {
                 if (appContext.vpnConnectionStateManager.isVPNActive()) {
@@ -137,30 +145,34 @@ class UserRepository(
             }.invokeOnCompletion {
                 WorkManager.getInstance(appContext).cancelAllWork()
                 scope.launch {
-                    logger.debug("Deleting user session.")
-                    var attempts = 0
-                    val maxAttempts = 3
-                    var success = false
+                    try {
+                        logger.debug("Deleting user session.")
+                        var attempts = 0
+                        val maxAttempts = 3
+                        var success = false
 
-                    while (attempts < maxAttempts && !success) {
-                        attempts++
-                        try {
-                            val response = apiManager.deleteSession()
-                            response.dataClass?.let {
-                                logger.debug("Successfully deleted user session: ${it.isSuccessful}")
-                                success = true
-                            } ?: response.errorClass?.let {
-                                logger.debug("Error deleting session (attempt $attempts/$maxAttempts): ${it.errorMessage}")
+                        while (attempts < maxAttempts && !success) {
+                            attempts++
+                            try {
+                                val response = apiManager.deleteSession()
+                                response.dataClass?.let {
+                                    logger.debug("Successfully deleted user session: ${it.isSuccessful}")
+                                    success = true
+                                } ?: response.errorClass?.let {
+                                    logger.debug("Error deleting session (attempt $attempts/$maxAttempts): ${it.errorMessage}")
+                                }
+                            } catch (e: Exception) {
+                                logger.debug("Unknown error deleting session (attempt $attempts/$maxAttempts): ${e.localizedMessage}")
                             }
-                        } catch (e: Exception) {
-                            logger.debug("Unknown error deleting session (attempt $attempts/$maxAttempts): ${e.localizedMessage}")
                         }
-                    }
 
-                    if (!success) {
-                        logger.debug("Failed to delete session after $maxAttempts attempts")
+                        if (!success) {
+                            logger.debug("Failed to delete session after $maxAttempts attempts")
+                        }
+                        onSessionDeleted()
+                    } finally {
+                        logoutMutex.unlock()
                     }
-                    onSessionDeleted()
                 }
             }
     }

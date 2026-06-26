@@ -140,7 +140,7 @@ fun MainMenuContent(
                 hapticFeedbackEnabled,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            LogoutItem(hapticFeedbackEnabled, onLogout)
+            LogoutItem(hapticFeedbackEnabled, showProgress, onLogout)
         }
         PreferenceProgressBar(showProgress)
     }
@@ -199,6 +199,7 @@ private fun MainMenuItem(
 @Composable
 private fun LogoutItem(
     hapticFeedbackEnabled: Boolean,
+    showProgress: Boolean,
     onLogout: () -> Unit,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
@@ -210,7 +211,7 @@ private fun LogoutItem(
             .background(
                 color = AppColors.yellow.copy(0.05f),
                 shape = RoundedCornerShape(size = 12.dp),
-            ).clickable {
+            ).clickable(enabled = !showProgress) {
                 if (hapticFeedbackEnabled) {
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                 }
@@ -219,19 +220,20 @@ private fun LogoutItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
+        val alpha = if (showProgress) 0.5f else 1f
         Icon(
             modifier =
                 Modifier
                     .size(24.dp),
             painter = painterResource(com.windscribe.mobile.R.drawable.ic_sign_out),
             contentDescription = "",
-            tint = AppColors.yellow,
+            tint = AppColors.yellow.copy(alpha = alpha),
         )
         Text(
             stringResource(R.string.logout),
             modifier = Modifier.padding(start = 16.dp),
             style = font16.copy(fontWeight = FontWeight.Medium),
-            color = AppColors.yellow,
+            color = AppColors.yellow.copy(alpha = alpha),
         )
     }
 }

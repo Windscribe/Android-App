@@ -8,7 +8,6 @@ import android.graphics.drawable.Icon
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import com.windscribe.vpn.R.drawable
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connected
@@ -100,7 +99,8 @@ class VpnTileService : TileService() {
             VPNState.Status.Disconnecting,
             VPNState.Status.RequiresUserInput,
             VPNState.Status.UnsecuredNetwork,
-            VPNState.Status.InvalidSession -> {
+            VPNState.Status.InvalidSession,
+            -> {
                 logger.debug("Changing quick tile status to Disconnecting/Inactive: $status")
                 setTileState(getIcon(), Tile.STATE_INACTIVE)
             }
