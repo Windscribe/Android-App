@@ -561,6 +561,7 @@ open class WindVpnController
                         }
                     }, {
                         logger.info("Cancel clicked")
+                        preferencesHelper.globalUserConnectionPreference = false
                         disconnectAsync()
                     }, title = appContext.getString(R.string.note))
                 }
