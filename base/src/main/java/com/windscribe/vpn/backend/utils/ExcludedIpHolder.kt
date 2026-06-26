@@ -4,7 +4,7 @@ import android.net.IpPrefix
 import android.net.VpnService
 import android.os.Build
 import android.util.Log
-import com.windscribe.vpn.localdatabase.ExcludedIpDomainDao
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,7 +18,7 @@ import javax.inject.Singleton
 class ExcludedIpHolder
     @Inject
     constructor(
-        private val excludedIpDomainDao: ExcludedIpDomainDao,
+        private val localDbInterface: LocalDbInterface,
     ) {
         private val logger = LoggerFactory.getLogger("vpn")
         private var excludedIps: List<String> = emptyList()
@@ -27,7 +27,7 @@ class ExcludedIpHolder
             excludedIps =
                 withContext(Dispatchers.IO) {
                     try {
-                        val entries = excludedIpDomainDao.getAll()
+                        val entries = localDbInterface.getAllExcludedIpsDomains()
                         val resolvedIps = mutableListOf<String>()
 
                         entries.forEach { entry ->

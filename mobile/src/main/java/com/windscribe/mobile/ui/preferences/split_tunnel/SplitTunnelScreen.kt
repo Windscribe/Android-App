@@ -77,6 +77,7 @@ data class SplitTunnelState(
     val filteredApps: List<InstalledAppsData> = emptyList(),
     val appIconCache: AppIconCache? = null,
     val isAndroid13Plus: Boolean = false,
+    val excludedIpsCount: Int = 0,
 )
 
 /**
@@ -104,6 +105,7 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunne
     val showSystemApps by viewModel.showSystemApps.collectAsState()
     val searchKeyword by viewModel.searchKeyword.collectAsState()
     val filteredApps by viewModel.filteredApps.collectAsState()
+    val excludedIpsCount by viewModel.excludedIpsCount.collectAsState()
 
     SplitTunnelContent(
         state =
@@ -117,6 +119,7 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunne
                 filteredApps = filteredApps,
                 appIconCache = viewModel.appIconCache,
                 isAndroid13Plus = viewModel.isAndroid13Plus,
+                excludedIpsCount = excludedIpsCount,
             ),
         actions =
             SplitTunnelActions(
@@ -161,11 +164,11 @@ fun SplitTunnelContent(
                 actions.onSplitTunnelSettingChanged,
                 actions.onModeSelected,
             )
-            Spacer(modifier = Modifier.height(14.dp))
             if (state.isAndroid13Plus) {
-                DomainsIpsSection(actions.onManageDomainsIps)
                 Spacer(modifier = Modifier.height(14.dp))
+                IpsHostnamesRow(state.excludedIpsCount, actions.onManageDomainsIps)
             }
+            Spacer(modifier = Modifier.height(14.dp))
             AppsTitle()
             Spacer(modifier = Modifier.height(8.dp))
             ShowSystemAppsToggle(state.showSystemApps, actions.onShowSystemAppsToggle)
@@ -297,49 +300,49 @@ private fun Mode(
             explainer = FeatureExplainer.SPLIT_TUNNELING,
         )
         Spacer(modifier = Modifier.height(1.dp))
-        CustomDropDown(R.string.mode, modes, selectedKey, description = modeDescription) {
+        CustomDropDown(R.string.mode, modes, selectedKey, description = modeDescription, shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)) {
             onModeSelected(it)
         }
     }
 }
 
 @Composable
-private fun DomainsIpsSection(onManageClick: () -> Unit) {
-    Column {
+private fun IpsHostnamesRow(
+    count: Int,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(12.dp),
+                ).clickable { onClick() }
+                .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(
             text = stringResource(R.string.domains_ips),
-            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
-            style = font16.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.primaryTextColor,
+            style = font16.copy(fontWeight = FontWeight.Medium),
             textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                        shape = RoundedCornerShape(12.dp),
-                    ).clickable { onManageClick() }
-                    .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.add_ip_domain),
-                color = MaterialTheme.colorScheme.primaryTextColor,
-                style = font16.copy(fontWeight = FontWeight.Medium),
-                textAlign = TextAlign.Start,
-                modifier = Modifier.weight(1f),
-            )
-            Image(
-                painter = painterResource(com.windscribe.mobile.R.drawable.arrow_right),
-                contentDescription = "Navigate",
-                modifier = Modifier.size(16.dp),
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.4f)),
-            )
-        }
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = count.toString(),
+            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
+            style = font16.copy(fontWeight = FontWeight.Normal),
+            textAlign = TextAlign.End,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Image(
+            painter = painterResource(com.windscribe.mobile.R.drawable.arrow_right),
+            contentDescription = "Navigate",
+            modifier = Modifier.size(16.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.4f)),
+        )
     }
 }
 

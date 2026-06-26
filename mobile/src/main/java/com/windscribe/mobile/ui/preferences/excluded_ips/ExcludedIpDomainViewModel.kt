@@ -5,7 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.backend.utils.ExcludedIpHolder
-import com.windscribe.vpn.localdatabase.ExcludedIpDomainDao
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -39,7 +39,7 @@ abstract class ExcludedIpDomainViewModel : ViewModel() {
 class ExcludedIpDomainViewModelImpl
     @Inject
     constructor(
-        private val excludedIpDomainDao: ExcludedIpDomainDao,
+        private val localDbInterface: LocalDbInterface,
         private val excludedIpHolder: ExcludedIpHolder,
         @ApplicationContext private val context: Context,
     ) : ExcludedIpDomainViewModel() {
@@ -61,7 +61,7 @@ class ExcludedIpDomainViewModelImpl
 
         private fun loadExcludedList() {
             viewModelScope.launch(Dispatchers.IO) {
-                excludedIpDomainDao.getAllFlow().collect { list ->
+                localDbInterface.getExcludedIpsDomainsFlow().collect { list ->
                     _excludedList.emit(list)
                 }
             }
@@ -70,7 +70,6 @@ class ExcludedIpDomainViewModelImpl
         override fun onInputTextChange(text: String) {
             viewModelScope.launch {
                 _inputText.emit(text)
-                _errorMessage.emit(null)
             }
         }
 
@@ -78,30 +77,29 @@ class ExcludedIpDomainViewModelImpl
             viewModelScope.launch(Dispatchers.IO) {
                 val value = _inputText.value.trim().lowercase()
                 if (value.isEmpty()) {
-                    _errorMessage.emit("Entry cannot be empty")
+                    _toastMessage.emit("Entry cannot be empty")
                     return@launch
                 }
 
                 // Check for duplicates
-                if (excludedIpDomainDao.exists(value) > 0) {
-                    _errorMessage.emit("Entry already exists")
+                if (localDbInterface.excludedIpDomainExists(value) > 0) {
+                    _toastMessage.emit("Entry already exists")
                     return@launch
                 }
 
                 val type = detectEntryType(value)
                 if (type == null) {
-                    _errorMessage.emit("Invalid IP, IP range, or hostname")
+                    _toastMessage.emit("Invalid IP, IP range, or hostname")
                     return@launch
                 }
 
                 try {
                     val entry = ExcludedIpDomain(value = value, type = type)
-                    excludedIpDomainDao.insert(entry)
+                    localDbInterface.insertExcludedIpDomain(entry)
                     _inputText.emit("")
-                    _errorMessage.emit(null)
                     excludedIpHolder.resolveAndStore()
                 } catch (e: Exception) {
-                    _errorMessage.emit("Failed to add entry: ${e.message}")
+                    _toastMessage.emit("Failed to add entry: ${e.message}")
                 }
             }
         }
@@ -109,7 +107,7 @@ class ExcludedIpDomainViewModelImpl
         override fun onDeleteEntry(entry: ExcludedIpDomain) {
             viewModelScope.launch(Dispatchers.IO) {
                 try {
-                    excludedIpDomainDao.delete(entry)
+                    localDbInterface.deleteExcludedIpDomain(entry)
                     excludedIpHolder.resolveAndStore()
                 } catch (e: Exception) {
                     _errorMessage.emit("Failed to delete entry: ${e.message}")
@@ -120,7 +118,7 @@ class ExcludedIpDomainViewModelImpl
         override fun onDeleteAll() {
             viewModelScope.launch(Dispatchers.IO) {
                 try {
-                    excludedIpDomainDao.deleteAll()
+                    localDbInterface.deleteAllExcludedIpsDomains()
                     excludedIpHolder.resolveAndStore()
                 } catch (e: Exception) {
                     _errorMessage.emit("Failed to delete all entries: ${e.message}")
@@ -150,7 +148,7 @@ class ExcludedIpDomainViewModelImpl
                         }
 
                         // Check for duplicates
-                        if (excludedIpDomainDao.exists(value) > 0) {
+                        if (localDbInterface.excludedIpDomainExists(value) > 0) {
                             duplicateCount++
                             return@forEach
                         }
@@ -159,7 +157,7 @@ class ExcludedIpDomainViewModelImpl
                         if (type != null) {
                             try {
                                 val entry = ExcludedIpDomain(value = value, type = type)
-                                val insertResult = excludedIpDomainDao.insert(entry)
+                                val insertResult = localDbInterface.insertExcludedIpDomain(entry)
                                 if (insertResult > 0) {
                                     successCount++
                                 } else {

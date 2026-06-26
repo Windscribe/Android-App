@@ -224,6 +224,7 @@ open class BaseApplicationModule {
         serverStatusDao: ServerStatusDao,
         windNotificationDao: WindNotificationDao,
         unblockWgDao: UnblockWgDao,
+        excludedIpDomainDao: ExcludedIpDomainDao,
     ): LocalDbInterface =
         LocalDatabaseImpl(
             userStatusDao,
@@ -241,6 +242,7 @@ open class BaseApplicationModule {
             serverStatusDao,
             windNotificationDao,
             unblockWgDao,
+            excludedIpDomainDao,
         )
 
     @Provides

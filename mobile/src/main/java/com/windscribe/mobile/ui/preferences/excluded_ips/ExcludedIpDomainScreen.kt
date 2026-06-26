@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,8 +52,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import android.widget.Toast
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.nav.LocalNavController
+import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
@@ -64,7 +67,6 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
     val context = LocalContext.current
     val excludedList by viewModel.excludedList.collectAsState()
     val inputText by viewModel.inputText.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
     val toastMessage by viewModel.toastMessage.collectAsState()
 
     var showDeleteAllDialog by remember { mutableStateOf(false) }
@@ -97,13 +99,12 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
             Text(
                 text = stringResource(R.string.domains_ips_description),
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-                style = font14.copy(fontWeight = FontWeight.Normal),
+                style = font14.copy(fontWeight = FontWeight.Normal, textAlign = TextAlign.Start),
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(16.dp))
             InputSection(
                 inputText = inputText,
-                errorMessage = errorMessage,
                 onInputChange = viewModel::onInputTextChange,
                 onAdd = viewModel::onAddEntry,
             )
@@ -122,108 +123,133 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
     }
 
     if (showDeleteAllDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteAllDialog = false },
-            title = { Text("Delete All") },
-            text = { Text("Are you sure you want to delete all entries? This action cannot be undone.") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.onDeleteAll()
-                        showDeleteAllDialog = false
-                    },
-                ) {
-                    Text("Delete", color = Color.Red)
-                }
+        DeleteAllConfirmDialog(
+            onConfirm = {
+                viewModel.onDeleteAll()
+                showDeleteAllDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteAllDialog = false }) {
-                    Text("Cancel")
-                }
-            },
+            onDismiss = { showDeleteAllDialog = false },
         )
     }
 }
 
 @Composable
+private fun DeleteAllConfirmDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        shape = RoundedCornerShape(16.dp),
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+        modifier =
+            Modifier.border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(16.dp),
+            ),
+        title = {
+            Text(
+                text = "Delete All?",
+                style = font16.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.primaryTextColor,
+            )
+        },
+        text = {
+            Text(
+                text = "Are you sure you want to delete all entries? This action cannot be undone.",
+                style = font12.copy(textAlign = TextAlign.Left),
+                color = MaterialTheme.colorScheme.primaryTextColor,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    "Delete",
+                    style = font16.copy(fontWeight = FontWeight.Medium),
+                    color = Color.Red,
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    "Cancel",
+                    style = font16,
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                )
+            }
+        },
+    )
+}
+
+@Composable
 private fun InputSection(
     inputText: String,
-    errorMessage: String?,
     onInputChange: (String) -> Unit,
     onAdd: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    Column {
-        Row(
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(12.dp),
+                ).padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextField(
+            value = inputText,
+            onValueChange = onInputChange,
             modifier =
                 Modifier
-                    .fillMaxWidth()
-                    .height(54.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                        shape = RoundedCornerShape(12.dp),
-                    ).padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextField(
-                value = inputText,
-                onValueChange = onInputChange,
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                textStyle = font16.copy(textAlign = TextAlign.Start, color = MaterialTheme.colorScheme.primaryTextColor),
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.enter_ip_domain_hint),
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
-                        style = font16,
-                    )
-                },
-                colors =
-                    TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        cursorColor = MaterialTheme.colorScheme.primaryTextColor,
-                        selectionColors =
-                            androidx.compose.foundation.text.selection.TextSelectionColors(
-                                handleColor = MaterialTheme.colorScheme.primaryTextColor,
-                                backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f),
-                            ),
-                    ),
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                keyboardActions =
-                    KeyboardActions(
-                        onDone = {
-                            keyboardController?.hide()
-                            onAdd()
-                        },
-                    ),
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Image(
-                painter = painterResource(com.windscribe.mobile.R.drawable.ic_add),
-                contentDescription = "Add",
-                modifier =
-                    Modifier
-                        .size(32.dp)
-                        .clickable { onAdd() },
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
-            )
-        }
-        if (errorMessage != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = errorMessage,
-                color = Color.Red,
-                style = font14,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
+                    .weight(1f)
+                    .fillMaxHeight(),
+            textStyle = font16.copy(textAlign = TextAlign.Start, color = MaterialTheme.colorScheme.primaryTextColor),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.enter_ip_domain_hint),
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
+                    style = font16,
+                )
+            },
+            colors =
+                TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                    selectionColors =
+                        androidx.compose.foundation.text.selection.TextSelectionColors(
+                            handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                            backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f),
+                        ),
+                ),
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardActions =
+                KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                        onAdd()
+                    },
+                ),
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Image(
+            painter = painterResource(com.windscribe.mobile.R.drawable.ic_add),
+            contentDescription = "Add",
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .clickable { onAdd() },
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
+        )
     }
 }
 
