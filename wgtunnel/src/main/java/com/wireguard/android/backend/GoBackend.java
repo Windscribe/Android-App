@@ -234,6 +234,28 @@ public final class GoBackend implements Backend {
 
     private void setStateInternal(final Tunnel tunnel, @Nullable final Config config, final State state)
             throws Exception {
+        // Perform DNS resolution BEFORE acquiring lock to prevent ANR
+        // DNS lookups can be slow and should not block other operations
+        if (state == State.UP && config != null) {
+            dnsRetry: for (int i = 0; i < DNS_RESOLUTION_RETRIES; ++i) {
+                // Pre-resolve IPs so they're cached when building the userspace string
+                for (final Peer peer : config.getPeers()) {
+                    final InetEndpoint ep = peer.getEndpoint().orElse(null);
+                    if (ep == null)
+                        continue;
+                    if (ep.getResolved().orElse(null) == null) {
+                        if (i < DNS_RESOLUTION_RETRIES - 1) {
+                            Log.w(TAG, "DNS host \"" + ep.getHost() + "\" failed to resolve; trying again");
+                            Thread.sleep(1000);
+                            continue dnsRetry;
+                        } else
+                            throw new BackendException(Reason.DNS_RESOLUTION_FAILURE, ep.getHost());
+                    }
+                }
+                break;
+            }
+        }
+
         synchronized (tunnelStateLock) {
             setStateInternalLocked(tunnel, config, state);
         }
@@ -270,24 +292,7 @@ public final class GoBackend implements Backend {
                 return;
             }
 
-
-            dnsRetry: for (int i = 0; i < DNS_RESOLUTION_RETRIES; ++i) {
-                // Pre-resolve IPs so they're cached when building the userspace string
-                for (final Peer peer : config.getPeers()) {
-                    final InetEndpoint ep = peer.getEndpoint().orElse(null);
-                    if (ep == null)
-                        continue;
-                    if (ep.getResolved().orElse(null) == null) {
-                        if (i < DNS_RESOLUTION_RETRIES - 1) {
-                            Log.w(TAG, "DNS host \"" + ep.getHost() + "\" failed to resolve; trying again");
-                            Thread.sleep(1000);
-                            continue dnsRetry;
-                        } else
-                            throw new BackendException(Reason.DNS_RESOLUTION_FAILURE, ep.getHost());
-                    }
-                }
-                break;
-            }
+            // DNS resolution already completed in setStateInternal() before acquiring lock
 
             // Build config
             final String goConfig = config.toWgUserspaceString();
