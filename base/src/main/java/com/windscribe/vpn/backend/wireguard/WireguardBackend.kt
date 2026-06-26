@@ -179,7 +179,6 @@ class WireguardBackend
                 Util.getProfile<WireGuardVpnProfile>()?.let { profile ->
                     withContext(Dispatchers.IO) {
                         val content = WireGuardVpnProfile.createConfigFromString(profile.content)
-                        vpnLogger.info(profile.content)
                         try {
                             backend.setState(testTunnel, UP, content)
                             // Start tunnel health monitoring after connection is established
