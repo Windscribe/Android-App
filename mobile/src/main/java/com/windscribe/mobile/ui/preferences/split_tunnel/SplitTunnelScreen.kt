@@ -300,7 +300,13 @@ private fun Mode(
             explainer = FeatureExplainer.SPLIT_TUNNELING,
         )
         Spacer(modifier = Modifier.height(1.dp))
-        CustomDropDown(R.string.mode, modes, selectedKey, description = modeDescription, shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)) {
+        CustomDropDown(
+            R.string.mode,
+            modes,
+            selectedKey,
+            description = modeDescription,
+            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+        ) {
             onModeSelected(it)
         }
     }

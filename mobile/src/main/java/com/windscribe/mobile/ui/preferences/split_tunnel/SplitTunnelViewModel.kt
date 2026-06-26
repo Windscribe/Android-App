@@ -58,7 +58,9 @@ class SplitTunnelViewModelImpl
         private val _showProgress = MutableStateFlow(false)
         override val showProgress: StateFlow<Boolean> = _showProgress
         override val excludedIpsCount: StateFlow<Int> =
-            localDbInterface.getExcludedIpsDomainsFlow().map { it.size }
+            localDbInterface
+                .getExcludedIpsDomainsFlow()
+                .map { it.size }
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
         override val modes: List<DropDownStringItem>
             get() {

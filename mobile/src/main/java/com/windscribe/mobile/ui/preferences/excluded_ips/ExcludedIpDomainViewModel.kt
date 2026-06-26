@@ -171,15 +171,16 @@ class ExcludedIpDomainViewModelImpl
                         }
                     }
 
-                    val result = buildString {
-                        append("Imported: $successCount")
-                        if (duplicateCount > 0) {
-                            append(", Skipped: $duplicateCount")
+                    val result =
+                        buildString {
+                            append("Imported: $successCount")
+                            if (duplicateCount > 0) {
+                                append(", Skipped: $duplicateCount")
+                            }
+                            if (failCount > 0) {
+                                append(", Failed: $failCount")
+                            }
                         }
-                        if (failCount > 0) {
-                            append(", Failed: $failCount")
-                        }
-                    }
                     // Refresh the holder cache so changes take effect immediately
                     excludedIpHolder.resolveAndStore()
                     _toastMessage.emit(result)
