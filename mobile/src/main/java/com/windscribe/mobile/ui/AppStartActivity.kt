@@ -48,6 +48,9 @@ class AppStartActivity : AppCompatActivity() {
             setTheme(R.style.LightTheme)
         }
         val splashScreen = installSplashScreen()
+        // Keep splash screen visible until content is ready to prevent framework race condition
+        var keepSplashScreen = true
+        splashScreen.setKeepOnScreenCondition { keepSplashScreen }
         splashScreen.setOnExitAnimationListener { splashScreenView ->
             if (isFinishing || isDestroyed) {
                 return@setOnExitAnimationListener
@@ -57,6 +60,10 @@ class AppStartActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+        // Allow splash screen to be removed after a short delay
+        window.decorView.post {
+            keepSplashScreen = false
         }
         val navigationBarStyle =
             if (isDark) {
