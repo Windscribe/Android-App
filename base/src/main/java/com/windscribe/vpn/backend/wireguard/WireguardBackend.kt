@@ -31,6 +31,7 @@ import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
@@ -75,6 +76,7 @@ class WireguardBackend
         override var active = false
         private var wgErrorJob: Job? = null
         private var captureLogsJob: Job? = null
+        private var handshakeMonitorJob: Job? = null
         private val backend: GoBackend by lazy { backendLazy.get() }
 
         private val testTunnel =
@@ -136,7 +138,7 @@ class WireguardBackend
                             }
 
                             UP -> {
-                                testConnectivity()
+                                vpnLogger.debug("Tunnel UP, waiting for handshake event...")
                             }
                         }
                         stickyDisconnectEvent = false
@@ -156,6 +158,8 @@ class WireguardBackend
         override fun deactivate() {
             wgErrorJob?.cancel()
             connectionStateJob?.cancel()
+            handshakeMonitorJob?.cancel()
+            handshakeMonitorJob = null
             pinIpRecovery.stop()
             tunnelHealthCheck.stop()
             wgLogger.stopCapture()
@@ -173,6 +177,10 @@ class WireguardBackend
             this.protocolInformation = protocolInformation
             this.connectionId = connectionId
             startConnectionJob()
+
+            // Start handshake monitor BEFORE setting tunnel UP to avoid race condition
+            startHandshakeMonitor()
+
             scope.launch {
                 proxyDNSManager.startControlDIfRequired()
                 vpnLogger.info("Getting WireGuard profile.")
@@ -210,8 +218,37 @@ class WireguardBackend
             delay(20)
             vpnLogger.info("Setting WireGuard tunnel state down.")
             backend.setState(testTunnel, DOWN, null)
-            delay(DISCONNECT_DELAY)
             vpnLogger.info("Deactivating WireGuard backend.")
             deactivate()
+        }
+
+        /**
+         * Start monitoring for WireGuard handshake success.
+         * Triggers optimized connectivity test immediately after handshake is complete.
+         * Pre-fetches connectivity test data in parallel while waiting for handshake.
+         */
+        private fun startHandshakeMonitor() {
+            handshakeMonitorJob?.cancel()
+            handshakeMonitorJob =
+                scope.launch {
+                    vpnLogger.info("Waiting for WireGuard handshake success...")
+
+                    // Pre-fetch pinned location in parallel while waiting for handshake
+                    val pinnedLocationDeferred = async {
+                        getPinnedIpForSelectedCity()
+                    }
+
+                    // Wait for handshake
+                    wgLogger.handshakeReceivedEvent.collect {
+                        vpnLogger.info("WireGuard handshake successful, starting optimized connectivity test.")
+
+                        // Pass pre-fetched data to connectivity test
+                        testConnectivityForWireGuard(pinnedLocationDeferred.await())
+
+                        // Cancel this job after first handshake to prevent multiple tests
+                        handshakeMonitorJob?.cancel()
+                        handshakeMonitorJob = null
+                    }
+                }
         }
     }

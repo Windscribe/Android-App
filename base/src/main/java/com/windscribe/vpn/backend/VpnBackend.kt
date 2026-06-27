@@ -296,6 +296,123 @@ abstract class VpnBackend(
             }
     }
 
+    /**
+     * Optimized connectivity test for WireGuard - single-shot after handshake success.
+     * No delays, no retries since handshake already confirmed tunnel is ready.
+     * @param pinnedLocation Pre-fetched pinned location data to avoid DB lookup delay
+     */
+    fun testConnectivityForWireGuard(pinnedLocation: Pair<String, String>? = null) {
+        if (connectivityTestJob?.isActive == true) {
+            vpnLogger.debug("Connectivity test already running, skipping new test.")
+            return
+        }
+        connectionJob?.cancel()
+        connectivityTestJob?.cancel()
+        connectivityTestJob = null
+        vpnLogger.info("Starting WireGuard optimized connectivity test (single-shot after handshake).")
+
+        connectivityTestJob =
+            mainScope.launch {
+                try {
+                    val selectedIp = preferencesHelper.selectedIp
+                    val shouldCheckPinning = pinnedLocation?.second != null
+                    val hasPinnedNodeMismatch =
+                        shouldCheckPinning &&
+                            !WindUtilities.hostnamesMatch(
+                                pinnedLocation.second,
+                                selectedIp,
+                            )
+                    val ip = pinnedLocation?.first
+                    var ipPinningFailed = false
+
+                    withTimeout(10_000) {
+                        // 10 seconds total timeout for single attempt
+
+                        // Wait for WSNet to be fully initialized before calling bridge API
+                        if (!wsNetWrapper.isReady.value) {
+                            vpnLogger.debug("Waiting for WSNet to be fully ready...")
+                            withTimeoutOrNull(5000) {
+                                wsNetWrapper.isReady.first { it }
+                            } ?: run {
+                                vpnLogger.warn("WSNet not ready after 5s, skipping bridge API call")
+                            }
+                        }
+
+                        wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
+                            if (!preferencesHelper.isConnectingToConfigured) {
+                                bridgeAPI.setCurrentHost(selectedIp ?: "")
+                            } else {
+                                bridgeAPI.setCurrentHost("")
+                            }
+                            bridgeAPI.setIgnoreSslErrors(false)
+                            bridgeAPI.setConnectedState(true)
+                        }
+
+                        // Pin IP if available
+                        if (ip != null) {
+                            vpnLogger.info("Pinning IP: $ip for node: $selectedIp")
+                            val pinResult =
+                                result<Any> {
+                                    apiManager.pinIp(ip)
+                                }
+                            when (pinResult) {
+                                is CallResult.Success -> {
+                                    vpnLogger.info("IP pinned successfully")
+                                }
+
+                                is CallResult.Error -> {
+                                    vpnLogger.error("Failed to pin IP: ${pinResult.errorMessage}")
+                                    ipPinningFailed = true
+                                }
+                            }
+                        }
+
+                        // Single connectivity test attempt
+                        vpnLogger.info("Connectivity test attempt: 1/1")
+                        val result =
+                            result<String> {
+                                apiManager.getIp()
+                            }
+
+                        when (result) {
+                            is CallResult.Success -> {
+                                val userIp = result.data
+                                if (Util.validIpAddress(userIp)) {
+                                    val ipAddress = Util.getModifiedIpAddress(userIp.trim())
+                                    preferencesHelper.userIP = ipAddress
+                                    connectivityTestPassed(userIp)
+                                    if (hasPinnedNodeMismatch || ipPinningFailed) {
+                                        val title =
+                                            resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
+                                        val description =
+                                            resourceHelper.getString(com.windscribe.vpn.R.string.favourite_node_not_available)
+                                        appContext.applicationInterface.showPinnedNodeErrorDialog(
+                                            title,
+                                            description,
+                                        )
+                                    }
+                                } else {
+                                    vpnLogger.error("WireGuard connectivity test failed: Invalid IP address: $userIp")
+                                    failedConnectivityTest()
+                                }
+                            }
+
+                            is CallResult.Error -> {
+                                vpnLogger.error("WireGuard connectivity test failed: ${result.errorMessage}")
+                                failedConnectivityTest()
+                            }
+                        }
+                    }
+                } catch (e: TimeoutCancellationException) {
+                    vpnLogger.error("WireGuard connectivity test timeout: exceeded 10 seconds")
+                    failedConnectivityTest()
+                } catch (e: Exception) {
+                    vpnLogger.error("WireGuard connectivity test error: ${e.message}")
+                    failedConnectivityTest()
+                }
+            }
+    }
+
     fun updateState(vpnState: VPNState) {
         mainScope.launch {
             vpnState.protocolInformation = protocolInformation
