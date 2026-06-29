@@ -9,6 +9,7 @@ import android.net.VpnService
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
+import com.windscribe.vpn.backend.utils.ExcludedIpHolder
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.utils.startForegroundImmediately
@@ -46,6 +47,9 @@ class OpenVPNWrapperService :
 
     @Inject
     lateinit var shortcutStateManager: ShortcutStateManager
+
+    @Inject
+    lateinit var excludedIpHolder: ExcludedIpHolder
 
     private var logger = LoggerFactory.getLogger("vpn")
 
@@ -131,5 +135,9 @@ class OpenVPNWrapperService :
         logger.debug("close() called")
         openVPNBackend.getTunnel().onStateChange(OpenVpnTunnel.State.DOWN)
         stopSelf()
+    }
+
+    override fun applyExcludedRoutes(builder: Builder) {
+        excludedIpHolder.applyExcludedRoutes(builder)
     }
 }

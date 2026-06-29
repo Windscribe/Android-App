@@ -73,6 +73,8 @@ sealed class Screen(
 
     object SplitTunnel : Screen("split_tunnel")
 
+    object ExcludedIpDomains : Screen("excluded_ips_domains")
+
     object ExtraDataUseWarning : Screen("extra_data_use_warning")
 
     object GpsSpoofing : Screen("gps_spoofing")

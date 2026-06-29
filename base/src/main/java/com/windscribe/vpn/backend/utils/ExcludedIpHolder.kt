@@ -1,0 +1,108 @@
+package com.windscribe.vpn.backend.utils
+
+import android.net.IpPrefix
+import android.net.VpnService
+import android.os.Build
+import android.util.Log
+import com.windscribe.vpn.localdatabase.LocalDbInterface
+import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.slf4j.LoggerFactory
+import java.net.Inet4Address
+import java.net.InetAddress
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class ExcludedIpHolder
+    @Inject
+    constructor(
+        private val localDbInterface: LocalDbInterface,
+    ) {
+        private val logger = LoggerFactory.getLogger("vpn")
+        private var excludedIps: List<String> = emptyList()
+
+        suspend fun resolveAndStore() {
+            excludedIps =
+                withContext(Dispatchers.IO) {
+                    try {
+                        val entries = localDbInterface.getAllExcludedIpsDomains()
+                        val resolvedIps = mutableListOf<String>()
+
+                        entries.forEach { entry ->
+                            when (entry.type) {
+                                ExcludedIpDomain.EntryType.IP -> {
+                                    resolvedIps.add(entry.value)
+                                    logger.debug("Added IP to exclude list: ${entry.value}")
+                                }
+                                ExcludedIpDomain.EntryType.IP_RANGE -> {
+                                    resolvedIps.add(entry.value)
+                                    logger.debug("Added IP range to exclude list: ${entry.value}")
+                                }
+                                ExcludedIpDomain.EntryType.HOSTNAME -> {
+                                    try {
+                                        val addresses = InetAddress.getAllByName(entry.value)
+                                        addresses.forEach { address ->
+                                            // Only include IPv4 addresses since VPN tunnel is IPv4 only
+                                            if (address is Inet4Address) {
+                                                val ip = address.hostAddress
+                                                if (ip != null) {
+                                                    resolvedIps.add(ip)
+                                                    logger.debug("Resolved hostname ${entry.value} to IPv4: $ip")
+                                                }
+                                            } else {
+                                                logger.debug("Skipping IPv6 address for hostname ${entry.value}")
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        logger.error("Failed to resolve hostname ${entry.value}: ${e.message}")
+                                    }
+                                }
+                            }
+                        }
+
+                        logger.info("Total excluded IPs/ranges: ${resolvedIps.size}")
+                        resolvedIps
+                    } catch (e: Exception) {
+                        logger.error("Failed to get excluded IP ranges: ${e.message}")
+                        emptyList()
+                    }
+                }
+        }
+
+        fun applyExcludedRoutes(builder: VpnService.Builder) {
+            applyExcludedRoutes(builder, excludedIps)
+        }
+
+        fun clear() {
+            excludedIps = emptyList()
+        }
+
+        companion object {
+            @JvmStatic
+            fun applyExcludedRoutes(
+                builder: VpnService.Builder,
+                routes: List<String>,
+            ) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    routes.forEach { ipOrRange ->
+                        try {
+                            val ipPrefix =
+                                if (ipOrRange.contains("/")) {
+                                    val parts = ipOrRange.split("/")
+                                    val address = InetAddress.getByName(parts[0])
+                                    IpPrefix(address, parts[1].toInt())
+                                } else {
+                                    val address = InetAddress.getByName(ipOrRange)
+                                    IpPrefix(address, 32)
+                                }
+                            builder.excludeRoute(ipPrefix)
+                        } catch (e: Exception) {
+                            Log.e("ExcludedIpHolder", "Failed to exclude route: $ipOrRange", e)
+                        }
+                    }
+                }
+            }
+        }
+    }

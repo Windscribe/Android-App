@@ -6,6 +6,7 @@ package com.windscribe.vpn.localdatabase
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PingTestResults
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
@@ -36,9 +37,9 @@ import javax.inject.Singleton
         PingTestResults::class, UserStatusTable::class, ServerStatusUpdateTable::class,
         PopupNotificationTable::class, Location::class,
         Datacenter::class, Server::class, Favourite::class, PingTime::class, StaticRegion::class, NetworkInfo::class, ConfigFile::class,
-        WindNotification::class, UnBlockWgParam::class,
+        WindNotification::class, UnBlockWgParam::class, ExcludedIpDomain::class,
     ],
-    version = 41,
+    version = 42,
     exportSchema = true,
 )
 @Singleton
@@ -72,4 +73,6 @@ abstract class WindscribeDatabase : RoomDatabase() {
     abstract fun windNotificationDao(): WindNotificationDao
 
     abstract fun unblockWgDao(): UnblockWgDao
+
+    abstract fun excludedIpDomainDao(): ExcludedIpDomainDao
 }

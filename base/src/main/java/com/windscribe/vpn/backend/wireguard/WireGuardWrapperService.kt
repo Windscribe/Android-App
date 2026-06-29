@@ -10,6 +10,7 @@ import com.windscribe.common.DNSDetails
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
+import com.windscribe.vpn.backend.utils.ExcludedIpHolder
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.utils.startForegroundImmediately
@@ -41,6 +42,9 @@ class WireGuardWrapperService : GoBackend.VpnService() {
 
     @Inject
     lateinit var preferencesHelper: PreferencesHelper
+
+    @Inject
+    lateinit var excludedIpHolder: ExcludedIpHolder
 
     private var logger = LoggerFactory.getLogger("vpn")
 
@@ -106,4 +110,8 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     override fun getDnsDetails(): DNSDetails? = proxyDNSManager.dnsDetails
 
     override fun getControlDPort(): Int = proxyDNSManager.getListenPort()
+
+    override fun applyExcludedRoutes(builder: Builder) {
+        excludedIpHolder.applyExcludedRoutes(builder)
+    }
 }
