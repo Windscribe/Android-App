@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.backend
 
+import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -31,6 +32,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Base class for Interfacing with VPN Modules.
@@ -81,7 +84,7 @@ abstract class VpnBackend(
             mainScope.launch {
                 networkInfoManager.networkInfo
                     .collectLatest { networkInfo ->
-                        vpnLogger.debug("Network Info: $networkInfo")
+                        vpnLogger.debug("Network Info: {}", networkInfo)
                         handleNetworkInfoUpdate(networkInfo)
                     }
             }
@@ -135,9 +138,9 @@ abstract class VpnBackend(
         connectionJob =
             mainScope.launch {
                 if (protocolInformation?.protocol == "wg") {
-                    delay(WG_CONNECTING_WAIT)
+                    delay(WG_CONNECTING_WAIT.milliseconds)
                 } else {
-                    delay(CONNECTING_WAIT)
+                    delay(CONNECTING_WAIT.milliseconds)
                 }
                 connectionTimeout()
             }
@@ -155,11 +158,17 @@ abstract class VpnBackend(
     }
 
     /**
-     Tests network connectivity after a successful VPN connection.
-     Tries 3 times after 500ms delay. This delay becomes more important
-     In TCP and stealth protocol.
+    Tests network connectivity after a successful VPN connection.
+    Tries 3 times after delay. This delay becomes more important
+    In TCP and stealth protocol. For WireGuard, initialWaitTime can be 0
+    since handshake already confirmed tunnel is ready.
+    @param initialWaitTime Optional override for initial delay (e.g., 0L for WireGuard). If null, uses advance parameters.
+    @param pinnedLocation Optional pre-fetched pinned location to avoid DB lookup delay.
      */
-    fun testConnectivity() {
+    fun testConnectivity(
+        initialWaitTime: Long? = null,
+        pinnedLocation: Pair<String, String>? = null
+    ) {
         if (connectivityTestJob?.isActive == true) {
             vpnLogger.debug("Connectivity test already running, skipping new test.")
             return
@@ -168,69 +177,32 @@ abstract class VpnBackend(
         connectivityTestJob?.cancel()
         connectivityTestJob = null
         vpnLogger.info("Starting connectivity test.")
-        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500L
+        val startDelay = initialWaitTime ?: advanceParameterRepository.getTunnelStartDelay() ?: 500L
         val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
         val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
 
         connectivityTestJob =
             mainScope.launch {
                 try {
-                    val pinnedLocation = getPinnedIpForSelectedCity()
                     val selectedIp = preferencesHelper.selectedIp
                     val shouldCheckPinning = pinnedLocation?.second != null
                     val hasPinnedNodeMismatch =
                         shouldCheckPinning &&
-                            !WindUtilities.hostnamesMatch(
-                                pinnedLocation.second,
-                                selectedIp,
-                            )
-                    val ip = pinnedLocation?.first
-                    var ipPinningFailed = false
-                    withTimeout(15_000) {
-                        // 15 seconds total timeout
+                                !WindUtilities.hostnamesMatch(
+                                    pinnedLocation.second,
+                                    selectedIp
+                                )
+                    // 15 seconds total timeout
+                    withTimeout(15.seconds) {
                         // Initial delay before first attempt
-                        delay(startDelay)
-
+                        delay(startDelay.milliseconds)
                         // Wait for WSNet to be fully initialized before calling bridge API
-                        // This prevents crashes when WSNet's native code isn't ready yet
-                        if (!wsNetWrapper.isReady.value) {
-                            vpnLogger.debug("Waiting for WSNet to be fully ready...")
-                            withTimeoutOrNull(5000) {
-                                wsNetWrapper.isReady.first { it }
-                            } ?: run {
-                                vpnLogger.warn("WSNet not ready after 5s, skipping bridge API call")
-                            }
-                        }
+                        ensureWSNetReady()
+                        configureBridgeAPI(pinnedLocation, selectedIp)
+                        // Pin IP if available (WireGuard only)
+                        val ipPinningFailed = attemptIpPinning(pinnedLocation, selectedIp)
 
-                        wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
-                            if (protocolInformation?.protocol == "wg" && !preferencesHelper.isConnectingToConfigured) {
-                                bridgeAPI.setCurrentHost(selectedIp ?: "")
-                            } else {
-                                bridgeAPI.setCurrentHost("")
-                            }
-                            bridgeAPI.setIgnoreSslErrors(false)
-                            bridgeAPI.setConnectedState(true)
-                        }
-                        // Pin IP if available
-                        if (ip != null) {
-                            vpnLogger.info("Pinning IP: $ip for node: $selectedIp")
-                            val pinResult =
-                                result<Any> {
-                                    apiManager.pinIp(ip)
-                                }
-                            when (pinResult) {
-                                is CallResult.Success -> {
-                                    vpnLogger.info("IP pinned successfully")
-                                }
-
-                                is CallResult.Error -> {
-                                    vpnLogger.error("Failed to pin IP: ${pinResult.errorMessage}")
-                                    ipPinningFailed = true
-                                }
-                            }
-                        }
-
-                        var lastError: String? = null
+                        var lastError: String?
                         var attemptCount = 0
                         var success = false
 
@@ -254,9 +226,9 @@ abstract class VpnBackend(
                                         success = true
                                         if (hasPinnedNodeMismatch || ipPinningFailed) {
                                             val title =
-                                                resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
+                                                resourceHelper.getString(R.string.could_not_pin_ip)
                                             val description =
-                                                resourceHelper.getString(com.windscribe.vpn.R.string.favourite_node_not_available)
+                                                resourceHelper.getString(R.string.favourite_node_not_available)
                                             appContext.applicationInterface.showPinnedNodeErrorDialog(
                                                 title,
                                                 description,
@@ -266,7 +238,7 @@ abstract class VpnBackend(
                                         lastError = "Invalid IP address: $userIp"
                                         vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
                                         if (attemptCount < maxAttempts) {
-                                            delay(retryDelay)
+                                            delay(retryDelay.milliseconds)
                                         }
                                     }
                                 }
@@ -275,7 +247,7 @@ abstract class VpnBackend(
                                     lastError = result.errorMessage
                                     vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
                                     if (attemptCount < maxAttempts) {
-                                        delay(retryDelay)
+                                        delay(retryDelay.milliseconds)
                                     }
                                 }
                             }
@@ -286,7 +258,7 @@ abstract class VpnBackend(
                             failedConnectivityTest()
                         }
                     }
-                } catch (e: TimeoutCancellationException) {
+                } catch (_: TimeoutCancellationException) {
                     vpnLogger.error("Connectivity test timeout: exceeded 15 seconds")
                     failedConnectivityTest()
                 } catch (e: Exception) {
@@ -318,7 +290,7 @@ abstract class VpnBackend(
         preferencesHelper.lastDisconnectionError = null
         updateState(VPNState(VPNState.Status.Connected, ip = ip))
         mainScope.launch {
-            delay(500)
+            delay(500.milliseconds)
             reconnecting = false
         }
     }
@@ -349,7 +321,7 @@ abstract class VpnBackend(
             preferencesHelper.userIP = null
             updateState(VPNState(VPNState.Status.Connected))
             mainScope.launch {
-                delay(500)
+                delay(500.milliseconds)
                 reconnecting = false
             }
         }
@@ -365,6 +337,65 @@ abstract class VpnBackend(
         val pinnedIp = favourite.pinnedIp ?: return null
         val pinnedNodeIp = favourite.pinnedNodeIp ?: return null
         return Pair(pinnedIp, pinnedNodeIp)
+    }
+
+    /**
+     * Waits for WSNet to be fully initialized before proceeding.
+     * This prevents crashes when WSNet's native code isn't ready yet.
+     */
+    private suspend fun ensureWSNetReady() {
+        if (!wsNetWrapper.isReady.value) {
+            vpnLogger.debug("Waiting for WSNet to be fully ready...")
+            withTimeoutOrNull(5.seconds) {
+                wsNetWrapper.isReady.first { it }
+            } ?: run {
+                vpnLogger.warn("WSNet not ready after 5s, skipping bridge API call")
+            }
+        }
+    }
+
+    /**
+     * Configures WSNet bridge API for connectivity test.
+     * Sets current host for WireGuard connections and marks connection as active.
+     */
+    private fun configureBridgeAPI(pinnedLocation: Pair<String, String>?, selectedIp: String?) {
+        wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
+            val hostToSet =
+                if (pinnedLocation != null && !preferencesHelper.isConnectingToConfigured) {
+                    selectedIp ?: ""
+                } else {
+                    ""
+                }
+            bridgeAPI.setCurrentHost(hostToSet)
+            bridgeAPI.setIgnoreSslErrors(false)
+            bridgeAPI.setConnectedState(true)
+        }
+    }
+
+    /**
+     * Attempts to pin IP for WireGuard connections.
+     * @param pinnedLocation Pair of (pinnedIp, pinnedNodeIp)
+     * @param selectedIp Currently selected IP
+     * @return true if pinning failed, false if succeeded or not attempted
+     */
+    private suspend fun attemptIpPinning(
+        pinnedLocation: Pair<String, String>?,
+        selectedIp: String?
+    ): Boolean {
+        val ip = pinnedLocation?.first ?: return false
+        vpnLogger.info("Pinning IP: $ip for node: $selectedIp")
+        val pinResult = result<Any> { apiManager.pinIp(ip) }
+        return when (pinResult) {
+            is CallResult.Success -> {
+                vpnLogger.info("IP pinned successfully")
+                false
+            }
+
+            is CallResult.Error -> {
+                vpnLogger.error("Failed to pin IP: ${pinResult.errorMessage}")
+                true
+            }
+        }
     }
 
     abstract var active: Boolean

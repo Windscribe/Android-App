@@ -204,11 +204,12 @@ class DeviceStateManager
 
         /**
          * Updates the whitelisted network state by comparing current network with stored whitelist.
+         * Non-blocking operation using StateFlow.value assignment.
          */
-        private suspend fun updateWhitelistedNetworkState(currentNetworkDetail: NetworkDetail?) {
+        private fun updateWhitelistedNetworkState(currentNetworkDetail: NetworkDetail?) {
             val isWhitelisted = currentNetworkDetail?.name != null && currentNetworkDetail.name == whitelistedNetworkName
             if (_isCurrentNetworkWhitelisted.value != isWhitelisted) {
-                _isCurrentNetworkWhitelisted.emit(isWhitelisted)
+                _isCurrentNetworkWhitelisted.value = isWhitelisted
                 logger.debug(
                     "Whitelisted network state changed: $isWhitelisted (current: ${currentNetworkDetail?.name}, whitelisted: $whitelistedNetworkName)",
                 )
@@ -218,14 +219,13 @@ class DeviceStateManager
         /**
          * Sets the whitelisted network name and updates the state.
          * Pass null to clear the whitelist.
+         * Non-blocking operation - no coroutine launch overhead.
          * @param networkName The network name to whitelist, or null to clear
          */
         fun setWhitelistedNetwork(networkName: String?) {
             whitelistedNetworkName = networkName
             logger.info("Whitelisted network set to: $networkName")
-            scope.launch {
-                updateWhitelistedNetworkState(_networkDetail.value)
-            }
+            updateWhitelistedNetworkState(_networkDetail.value)
         }
 
         /**
