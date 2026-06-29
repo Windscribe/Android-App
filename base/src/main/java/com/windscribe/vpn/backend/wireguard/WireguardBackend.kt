@@ -224,7 +224,7 @@ class WireguardBackend
 
         /**
          * Start monitoring for WireGuard handshake success.
-         * Triggers optimized connectivity test immediately after handshake is complete.
+         * Triggers connectivity test immediately after handshake is complete with no initial delay.
          * Pre-fetches connectivity test data in parallel while waiting for handshake.
          */
         private fun startHandshakeMonitor() {
@@ -240,10 +240,10 @@ class WireguardBackend
 
                     // Wait for handshake
                     wgLogger.handshakeReceivedEvent.collect {
-                        vpnLogger.info("WireGuard handshake successful, starting optimized connectivity test.")
+                        vpnLogger.info("WireGuard handshake successful, starting connectivity test with no initial delay.")
 
-                        // Pass pre-fetched data to connectivity test
-                        testConnectivityForWireGuard(pinnedLocationDeferred.await())
+                        // Pass initialWaitTime = 0L since handshake already confirmed tunnel is ready
+                        testConnectivity(initialWaitTime = 0L, pinnedLocation = pinnedLocationDeferred.await())
 
                         // Cancel this job after first handshake to prevent multiple tests
                         handshakeMonitorJob?.cancel()
