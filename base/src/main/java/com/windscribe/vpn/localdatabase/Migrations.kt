@@ -254,7 +254,7 @@ object Migrations {
                         "`type` TEXT NOT NULL, " +
                         "`resolved_ips` TEXT, " +
                         "`last_resolved_at` INTEGER, " +
-                        "`resolution_error` TEXT)"
+                        "`resolution_error` TEXT)",
                 )
                 logger.debug("Migrated db from version:41 to version:42 - Created excluded_ip_domain table")
             }
