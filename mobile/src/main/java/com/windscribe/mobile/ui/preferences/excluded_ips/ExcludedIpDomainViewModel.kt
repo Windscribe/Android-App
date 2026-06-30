@@ -21,6 +21,7 @@ abstract class ExcludedIpDomainViewModel : ViewModel() {
     abstract val inputText: StateFlow<String>
     abstract val errorMessage: StateFlow<String?>
     abstract val toastMessage: StateFlow<String?>
+    abstract val isRefreshing: StateFlow<Boolean>
 
     open fun onInputTextChange(text: String) {}
 
@@ -31,6 +32,8 @@ abstract class ExcludedIpDomainViewModel : ViewModel() {
     open fun onDeleteAll() {}
 
     open fun onImportFromFile(uri: Uri) {}
+
+    open fun onRefreshHostnames() {}
 
     open fun clearToastMessage() {}
 }
@@ -54,6 +57,9 @@ class ExcludedIpDomainViewModelImpl
 
         private val _toastMessage = MutableStateFlow<String?>(null)
         override val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
+
+        private val _isRefreshing = MutableStateFlow(false)
+        override val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
         init {
             loadExcludedList()
@@ -95,9 +101,11 @@ class ExcludedIpDomainViewModelImpl
 
                 try {
                     val entry = ExcludedIpDomain(value = value, type = type)
-                    localDbInterface.insertExcludedIpDomain(entry)
+                    val insertedId = localDbInterface.insertExcludedIpDomain(entry)
                     _inputText.emit("")
-                    excludedIpHolder.resolveAndStore()
+                    // Only resolve this new entry if it's a hostname
+                    val insertedEntry = entry.copy(id = insertedId)
+                    excludedIpHolder.resolveNewEntry(insertedEntry)
                 } catch (e: Exception) {
                     _toastMessage.emit("Failed to add entry: ${e.message}")
                 }
@@ -108,7 +116,8 @@ class ExcludedIpDomainViewModelImpl
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     localDbInterface.deleteExcludedIpDomain(entry)
-                    excludedIpHolder.resolveAndStore()
+                    // Just reload cache - no need to resolve anything
+                    excludedIpHolder.loadCachedIps()
                 } catch (e: Exception) {
                     _errorMessage.emit("Failed to delete entry: ${e.message}")
                 }
@@ -119,7 +128,8 @@ class ExcludedIpDomainViewModelImpl
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     localDbInterface.deleteAllExcludedIpsDomains()
-                    excludedIpHolder.resolveAndStore()
+                    // Just reload cache (which will be empty) - no need to resolve anything
+                    excludedIpHolder.loadCachedIps()
                 } catch (e: Exception) {
                     _errorMessage.emit("Failed to delete all entries: ${e.message}")
                 }
@@ -139,6 +149,7 @@ class ExcludedIpDomainViewModelImpl
                     var successCount = 0
                     var duplicateCount = 0
                     var failCount = 0
+                    val newHostnames = mutableListOf<ExcludedIpDomain>()
 
                     lines.forEach { line ->
                         val value = line.trim().lowercase()
@@ -157,9 +168,13 @@ class ExcludedIpDomainViewModelImpl
                         if (type != null) {
                             try {
                                 val entry = ExcludedIpDomain(value = value, type = type)
-                                val insertResult = localDbInterface.insertExcludedIpDomain(entry)
-                                if (insertResult > 0) {
+                                val insertedId = localDbInterface.insertExcludedIpDomain(entry)
+                                if (insertedId > 0) {
                                     successCount++
+                                    // Collect hostnames for resolution
+                                    if (type == ExcludedIpDomain.EntryType.HOSTNAME) {
+                                        newHostnames.add(entry.copy(id = insertedId))
+                                    }
                                 } else {
                                     duplicateCount++
                                 }
@@ -169,6 +184,14 @@ class ExcludedIpDomainViewModelImpl
                         } else {
                             failCount++
                         }
+                    }
+
+                    // Resolve only new hostnames after import (batch operation)
+                    if (newHostnames.isNotEmpty()) {
+                        excludedIpHolder.resolveNewEntries(newHostnames)
+                    } else {
+                        // No hostnames to resolve, just reload cache
+                        excludedIpHolder.loadCachedIps()
                     }
 
                     val result =
@@ -181,11 +204,23 @@ class ExcludedIpDomainViewModelImpl
                                 append(", Failed: $failCount")
                             }
                         }
-                    // Refresh the holder cache so changes take effect immediately
-                    excludedIpHolder.resolveAndStore()
                     _toastMessage.emit(result)
                 } catch (e: Exception) {
                     _toastMessage.emit("Failed to import file: ${e.message}")
+                }
+            }
+        }
+
+        override fun onRefreshHostnames() {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    _isRefreshing.emit(true)
+                    excludedIpHolder.forceRefreshAll()
+                    _toastMessage.emit("Hostnames refreshed successfully")
+                } catch (e: Exception) {
+                    _toastMessage.emit("Failed to refresh hostnames: ${e.message}")
+                } finally {
+                    _isRefreshing.emit(false)
                 }
             }
         }

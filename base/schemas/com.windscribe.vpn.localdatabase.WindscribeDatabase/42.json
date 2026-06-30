@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 42,
-    "identityHash": "eefed7f17958229c0788a20f913fc826",
+    "identityHash": "cf63bc66a5d04ea4f923f4bcd5097852",
     "entities": [
       {
         "tableName": "ping_results",
@@ -850,7 +850,7 @@
       },
       {
         "tableName": "excluded_ip_domain",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `value` TEXT NOT NULL, `type` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `value` TEXT NOT NULL, `type` TEXT NOT NULL, `resolved_ips` TEXT, `last_resolved_at` INTEGER, `resolution_error` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -869,6 +869,21 @@
             "columnName": "type",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "resolvedIps",
+            "columnName": "resolved_ips",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastResolvedAt",
+            "columnName": "last_resolved_at",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "resolutionError",
+            "columnName": "resolution_error",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -881,7 +896,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'eefed7f17958229c0788a20f913fc826')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cf63bc66a5d04ea4f923f4bcd5097852')"
     ]
   }
 }

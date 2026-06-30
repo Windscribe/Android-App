@@ -247,9 +247,23 @@ class LocalDatabaseImpl
 
         override suspend fun insertExcludedIpDomain(entry: ExcludedIpDomain): Long = excludedIpDomainDao.insert(entry)
 
+        override suspend fun updateExcludedIpDomain(entry: ExcludedIpDomain) = excludedIpDomainDao.update(entry)
+
         override suspend fun deleteExcludedIpDomain(entry: ExcludedIpDomain) = excludedIpDomainDao.delete(entry)
 
         override suspend fun deleteAllExcludedIpsDomains() = excludedIpDomainDao.deleteAll()
 
         override suspend fun excludedIpDomainExists(value: String): Int = excludedIpDomainDao.exists(value)
+
+        override suspend fun updateExcludedIpDomainResolvedData(
+            id: Long,
+            resolvedIps: String?,
+            timestamp: Long?,
+            error: String?,
+        ) = excludedIpDomainDao.updateResolvedData(id, resolvedIps, timestamp, error)
+
+        override suspend fun getStaleExcludedHostnames(staleTimestamp: Long): List<ExcludedIpDomain> =
+            excludedIpDomainDao.getStaleHostnames(staleTimestamp)
+
+        override suspend fun getAllExcludedHostnames(): List<ExcludedIpDomain> = excludedIpDomainDao.getAllHostnames()
     }

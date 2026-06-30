@@ -158,16 +158,16 @@ abstract class VpnBackend(
     }
 
     /**
-    Tests network connectivity after a successful VPN connection.
-    Tries 3 times after delay. This delay becomes more important
-    In TCP and stealth protocol. For WireGuard, initialWaitTime can be 0
-    since handshake already confirmed tunnel is ready.
-    @param initialWaitTime Optional override for initial delay (e.g., 0L for WireGuard). If null, uses advance parameters.
-    @param pinnedLocation Optional pre-fetched pinned location to avoid DB lookup delay.
+     Tests network connectivity after a successful VPN connection.
+     Tries 3 times after delay. This delay becomes more important
+     In TCP and stealth protocol. For WireGuard, initialWaitTime can be 0
+     since handshake already confirmed tunnel is ready.
+     @param initialWaitTime Optional override for initial delay (e.g., 0L for WireGuard). If null, uses advance parameters.
+     @param pinnedLocation Optional pre-fetched pinned location to avoid DB lookup delay.
      */
     fun testConnectivity(
         initialWaitTime: Long? = null,
-        pinnedLocation: Pair<String, String>? = null
+        pinnedLocation: Pair<String, String>? = null,
     ) {
         if (connectivityTestJob?.isActive == true) {
             vpnLogger.debug("Connectivity test already running, skipping new test.")
@@ -188,10 +188,10 @@ abstract class VpnBackend(
                     val shouldCheckPinning = pinnedLocation?.second != null
                     val hasPinnedNodeMismatch =
                         shouldCheckPinning &&
-                                !WindUtilities.hostnamesMatch(
-                                    pinnedLocation.second,
-                                    selectedIp
-                                )
+                            !WindUtilities.hostnamesMatch(
+                                pinnedLocation.second,
+                                selectedIp,
+                            )
                     // 15 seconds total timeout
                     withTimeout(15.seconds) {
                         // Initial delay before first attempt
@@ -358,7 +358,10 @@ abstract class VpnBackend(
      * Configures WSNet bridge API for connectivity test.
      * Sets current host for WireGuard connections and marks connection as active.
      */
-    private fun configureBridgeAPI(pinnedLocation: Pair<String, String>?, selectedIp: String?) {
+    private fun configureBridgeAPI(
+        pinnedLocation: Pair<String, String>?,
+        selectedIp: String?,
+    ) {
         wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
             val hostToSet =
                 if (pinnedLocation != null && !preferencesHelper.isConnectingToConfigured) {
@@ -380,7 +383,7 @@ abstract class VpnBackend(
      */
     private suspend fun attemptIpPinning(
         pinnedLocation: Pair<String, String>?,
-        selectedIp: String?
+        selectedIp: String?,
     ): Boolean {
         val ip = pinnedLocation?.first ?: return false
         vpnLogger.info("Pinning IP: $ip for node: $selectedIp")

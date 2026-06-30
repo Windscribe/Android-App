@@ -242,6 +242,17 @@ object Migrations {
             }
         }
 
+    val migration_41_42: Migration =
+        object : Migration(41, 42) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add caching fields to excluded_ip_domain table for hostname resolution
+                db.execSQL("ALTER TABLE excluded_ip_domain ADD COLUMN resolved_ips TEXT")
+                db.execSQL("ALTER TABLE excluded_ip_domain ADD COLUMN last_resolved_at INTEGER")
+                db.execSQL("ALTER TABLE excluded_ip_domain ADD COLUMN resolution_error TEXT")
+                logger.debug("Migrated db from version:41 to version:42 - Added caching fields to excluded_ip_domain")
+            }
+        }
+
     private fun invalidateData() {
         Windscribe.appContext.preference.migrationRequired = true
     }

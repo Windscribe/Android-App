@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -25,11 +26,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -61,6 +64,7 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<ExcludedIpDomainViewModelImpl>()) {
     val navController = LocalNavController.current
@@ -68,6 +72,7 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
     val excludedList by viewModel.excludedList.collectAsState()
     val inputText by viewModel.inputText.collectAsState()
     val toastMessage by viewModel.toastMessage.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     var showDeleteAllDialog by remember { mutableStateOf(false) }
 
@@ -115,10 +120,16 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
                 hasItems = excludedList.isNotEmpty(),
             )
             Spacer(modifier = Modifier.height(16.dp))
-            ExcludedList(
-                list = excludedList,
-                onDelete = viewModel::onDeleteEntry,
-            )
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.onRefreshHostnames() },
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                ExcludedList(
+                    list = excludedList,
+                    onDelete = viewModel::onDeleteEntry,
+                )
+            }
         }
     }
 

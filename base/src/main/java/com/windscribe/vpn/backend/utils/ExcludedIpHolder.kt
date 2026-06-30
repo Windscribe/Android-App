@@ -6,8 +6,11 @@ import android.os.Build
 import android.util.Log
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.net.InetAddress
@@ -22,8 +25,14 @@ class ExcludedIpHolder
     ) {
         private val logger = LoggerFactory.getLogger("vpn")
         private var excludedIps: List<String> = emptyList()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-        suspend fun resolveAndStore() {
+        /**
+         * Loads excluded IPs from cache ONLY - does NOT attempt any DNS resolution.
+         * Used during VPN connection to avoid delays. Use forceRefreshAll() or pull-to-refresh
+         * to update hostname IPs.
+         */
+        suspend fun loadCachedIps() {
             excludedIps =
                 withContext(Dispatchers.IO) {
                     try {
@@ -34,41 +43,128 @@ class ExcludedIpHolder
                             when (entry.type) {
                                 ExcludedIpDomain.EntryType.IP -> {
                                     resolvedIps.add(entry.value)
-                                    logger.debug("Added IP to exclude list: ${entry.value}")
                                 }
+
                                 ExcludedIpDomain.EntryType.IP_RANGE -> {
                                     resolvedIps.add(entry.value)
-                                    logger.debug("Added IP range to exclude list: ${entry.value}")
                                 }
+
                                 ExcludedIpDomain.EntryType.HOSTNAME -> {
-                                    try {
-                                        val addresses = InetAddress.getAllByName(entry.value)
-                                        addresses.forEach { address ->
-                                            // Only include IPv4 addresses since VPN tunnel is IPv4 only
-                                            if (address is Inet4Address) {
-                                                val ip = address.hostAddress
-                                                if (ip != null) {
-                                                    resolvedIps.add(ip)
-                                                    logger.debug("Resolved hostname ${entry.value} to IPv4: $ip")
-                                                }
-                                            } else {
-                                                logger.debug("Skipping IPv6 address for hostname ${entry.value}")
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        logger.error("Failed to resolve hostname ${entry.value}: ${e.message}")
+                                    if (!entry.resolvedIps.isNullOrEmpty()) {
+                                        val cachedIps = parseResolvedIps(entry.resolvedIps)
+                                        resolvedIps.addAll(cachedIps)
                                     }
                                 }
                             }
                         }
 
-                        logger.info("Total excluded IPs/ranges: ${resolvedIps.size}")
                         resolvedIps
                     } catch (e: Exception) {
-                        logger.error("Failed to get excluded IP ranges: ${e.message}")
+                        logger.error("Failed to load excluded IPs: ${e.message}")
                         emptyList()
                     }
                 }
+        }
+
+        /**
+         * Resolves a single newly added entry if it's a hostname, then reloads cache.
+         * For IPs/ranges, just reloads the cache.
+         */
+        suspend fun resolveNewEntry(entry: ExcludedIpDomain) {
+            withContext(Dispatchers.IO) {
+                try {
+                    if (entry.type == ExcludedIpDomain.EntryType.HOSTNAME) {
+                        resolveAndUpdateHostname(entry)
+                    }
+                    loadCachedIps()
+                } catch (e: Exception) {
+                    logger.error("Failed to resolve new entry: ${e.message}")
+                }
+            }
+        }
+
+        /**
+         * Resolves multiple newly added hostnames, then reloads cache once.
+         * Efficient for batch imports.
+         */
+        suspend fun resolveNewEntries(entries: List<ExcludedIpDomain>) {
+            withContext(Dispatchers.IO) {
+                try {
+                    entries.forEach { entry ->
+                        if (entry.type == ExcludedIpDomain.EntryType.HOSTNAME) {
+                            resolveAndUpdateHostname(entry)
+                        }
+                    }
+                    loadCachedIps()
+                } catch (e: Exception) {
+                    logger.error("Failed to resolve new entries: ${e.message}")
+                }
+            }
+        }
+
+        /**
+         * Forces resolution of all hostnames immediately (for pull-to-refresh).
+         * This method blocks until all hostnames are resolved.
+         */
+        suspend fun forceRefreshAll() {
+            withContext(Dispatchers.IO) {
+                try {
+                    val hostnames = localDbInterface.getAllExcludedHostnames()
+                    hostnames.forEach { entry ->
+                        resolveAndUpdateHostname(entry)
+                    }
+                    // Reload the cache after refresh (use loadCachedIps since we just resolved everything)
+                    loadCachedIps()
+                } catch (e: Exception) {
+                    logger.error("Failed to force refresh hostnames: ${e.message}")
+                }
+            }
+        }
+
+        /**
+         * Resolves a hostname and updates the database with resolved IPs.
+         */
+        private suspend fun resolveAndUpdateHostname(entry: ExcludedIpDomain) {
+            try {
+                val addresses =
+                    withContext(Dispatchers.IO) {
+                        InetAddress.getAllByName(entry.value)
+                    }
+                val ipv4Addresses = mutableListOf<String>()
+                addresses.forEach { address ->
+                    if (address is Inet4Address) {
+                        val ip = address.hostAddress
+                        if (ip != null) {
+                            ipv4Addresses.add(ip)
+                        }
+                    }
+                }
+
+                if (ipv4Addresses.isNotEmpty()) {
+                    val resolvedIpsJson = formatResolvedIps(ipv4Addresses)
+                    localDbInterface.updateExcludedIpDomainResolvedData(
+                        id = entry.id,
+                        resolvedIps = resolvedIpsJson,
+                        timestamp = System.currentTimeMillis(),
+                        error = null,
+                    )
+                } else {
+                    localDbInterface.updateExcludedIpDomainResolvedData(
+                        id = entry.id,
+                        resolvedIps = null,
+                        timestamp = System.currentTimeMillis(),
+                        error = "No IPv4 addresses found",
+                    )
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to resolve hostname ${entry.value}: ${e.message}")
+                localDbInterface.updateExcludedIpDomainResolvedData(
+                    id = entry.id,
+                    resolvedIps = entry.resolvedIps, // Keep old IPs if any
+                    timestamp = System.currentTimeMillis(),
+                    error = e.message,
+                )
+            }
         }
 
         fun applyExcludedRoutes(builder: VpnService.Builder) {
@@ -77,6 +173,21 @@ class ExcludedIpHolder
 
         fun clear() {
             excludedIps = emptyList()
+        }
+
+        private fun parseResolvedIps(json: String): List<String> =
+            try {
+                val jsonArray = JSONArray(json)
+                List(jsonArray.length()) { jsonArray.getString(it) }
+            } catch (e: Exception) {
+                logger.error("Failed to parse resolved IPs JSON: $json", e)
+                emptyList()
+            }
+
+        private fun formatResolvedIps(ips: List<String>): String {
+            val jsonArray = JSONArray()
+            ips.forEach { jsonArray.put(it) }
+            return jsonArray.toString()
         }
 
         companion object {

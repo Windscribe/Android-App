@@ -151,9 +151,22 @@ interface LocalDbInterface {
 
     suspend fun insertExcludedIpDomain(entry: ExcludedIpDomain): Long
 
+    suspend fun updateExcludedIpDomain(entry: ExcludedIpDomain)
+
     suspend fun deleteExcludedIpDomain(entry: ExcludedIpDomain)
 
     suspend fun deleteAllExcludedIpsDomains()
 
     suspend fun excludedIpDomainExists(value: String): Int
+
+    suspend fun updateExcludedIpDomainResolvedData(
+        id: Long,
+        resolvedIps: String?,
+        timestamp: Long?,
+        error: String?,
+    )
+
+    suspend fun getStaleExcludedHostnames(staleTimestamp: Long): List<ExcludedIpDomain>
+
+    suspend fun getAllExcludedHostnames(): List<ExcludedIpDomain>
 }

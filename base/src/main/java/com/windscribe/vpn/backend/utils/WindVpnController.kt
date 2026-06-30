@@ -396,7 +396,7 @@ open class WindVpnController
                     } ?: getProtocolInformationToConnect()
                 logger.info("Protocol: $protocolInformation")
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU && preferencesHelper.splitTunnelToggle) {
-                    excludedIpHolder.resolveAndStore()
+                    excludedIpHolder.loadCachedIps()
                 } else {
                     excludedIpHolder.clear()
                 }

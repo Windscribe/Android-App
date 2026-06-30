@@ -12,6 +12,12 @@ data class ExcludedIpDomain(
     val value: String,
     @ColumnInfo(name = "type")
     val type: EntryType,
+    @ColumnInfo(name = "resolved_ips")
+    val resolvedIps: String? = null,
+    @ColumnInfo(name = "last_resolved_at")
+    val lastResolvedAt: Long? = null,
+    @ColumnInfo(name = "resolution_error")
+    val resolutionError: String? = null,
 ) {
     enum class EntryType {
         IP,

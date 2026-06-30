@@ -234,9 +234,10 @@ class WireguardBackend
                     vpnLogger.info("Waiting for WireGuard handshake success...")
 
                     // Pre-fetch pinned location in parallel while waiting for handshake
-                    val pinnedLocationDeferred = async {
-                        getPinnedIpForSelectedCity()
-                    }
+                    val pinnedLocationDeferred =
+                        async {
+                            getPinnedIpForSelectedCity()
+                        }
 
                     // Wait for handshake
                     wgLogger.handshakeReceivedEvent.collect {
