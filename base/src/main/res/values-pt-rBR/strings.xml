@@ -619,4 +619,13 @@ Seus dados de localização permanecem no seu dispositivo e são usados apenas p
     <string name="app_icon">Ícone do aplicativo</string>
     <string name="app_icon_description">Escolha um ícone de aplicativo diferente para ainda mais privacidade</string>
     <string name="configuration">Configuração</string>
+    <string name="domains_ips">Exclusões de IP e nome de host</string>
+    <string name="domains_ips_description">Exclua IPs, intervalos ou nomes de host do túnel VPN. O túnel dividido de aplicativos tem precedência sobre essas regras.</string>
+    <string name="enter_ip_domain_hint">ex. 192.168.1.1 ou imgur.com</string>
+    <string name="import_button">Importar</string>
+    <string name="delete_all_button">Excluir Tudo</string>
+    <string name="no_excluded_ips_domains">Nenhum IP ou domínio excluído</string>
+    <string name="delete_all_dialog_title">Excluir Tudo?</string>
+    <string name="delete_all_dialog_message">Tem certeza de que deseja excluir todas as entradas? Esta ação não pode ser desfeita.</string>
+    <string name="delete_button">Excluir</string>
 </resources>

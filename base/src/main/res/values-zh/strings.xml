@@ -623,4 +623,13 @@
     <string name="force_upgrade_title">需要更新</string>
     <string name="force_upgrade_message">此版本的 Windscribe 不再受支持。请更新以继续使用此应用。</string>
     <string name="force_upgrade_message_with_version">此版本的 Windscribe 不再受支持。请更新至 %s 以继续使用此应用。</string>
+    <string name="domains_ips">IP 和主机名排除</string>
+    <string name="domains_ips_description">从 VPN 隧道中排除 IP、范围或主机名。应用分隧道优先于这些规则。</string>
+    <string name="enter_ip_domain_hint">例如 192.168.1.1 或 imgur.com</string>
+    <string name="import_button">导入</string>
+    <string name="delete_all_button">全部删除</string>
+    <string name="no_excluded_ips_domains">没有排除的IP或域名</string>
+    <string name="delete_all_dialog_title">全部删除？</string>
+    <string name="delete_all_dialog_message">您确定要删除所有条目吗？此操作无法撤消。</string>
+    <string name="delete_button">删除</string>
 </resources>

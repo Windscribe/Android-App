@@ -622,4 +622,13 @@ Ihre Standortdaten bleiben auf Ihrem Gerät und werden ausschließlich für die 
     <string name="force_upgrade_title">Update erforderlich</string>
     <string name="force_upgrade_message">Diese Version von Windscribe wird nicht mehr unterstützt. Bitte aktualisieren Sie, um die App weiter zu nutzen.</string>
     <string name="force_upgrade_message_with_version">Diese Version von Windscribe wird nicht mehr unterstützt. Bitte aktualisieren Sie auf %s, um die App weiter zu nutzen.</string>
+    <string name="domains_ips">IP- und Hostname-Ausschlüsse</string>
+    <string name="domains_ips_description">IPs, Bereiche oder Hostnamen vom VPN-Tunnel ausschließen. App-Split-Tunneling hat Vorrang vor diesen Regeln.</string>
+    <string name="enter_ip_domain_hint">z.B. 192.168.1.1 oder imgur.com</string>
+    <string name="import_button">Importieren</string>
+    <string name="delete_all_button">Alle löschen</string>
+    <string name="no_excluded_ips_domains">Keine ausgeschlossenen IPs oder Domains</string>
+    <string name="delete_all_dialog_title">Alle löschen?</string>
+    <string name="delete_all_dialog_message">Sind Sie sicher, dass Sie alle Einträge löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="delete_button">Löschen</string>
 </resources>

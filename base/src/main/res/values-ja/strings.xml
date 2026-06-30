@@ -618,4 +618,13 @@
     <string name="force_upgrade_title">アップデートが必要です</string>
     <string name="force_upgrade_message">このバージョンのWindscribeはサポートされていません。アプリを引き続きご利用いただくにはアップデートしてください。</string>
     <string name="force_upgrade_message_with_version">このバージョンのWindscribeはサポートされていません。アプリを引き続きご利用いただくには %s にアップデートしてください。</string>
+    <string name="domains_ips">IPとホスト名の除外</string>
+    <string name="domains_ips_description">VPNトンネルからIP、範囲、またはホスト名を除外します。アプリのスプリットトンネリングはこれらのルールよりも優先されます。</string>
+    <string name="enter_ip_domain_hint">例: 192.168.1.1 または imgur.com</string>
+    <string name="import_button">インポート</string>
+    <string name="delete_all_button">すべて削除</string>
+    <string name="no_excluded_ips_domains">除外されたIPまたはドメインはありません</string>
+    <string name="delete_all_dialog_title">すべて削除しますか？</string>
+    <string name="delete_all_dialog_message">すべてのエントリを削除してもよろしいですか？この操作は元に戻せません。</string>
+    <string name="delete_button">削除</string>
 </resources>

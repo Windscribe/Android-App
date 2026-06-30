@@ -618,4 +618,13 @@ I tuoi dati sulla posizione rimangono sul tuo dispositivo e vengono utilizzati e
     <string name="force_upgrade_title">Aggiornamento richiesto</string>
     <string name="force_upgrade_message">Questa versione di Windscribe non è più supportata. Aggiorna per continuare a utilizzare l’app.</string>
     <string name="force_upgrade_message_with_version">Questa versione di Windscribe non è più supportata. Aggiorna alla versione %s per continuare a utilizzare l’app.</string>
+    <string name="domains_ips">Esclusioni IP e Hostname</string>
+    <string name="domains_ips_description">Escludi IP, intervalli o hostname dal tunnel VPN. Lo split tunneling delle app ha la precedenza su queste regole.</string>
+    <string name="enter_ip_domain_hint">es. 192.168.1.1 o imgur.com</string>
+    <string name="import_button">Importa</string>
+    <string name="delete_all_button">Elimina tutto</string>
+    <string name="no_excluded_ips_domains">Nessun IP o dominio escluso</string>
+    <string name="delete_all_dialog_title">Elimina tutto?</string>
+    <string name="delete_all_dialog_message">Sei sicuro di voler eliminare tutte le voci? Questa azione non può essere annullata.</string>
+    <string name="delete_button">Elimina</string>
 </resources>

@@ -9,13 +9,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,9 +52,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.PreferenceBackground
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font14
@@ -64,17 +69,29 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 
+data class ExcludedIpDomainState(
+    val excludedList: List<ExcludedIpDomain> = emptyList(),
+    val inputText: String = "",
+    val isRefreshing: Boolean = false,
+)
+
+data class ExcludedIpDomainActions(
+    val onInputTextChange: (String) -> Unit = {},
+    val onAddEntry: () -> Unit = {},
+    val onDeleteEntry: (ExcludedIpDomain) -> Unit = {},
+    val onDeleteAll: () -> Unit = {},
+    val onImportFromFile: () -> Unit = {},
+    val onRefreshHostnames: () -> Unit = {},
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<ExcludedIpDomainViewModelImpl>()) {
-    val navController = LocalNavController.current
     val context = LocalContext.current
     val excludedList by viewModel.excludedList.collectAsState()
     val inputText by viewModel.inputText.collectAsState()
     val toastMessage by viewModel.toastMessage.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
-
-    var showDeleteAllDialog by remember { mutableStateOf(false) }
 
     val filePickerLauncher =
         rememberLauncherForActivityResult(
@@ -89,6 +106,38 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
             viewModel.clearToastMessage()
         }
     }
+
+    ExcludedIpDomainContent(
+        state =
+            ExcludedIpDomainState(
+                excludedList = excludedList,
+                inputText = inputText,
+                isRefreshing = isRefreshing,
+            ),
+        actions =
+            ExcludedIpDomainActions(
+                onInputTextChange = viewModel::onInputTextChange,
+                onAddEntry = viewModel::onAddEntry,
+                onDeleteEntry = viewModel::onDeleteEntry,
+                onDeleteAll = viewModel::onDeleteAll,
+                onImportFromFile = { filePickerLauncher.launch("text/*") },
+                onRefreshHostnames = viewModel::onRefreshHostnames,
+            ),
+    )
+}
+
+/**
+ * Stateless excluded IP/domain UI. Everything it needs is passed in, so it renders identically in the
+ * app and in `@Preview`. This is the composable previews target.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExcludedIpDomainContent(
+    state: ExcludedIpDomainState,
+    actions: ExcludedIpDomainActions,
+) {
+    val navController = LocalNavController.current
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
 
     PreferenceBackground {
         Column(
@@ -109,25 +158,25 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
             )
             Spacer(modifier = Modifier.height(16.dp))
             InputSection(
-                inputText = inputText,
-                onInputChange = viewModel::onInputTextChange,
-                onAdd = viewModel::onAddEntry,
+                inputText = state.inputText,
+                onInputChange = actions.onInputTextChange,
+                onAdd = actions.onAddEntry,
             )
             Spacer(modifier = Modifier.height(16.dp))
             ActionButtons(
-                onImport = { filePickerLauncher.launch("text/*") },
+                onImport = actions.onImportFromFile,
                 onDeleteAll = { showDeleteAllDialog = true },
-                hasItems = excludedList.isNotEmpty(),
+                hasItems = state.excludedList.isNotEmpty(),
             )
             Spacer(modifier = Modifier.height(16.dp))
             PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = { viewModel.onRefreshHostnames() },
+                isRefreshing = state.isRefreshing,
+                onRefresh = actions.onRefreshHostnames,
                 modifier = Modifier.fillMaxSize(),
             ) {
                 ExcludedList(
-                    list = excludedList,
-                    onDelete = viewModel::onDeleteEntry,
+                    list = state.excludedList,
+                    onDelete = actions.onDeleteEntry,
                 )
             }
         }
@@ -136,7 +185,7 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
     if (showDeleteAllDialog) {
         DeleteAllConfirmDialog(
             onConfirm = {
-                viewModel.onDeleteAll()
+                actions.onDeleteAll()
                 showDeleteAllDialog = false
             },
             onDismiss = { showDeleteAllDialog = false },
@@ -161,14 +210,14 @@ private fun DeleteAllConfirmDialog(
             ),
         title = {
             Text(
-                text = "Delete All?",
+                text = stringResource(R.string.delete_all_dialog_title),
                 style = font16.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primaryTextColor,
             )
         },
         text = {
             Text(
-                text = "Are you sure you want to delete all entries? This action cannot be undone.",
+                text = stringResource(R.string.delete_all_dialog_message),
                 style = font12.copy(textAlign = TextAlign.Left),
                 color = MaterialTheme.colorScheme.primaryTextColor,
             )
@@ -176,7 +225,7 @@ private fun DeleteAllConfirmDialog(
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(
-                    "Delete",
+                    stringResource(R.string.delete_button),
                     style = font16.copy(fontWeight = FontWeight.Medium),
                     color = Color.Red,
                 )
@@ -185,7 +234,7 @@ private fun DeleteAllConfirmDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    "Cancel",
+                    stringResource(R.string.cancel),
                     style = font16,
                     color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 )
@@ -206,7 +255,7 @@ private fun InputSection(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(54.dp)
+                .heightIn(min = 54.dp)
                 .background(
                     color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                     shape = RoundedCornerShape(12.dp),
@@ -216,10 +265,7 @@ private fun InputSection(
         TextField(
             value = inputText,
             onValueChange = onInputChange,
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+            modifier = Modifier.weight(1f),
             textStyle = font16.copy(textAlign = TextAlign.Start, color = MaterialTheme.colorScheme.primaryTextColor),
             placeholder = {
                 Text(
@@ -260,6 +306,7 @@ private fun InputSection(
                     .size(32.dp)
                     .clickable { onAdd() },
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
+            alpha = if (inputText.isEmpty()) 0.3f else 1.0f,
         )
     }
 }
@@ -279,13 +326,14 @@ private fun ActionButtons(
             modifier =
                 Modifier
                     .weight(1f)
-                    .height(48.dp)
+                    .heightIn(min = 48.dp)
                     .background(
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                         shape = RoundedCornerShape(12.dp),
                     ).clickable { onImport() }
                     .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
         ) {
             Image(
                 painter = painterResource(com.windscribe.mobile.R.drawable.ic_import),
@@ -295,7 +343,7 @@ private fun ActionButtons(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Import",
+                text = stringResource(R.string.import_button),
                 color = MaterialTheme.colorScheme.primaryTextColor,
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 textAlign = TextAlign.Start,
@@ -309,7 +357,7 @@ private fun ActionButtons(
             modifier =
                 Modifier
                     .weight(1f)
-                    .height(48.dp)
+                    .heightIn(min = 48.dp)
                     .background(
                         color =
                             if (hasItems) {
@@ -323,6 +371,7 @@ private fun ActionButtons(
                     ).clickable(enabled = hasItems) { onDeleteAll() }
                     .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
         ) {
             Image(
                 painter = painterResource(android.R.drawable.ic_menu_delete),
@@ -335,7 +384,7 @@ private fun ActionButtons(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Delete All",
+                text = stringResource(R.string.delete_all_button),
                 color = if (hasItems) Color.Red else MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f),
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 textAlign = TextAlign.Start,
@@ -351,7 +400,7 @@ private fun ExcludedList(
 ) {
     if (list.isEmpty()) {
         Text(
-            text = "No excluded IPs or domains",
+            text = stringResource(R.string.no_excluded_ips_domains),
             color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
             style = font16,
             textAlign = TextAlign.Center,
@@ -377,7 +426,7 @@ private fun ExcludedList(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .heightIn(min = 48.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                                 shape = shape,
@@ -404,5 +453,44 @@ private fun ExcludedList(
                 }
             }
         }
+    }
+}
+
+private class ExcludedIpDomainStateProvider : PreviewParameterProvider<ExcludedIpDomainState> {
+    override val values: Sequence<ExcludedIpDomainState>
+        get() =
+            sequenceOf(
+                // Empty state
+                ExcludedIpDomainState(
+                    excludedList = emptyList(),
+                    inputText = "",
+                    isRefreshing = false,
+                ),
+                // State with items
+                ExcludedIpDomainState(
+                    excludedList =
+                        listOf(
+                            ExcludedIpDomain(id = 1, value = "example.com", type = ExcludedIpDomain.EntryType.HOSTNAME),
+                            ExcludedIpDomain(id = 2, value = "192.168.1.1", type = ExcludedIpDomain.EntryType.IP),
+                            ExcludedIpDomain(id = 3, value = "10.0.0.0/24", type = ExcludedIpDomain.EntryType.IP_RANGE),
+                            ExcludedIpDomain(id = 4, value = "google.com", type = ExcludedIpDomain.EntryType.HOSTNAME),
+                            ExcludedIpDomain(id = 5, value = "netflix.com", type = ExcludedIpDomain.EntryType.HOSTNAME),
+                        ),
+                    inputText = "test.com",
+                    isRefreshing = false,
+                ),
+            )
+}
+
+@Composable
+@MultiDevicePreview
+private fun ExcludedIpDomainContentPreview(
+    @PreviewParameter(ExcludedIpDomainStateProvider::class) state: ExcludedIpDomainState,
+) {
+    PreviewWithNav {
+        ExcludedIpDomainContent(
+            state = state,
+            actions = ExcludedIpDomainActions(),
+        )
     }
 }

@@ -631,4 +631,13 @@
     <string name="force_upgrade_message_with_version">이 버전의 Windscribe는 더 이상 지원되지 않습니다. 앱을 계속 사용하시려면 %s(으)로 업데이트해 주세요.</string>
     <string name="security_notice">보안 공지</string>
     <string name="encryption_unavailable_warning">이 기기는 암호화된 자격 증명 저장소를 지원하지 않습니다. 세션 토큰과 VPN 키가 낮은 보안 수준으로 저장됩니다.\n\n최대한의 보안을 위해 신뢰할 수 없는 네트워크나 루팅된 기기에서는 이 기기를 사용하지 마세요.</string>
+    <string name="domains_ips">IP 및 호스트 이름 제외</string>
+    <string name="domains_ips_description">VPN 터널에서 IP, 범위 또는 호스트 이름을 제외합니다. 앱 분할 터널링이 이러한 규칙보다 우선합니다.</string>
+    <string name="enter_ip_domain_hint">예: 192.168.1.1 또는 imgur.com</string>
+    <string name="import_button">가져오기</string>
+    <string name="delete_all_button">모두 삭제</string>
+    <string name="no_excluded_ips_domains">제외된 IP 또는 도메인 없음</string>
+    <string name="delete_all_dialog_title">모두 삭제하시겠습니까?</string>
+    <string name="delete_all_dialog_message">모든 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</string>
+    <string name="delete_button">삭제</string>
 </resources>

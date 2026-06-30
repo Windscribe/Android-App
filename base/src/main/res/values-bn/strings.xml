@@ -621,4 +621,13 @@
     <string name="force_upgrade_title">আপডেট প্রয়োজন</string>
     <string name="force_upgrade_message">Windscribe-এর এই সংস্করণটি আর সমর্থিত নয়। অ্যাপটি ব্যবহার চালিয়ে যেতে দয়া করে আপডেট করুন।</string>
     <string name="force_upgrade_message_with_version">Windscribe-এর এই সংস্করণটি আর সমর্থিত নয়। অ্যাপটি ব্যবহার চালিয়ে যেতে দয়া করে %s-এ আপডেট করুন।</string>
+    <string name="domains_ips">IP এবং হোস্টনাম বর্জন</string>
+    <string name="domains_ips_description">VPN টানেল থেকে IP, রেঞ্জ বা হোস্টনাম বাদ দিন। অ্যাপ স্প্লিট টানেলিং এই নিয়মগুলির চেয়ে অগ্রাধিকার নেয়।</string>
+    <string name="enter_ip_domain_hint">যেমন 192.168.1.1 অথবা imgur.com</string>
+    <string name="import_button">আমদানি</string>
+    <string name="delete_all_button">সব মুছুন</string>
+    <string name="no_excluded_ips_domains">কোনো বাদ দেওয়া IP বা ডোমেইন নেই</string>
+    <string name="delete_all_dialog_title">সব মুছবেন?</string>
+    <string name="delete_all_dialog_message">আপনি কি নিশ্চিত যে আপনি সমস্ত এন্ট্রি মুছে ফেলতে চান? এই ক্রিয়াটি পূর্বাবস্থায় ফিরিয়ে আনা যাবে না।</string>
+    <string name="delete_button">মুছুন</string>
 </resources>

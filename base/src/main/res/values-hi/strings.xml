@@ -618,4 +618,13 @@
     <string name="force_upgrade_title">अपडेट आवश्यक</string>
     <string name="force_upgrade_message">Windscribe का यह संस्करण अब समर्थित नहीं है। ऐप का उपयोग जारी रखने के लिए कृपया अपडेट करें।</string>
     <string name="force_upgrade_message_with_version">Windscribe का यह संस्करण अब समर्थित नहीं है। ऐप का उपयोग जारी रखने के लिए कृपया %s पर अपडेट करें।</string>
+    <string name="domains_ips">IP और होस्टनेम बहिष्करण</string>
+    <string name="domains_ips_description">VPN टनल से IP, रेंज या होस्टनाम को बाहर रखें। ऐप स्प्लिट टनलिंग इन नियमों से प्राथमिकता लेती है।</string>
+    <string name="enter_ip_domain_hint">उदा. 192.168.1.1 या imgur.com</string>
+    <string name="import_button">आयात करें</string>
+    <string name="delete_all_button">सभी हटाएं</string>
+    <string name="no_excluded_ips_domains">कोई बहिष्कृत IP या डोमेन नहीं</string>
+    <string name="delete_all_dialog_title">सभी हटाएं?</string>
+    <string name="delete_all_dialog_message">क्या आप वाकई सभी प्रविष्टियां हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।</string>
+    <string name="delete_button">हटाएं</string>
 </resources>

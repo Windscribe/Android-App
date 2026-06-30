@@ -618,4 +618,13 @@
     <string name="force_upgrade_title">Требуется обновление</string>
     <string name="force_upgrade_message">Эта версия Windscribe больше не поддерживается. Пожалуйста, обновите, чтобы продолжить использование приложения.</string>
     <string name="force_upgrade_message_with_version">Эта версия Windscribe больше не поддерживается. Пожалуйста, обновите до %s, чтобы продолжить использование приложения.</string>
+    <string name="domains_ips">Исключения IP и имён хостов</string>
+    <string name="domains_ips_description">Исключите IP-адреса, диапазоны или имена хостов из VPN-туннеля. Раздельное туннелирование приложений имеет приоритет над этими правилами.</string>
+    <string name="enter_ip_domain_hint">например, 192.168.1.1 или imgur.com</string>
+    <string name="import_button">Импорт</string>
+    <string name="delete_all_button">Удалить все</string>
+    <string name="no_excluded_ips_domains">Нет исключённых IP или доменов</string>
+    <string name="delete_all_dialog_title">Удалить все?</string>
+    <string name="delete_all_dialog_message">Вы уверены, что хотите удалить все записи? Это действие нельзя отменить.</string>
+    <string name="delete_button">Удалить</string>
 </resources>

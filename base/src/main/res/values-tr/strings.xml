@@ -616,6 +616,15 @@ Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler içi
     <string name="app_icon_description">Daha fazla gizlilik için farklı bir uygulama simgesi seçin</string>
     <string name="configuration">Yapılandırma</string>
     <string name="force_upgrade_title">Güncelleme Gerekli</string>
-    <string name="force_upgrade_message">Windscribe’ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen güncelleyin.</string>
-    <string name="force_upgrade_message_with_version">Windscribe’ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen %s sürümüne güncelleyin.</string>
+    <string name="force_upgrade_message">Windscribe\'ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen güncelleyin.</string>
+    <string name="force_upgrade_message_with_version">Windscribe\'ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen %s sürümüne güncelleyin.</string>
+    <string name="domains_ips">IP &amp; Ana Bilgisayar Adı Hariç Tutmaları</string>
+    <string name="domains_ips_description">VPN tünelinden IP\'leri, aralıkları veya ana bilgisayar adlarını hariç tutun. Uygulama bölünmüş tünelleme bu kurallardan önce gelir.</string>
+    <string name="enter_ip_domain_hint">örn. 192.168.1.1 veya imgur.com</string>
+    <string name="import_button">İçe Aktar</string>
+    <string name="delete_all_button">Tümünü Sil</string>
+    <string name="no_excluded_ips_domains">Hariç tutulan IP veya alan adı yok</string>
+    <string name="delete_all_dialog_title">Tümünü Sil?</string>
+    <string name="delete_all_dialog_message">Tüm girişleri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="delete_button">Sil</string>
 </resources>

@@ -618,4 +618,13 @@ Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas
     <string name="force_upgrade_title">Pembaruan Diperlukan</string>
     <string name="force_upgrade_message">Versi Windscribe ini tidak lagi didukung. Silakan perbarui untuk terus menggunakan aplikasi.</string>
     <string name="force_upgrade_message_with_version">Versi Windscribe ini tidak lagi didukung. Silakan perbarui ke %s untuk terus menggunakan aplikasi.</string>
+    <string name="domains_ips">Pengecualian IP &amp; Hostname</string>
+    <string name="domains_ips_description">Kecualikan IP, rentang, atau hostname dari terowongan VPN. Pemisahan terowongan aplikasi diutamakan dari aturan ini.</string>
+    <string name="enter_ip_domain_hint">mis. 192.168.1.1 atau imgur.com</string>
+    <string name="import_button">Impor</string>
+    <string name="delete_all_button">Hapus Semua</string>
+    <string name="no_excluded_ips_domains">Tidak ada IP atau domain yang dikecualikan</string>
+    <string name="delete_all_dialog_title">Hapus Semua?</string>
+    <string name="delete_all_dialog_message">Apakah Anda yakin ingin menghapus semua entri? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="delete_button">Hapus</string>
 </resources>

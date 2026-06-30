@@ -618,4 +618,13 @@
     <string name="force_upgrade_title">التحديث مطلوب</string>
     <string name="force_upgrade_message">إصدار Windscribe هذا لم يعد مدعوماً. يرجى التحديث للاستمرار في استخدام التطبيق.</string>
     <string name="force_upgrade_message_with_version">إصدار Windscribe هذا لم يعد مدعوماً. يرجى التحديث إلى %s للاستمرار في استخدام التطبيق.</string>
+    <string name="domains_ips">استبعادات عناوين IP وأسماء المضيفين</string>
+    <string name="domains_ips_description">استبعاد عناوين IP أو النطاقات أو أسماء المضيفين من نفق VPN. يتمتع تقسيم النفق للتطبيق بالأسبقية على هذه القواعد.</string>
+    <string name="enter_ip_domain_hint">مثال 192.168.1.1 أو imgur.com</string>
+    <string name="import_button">استيراد</string>
+    <string name="delete_all_button">حذف الكل</string>
+    <string name="no_excluded_ips_domains">لا توجد عناوين IP أو نطاقات مستبعدة</string>
+    <string name="delete_all_dialog_title">حذف الكل؟</string>
+    <string name="delete_all_dialog_message">هل أنت متأكد من أنك تريد حذف جميع الإدخالات؟ لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="delete_button">حذف</string>
 </resources>

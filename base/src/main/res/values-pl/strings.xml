@@ -618,4 +618,13 @@ Twoje dane lokalizacyjne pozostają na urządzeniu i są używane wyłącznie do
     <string name="force_upgrade_title">Wymagana aktualizacja</string>
     <string name="force_upgrade_message">Ta wersja Windscribe nie jest już obsługiwana. Zaktualizuj, aby nadal korzystać z aplikacji.</string>
     <string name="force_upgrade_message_with_version">Ta wersja Windscribe nie jest już obsługiwana. Zaktualizuj do wersji %s, aby nadal korzystać z aplikacji.</string>
+    <string name="domains_ips">Wykluczenia IP i nazw hostów</string>
+    <string name="domains_ips_description">Wyklucz adresy IP, zakresy lub nazwy hostów z tunelu VPN. Podział tunelu aplikacji ma pierwszeństwo przed tymi regułami.</string>
+    <string name="enter_ip_domain_hint">np. 192.168.1.1 lub imgur.com</string>
+    <string name="import_button">Importuj</string>
+    <string name="delete_all_button">Usuń wszystko</string>
+    <string name="no_excluded_ips_domains">Brak wykluczonych adresów IP lub domen</string>
+    <string name="delete_all_dialog_title">Usuń wszystko?</string>
+    <string name="delete_all_dialog_message">Czy na pewno chcesz usunąć wszystkie wpisy? Tej czynności nie można cofnąć.</string>
+    <string name="delete_button">Usuń</string>
 </resources>

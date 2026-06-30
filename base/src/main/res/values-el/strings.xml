@@ -616,4 +616,13 @@
     <string name="app_icon">Εικονίδιο εφαρμογής</string>
     <string name="app_icon_description">Επιλέξτε διαφορετικό εικονίδιο εφαρμογής για ακόμα περισσότερη ιδιωτικότητα</string>
     <string name="configuration">Διαμόρφωση</string>
+    <string name="domains_ips">Εξαιρέσεις IP και Ονομάτων Κεντρικού Υπολογιστή</string>
+    <string name="domains_ips_description">Εξαίρεση IP, περιοχών ή ονομάτων κεντρικού υπολογιστή από το τούνελ VPN. Η διαχωρισμένη διοχέτευση εφαρμογών έχει προτεραιότητα έναντι αυτών των κανόνων.</string>
+    <string name="enter_ip_domain_hint">π.χ. 192.168.1.1 ή imgur.com</string>
+    <string name="import_button">Εισαγωγή</string>
+    <string name="delete_all_button">Διαγραφή όλων</string>
+    <string name="no_excluded_ips_domains">Δεν υπάρχουν εξαιρούμενες IP ή τομείς</string>
+    <string name="delete_all_dialog_title">Διαγραφή όλων;</string>
+    <string name="delete_all_dialog_message">Είστε σίγουροι ότι θέλετε να διαγράψετε όλες τις καταχωρίσεις; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</string>
+    <string name="delete_button">Διαγραφή</string>
 </resources>

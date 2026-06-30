@@ -618,4 +618,13 @@ Dữ liệu vị trí của bạn vẫn ở trên thiết bị của bạn và c
     <string name="force_upgrade_title">Yêu cầu cập nhật</string>
     <string name="force_upgrade_message">Phiên bản Windscribe này không còn được hỗ trợ. Vui lòng cập nhật để tiếp tục sử dụng ứng dụng.</string>
     <string name="force_upgrade_message_with_version">Phiên bản Windscribe này không còn được hỗ trợ. Vui lòng cập nhật lên %s để tiếp tục sử dụng ứng dụng.</string>
+    <string name="domains_ips">Loại trừ IP và tên máy chủ</string>
+    <string name="domains_ips_description">Loại trừ các IP, phạm vi hoặc tên máy chủ khỏi đường hầm VPN. Tách đường hầm ứng dụng được ưu tiên hơn các quy tắc này.</string>
+    <string name="enter_ip_domain_hint">ví dụ: 192.168.1.1 hoặc imgur.com</string>
+    <string name="import_button">Nhập</string>
+    <string name="delete_all_button">Xóa Tất Cả</string>
+    <string name="no_excluded_ips_domains">Không có IP hoặc tên miền nào bị loại trừ</string>
+    <string name="delete_all_dialog_title">Xóa Tất Cả?</string>
+    <string name="delete_all_dialog_message">Bạn có chắc chắn muốn xóa tất cả các mục không? Hành động này không thể hoàn tác.</string>
+    <string name="delete_button">Xóa</string>
 </resources>

@@ -617,5 +617,14 @@ Vos données de localisation restent sur votre appareil et sont utilisées uniqu
     <string name="configuration">Configuration</string>
     <string name="force_upgrade_title">Mise à jour requise</string>
     <string name="force_upgrade_message">Cette version de Windscribe n’est plus prise en charge. Veuillez mettre à jour pour continuer à utiliser l’application.</string>
-    <string name="force_upgrade_message_with_version">Cette version de Windscribe n’est plus prise en charge. Veuillez mettre à jour vers %s pour continuer à utiliser l’application.</string>
+    <string name="force_upgrade_message_with_version">Cette version de Windscribe n\'est plus prise en charge. Veuillez mettre à jour vers %s pour continuer à utiliser l\'application.</string>
+    <string name="domains_ips">Exclusions d\'IP et de noms d\'hôte</string>
+    <string name="domains_ips_description">Exclure les IP, les plages ou les noms d\'hôte du tunnel VPN. Le tunneling fractionné des applications a la priorité sur ces règles.</string>
+    <string name="enter_ip_domain_hint">par ex. 192.168.1.1 ou imgur.com</string>
+    <string name="import_button">Importer</string>
+    <string name="delete_all_button">Tout supprimer</string>
+    <string name="no_excluded_ips_domains">Aucune IP ou domaine exclu</string>
+    <string name="delete_all_dialog_title">Tout supprimer?</string>
+    <string name="delete_all_dialog_message">Êtes-vous sûr de vouloir supprimer toutes les entrées? Cette action ne peut pas être annulée.</string>
+    <string name="delete_button">Supprimer</string>
 </resources>

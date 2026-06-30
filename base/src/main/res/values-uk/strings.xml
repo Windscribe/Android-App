@@ -618,4 +618,13 @@
     <string name="force_upgrade_title">Потрібне оновлення</string>
     <string name="force_upgrade_message">Ця версія Windscribe більше не підтримується. Будь ласка, оновіть, щоб продовжувати використовувати додаток.</string>
     <string name="force_upgrade_message_with_version">Ця версія Windscribe більше не підтримується. Будь ласка, оновіть до %s, щоб продовжувати використовувати додаток.</string>
+    <string name="domains_ips">Виключення IP та імен хостів</string>
+    <string name="domains_ips_description">Виключіть IP-адреси, діапазони або імена хостів із VPN-тунелю. Роздільне тунелювання застосунків має пріоритет над цими правилами.</string>
+    <string name="enter_ip_domain_hint">напр. 192.168.1.1 або imgur.com</string>
+    <string name="import_button">Імпорт</string>
+    <string name="delete_all_button">Видалити все</string>
+    <string name="no_excluded_ips_domains">Немає виключених IP або доменів</string>
+    <string name="delete_all_dialog_title">Видалити все?</string>
+    <string name="delete_all_dialog_message">Ви впевнені, що хочете видалити всі записи? Цю дію не можна скасувати.</string>
+    <string name="delete_button">Видалити</string>
 </resources>

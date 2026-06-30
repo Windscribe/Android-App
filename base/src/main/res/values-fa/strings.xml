@@ -611,4 +611,13 @@
     <string name="app_icon">آیکون برنامه</string>
     <string name="app_icon_description">یک آیکون برنامه متفاوت را برای حریم خصوصی بیشتر انتخاب کنید</string>
     <string name="configuration">پیکربندی</string>
+    <string name="domains_ips">استثناهای IP و نام میزبان</string>
+    <string name="domains_ips_description">IP‌ها، محدوده‌ها یا نام‌های میزبان را از تونل VPN مستثنی کنید. تونل تقسیم‌شده برنامه بر این قوانین اولویت دارد.</string>
+    <string name="enter_ip_domain_hint">مثلاً 192.168.1.1 یا imgur.com</string>
+    <string name="import_button">واردات</string>
+    <string name="delete_all_button">حذف همه</string>
+    <string name="no_excluded_ips_domains">هیچ IP یا دامنه حذف شده‌ای وجود ندارد</string>
+    <string name="delete_all_dialog_title">همه حذف شود؟</string>
+    <string name="delete_all_dialog_message">آیا مطمئن هستید که می‌خواهید تمام موارد را حذف کنید؟ این عمل قابل بازگشت نیست.</string>
+    <string name="delete_button">حذف</string>
 </resources>

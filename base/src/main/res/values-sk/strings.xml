@@ -621,4 +621,13 @@ Vaše údaje o polohe zostávajú vo vašom zariadení a používajú sa výluč
     <string name="app_icon">Ikona aplikácie</string>
     <string name="app_icon_description">Vyberte inú ikonu aplikácie pre ešte väčšie súkromie</string>
     <string name="configuration">Konfigurácia</string>
+    <string name="domains_ips">Vylúčenia IP a názvov hostiteľov</string>
+    <string name="domains_ips_description">Vylúčte IP adresy, rozsahy alebo názvy hostiteľov z VPN tunela. Rozdelené tunelovanie aplikácií má prednosť pred týmito pravidlami.</string>
+    <string name="enter_ip_domain_hint">napr. 192.168.1.1 alebo imgur.com</string>
+    <string name="import_button">Importovať</string>
+    <string name="delete_all_button">Vymazať všetko</string>
+    <string name="no_excluded_ips_domains">Žiadne vylúčené IP alebo domény</string>
+    <string name="delete_all_dialog_title">Vymazať všetko?</string>
+    <string name="delete_all_dialog_message">Naozaj chcete vymazať všetky položky? Túto akciu nemožno vrátiť späť.</string>
+    <string name="delete_button">Vymazať</string>
 </resources>

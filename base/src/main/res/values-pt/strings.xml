@@ -618,4 +618,13 @@ Os seus dados de localização permanecem no seu dispositivo e são usados apena
     <string name="force_upgrade_title">Atualização necessária</string>
     <string name="force_upgrade_message">Esta versão do Windscribe já não é suportada. Atualize para continuar a utilizar a aplicação.</string>
     <string name="force_upgrade_message_with_version">Esta versão do Windscribe já não é suportada. Atualize para %s para continuar a utilizar a aplicação.</string>
+    <string name="domains_ips">Exclusões de IP e nome de host</string>
+    <string name="domains_ips_description">Exclua IPs, intervalos ou nomes de host do túnel VPN. O túnel dividido de aplicativos tem precedência sobre essas regras.</string>
+    <string name="enter_ip_domain_hint">ex. 192.168.1.1 ou imgur.com</string>
+    <string name="import_button">Importar</string>
+    <string name="delete_all_button">Apagar Tudo</string>
+    <string name="no_excluded_ips_domains">Sem IPs ou domínios excluídos</string>
+    <string name="delete_all_dialog_title">Apagar Tudo?</string>
+    <string name="delete_all_dialog_message">Tem certeza de que deseja apagar todas as entradas? Esta ação não pode ser desfeita.</string>
+    <string name="delete_button">Apagar</string>
 </resources>

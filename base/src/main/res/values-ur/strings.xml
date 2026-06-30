@@ -619,4 +619,13 @@ last chosen location.</string>
     <string name="app_icon">ایپ آئیکن</string>
     <string name="app_icon_description">مزید رازداری کے لیے ایک مختلف ایپ آئیکن منتخب کریں</string>
     <string name="configuration">ترتیب</string>
+    <string name="domains_ips">IP اور ہوسٹ نیم کی استثنائیں</string>
+    <string name="domains_ips_description">VPN ٹنل سے IP، رینج یا ہوسٹ ناموں کو خارج کریں۔ ایپ سپلٹ ٹنلنگ ان قوانین پر ترجیح رکھتی ہے۔</string>
+    <string name="enter_ip_domain_hint">مثلاً 192.168.1.1 یا imgur.com</string>
+    <string name="import_button">درآمد کریں</string>
+    <string name="delete_all_button">سب حذف کریں</string>
+    <string name="no_excluded_ips_domains">کوئی خارج شدہ IP یا ڈومینز نہیں</string>
+    <string name="delete_all_dialog_title">سب حذف کریں؟</string>
+    <string name="delete_all_dialog_message">کیا آپ واقعی تمام اندراجات کو حذف کرنا چاہتے ہیں؟ اس عمل کو کالعدم نہیں کیا جا سکتا۔</string>
+    <string name="delete_button">حذف کریں</string>
 </resources>

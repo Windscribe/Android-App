@@ -244,6 +244,12 @@
     <string name="ip_domain_added">IP/Domain added</string>
     <string name="ip_domain_removed">IP/Domain removed</string>
     <string name="invalid_ip_domain">Invalid IP, range, or hostname</string>
+    <string name="import_button">Import</string>
+    <string name="delete_all_button">Delete All</string>
+    <string name="no_excluded_ips_domains">No excluded IPs or domains</string>
+    <string name="delete_all_dialog_title">Delete All?</string>
+    <string name="delete_all_dialog_message">Are you sure you want to delete all entries? This action cannot be undone.</string>
+    <string name="delete_button">Delete</string>
     <string name="always_on">Always on VPN</string>
     <string name="always_on_warning">\"Always On\" VPN allows Android to control the VPN connection and ensure that no data can leave the device unless the VPN tunnel is up.</string>
     <string name="always_on_setting">Android 10+ devices require Always-On VPN to be configured for Windscribe to start on device boot.</string>
