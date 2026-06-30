@@ -245,11 +245,18 @@ object Migrations {
     val migration_41_42: Migration =
         object : Migration(41, 42) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // Add caching fields to excluded_ip_domain table for hostname resolution
-                db.execSQL("ALTER TABLE excluded_ip_domain ADD COLUMN resolved_ips TEXT")
-                db.execSQL("ALTER TABLE excluded_ip_domain ADD COLUMN last_resolved_at INTEGER")
-                db.execSQL("ALTER TABLE excluded_ip_domain ADD COLUMN resolution_error TEXT")
-                logger.debug("Migrated db from version:41 to version:42 - Added caching fields to excluded_ip_domain")
+                // Create the excluded_ip_domain table with all columns
+                // This table doesn't exist in older versions
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `excluded_ip_domain` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`value` TEXT NOT NULL, " +
+                        "`type` TEXT NOT NULL, " +
+                        "`resolved_ips` TEXT, " +
+                        "`last_resolved_at` INTEGER, " +
+                        "`resolution_error` TEXT)"
+                )
+                logger.debug("Migrated db from version:41 to version:42 - Created excluded_ip_domain table")
             }
         }
 
