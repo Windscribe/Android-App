@@ -628,4 +628,52 @@ last chosen location.</string>
     <string name="delete_all_dialog_title">سب حذف کریں؟</string>
     <string name="delete_all_dialog_message">کیا آپ واقعی تمام اندراجات کو حذف کرنا چاہتے ہیں؟ اس عمل کو کالعدم نہیں کیا جا سکتا۔</string>
     <string name="delete_button">حذف کریں</string>
+    
+    <string name="account_hash">اکاؤنٹ ہیش</string>
+    <string name="account_hash_backup_confirmation">میں نے اپنے اکاؤنٹ ہیش کا محفوظ بیک اپ لے لیا ہے اور سمجھتا ہوں کہ اگر میں اسے کھو دوں تو Windscribe میری اکاؤنٹ بازیافت میں مدد نہیں کر سکے گا۔</string>
+    <string name="account_hash_description">یہ آپ کا منفرد اکاؤنٹ ہیش ہے، اسے کہیں محفوظ رکھیں، لاگ ان کے لیے آپ کو اس کی ضرورت ہوگی۔</string>
+    <string name="add_ip_domain">IP/ڈومین شامل کریں</string>
+    <string name="add_two_fa">2FA شامل کریں</string>
+    <string name="already_have_account_log_in">پہلے سے اکاؤنٹ ہے؟ لاگ ان کریں</string>
+    <string name="alternate">متبادل</string>
+    <string name="anti_censorship_screen_description">یہ کارکردگی کو کم کرتے ہیں، صرف اس وقت فعال کریں جب Windscribe عام طور پر منسلک نہ ہو۔</string>
+    <string name="anti_censorship_screen_title">سنسر شپ مخالف</string>
+    <string name="anti_censorship_settings">سنسر شپ مخالف ترتیبات</string>
+    <string name="config_title">تشکیل کا عنوان</string>
+    <string name="confirm_password">پاس ورڈ کی تصدیق کریں</string>
+    <string name="encryption_unavailable_warning">آپ کا آلہ انکرپٹڈ کریڈینشل اسٹوریج کی حمایت نہیں کرتا۔ سیشن ٹوکنز اور VPN کلیدیں کم سیکیورٹی کے ساتھ محفوظ کی جائیں گی۔
+
+زیادہ سے زیادہ سیکیورٹی کے لیے، غیر قابل اعتماد نیٹ ورکس پر یا روٹ کی صورت میں اس آلے کا استعمال نہ کریں۔</string>
+    <string name="enter_account_hash_or_upload">اکاؤنٹ ہیش درج کریں یا اپ لوڈ کریں</string>
+    <string name="enter_email_address">ای میل ایڈریس درج کریں</string>
+    <string name="enter_two_fa_code">2FA کوڈ درج کریں</string>
+    <string name="explain_me">مجھے سمجھائیں!</string>
+    <string name="extra_tls_padding">بڑا TLS</string>
+    <string name="extra_tls_padding_description">TLS پیکٹس کو مصنوعی طور پر بڑا کریں، کچھ معاملات میں سنسر شپ کو دور کرنے میں مدد کرتا ہے</string>
+    <string name="force_upgrade_message">Windscribe کا یہ ورژن اب سپورٹ نہیں کیا جاتا۔ ایپ کا استعمال جاری رکھنے کے لیے اپ ڈیٹ کریں۔</string>
+    <string name="force_upgrade_message_with_version">Windscribe کا یہ ورژن اب سپورٹ نہیں کیا جاتا۔ ایپ کا استعمال جاری رکھنے کے لیے %s پر اپ ڈیٹ کریں۔</string>
+    <string name="force_upgrade_title">اپ ڈیٹ ضروری</string>
+    <string name="got_voucher_code">واؤچر کوڈ ہے؟</string>
+    <string name="hash">ہیش</string>
+    <string name="hashed">ہیش شدہ</string>
+    <string name="invalid_ip_domain">غلط IP، رینج، یا ہوسٹ نیم</string>
+    <string name="ip_domain_added">IP/ڈومین شامل کیا گیا</string>
+    <string name="ip_domain_removed">IP/ڈومین ہٹایا گیا</string>
+    <string name="ip_stack_egress">IP اسٹیک - ایگریس</string>
+    <string name="note">نوٹ</string>
+    <string name="passwords_do_not_match">پاس ورڈز میچ نہیں کرتے</string>
+    <string name="protocol_tweaks">پروٹوکول ٹویکس</string>
+    <string name="protocol_tweaks_description">WireGuard، OpenVPN، اور Stealth پروٹوکولز میں پروٹوکول سطح کی تبدیلیاں۔</string>
+    <string name="regular">باقاعدہ</string>
+    <string name="security_notice">سیکیورٹی نوٹس</string>
+    <string name="server_routing">سرور روٹنگ</string>
+    <string name="server_routing_description">تاخیر بڑھاتا ہے، لیکن منسلک ہونے کے امکانات بہتر بناتا ہے۔</string>
+    <string name="standard">معیاری</string>
+    <string name="two_fa_check_app_description">کوڈ کے لیے اپنی پسندیدہ ایک بار استعمال کے پاس ورڈ ایپلیکیشن چیک کریں۔</string>
+    <string name="update_available">اپ ڈیٹ دستیاب</string>
+    <string name="update_available_message">Windscribe ورژن %s اب دستیاب ہے۔</string>
+    <string name="update_available_message_generic">Windscribe کا نیا ورژن دستیاب ہے۔</string>
+    <string name="update_later">بعد میں اپ ڈیٹ کریں</string>
+    <string name="update_now">ابھی اپ ڈیٹ کریں</string>
+
 </resources>

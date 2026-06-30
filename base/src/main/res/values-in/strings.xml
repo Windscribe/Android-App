@@ -627,4 +627,49 @@ Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas
     <string name="delete_all_dialog_title">Hapus Semua?</string>
     <string name="delete_all_dialog_message">Apakah Anda yakin ingin menghapus semua entri? Tindakan ini tidak dapat dibatalkan.</string>
     <string name="delete_button">Hapus</string>
+    
+    <string name="account_hash">Hash Akun</string>
+    <string name="account_hash_backup_confirmation">Saya telah mencadangkan hash akun saya dengan aman dan memahami bahwa Windscribe tidak akan dapat membantu saya memulihkan akun saya jika saya kehilangannya.</string>
+    <string name="account_hash_description">Ini adalah hash akun unik Anda, simpan di tempat yang aman, Anda akan membutuhkannya untuk login.</string>
+    <string name="add_ip_domain">Tambah IP/Domain</string>
+    <string name="add_two_fa">Tambah 2FA</string>
+    <string name="already_have_account_log_in">Sudah punya akun? Masuk</string>
+    <string name="alternate">Alternatif</string>
+    <string name="anti_censorship_screen_description">Ini menurunkan kinerja, aktifkan hanya jika Windscribe tidak terhubung secara normal.</string>
+    <string name="anti_censorship_screen_title">Anti-sensor</string>
+    <string name="anti_censorship_settings">Pengaturan Anti-sensor</string>
+    <string name="config_title">Judul Konfigurasi</string>
+    <string name="confirm_password">Konfirmasi Kata Sandi</string>
+    <string name="encryption_unavailable_warning">Perangkat Anda tidak mendukung penyimpanan kredensial terenkripsi. Token sesi dan kunci VPN akan disimpan dengan keamanan yang berkurang.
+
+Untuk keamanan maksimal, hindari menggunakan perangkat ini di jaringan yang tidak tepercaya atau jika di-root.</string>
+    <string name="enter_account_hash_or_upload">Masukkan Hash Akun atau Unggah</string>
+    <string name="enter_email_address">Masukkan alamat email</string>
+    <string name="enter_two_fa_code">Masukkan kode 2FA</string>
+    <string name="explain_me">Jelaskan padaku!</string>
+    <string name="extra_tls_padding">TLS Besar</string>
+    <string name="extra_tls_padding_description">Memperbesar paket TLS secara artifisial, membantu menghindari sensor dalam beberapa kasus</string>
+    <string name="got_voucher_code">Punya kode voucher?</string>
+    <string name="hash">Hash</string>
+    <string name="hashed">Di-hash</string>
+    <string name="invalid_ip_domain">IP, rentang, atau nama host tidak valid</string>
+    <string name="ip_domain_added">IP/Domain ditambahkan</string>
+    <string name="ip_domain_removed">IP/Domain dihapus</string>
+    <string name="ip_stack_egress">Tumpukan IP - Keluar</string>
+    <string name="note">Catatan</string>
+    <string name="passwords_do_not_match">Kata sandi tidak cocok</string>
+    <string name="protocol_tweaks">Penyesuaian Protokol</string>
+    <string name="protocol_tweaks_description">Perubahan tingkat protokol yang dibuat untuk protokol WireGuard, OpenVPN, dan Stealth.</string>
+    <string name="regular">Reguler</string>
+    <string name="security_notice">Pemberitahuan Keamanan</string>
+    <string name="server_routing">Perutean Server</string>
+    <string name="server_routing_description">Meningkatkan latensi, tetapi meningkatkan kemungkinan untuk dapat terhubung.</string>
+    <string name="standard">Standar</string>
+    <string name="two_fa_check_app_description">Periksa aplikasi kata sandi sekali pakai pilihan Anda untuk mendapatkan kode.</string>
+    <string name="update_available">Pembaruan Tersedia</string>
+    <string name="update_available_message">Windscribe versi %s sekarang tersedia.</string>
+    <string name="update_available_message_generic">Versi baru Windscribe tersedia.</string>
+    <string name="update_later">Perbarui Nanti</string>
+    <string name="update_now">Perbarui Sekarang</string>
+
 </resources>

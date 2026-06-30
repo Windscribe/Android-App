@@ -625,4 +625,50 @@
     <string name="delete_all_dialog_title">Διαγραφή όλων;</string>
     <string name="delete_all_dialog_message">Είστε σίγουροι ότι θέλετε να διαγράψετε όλες τις καταχωρίσεις; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</string>
     <string name="delete_button">Διαγραφή</string>
+    
+    <string name="account_hash">Κατακερματισμός λογαριασμού</string>
+    <string name="account_hash_backup_confirmation">Έχω δημιουργήσει αντίγραφο ασφαλείας του κατακερματισμού του λογαριασμού μου με ασφάλεια και κατανοώ ότι το Windscribe δεν θα μπορεί να με βοηθήσει να ανακτήσω τον λογαριασμό μου αν τον χάσω.</string>
+    <string name="account_hash_description">Αυτός είναι ο μοναδικός κατακερματισμός του λογαριασμού σας, αποθηκεύστε τον κάπου ασφαλές, θα τον χρειαστείτε για να συνδεθείτε.</string>
+    <string name="add_ip_domain">Προσθήκη IP/Domain</string>
+    <string name="add_two_fa">Προσθήκη 2FA</string>
+    <string name="already_have_account_log_in">Έχετε ήδη λογαριασμό; Συνδεθείτε</string>
+    <string name="alternate">Εναλλακτικό</string>
+    <string name="anti_censorship_screen_description">Αυτά υποβαθμίζουν την απόδοση, ενεργοποιήστε τα μόνο εάν το Windscribe δεν συνδέεται κανονικά.</string>
+    <string name="anti_censorship_screen_title">Κατά της λογοκρισίας</string>
+    <string name="anti_censorship_settings">Ρυθμίσεις κατά της λογοκρισίας</string>
+    <string name="confirm_password">Επιβεβαίωση κωδικού</string>
+    <string name="encryption_unavailable_warning">Η συσκευή σας δεν υποστηρίζει κρυπτογραφημένη αποθήκευση διαπιστευτηρίων. Τα διακριτικά συνεδρίας και τα κλειδιά VPN θα αποθηκευτούν με μειωμένη ασφάλεια.
+
+Για μέγιστη ασφάλεια, αποφύγετε τη χρήση αυτής της συσκευής σε μη αξιόπιστα δίκτυα ή αν είναι rooted.</string>
+    <string name="enter_account_hash_or_upload">Εισάγετε κατακερματισμό λογαριασμού ή μεταφορτώστε</string>
+    <string name="enter_email_address">Εισάγετε διεύθυνση email</string>
+    <string name="enter_two_fa_code">Εισάγετε κωδικό 2FA</string>
+    <string name="extra_tls_padding">Μεγάλο TLS</string>
+    <string name="extra_tls_padding_description">Τεχνητή μεγέθυνση πακέτων TLS, βοηθά στην παράκαμψη της λογοκρισίας σε ορισμένες περιπτώσεις</string>
+    <string name="force_upgrade_message">Αυτή η έκδοση του Windscribe δεν υποστηρίζεται πλέον. Παρακαλώ ενημερώστε για να συνεχίσετε να χρησιμοποιείτε την εφαρμογή.</string>
+    <string name="force_upgrade_message_with_version">Αυτή η έκδοση του Windscribe δεν υποστηρίζεται πλέον. Παρακαλώ ενημερώστε στην %s για να συνεχίσετε να χρησιμοποιείτε την εφαρμογή.</string>
+    <string name="force_upgrade_title">Απαιτείται ενημέρωση</string>
+    <string name="got_voucher_code">Έχετε κωδικό κουπονιού;</string>
+    <string name="hash">Κατακερματισμός</string>
+    <string name="hashed">Κατακερματισμένο</string>
+    <string name="invalid_ip_domain">Μη έγκυρη IP, εύρος ή όνομα κεντρικού υπολογιστή</string>
+    <string name="ip_domain_added">Προστέθηκε IP/Domain</string>
+    <string name="ip_domain_removed">Αφαιρέθηκε IP/Domain</string>
+    <string name="ip_stack_egress">Στοίβα IP - Έξοδος</string>
+    <string name="note">Σημείωση</string>
+    <string name="passwords_do_not_match">Οι κωδικοί δεν ταιριάζουν</string>
+    <string name="protocol_tweaks">Ρυθμίσεις πρωτοκόλλου</string>
+    <string name="protocol_tweaks_description">Αλλαγές σε επίπεδο πρωτοκόλλου που έγιναν στα πρωτόκολλα WireGuard, OpenVPN και Stealth.</string>
+    <string name="regular">Κανονικό</string>
+    <string name="security_notice">Ειδοποίηση ασφαλείας</string>
+    <string name="server_routing">Δρομολόγηση διακομιστή</string>
+    <string name="server_routing_description">Αυξάνει την καθυστέρηση, αλλά βελτιώνει τις πιθανότητες σύνδεσης.</string>
+    <string name="standard">Τυπικό</string>
+    <string name="two_fa_check_app_description">Ελέγξτε την προτιμώμενη εφαρμογή μιας χρήσης κωδικού πρόσβασης για έναν κωδικό.</string>
+    <string name="update_available">Διαθέσιμη ενημέρωση</string>
+    <string name="update_available_message">Η έκδοση %s του Windscribe είναι τώρα διαθέσιμη.</string>
+    <string name="update_available_message_generic">Μια νέα έκδοση του Windscribe είναι διαθέσιμη.</string>
+    <string name="update_later">Ενημέρωση αργότερα</string>
+    <string name="update_now">Ενημέρωση τώρα</string>
+
 </resources>

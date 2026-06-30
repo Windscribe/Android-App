@@ -631,4 +631,49 @@ Ihre Standortdaten bleiben auf Ihrem Gerät und werden ausschließlich für die 
     <string name="delete_all_dialog_title">Alle löschen?</string>
     <string name="delete_all_dialog_message">Sind Sie sicher, dass Sie alle Einträge löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.</string>
     <string name="delete_button">Löschen</string>
+    
+    <string name="account_hash">Konto-Hash</string>
+    <string name="account_hash_backup_confirmation">Ich habe meinen Konto-Hash sicher gesichert und verstehe, dass Windscribe mir nicht helfen kann, mein Konto wiederherzustellen, wenn ich ihn verliere.</string>
+    <string name="account_hash_description">Dies ist Ihr eindeutiger Konto-Hash. Speichern Sie ihn an einem sicheren Ort, Sie benötigen ihn zum Anmelden.</string>
+    <string name="add_ip_domain">IP/Domain hinzufügen</string>
+    <string name="add_two_fa">2FA hinzufügen</string>
+    <string name="already_have_account_log_in">Haben Sie bereits ein Konto? Anmelden</string>
+    <string name="alternate">Alternativ</string>
+    <string name="anti_censorship_screen_description">Diese beeinträchtigen die Leistung, aktivieren Sie sie nur, wenn Windscribe sich nicht normal verbindet.</string>
+    <string name="anti_censorship_screen_title">Anti-Zensur</string>
+    <string name="anti_censorship_settings">Anti-Zensur-Einstellungen</string>
+    <string name="config_title">Konfigurationstitel</string>
+    <string name="confirm_password">Passwort bestätigen</string>
+    <string name="encryption_unavailable_warning">Ihr Gerät unterstützt keine verschlüsselte Speicherung von Anmeldedaten. Sitzungstoken und VPN-Schlüssel werden mit reduzierter Sicherheit gespeichert.
+
+Für maximale Sicherheit vermeiden Sie die Nutzung dieses Geräts in nicht vertrauenswürdigen Netzwerken oder wenn es gerootet ist.</string>
+    <string name="enter_account_hash_or_upload">Konto-Hash eingeben oder hochladen</string>
+    <string name="enter_email_address">E-Mail-Adresse eingeben</string>
+    <string name="enter_two_fa_code">2FA-Code eingeben</string>
+    <string name="explain_me">Erkläre mir!</string>
+    <string name="extra_tls_padding">Großes TLS</string>
+    <string name="extra_tls_padding_description">TLS-Pakete künstlich vergrößern, hilft in einigen Fällen, Zensur zu umgehen</string>
+    <string name="got_voucher_code">Haben Sie einen Gutscheincode?</string>
+    <string name="hash">Hash</string>
+    <string name="hashed">Gehasht</string>
+    <string name="invalid_ip_domain">Ungültige IP, Bereich oder Hostname</string>
+    <string name="ip_domain_added">IP/Domain hinzugefügt</string>
+    <string name="ip_domain_removed">IP/Domain entfernt</string>
+    <string name="ip_stack_egress">IP-Stack - Ausgang</string>
+    <string name="note">Hinweis</string>
+    <string name="passwords_do_not_match">Passwörter stimmen nicht überein</string>
+    <string name="protocol_tweaks">Protokoll-Anpassungen</string>
+    <string name="protocol_tweaks_description">Protokollebene-Änderungen an WireGuard-, OpenVPN- und Stealth-Protokollen.</string>
+    <string name="regular">Normal</string>
+    <string name="security_notice">Sicherheitshinweis</string>
+    <string name="server_routing">Server-Routing</string>
+    <string name="server_routing_description">Erhöht die Latenz, verbessert aber die Chancen, sich verbinden zu können.</string>
+    <string name="standard">Standard</string>
+    <string name="two_fa_check_app_description">Überprüfen Sie Ihre bevorzugte Einmalpasswort-Anwendung für einen Code.</string>
+    <string name="update_available">Update verfügbar</string>
+    <string name="update_available_message">Windscribe Version %s ist jetzt verfügbar.</string>
+    <string name="update_available_message_generic">Eine neue Version von Windscribe ist verfügbar.</string>
+    <string name="update_later">Später aktualisieren</string>
+    <string name="update_now">Jetzt aktualisieren</string>
+
 </resources>

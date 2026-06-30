@@ -627,4 +627,49 @@ Dữ liệu vị trí của bạn vẫn ở trên thiết bị của bạn và c
     <string name="delete_all_dialog_title">Xóa Tất Cả?</string>
     <string name="delete_all_dialog_message">Bạn có chắc chắn muốn xóa tất cả các mục không? Hành động này không thể hoàn tác.</string>
     <string name="delete_button">Xóa</string>
+    
+    <string name="account_hash">Mã băm tài khoản</string>
+    <string name="account_hash_backup_confirmation">Tôi đã sao lưu mã băm tài khoản của mình một cách an toàn và hiểu rằng Windscribe sẽ không thể giúp tôi khôi phục tài khoản nếu tôi mất nó.</string>
+    <string name="account_hash_description">Đây là mã băm tài khoản duy nhất của bạn, hãy lưu nó ở nơi an toàn, bạn sẽ cần nó để đăng nhập.</string>
+    <string name="add_ip_domain">Thêm IP/Tên miền</string>
+    <string name="add_two_fa">Thêm 2FA</string>
+    <string name="already_have_account_log_in">Đã có tài khoản? Đăng nhập</string>
+    <string name="alternate">Thay thế</string>
+    <string name="anti_censorship_screen_description">Những cài đặt này làm giảm hiệu suất, chỉ bật khi Windscribe không kết nối bình thường.</string>
+    <string name="anti_censorship_screen_title">Chống kiểm duyệt</string>
+    <string name="anti_censorship_settings">Cài đặt chống kiểm duyệt</string>
+    <string name="config_title">Tiêu đề cấu hình</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="encryption_unavailable_warning">Thiết bị của bạn không hỗ trợ lưu trữ thông tin xác thực được mã hóa. Mã thông báo phiên và khóa VPN sẽ được lưu trữ với bảo mật giảm.
+
+Để có bảo mật tối đa, tránh sử dụng thiết bị này trên mạng không đáng tin cậy hoặc nếu đã root.</string>
+    <string name="enter_account_hash_or_upload">Nhập mã băm tài khoản hoặc tải lên</string>
+    <string name="enter_email_address">Nhập địa chỉ email</string>
+    <string name="enter_two_fa_code">Nhập mã 2FA</string>
+    <string name="explain_me">Giải thích cho tôi!</string>
+    <string name="extra_tls_padding">TLS lớn</string>
+    <string name="extra_tls_padding_description">Tăng kích thước gói TLS một cách nhân tạo, giúp vượt qua kiểm duyệt trong một số trường hợp</string>
+    <string name="got_voucher_code">Có mã voucher không?</string>
+    <string name="hash">Mã băm</string>
+    <string name="hashed">Đã băm</string>
+    <string name="invalid_ip_domain">IP, phạm vi hoặc tên máy chủ không hợp lệ</string>
+    <string name="ip_domain_added">Đã thêm IP/Tên miền</string>
+    <string name="ip_domain_removed">Đã xóa IP/Tên miền</string>
+    <string name="ip_stack_egress">Ngăn xếp IP - Đầu ra</string>
+    <string name="note">Ghi chú</string>
+    <string name="passwords_do_not_match">Mật khẩu không khớp</string>
+    <string name="protocol_tweaks">Tinh chỉnh giao thức</string>
+    <string name="protocol_tweaks_description">Các thay đổi ở cấp giao thức được thực hiện cho các giao thức WireGuard, OpenVPN và Stealth.</string>
+    <string name="regular">Thông thường</string>
+    <string name="security_notice">Thông báo bảo mật</string>
+    <string name="server_routing">Định tuyến máy chủ</string>
+    <string name="server_routing_description">Tăng độ trễ, nhưng cải thiện khả năng kết nối.</string>
+    <string name="standard">Tiêu chuẩn</string>
+    <string name="two_fa_check_app_description">Kiểm tra ứng dụng mật khẩu một lần ưa thích của bạn để lấy mã.</string>
+    <string name="update_available">Có bản cập nhật</string>
+    <string name="update_available_message">Windscribe phiên bản %s hiện đã có sẵn.</string>
+    <string name="update_available_message_generic">Có phiên bản mới của Windscribe.</string>
+    <string name="update_later">Cập nhật sau</string>
+    <string name="update_now">Cập nhật ngay</string>
+
 </resources>

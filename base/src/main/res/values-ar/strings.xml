@@ -87,7 +87,7 @@
     <string name="packet_size">حجم الحزمة</string>
     <string name="lan_by_pass">السماح بحركة مرور الشبكة المحلية</string>
     <string name="gps_spoofing">انتحال نظام تحديد المواقع العالمي (GPS)</string>
-    <string name="natKeepAlive"/>
+    <string name="natKeepAlive" />
     <string name="keep_alive">ابق على قيد الحياة</string>
     <string name="auto_detecting">الكشف التلقائي ...</string>
     <string name="decoy_traffic">شرك المرور</string>
@@ -627,4 +627,49 @@
     <string name="delete_all_dialog_title">حذف الكل؟</string>
     <string name="delete_all_dialog_message">هل أنت متأكد من أنك تريد حذف جميع الإدخالات؟ لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="delete_button">حذف</string>
+
+    <string name="account_hash">تجزئة الحساب</string>
+    <string name="account_hash_backup_confirmation">لقد قمت بنسخ تجزئة حسابي بشكل آمن وأفهم أن Windscribe لن يتمكن من مساعدتي في استعادة حسابي إذا فقدته.</string>
+    <string name="account_hash_description">هذه هي تجزئة حسابك الفريدة، احفظها في مكان آمن، ستحتاجها لتسجيل الدخول.</string>
+    <string name="add_ip_domain">إضافة IP/نطاق</string>
+    <string name="add_two_fa">إضافة المصادقة الثنائية</string>
+    <string name="already_have_account_log_in">هل لديك حساب بالفعل؟ تسجيل الدخول</string>
+    <string name="alternate">بديل</string>
+    <string name="anti_censorship_screen_description">هذه تقلل من الأداء، قم بتمكينها فقط إذا لم يتصل Windscribe بشكل طبيعي.</string>
+    <string name="anti_censorship_screen_title">مكافحة الرقابة</string>
+    <string name="anti_censorship_settings">إعدادات مكافحة الرقابة</string>
+    <string name="config_title">عنوان التكوين</string>
+    <string name="confirm_password">تأكيد كلمة المرور</string>
+    <string name="encryption_unavailable_warning">جهازك لا يدعم تخزين بيانات الاعتماد المشفرة. سيتم تخزين رموز الجلسة ومفاتيح VPN بأمان منخفض.
+
+للحصول على أقصى قدر من الأمان، تجنب استخدام هذا الجهاز على الشبكات غير الموثوقة أو إذا كان الجهاز مفتوحًا للجذر.</string>
+    <string name="enter_account_hash_or_upload">أدخل تجزئة الحساب أو قم بالتحميل</string>
+    <string name="enter_email_address">أدخل عنوان البريد الإلكتروني</string>
+    <string name="enter_two_fa_code">أدخل رمز المصادقة الثنائية</string>
+    <string name="explain_me">اشرح لي!</string>
+    <string name="extra_tls_padding">TLS كبير</string>
+    <string name="extra_tls_padding_description">تكبير حزم TLS بشكل مصطنع، يساعد في التحايل على الرقابة في بعض الحالات</string>
+    <string name="got_voucher_code">هل لديك رمز قسيمة؟</string>
+    <string name="hash">التجزئة</string>
+    <string name="hashed">مُجزّأ</string>
+    <string name="invalid_ip_domain">IP أو نطاق أو اسم مضيف غير صالح</string>
+    <string name="ip_domain_added">تمت إضافة IP/النطاق</string>
+    <string name="ip_domain_removed">تمت إزالة IP/النطاق</string>
+    <string name="ip_stack_egress">مكدس IP - الخروج</string>
+    <string name="note">ملاحظة</string>
+    <string name="passwords_do_not_match">كلمات المرور غير متطابقة</string>
+    <string name="protocol_tweaks">تعديلات البروتوكول</string>
+    <string name="protocol_tweaks_description">تغييرات على مستوى البروتوكول أجريت على بروتوكولات WireGuard و OpenVPN و Stealth.</string>
+    <string name="regular">عادي</string>
+    <string name="security_notice">إشعار أمني</string>
+    <string name="server_routing">توجيه الخادم</string>
+    <string name="server_routing_description">يزيد من زمن الاستجابة، ولكن يحسن فرص القدرة على الاتصال.</string>
+    <string name="standard">قياسي</string>
+    <string name="two_fa_check_app_description">تحقق من تطبيق كلمة المرور لمرة واحدة المفضل لديك للحصول على رمز.</string>
+    <string name="update_available">التحديث متاح</string>
+    <string name="update_available_message">إصدار Windscribe %s متاح الآن.</string>
+    <string name="update_available_message_generic">إصدار جديد من Windscribe متاح.</string>
+    <string name="update_later">التحديث لاحقًا</string>
+    <string name="update_now">التحديث الآن</string>
+
 </resources>

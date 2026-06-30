@@ -627,4 +627,49 @@
     <string name="delete_all_dialog_title">すべて削除しますか？</string>
     <string name="delete_all_dialog_message">すべてのエントリを削除してもよろしいですか？この操作は元に戻せません。</string>
     <string name="delete_button">削除</string>
+    
+    <string name="account_hash">アカウントハッシュ</string>
+    <string name="account_hash_backup_confirmation">アカウントハッシュを安全にバックアップし、紛失した場合はWindscribeがアカウントの回復を支援できないことを理解しています。</string>
+    <string name="account_hash_description">これはあなたの固有のアカウントハッシュです。安全な場所に保存してください。ログインに必要です。</string>
+    <string name="add_ip_domain">IP/ドメインを追加</string>
+    <string name="add_two_fa">2FAを追加</string>
+    <string name="already_have_account_log_in">すでにアカウントをお持ちですか？ログイン</string>
+    <string name="alternate">代替</string>
+    <string name="anti_censorship_screen_description">これらはパフォーマンスを低下させます。Windscribeが正常に接続できない場合のみ有効にしてください。</string>
+    <string name="anti_censorship_screen_title">検閲回避</string>
+    <string name="anti_censorship_settings">検閲回避設定</string>
+    <string name="config_title">設定タイトル</string>
+    <string name="confirm_password">パスワードを確認</string>
+    <string name="encryption_unavailable_warning">お使いのデバイスは暗号化された認証情報の保存をサポートしていません。セッショントークンとVPNキーは低いセキュリティで保存されます。
+
+最大限のセキュリティのため、信頼できないネットワークやroot化された状態でこのデバイスを使用しないでください。</string>
+    <string name="enter_account_hash_or_upload">アカウントハッシュを入力またはアップロード</string>
+    <string name="enter_email_address">メールアドレスを入力</string>
+    <string name="enter_two_fa_code">2FAコードを入力</string>
+    <string name="explain_me">説明してください！</string>
+    <string name="extra_tls_padding">大きなTLS</string>
+    <string name="extra_tls_padding_description">TLSパケットを人為的に拡大し、場合によっては検閲を回避するのに役立ちます</string>
+    <string name="got_voucher_code">バウチャーコードをお持ちですか？</string>
+    <string name="hash">ハッシュ</string>
+    <string name="hashed">ハッシュ化済み</string>
+    <string name="invalid_ip_domain">無効なIP、範囲、またはホスト名</string>
+    <string name="ip_domain_added">IP/ドメインが追加されました</string>
+    <string name="ip_domain_removed">IP/ドメインが削除されました</string>
+    <string name="ip_stack_egress">IPスタック - 出力</string>
+    <string name="note">注記</string>
+    <string name="passwords_do_not_match">パスワードが一致しません</string>
+    <string name="protocol_tweaks">プロトコル調整</string>
+    <string name="protocol_tweaks_description">WireGuard、OpenVPN、およびStealthプロトコルに対するプロトコルレベルの変更。</string>
+    <string name="regular">通常</string>
+    <string name="security_notice">セキュリティ通知</string>
+    <string name="server_routing">サーバールーティング</string>
+    <string name="server_routing_description">遅延は増加しますが、接続できる可能性が向上します。</string>
+    <string name="standard">標準</string>
+    <string name="two_fa_check_app_description">コードを取得するには、お好みのワンタイムパスワードアプリケーションを確認してください。</string>
+    <string name="update_available">アップデート利用可能</string>
+    <string name="update_available_message">Windscribeバージョン%sが利用可能になりました。</string>
+    <string name="update_available_message_generic">Windscribeの新しいバージョンが利用可能です。</string>
+    <string name="update_later">後で更新</string>
+    <string name="update_now">今すぐ更新</string>
+
 </resources>

@@ -630,4 +630,50 @@ Vaše údaje o polohe zostávajú vo vašom zariadení a používajú sa výluč
     <string name="delete_all_dialog_title">Vymazať všetko?</string>
     <string name="delete_all_dialog_message">Naozaj chcete vymazať všetky položky? Túto akciu nemožno vrátiť späť.</string>
     <string name="delete_button">Vymazať</string>
+    
+    <string name="account_hash">Hash účtu</string>
+    <string name="account_hash_backup_confirmation">Bezpečne som si zálohoval hash môjho účtu a rozumiem, že Windscribe mi nebude môcť pomôcť obnoviť môj účet, ak ho stratím.</string>
+    <string name="account_hash_description">Toto je váš jedinečný hash účtu, uložte si ho niekde v bezpečí, budete ho potrebovať na prihlásenie.</string>
+    <string name="add_ip_domain">Pridať IP/Doménu</string>
+    <string name="add_two_fa">Pridať 2FA</string>
+    <string name="already_have_account_log_in">Už máte účet? Prihlásiť sa</string>
+    <string name="alternate">Alternatívny</string>
+    <string name="anti_censorship_screen_description">Tieto znižujú výkon, povoľte ich iba vtedy, ak sa Windscribe nepripojí normálne.</string>
+    <string name="anti_censorship_screen_title">Anti-cenzúra</string>
+    <string name="anti_censorship_settings">Nastavenia anti-cenzúry</string>
+    <string name="confirm_password">Potvrdiť heslo</string>
+    <string name="encryption_unavailable_warning">Vaše zariadenie nepodporuje šifrované úložisko poverení. Tokeny relácie a VPN kľúče budú uložené so zníženou bezpečnosťou.
+
+Pre maximálnu bezpečnosť sa vyhnite používaniu tohto zariadenia v nedôveryhodných sieťach alebo ak je rootnuté.</string>
+    <string name="enter_account_hash_or_upload">Zadajte hash účtu alebo nahrajte</string>
+    <string name="enter_email_address">Zadajte e-mailovú adresu</string>
+    <string name="enter_two_fa_code">Zadajte kód 2FA</string>
+    <string name="extra_tls_padding">Veľký TLS</string>
+    <string name="extra_tls_padding_description">Umelo zväčšuje pakety TLS, pomáha obísť cenzúru v niektorých prípadoch</string>
+    <string name="force_upgrade_message">Táto verzia Windscribe už nie je podporovaná. Ak chcete pokračovať v používaní aplikácie, aktualizujte ju.</string>
+    <string name="force_upgrade_message_with_version">Táto verzia Windscribe už nie je podporovaná. Ak chcete pokračovať v používaní aplikácie, aktualizujte na %s.</string>
+    <string name="force_upgrade_title">Vyžaduje sa aktualizácia</string>
+    <string name="got_voucher_code">Máte kód poukážky?</string>
+    <string name="hash">Hash</string>
+    <string name="hashed">Hashované</string>
+    <string name="invalid_ip_domain">Neplatná IP, rozsah alebo názov hostiteľa</string>
+    <string name="ip_domain_added">IP/Doména pridaná</string>
+    <string name="ip_domain_removed">IP/Doména odstránená</string>
+    <string name="ip_stack_egress">IP zásobník - Výstup</string>
+    <string name="note">Poznámka</string>
+    <string name="passwords_do_not_match">Heslá sa nezhodujú</string>
+    <string name="protocol_tweaks">Úpravy protokolu</string>
+    <string name="protocol_tweaks_description">Zmeny na úrovni protokolu vykonané v protokoloch WireGuard, OpenVPN a Stealth.</string>
+    <string name="regular">Pravidelný</string>
+    <string name="security_notice">Bezpečnostné upozornenie</string>
+    <string name="server_routing">Smerovanie servera</string>
+    <string name="server_routing_description">Zvyšuje latenciu, ale zlepšuje šance na pripojenie.</string>
+    <string name="standard">Štandardný</string>
+    <string name="two_fa_check_app_description">Skontrolujte svoju preferovanú aplikáciu jednorazového hesla pre kód.</string>
+    <string name="update_available">Dostupná aktualizácia</string>
+    <string name="update_available_message">Verzia %s Windscribe je teraz dostupná.</string>
+    <string name="update_available_message_generic">Je dostupná nová verzia Windscribe.</string>
+    <string name="update_later">Aktualizovať neskôr</string>
+    <string name="update_now">Aktualizovať teraz</string>
+
 </resources>

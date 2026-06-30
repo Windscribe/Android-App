@@ -632,4 +632,49 @@
     <string name="delete_all_dialog_title">全部删除？</string>
     <string name="delete_all_dialog_message">您确定要删除所有条目吗？此操作无法撤消。</string>
     <string name="delete_button">删除</string>
+    
+    <string name="account_hash">账户哈希</string>
+    <string name="account_hash_backup_confirmation">我已安全备份我的账户哈希，并理解如果我丢失它，Windscribe将无法帮助我恢复账户。</string>
+    <string name="account_hash_description">这是您的唯一账户哈希，请将其保存在安全的地方，您需要它来登录。</string>
+    <string name="add_ip_domain">添加 IP/域名</string>
+    <string name="add_two_fa">添加双重认证</string>
+    <string name="already_have_account_log_in">已有账户？登录</string>
+    <string name="alternate">备用</string>
+    <string name="anti_censorship_screen_description">这些会降低性能，仅在 Windscribe 无法正常连接时启用。</string>
+    <string name="anti_censorship_screen_title">反审查</string>
+    <string name="anti_censorship_settings">反审查设置</string>
+    <string name="config_title">配置标题</string>
+    <string name="confirm_password">确认密码</string>
+    <string name="encryption_unavailable_warning">您的设备不支持加密凭证存储。会话令牌和VPN密钥将以较低的安全性存储。
+
+为了最大程度的安全，请避免在不受信任的网络上使用此设备，或者如果设备已root。</string>
+    <string name="enter_account_hash_or_upload">输入账户哈希或上传</string>
+    <string name="enter_email_address">输入电子邮件地址</string>
+    <string name="enter_two_fa_code">输入双重认证代码</string>
+    <string name="explain_me">给我解释一下！</string>
+    <string name="extra_tls_padding">大型 TLS</string>
+    <string name="extra_tls_padding_description">人为增大 TLS 数据包，在某些情况下有助于规避审查</string>
+    <string name="got_voucher_code">有优惠券代码吗？</string>
+    <string name="hash">哈希</string>
+    <string name="hashed">已哈希</string>
+    <string name="invalid_ip_domain">无效的IP、范围或主机名</string>
+    <string name="ip_domain_added">已添加 IP/域名</string>
+    <string name="ip_domain_removed">已移除 IP/域名</string>
+    <string name="ip_stack_egress">IP 栈 - 出口</string>
+    <string name="note">注意</string>
+    <string name="passwords_do_not_match">密码不匹配</string>
+    <string name="protocol_tweaks">协议调整</string>
+    <string name="protocol_tweaks_description">对 WireGuard、OpenVPN 和 Stealth 协议进行的协议级更改。</string>
+    <string name="regular">常规</string>
+    <string name="security_notice">安全通知</string>
+    <string name="server_routing">服务器路由</string>
+    <string name="server_routing_description">增加延迟，但提高连接成功的几率。</string>
+    <string name="standard">标准</string>
+    <string name="two_fa_check_app_description">检查您首选的一次性密码应用程序以获取代码。</string>
+    <string name="update_available">有可用更新</string>
+    <string name="update_available_message">Windscribe 版本 %s 现已可用。</string>
+    <string name="update_available_message_generic">有新版本的 Windscribe 可用。</string>
+    <string name="update_later">稍后更新</string>
+    <string name="update_now">立即更新</string>
+
 </resources>
