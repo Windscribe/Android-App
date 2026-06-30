@@ -1,78 +1,48 @@
-# 🤖 Claude Skills for Android App
+# 🤖 Claude Commands & Skills
 
-Custom skills and commands for Claude to assist with Android app development.
+Custom commands for Claude in the Windscribe Android project.
 
-## 🌍 Translation Manager
+## 📋 Available Commands
 
-Automated translation management system with real translations (no placeholders).
+| Command | Description |
+|---------|------------|
+| `/translate` | Launch translation manager |
+| `/healthcheck` | Run verification pipeline (lint, test, build) |
 
-### ⚡ Quick Commands
+## 🛠️ Command Details
 
-```bash
-./translate           # Interactive menu
-./translate --all     # Complete workflow (find + translate + apply + fix)
-./translate --find    # Scan for missing translations
-./translate --apply   # Apply translations with auto-escape fix
-./translate --status  # Check current status
-./translate --clean   # Remove temp files
+### `/translate`
+Manages app translations - finds missing strings and applies real translations.
+- 📖 Full docs: [`tools/translate/README.md`](../tools/translate/README.md)
+- ⚡ Quick use: `/translate` or `./translate --all`
+
+### `/healthcheck`
+Runs full local verification before pushing code.
+- ✅ ktlint auto-format
+- ✅ All unit tests
+- ✅ FDroid + Google debug builds
+
+## 📁 Directory Structure
+
+```
+.claude/
+├── commands/       # Command definitions
+│   ├── translate.md
+│   └── healthcheck.md
+└── skills/         # Skill configurations
+    ├── translate.json
+    └── healthcheck.json
 ```
 
-### ✨ Features
+## 🚀 Quick Start
 
-- **Real Translations** - No `[ar] Text` placeholders
-- **Auto XML Escape** - Apostrophes automatically escaped
-- **Build Safe** - Verified Android compatibility
-- **23 Languages** - Full multi-language support
-
-### 📁 Output Files
-
-| File | Purpose |
-|------|---------|
-| `translation_batch.json` | Missing strings by language |
-| `translations.json` | Real translations to apply |
-| `translation_summary.txt` | Human-readable report |
-
-### 🔄 Workflow Example
+Just type `/` in Claude to see available commands or use them directly:
 
 ```bash
-$ ./translate --all
-
-🔍 Finding missing translations...
-   ✓ Found 919 missing strings across 23 languages
-
-🤖 Generating real translations...
-   ✓ Applied actual translations (no placeholders)
-
-✅ Applying to XML files...
-   ✓ Updated 23 language files
-
-🔧 Fixing XML escapes...
-   ✓ Fixed apostrophes in 4 files
-
-✅ Complete! Ready to build.
+/translate        # Interactive translation menu
+/healthcheck      # Full verification pipeline
 ```
-
-### 🛠️ Claude Commands
-
-Use these slash commands in Claude:
-- `/translate` - Launch translation manager
-- `/healthcheck` - Run full verification pipeline
-
-### ⚙️ Configuration
-
-The translation system is located in `tools/translate/` with:
-- `find_missing_translations.py` - Scanner
-- `generate_real_translations.py` - Real translations
-- `apply_translations.py` - XML updater
-- `fix_translation_escapes.py` - Apostrophe fixer
-
-### 📝 Notes
-
-- Translations integrate cleanly (no comment markers)
-- Always run build after applying translations
-- Extend `generate_real_translations.py` for new strings
-- Compatible with Google Translate, DeepL, OpenAI APIs
 
 ---
 
-Built for Windscribe Android • Clean, production-ready translations
+For detailed tool documentation, see the respective README files in each tool directory.
