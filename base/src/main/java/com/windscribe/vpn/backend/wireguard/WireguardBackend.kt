@@ -31,7 +31,6 @@ import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
@@ -232,20 +231,11 @@ class WireguardBackend
             handshakeMonitorJob =
                 scope.launch {
                     vpnLogger.info("Waiting for WireGuard handshake success...")
-
-                    // Pre-fetch pinned location in parallel while waiting for handshake
-                    val pinnedLocationDeferred =
-                        async {
-                            getPinnedIpForSelectedCity()
-                        }
-
                     // Wait for handshake
                     wgLogger.handshakeReceivedEvent.collect {
                         vpnLogger.info("WireGuard handshake successful, starting connectivity test with no initial delay.")
-
                         // Pass initialWaitTime = 0L since handshake already confirmed tunnel is ready
-                        testConnectivity(initialWaitTime = 0L, pinnedLocation = pinnedLocationDeferred.await())
-
+                        testConnectivity(initialWaitTime = 0L)
                         // Cancel this job after first handshake to prevent multiple tests
                         handshakeMonitorJob?.cancel()
                         handshakeMonitorJob = null

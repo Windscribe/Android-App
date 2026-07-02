@@ -165,10 +165,7 @@ abstract class VpnBackend(
      @param initialWaitTime Optional override for initial delay (e.g., 0L for WireGuard). If null, uses advance parameters.
      @param pinnedLocation Optional pre-fetched pinned location to avoid DB lookup delay.
      */
-    fun testConnectivity(
-        initialWaitTime: Long? = null,
-        pinnedLocation: Pair<String, String>? = null,
-    ) {
+    fun testConnectivity(initialWaitTime: Long? = null) {
         if (connectivityTestJob?.isActive == true) {
             vpnLogger.debug("Connectivity test already running, skipping new test.")
             return
@@ -185,6 +182,7 @@ abstract class VpnBackend(
             mainScope.launch {
                 try {
                     val selectedIp = preferencesHelper.selectedIp
+                    val pinnedLocation = getPinnedIpForSelectedCity()
                     val shouldCheckPinning = pinnedLocation?.second != null
                     val hasPinnedNodeMismatch =
                         shouldCheckPinning &&
@@ -198,7 +196,7 @@ abstract class VpnBackend(
                         delay(startDelay.milliseconds)
                         // Wait for WSNet to be fully initialized before calling bridge API
                         ensureWSNetReady()
-                        configureBridgeAPI(pinnedLocation, selectedIp)
+                        configureBridgeAPI(selectedIp)
                         // Pin IP if available (WireGuard only)
                         val ipPinningFailed = attemptIpPinning(pinnedLocation, selectedIp)
 
@@ -358,13 +356,10 @@ abstract class VpnBackend(
      * Configures WSNet bridge API for connectivity test.
      * Sets current host for WireGuard connections and marks connection as active.
      */
-    private fun configureBridgeAPI(
-        pinnedLocation: Pair<String, String>?,
-        selectedIp: String?,
-    ) {
+    private fun configureBridgeAPI(selectedIp: String?) {
         wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
             val hostToSet =
-                if (pinnedLocation != null && !preferencesHelper.isConnectingToConfigured) {
+                if (protocolInformation?.protocol == "wg" && !preferencesHelper.isConnectingToConfigured) {
                     selectedIp ?: ""
                 } else {
                     ""
