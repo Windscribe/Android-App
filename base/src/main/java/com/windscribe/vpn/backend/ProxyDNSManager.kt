@@ -24,7 +24,6 @@ class ProxyDNSManager(
     val preferenceHelper: PreferencesHelper,
 ) {
     companion object {
-        const val LOG_PATH = "controlD.log"
         const val CONFIG_FILE = "config.toml"
     }
 
@@ -87,14 +86,6 @@ class ProxyDNSManager(
         return null
     }
 
-    private fun createLogFile(): String {
-        val logFile = File(appContext.filesDir, LOG_PATH)
-        if (!logFile.exists()) {
-            logFile.createNewFile()
-        }
-        return logFile.absolutePath
-    }
-
     private fun shouldRunControlD(): Boolean =
         dnsDetails?.type == DnsType.Proxy &&
             preferenceHelper.dnsMode == PreferencesKeyConstants.DNS_MODE_CUSTOM &&
@@ -110,7 +101,7 @@ class ProxyDNSManager(
 
     private suspend fun startControlD() {
         updateControlDConfig()
-        val logPath = createLogFile()
+        val logPath = ""
         val homeDir = appContext.filesDir.absolutePath
         if (controlDJob?.isActive == true) {
             logger.debug("Previous ControlD job is still running. Waiting for it to finish.")

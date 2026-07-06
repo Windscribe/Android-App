@@ -15,6 +15,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.utils.startForegroundImmediately
 import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,6 +51,9 @@ class OpenVPNWrapperService :
 
     @Inject
     lateinit var excludedIpHolder: ExcludedIpHolder
+
+    @Inject
+    lateinit var advanceParameterRepository: AdvanceParameterRepository
 
     private var logger = LoggerFactory.getLogger("vpn")
 
@@ -140,4 +144,6 @@ class OpenVPNWrapperService :
     override fun applyExcludedRoutes(builder: Builder) {
         excludedIpHolder.applyExcludedRoutes(builder)
     }
+
+    override fun shouldEnablePacketLogging(): Boolean = advanceParameterRepository.showCdLog()
 }
