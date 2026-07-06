@@ -154,6 +154,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	abstract protected Notification buildNotification(boolean publicVersion);
 	abstract protected int getNotificationID();
 	abstract protected void applyExcludedRoutes(Builder builder);
+	abstract protected boolean shouldEnablePacketLogging();
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
@@ -1078,7 +1079,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 				if (dnsDetails != null && (dnsDetails.getType() == DnsType.Proxy)){
 					mBuilder.setBlocking(true);
 					fd = mBuilder.establish();
-					tunnelWrapper = new VPNTunnelWrapper(fd, CharonVpnService.this, dnsDetails.getControlDPort());
+					tunnelWrapper = new VPNTunnelWrapper(fd, CharonVpnService.this, dnsDetails.getControlDPort(), shouldEnablePacketLogging());
 					tunnelWrapper.start();
 					fd = tunnelWrapper.getParcelDescriptor();
 				} else {

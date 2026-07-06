@@ -16,6 +16,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.utils.startForegroundImmediately
 import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.wireguard.android.backend.GoBackend
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,6 +46,9 @@ class WireGuardWrapperService : GoBackend.VpnService() {
 
     @Inject
     lateinit var excludedIpHolder: ExcludedIpHolder
+
+    @Inject
+    lateinit var advanceParameterRepository: AdvanceParameterRepository
 
     private var logger = LoggerFactory.getLogger("vpn")
 
@@ -114,4 +118,6 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     override fun applyExcludedRoutes(builder: Builder) {
         excludedIpHolder.applyExcludedRoutes(builder)
     }
+
+    override fun shouldEnablePacketLogging(): Boolean = advanceParameterRepository.showCdLog()
 }
