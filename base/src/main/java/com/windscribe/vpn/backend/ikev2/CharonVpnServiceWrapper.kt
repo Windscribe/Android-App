@@ -6,16 +6,19 @@ package com.windscribe.vpn.backend.ikev2
 
 import android.app.Notification
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
+import com.windscribe.vpn.backend.utils.ExcludedIpHolder
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.utils.startForegroundImmediately
 import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.ShortcutStateManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -53,6 +56,12 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     @Inject
     lateinit var scope: CoroutineScope
 
+    @Inject
+    lateinit var excludedIpHolder: ExcludedIpHolder
+
+    @Inject
+    lateinit var advanceParameterRepository: AdvanceParameterRepository
+
     private var logger = LoggerFactory.getLogger("vpn")
 
     override fun onCreate() {
@@ -76,6 +85,17 @@ class CharonVpnServiceWrapper : CharonVpnService() {
 
     override fun onDestroy() {
         logger.debug("CharonVpnServiceWrapper onDestroy()")
+        // On Android 11 (API 30) and below, notifications tied to foreground services may not be
+        // removed properly by the parent class due to timing issues with mShowNotification flag.
+        // Explicitly call stopForeground() to ensure notification removal on these versions.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+            try {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            } catch (e: Exception) {
+                logger.error("Failed to stop foreground: ${e.message}", e)
+            }
+        }
         windNotificationBuilder.cancelNotification(NotificationConstants.SERVICE_NOTIFICATION_ID)
         iKev2VpnBackend.serviceDestroyed()
         super.onDestroy()
@@ -235,4 +255,10 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         iKev2VpnBackend.getTunnel().onStateChange(IKev2Tunnel.State.DOWN)
         stopSelf()
     }
+
+    override fun applyExcludedRoutes(builder: Builder) {
+        excludedIpHolder.applyExcludedRoutes(builder)
+    }
+
+    override fun shouldEnablePacketLogging(): Boolean = advanceParameterRepository.showCdLog()
 }

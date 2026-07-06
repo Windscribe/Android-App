@@ -144,6 +144,10 @@ public abstract class OpenVPNService extends VpnService implements StateListener
     // Returns if service should keep running
     protected abstract boolean onProcessRestore();
 
+    protected abstract void applyExcludedRoutes(Builder builder);
+
+    protected abstract boolean shouldEnablePacketLogging();
+
     // From: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
     public static String humanReadableByteCount(long bytes, boolean speed, Resources res) {
         if (speed)
@@ -1020,6 +1024,8 @@ public abstract class OpenVPNService extends VpnService implements StateListener
 
         builder.setConfigureIntent(getGraphPendingIntent());
 
+        applyExcludedRoutes(builder);
+
         try {
             //Debug.stopMethodTracing();
             ParcelFileDescriptor tun;
@@ -1027,7 +1033,7 @@ public abstract class OpenVPNService extends VpnService implements StateListener
             if (dnsDetails != null && (dnsDetails.getType() == DnsType.Proxy)){
                 builder.setBlocking(true);
                 tun = builder.establish();
-                tunnelWrapper = new VPNTunnelWrapper(tun, this, dnsDetails.getControlDPort());
+                tunnelWrapper = new VPNTunnelWrapper(tun, this, dnsDetails.getControlDPort(), shouldEnablePacketLogging());
                 tunnelWrapper.start();
                 tun = tunnelWrapper.getParcelDescriptor();
             } else {

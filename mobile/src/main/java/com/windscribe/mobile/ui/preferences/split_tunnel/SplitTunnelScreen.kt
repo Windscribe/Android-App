@@ -76,6 +76,8 @@ data class SplitTunnelState(
     val searchKeyword: String = "",
     val filteredApps: List<InstalledAppsData> = emptyList(),
     val appIconCache: AppIconCache? = null,
+    val isAndroid13Plus: Boolean = false,
+    val excludedIpsCount: Int = 0,
 )
 
 /**
@@ -87,6 +89,7 @@ class SplitTunnelActions(
     val onSplitTunnelSettingChanged: () -> Unit = {},
     val onQueryTextChange: (String) -> Unit = {},
     val onShowSystemAppsToggle: () -> Unit = {},
+    val onManageDomainsIps: () -> Unit = {},
 )
 
 /**
@@ -95,12 +98,14 @@ class SplitTunnelActions(
  */
 @Composable
 fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunnelViewModelImpl>()) {
+    val navController = LocalNavController.current
     val showProgress by viewModel.showProgress.collectAsState()
     val selectedModeKey by viewModel.selectedModeKey.collectAsState()
     val isSplitTunnelEnabled by viewModel.isSplitTunnelEnabled.collectAsState()
     val showSystemApps by viewModel.showSystemApps.collectAsState()
     val searchKeyword by viewModel.searchKeyword.collectAsState()
     val filteredApps by viewModel.filteredApps.collectAsState()
+    val excludedIpsCount by viewModel.excludedIpsCount.collectAsState()
 
     SplitTunnelContent(
         state =
@@ -113,6 +118,8 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunne
                 searchKeyword = searchKeyword,
                 filteredApps = filteredApps,
                 appIconCache = viewModel.appIconCache,
+                isAndroid13Plus = viewModel.isAndroid13Plus,
+                excludedIpsCount = excludedIpsCount,
             ),
         actions =
             SplitTunnelActions(
@@ -121,6 +128,9 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel = hiltViewModel<SplitTunne
                 onSplitTunnelSettingChanged = viewModel::onSplitTunnelSettingChanged,
                 onQueryTextChange = viewModel::onQueryTextChange,
                 onShowSystemAppsToggle = viewModel::onShowSystemAppsToggle,
+                onManageDomainsIps = {
+                    navController.navigate("excluded_ips_domains")
+                },
             ),
     )
 }
@@ -154,6 +164,10 @@ fun SplitTunnelContent(
                 actions.onSplitTunnelSettingChanged,
                 actions.onModeSelected,
             )
+            if (state.isAndroid13Plus) {
+                Spacer(modifier = Modifier.height(14.dp))
+                IpsHostnamesRow(state.excludedIpsCount, actions.onManageDomainsIps)
+            }
             Spacer(modifier = Modifier.height(14.dp))
             AppsTitle()
             Spacer(modifier = Modifier.height(8.dp))
@@ -286,9 +300,55 @@ private fun Mode(
             explainer = FeatureExplainer.SPLIT_TUNNELING,
         )
         Spacer(modifier = Modifier.height(1.dp))
-        CustomDropDown(R.string.mode, modes, selectedKey, description = modeDescription) {
+        CustomDropDown(
+            R.string.mode,
+            modes,
+            selectedKey,
+            description = modeDescription,
+            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+        ) {
             onModeSelected(it)
         }
+    }
+}
+
+@Composable
+private fun IpsHostnamesRow(
+    count: Int,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(12.dp),
+                ).clickable { onClick() }
+                .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.domains_ips),
+            color = MaterialTheme.colorScheme.primaryTextColor,
+            style = font16.copy(fontWeight = FontWeight.Medium),
+            textAlign = TextAlign.Start,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = count.toString(),
+            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
+            style = font16.copy(fontWeight = FontWeight.Normal),
+            textAlign = TextAlign.End,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Image(
+            painter = painterResource(com.windscribe.mobile.R.drawable.arrow_right),
+            contentDescription = "Navigate",
+            modifier = Modifier.size(16.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.4f)),
+        )
     }
 }
 

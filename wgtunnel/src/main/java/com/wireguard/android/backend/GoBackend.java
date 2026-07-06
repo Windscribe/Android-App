@@ -234,6 +234,28 @@ public final class GoBackend implements Backend {
 
     private void setStateInternal(final Tunnel tunnel, @Nullable final Config config, final State state)
             throws Exception {
+        // Perform DNS resolution BEFORE acquiring lock to prevent ANR
+        // DNS lookups can be slow and should not block other operations
+        if (state == State.UP && config != null) {
+            dnsRetry: for (int i = 0; i < DNS_RESOLUTION_RETRIES; ++i) {
+                // Pre-resolve IPs so they're cached when building the userspace string
+                for (final Peer peer : config.getPeers()) {
+                    final InetEndpoint ep = peer.getEndpoint().orElse(null);
+                    if (ep == null)
+                        continue;
+                    if (ep.getResolved().orElse(null) == null) {
+                        if (i < DNS_RESOLUTION_RETRIES - 1) {
+                            Log.w(TAG, "DNS host \"" + ep.getHost() + "\" failed to resolve; trying again");
+                            Thread.sleep(1000);
+                            continue dnsRetry;
+                        } else
+                            throw new BackendException(Reason.DNS_RESOLUTION_FAILURE, ep.getHost());
+                    }
+                }
+                break;
+            }
+        }
+
         synchronized (tunnelStateLock) {
             setStateInternalLocked(tunnel, config, state);
         }
@@ -270,24 +292,7 @@ public final class GoBackend implements Backend {
                 return;
             }
 
-
-            dnsRetry: for (int i = 0; i < DNS_RESOLUTION_RETRIES; ++i) {
-                // Pre-resolve IPs so they're cached when building the userspace string
-                for (final Peer peer : config.getPeers()) {
-                    final InetEndpoint ep = peer.getEndpoint().orElse(null);
-                    if (ep == null)
-                        continue;
-                    if (ep.getResolved().orElse(null) == null) {
-                        if (i < DNS_RESOLUTION_RETRIES - 1) {
-                            Log.w(TAG, "DNS host \"" + ep.getHost() + "\" failed to resolve; trying again");
-                            Thread.sleep(1000);
-                            continue dnsRetry;
-                        } else
-                            throw new BackendException(Reason.DNS_RESOLUTION_FAILURE, ep.getHost());
-                    }
-                }
-                break;
-            }
+            // DNS resolution already completed in setStateInternal() before acquiring lock
 
             // Build config
             final String goConfig = config.toWgUserspaceString();
@@ -337,6 +342,8 @@ public final class GoBackend implements Backend {
 
             builder.setMtu(config.getInterface().getMtu().orElse(1280));
 
+            service.applyExcludedRoutes(builder);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 builder.setMetered(false);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -351,7 +358,7 @@ public final class GoBackend implements Backend {
                 ParcelFileDescriptor tun = builder.establish();
                 if (tun == null)
                     throw new BackendException(Reason.TUN_CREATION_ERROR);
-                tunnelWrapper = new VPNTunnelWrapper(tun, service, dnsDetails.getControlDPort());
+                tunnelWrapper = new VPNTunnelWrapper(tun, service, dnsDetails.getControlDPort(), service.shouldEnablePacketLogging());
                 tunnelWrapper.start();
                 ParcelFileDescriptor wrappedTun = tunnelWrapper.getParcelDescriptor();
                 Log.d(TAG, "Go backend " + wgVersion());
@@ -446,8 +453,15 @@ public final class GoBackend implements Backend {
             return 5355;
         }
 
+        public boolean shouldEnablePacketLogging() {
+            return false;
+        }
+
         public Builder getBuilder() {
             return new Builder();
+        }
+
+        protected void applyExcludedRoutes(Builder builder) {
         }
 
         @Override

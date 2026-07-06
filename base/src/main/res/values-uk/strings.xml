@@ -618,4 +618,58 @@
     <string name="force_upgrade_title">Потрібне оновлення</string>
     <string name="force_upgrade_message">Ця версія Windscribe більше не підтримується. Будь ласка, оновіть, щоб продовжувати використовувати додаток.</string>
     <string name="force_upgrade_message_with_version">Ця версія Windscribe більше не підтримується. Будь ласка, оновіть до %s, щоб продовжувати використовувати додаток.</string>
+    <string name="domains_ips">Виключення IP та імен хостів</string>
+    <string name="domains_ips_description">Виключіть IP-адреси, діапазони або імена хостів із VPN-тунелю. Роздільне тунелювання застосунків має пріоритет над цими правилами.</string>
+    <string name="enter_ip_domain_hint">напр. 192.168.1.1 або imgur.com</string>
+    <string name="import_button">Імпорт</string>
+    <string name="delete_all_button">Видалити все</string>
+    <string name="no_excluded_ips_domains">Немає виключених IP або доменів</string>
+    <string name="delete_all_dialog_title">Видалити все?</string>
+    <string name="delete_all_dialog_message">Ви впевнені, що хочете видалити всі записи? Цю дію не можна скасувати.</string>
+    <string name="delete_button">Видалити</string>
+    
+    <string name="account_hash">Хеш облікового запису</string>
+    <string name="account_hash_backup_confirmation">Я безпечно зберіг резервну копію хешу мого облікового запису і розумію, що Windscribe не зможе допомогти мені відновити обліковий запис, якщо я його втрачу.</string>
+    <string name="account_hash_description">Це ваш унікальний хеш облікового запису, збережіть його в безпечному місці, він знадобиться вам для входу.</string>
+    <string name="add_ip_domain">Додати IP/Домен</string>
+    <string name="add_two_fa">Додати 2FA</string>
+    <string name="already_have_account_log_in">Вже маєте обліковий запис? Увійти</string>
+    <string name="alternate">Альтернативний</string>
+    <string name="anti_censorship_screen_description">Ці налаштування погіршують продуктивність, увімкніть лише якщо Windscribe не підключається звичайним способом.</string>
+    <string name="anti_censorship_screen_title">Антицензура</string>
+    <string name="anti_censorship_settings">Налаштування антицензури</string>
+    <string name="config_title">Назва конфігурації</string>
+    <string name="confirm_password">Підтвердіть пароль</string>
+    <string name="encryption_unavailable_warning">Ваш пристрій не підтримує зашифроване зберігання облікових даних. Токени сеансів та VPN-ключі будуть зберігатися зі зниженою безпекою.
+
+Для максимальної безпеки уникайте використання цього пристрою в ненадійних мережах або з root-доступом.</string>
+    <string name="enter_account_hash_or_upload">Введіть хеш облікового запису або завантажте</string>
+    <string name="enter_email_address">Введіть адресу електронної пошти</string>
+    <string name="enter_two_fa_code">Введіть код 2FA</string>
+    <string name="explain_me">Поясніть мені!</string>
+    <string name="extra_tls_padding">Великий TLS</string>
+    <string name="extra_tls_padding_description">Штучно збільшує пакети TLS, допомагає обійти цензуру в деяких випадках</string>
+    <string name="got_voucher_code">Маєте код ваучера?</string>
+    <string name="hash">Хеш</string>
+    <string name="hashed">Хешовано</string>
+    <string name="invalid_ip_domain">Недійсний IP, діапазон або ім\'я хоста</string>
+    <string name="ip_domain_added">IP/Домен додано</string>
+    <string name="ip_domain_removed">IP/Домен видалено</string>
+    <string name="ip_stack_egress">IP-стек - Вихідний</string>
+    <string name="note">Примітка</string>
+    <string name="passwords_do_not_match">Паролі не збігаються</string>
+    <string name="protocol_tweaks">Налаштування протоколу</string>
+    <string name="protocol_tweaks_description">Зміни на рівні протоколу, внесені до протоколів WireGuard, OpenVPN та Stealth.</string>
+    <string name="regular">Звичайний</string>
+    <string name="security_notice">Повідомлення про безпеку</string>
+    <string name="server_routing">Маршрутизація сервера</string>
+    <string name="server_routing_description">Збільшує затримку, але покращує шанси на підключення.</string>
+    <string name="standard">Стандартний</string>
+    <string name="two_fa_check_app_description">Перевірте ваш улюблений додаток одноразових паролів для отримання коду.</string>
+    <string name="update_available">Доступне оновлення</string>
+    <string name="update_available_message">Версія %s Windscribe тепер доступна.</string>
+    <string name="update_available_message_generic">Доступна нова версія Windscribe.</string>
+    <string name="update_later">Оновити пізніше</string>
+    <string name="update_now">Оновити зараз</string>
+
 </resources>

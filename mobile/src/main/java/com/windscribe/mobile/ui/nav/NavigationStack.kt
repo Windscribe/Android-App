@@ -51,6 +51,7 @@ import com.windscribe.mobile.ui.preferences.connection.ConnectionScreen
 import com.windscribe.mobile.ui.preferences.debug.DebugScreen
 import com.windscribe.mobile.ui.preferences.email.AddEmailScreen
 import com.windscribe.mobile.ui.preferences.email.ConfirmEmailScreen
+import com.windscribe.mobile.ui.preferences.excluded_ips.ExcludedIpDomainScreen
 import com.windscribe.mobile.ui.preferences.general.GeneralScreen
 import com.windscribe.mobile.ui.preferences.gps_spoofing.GpsSpoofing
 import com.windscribe.mobile.ui.preferences.help.HelpScreen
@@ -176,6 +177,9 @@ private fun NavGraphBuilder.addNavigationScreens() {
     }
     slidingComposable(route = Screen.SplitTunnel.route) {
         SplitTunnelScreen()
+    }
+    slidingComposable(route = Screen.ExcludedIpDomains.route) {
+        ExcludedIpDomainScreen()
     }
     slidingComposable(route = Screen.NetworkOptions.route) {
         NetworkOptionsScreen()

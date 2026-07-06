@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.localdatabase
 
+import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
@@ -142,4 +143,30 @@ interface LocalDbInterface {
     suspend fun getLocationById(locationId: Int): Location?
 
     suspend fun getPingIpAndHost(id: Int): Pair<String, String>?
+
+    // Excluded IPs and Domains
+    fun getExcludedIpsDomainsFlow(): Flow<List<ExcludedIpDomain>>
+
+    suspend fun getAllExcludedIpsDomains(): List<ExcludedIpDomain>
+
+    suspend fun insertExcludedIpDomain(entry: ExcludedIpDomain): Long
+
+    suspend fun updateExcludedIpDomain(entry: ExcludedIpDomain)
+
+    suspend fun deleteExcludedIpDomain(entry: ExcludedIpDomain)
+
+    suspend fun deleteAllExcludedIpsDomains()
+
+    suspend fun excludedIpDomainExists(value: String): Int
+
+    suspend fun updateExcludedIpDomainResolvedData(
+        id: Long,
+        resolvedIps: String?,
+        timestamp: Long?,
+        error: String?,
+    )
+
+    suspend fun getStaleExcludedHostnames(staleTimestamp: Long): List<ExcludedIpDomain>
+
+    suspend fun getAllExcludedHostnames(): List<ExcludedIpDomain>
 }

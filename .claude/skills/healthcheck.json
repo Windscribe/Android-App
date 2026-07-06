@@ -1,0 +1,41 @@
+{
+  "name": "healthcheck",
+  "description": "Run the full local verification pipeline before pushing — ktlint, unit tests, and debug builds",
+  "version": "1.0.0",
+  "author": "Claude",
+  "commands": {
+    "healthcheck": {
+      "description": "Run full verification pipeline (lint, test, build)",
+      "usage": "/healthcheck",
+      "script": "./gradlew ktlintFormat test assembleFdroidDebug assembleGoogleDebug"
+    },
+    "healthcheck-lint": {
+      "description": "Run ktlint auto-format only",
+      "usage": "/healthcheck-lint",
+      "script": "./gradlew ktlintFormat"
+    },
+    "healthcheck-test": {
+      "description": "Run all unit tests",
+      "usage": "/healthcheck-test",
+      "script": "./gradlew test"
+    },
+    "healthcheck-build": {
+      "description": "Build both fdroid and google debug variants",
+      "usage": "/healthcheck-build",
+      "script": "./gradlew assembleFdroidDebug assembleGoogleDebug"
+    }
+  },
+  "requirements": [
+    "gradle",
+    "kotlin",
+    "android-sdk"
+  ],
+  "tags": [
+    "verification",
+    "testing",
+    "quality",
+    "ci",
+    "build",
+    "lint"
+  ]
+}
