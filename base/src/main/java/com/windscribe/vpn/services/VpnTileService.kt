@@ -8,7 +8,6 @@ import android.graphics.drawable.Icon
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import com.windscribe.vpn.R.drawable
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connected
@@ -66,7 +65,7 @@ class VpnTileService : TileService() {
             job =
                 scope.launch {
                     vpnConnectionStateManager.state.collectLatest {
-                        if (it.status == Disconnected && appContext.preference.isReconnecting) {
+                        if (it.status == Disconnected && it.error?.error == VPNState.ErrorType.UserReconnect) {
                             return@collectLatest
                         }
                         resetState(it.status)
@@ -97,7 +96,19 @@ class VpnTileService : TileService() {
                 setTileState(getIcon(true), Tile.STATE_ACTIVE)
             }
 
-            else -> {}
+            VPNState.Status.Disconnecting,
+            VPNState.Status.RequiresUserInput,
+            VPNState.Status.UnsecuredNetwork,
+            VPNState.Status.InvalidSession,
+            -> {
+                logger.debug("Changing quick tile status to Disconnecting/Inactive: $status")
+                setTileState(getIcon(), Tile.STATE_INACTIVE)
+            }
+
+            VPNState.Status.ProtocolSwitch -> {
+                logger.debug("Changing quick tile status to ProtocolSwitch (showing as Connecting)")
+                setTileState(getIcon(true), Tile.STATE_ACTIVE)
+            }
         }
     }
 

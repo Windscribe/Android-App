@@ -1,0 +1,9 @@
+#!/bin/bash
+# Translation Manager Launcher
+# Quick launcher for the translation management tool
+
+# Get the directory of this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Run the translation tool
+python3 "${SCRIPT_DIR}/tools/translate-tool.py" "$@"

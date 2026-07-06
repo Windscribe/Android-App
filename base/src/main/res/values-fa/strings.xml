@@ -611,4 +611,61 @@
     <string name="app_icon">آیکون برنامه</string>
     <string name="app_icon_description">یک آیکون برنامه متفاوت را برای حریم خصوصی بیشتر انتخاب کنید</string>
     <string name="configuration">پیکربندی</string>
+    <string name="domains_ips">استثناهای IP و نام میزبان</string>
+    <string name="domains_ips_description">IP‌ها، محدوده‌ها یا نام‌های میزبان را از تونل VPN مستثنی کنید. تونل تقسیم‌شده برنامه بر این قوانین اولویت دارد.</string>
+    <string name="enter_ip_domain_hint">مثلاً 192.168.1.1 یا imgur.com</string>
+    <string name="import_button">واردات</string>
+    <string name="delete_all_button">حذف همه</string>
+    <string name="no_excluded_ips_domains">هیچ IP یا دامنه حذف شده‌ای وجود ندارد</string>
+    <string name="delete_all_dialog_title">همه حذف شود؟</string>
+    <string name="delete_all_dialog_message">آیا مطمئن هستید که می‌خواهید تمام موارد را حذف کنید؟ این عمل قابل بازگشت نیست.</string>
+    <string name="delete_button">حذف</string>
+    
+    <string name="account_hash">هش حساب</string>
+    <string name="account_hash_backup_confirmation">من از هش حساب خود به طور ایمن نسخه پشتیبان تهیه کرده‌ام و می‌دانم که Windscribe نمی‌تواند در صورت گم شدن آن، به من در بازیابی حسابم کمک کند.</string>
+    <string name="account_hash_description">این هش حساب منحصر به فرد شماست، آن را در جای امنی ذخیره کنید، برای ورود به آن نیاز خواهید داشت.</string>
+    <string name="add_ip_domain">افزودن IP/دامنه</string>
+    <string name="add_two_fa">افزودن احراز هویت دو عاملی</string>
+    <string name="already_have_account_log_in">قبلاً حساب دارید؟ ورود</string>
+    <string name="alternate">جایگزین</string>
+    <string name="anti_censorship_screen_description">اینها عملکرد را کاهش می‌دهند، فقط در صورتی فعال کنید که Windscribe به طور عادی متصل نشود.</string>
+    <string name="anti_censorship_screen_title">ضد سانسور</string>
+    <string name="anti_censorship_settings">تنظیمات ضد سانسور</string>
+    <string name="config_title">عنوان پیکربندی</string>
+    <string name="confirm_password">تأیید رمز عبور</string>
+    <string name="encryption_unavailable_warning">دستگاه شما از ذخیره‌سازی رمزگذاری شده اعتبارنامه‌ها پشتیبانی نمی‌کند. توکن‌های جلسه و کلیدهای VPN با امنیت کاهش‌یافته ذخیره خواهند شد.
+
+برای حداکثر امنیت، از استفاده از این دستگاه در شبکه‌های غیرقابل اعتماد یا در صورت روت بودن خودداری کنید.</string>
+    <string name="enter_account_hash_or_upload">هش حساب را وارد کنید یا آپلود کنید</string>
+    <string name="enter_email_address">آدرس ایمیل را وارد کنید</string>
+    <string name="enter_two_fa_code">کد احراز هویت دو عاملی را وارد کنید</string>
+    <string name="explain_me">برایم توضیح بده!</string>
+    <string name="extra_tls_padding">TLS بزرگ</string>
+    <string name="extra_tls_padding_description">بزرگ کردن مصنوعی بسته‌های TLS، در برخی موارد به دور زدن سانسور کمک می‌کند</string>
+    <string name="force_upgrade_message">این نسخه از Windscribe دیگر پشتیبانی نمی‌شود. لطفاً برای ادامه استفاده از برنامه به‌روزرسانی کنید.</string>
+    <string name="force_upgrade_message_with_version">این نسخه از Windscribe دیگر پشتیبانی نمی‌شود. لطفاً برای ادامه استفاده از برنامه به %s به‌روزرسانی کنید.</string>
+    <string name="force_upgrade_title">به‌روزرسانی الزامی</string>
+    <string name="got_voucher_code">کد کوپن دارید؟</string>
+    <string name="hash">هش</string>
+    <string name="hashed">هش شده</string>
+    <string name="invalid_ip_domain">IP، محدوده یا نام میزبان نامعتبر</string>
+    <string name="ip_domain_added">IP/دامنه اضافه شد</string>
+    <string name="ip_domain_removed">IP/دامنه حذف شد</string>
+    <string name="ip_stack_egress">پشته IP - خروج</string>
+    <string name="note">یادداشت</string>
+    <string name="passwords_do_not_match">رمزهای عبور مطابقت ندارند</string>
+    <string name="protocol_tweaks">تنظیمات پروتکل</string>
+    <string name="protocol_tweaks_description">تغییرات در سطح پروتکل در پروتکل‌های WireGuard، OpenVPN و Stealth انجام شده است.</string>
+    <string name="regular">معمولی</string>
+    <string name="security_notice">اطلاعیه امنیتی</string>
+    <string name="server_routing">مسیریابی سرور</string>
+    <string name="server_routing_description">تأخیر را افزایش می‌دهد، اما شانس اتصال را بهبود می‌بخشد.</string>
+    <string name="standard">استاندارد</string>
+    <string name="two_fa_check_app_description">برای دریافت کد، برنامه رمز عبور یکبار مصرف مورد نظر خود را بررسی کنید.</string>
+    <string name="update_available">به‌روزرسانی موجود است</string>
+    <string name="update_available_message">نسخه %s Windscribe اکنون در دسترس است.</string>
+    <string name="update_available_message_generic">نسخه جدیدی از Windscribe در دسترس است.</string>
+    <string name="update_later">بعداً به‌روزرسانی کنید</string>
+    <string name="update_now">اکنون به‌روزرسانی کنید</string>
+
 </resources>

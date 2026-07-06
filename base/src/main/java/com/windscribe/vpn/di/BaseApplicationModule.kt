@@ -31,6 +31,7 @@ import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
+import com.windscribe.vpn.localdatabase.ExcludedIpDomainDao
 import com.windscribe.vpn.localdatabase.LocalDatabaseImpl
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.Migrations
@@ -181,6 +182,7 @@ open class BaseApplicationModule {
             .addMigrations(Migrations.migration_38_39)
             .addMigrations(Migrations.migration_39_40)
             .addMigrations(Migrations.migration_40_41)
+            .addMigrations(Migrations.migration_41_42)
             .build()
 
     @Provides
@@ -223,6 +225,7 @@ open class BaseApplicationModule {
         serverStatusDao: ServerStatusDao,
         windNotificationDao: WindNotificationDao,
         unblockWgDao: UnblockWgDao,
+        excludedIpDomainDao: ExcludedIpDomainDao,
     ): LocalDbInterface =
         LocalDatabaseImpl(
             userStatusDao,
@@ -240,6 +243,7 @@ open class BaseApplicationModule {
             serverStatusDao,
             windNotificationDao,
             unblockWgDao,
+            excludedIpDomainDao,
         )
 
     @Provides
@@ -777,4 +781,8 @@ open class BaseApplicationModule {
         apiCallManager: IApiCallManager,
         playIntegrityManager: PlayIntegrityManager,
     ): LogRepository = LogRepository(preferencesHelper, apiCallManager, playIntegrityManager)
+
+    @Provides
+    @Singleton
+    fun provideExcludedIpDomainDao(windscribeDatabase: WindscribeDatabase): ExcludedIpDomainDao = windscribeDatabase.excludedIpDomainDao()
 }

@@ -499,6 +499,43 @@ class VPNProfileCreator
             }
         }
 
+        /**
+         * Copies all AmneziaWG parameters from the original interface to the interface builder.
+         * This preserves any obfuscation parameters (Jc, Jmin, Jmax, S1-S4, H1-H4, I1-I5)
+         * that were present in the custom config file. Only copies parameters that are present.
+         */
+        private fun copyAmneziaWgParams(
+            originalInterface: Interface,
+            builder: Builder,
+        ) {
+            // Copy junk packet parameters
+            originalInterface.junkPacketCount.ifPresent { builder.setJunkPacketCount(it) }
+            originalInterface.junkPacketMinSize.ifPresent { builder.setJunkPacketMinSize(it) }
+            originalInterface.junkPacketMaxSize.ifPresent { builder.setJunkPacketMaxSize(it) }
+
+            // Copy packet junk size parameters (S1-S4)
+            originalInterface.initPacketJunkSize.ifPresent { builder.setInitPacketJunkSize(it) }
+            originalInterface.responsePacketJunkSize.ifPresent { builder.setResponsePacketJunkSize(it) }
+            originalInterface.cookieReplyPacketJunkSize.ifPresent { builder.setCookieReplyPacketJunkSize(it) }
+            originalInterface.transportPacketJunkSize.ifPresent { builder.setTransportPacketJunkSize(it) }
+
+            // Copy magic header parameters (H1-H4)
+            originalInterface.initPacketMagicHeader.ifPresent { builder.setInitPacketMagicHeader(it) }
+            originalInterface.responsePacketMagicHeader.ifPresent { builder.setResponsePacketMagicHeader(it) }
+            originalInterface.underloadPacketMagicHeader.ifPresent { builder.setUnderloadPacketMagicHeader(it) }
+            originalInterface.transportPacketMagicHeader.ifPresent { builder.setTransportPacketMagicHeader(it) }
+
+            // Copy special junk parameters (I1-I5)
+            originalInterface.specialJunkI1.ifPresent { builder.setSpecialJunkI1(it) }
+            originalInterface.specialJunkI2.ifPresent { builder.setSpecialJunkI2(it) }
+            originalInterface.specialJunkI3.ifPresent { builder.setSpecialJunkI3(it) }
+            originalInterface.specialJunkI4.ifPresent { builder.setSpecialJunkI4(it) }
+            originalInterface.specialJunkI5.ifPresent { builder.setSpecialJunkI5(it) }
+
+            // Copy listen port if present
+            originalInterface.listenPort.ifPresent { builder.setListenPort(it) }
+        }
+
         private fun createVpnProfileFromWireGuardConfig(configFile: ConfigFile): String {
             val mPreferencesHelper = appContext.preference
             val interFaceBuilder = Builder()
@@ -533,14 +570,33 @@ class VPNProfileCreator
                     .toBase64(),
             )
             interFaceBuilder.addAddresses(config.getInterface().addresses)
+
+            // Copy all AmneziaWG parameters from the original config
+            copyAmneziaWgParams(config.getInterface(), interFaceBuilder)
+
             if (!mPreferencesHelper.isPackageSizeModeAuto) {
                 interFaceBuilder.setMtu(mPreferencesHelper.packetSize)
             }
             val dnsDetails = setCustomDNS()
-            if (dnsDetails?.type == DnsType.Plain) {
-                interFaceBuilder.parseDnsServers(dnsDetails.ip!!)
-            } else {
-                interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
+            when (dnsDetails?.type) {
+                DnsType.Plain -> {
+                    // Use the plain DNS IP directly
+                    interFaceBuilder.parseDnsServers(dnsDetails.ip!!)
+                }
+                DnsType.Proxy -> {
+                    // For DoH/DoT, use the bootstrap IP so DNS queries go to Control-D's servers
+                    // This allows Control-D verification to work properly
+                    val bootstrapIp = dnsDetails.ip
+                    if (!bootstrapIp.isNullOrEmpty()) {
+                        interFaceBuilder.parseDnsServers(bootstrapIp)
+                    } else {
+                        interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
+                    }
+                }
+                else -> {
+                    // Default to config's DNS for tunnel mode or when no custom DNS
+                    interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
+                }
             }
             val configWithSettings =
                 try {
@@ -557,13 +613,8 @@ class VPNProfileCreator
             val lastSelectedLocation =
                 LastSelectedLocation(configFile.primaryKey, nickName = configFile.name ?: "")
             saveSelectedLocation(lastSelectedLocation)
-            if (preferencesHelper.isProtocolTweaksEnabled) {
-                saveProfile(WireGuardVpnProfile(config.toWgQuickString()))
-                return "Custom Config: ${config.toWgQuickString()}"
-            } else {
-                saveProfile(WireGuardVpnProfile(configWithSettings.toWgQuickString()))
-                return "Custom Config: ${configWithSettings.toWgQuickString()}"
-            }
+            saveProfile(WireGuardVpnProfile(configWithSettings.toWgQuickString()))
+            return "Custom Config: ${configWithSettings.toWgQuickString()}"
         }
 
         suspend fun createVpnProfileFromWireGuardProfile(
@@ -624,10 +675,20 @@ class VPNProfileCreator
             builder.parsePrivateKey(wgRemoteParams.privateKey)
             builder.parseAddresses(wgRemoteParams.address)
             val dnsDetails = setCustomDNS()
-            if (dnsDetails?.type == DnsType.Plain) {
-                builder.parseDnsServers(dnsDetails.ip!!)
-            } else {
-                builder.parseDnsServers(wgRemoteParams.dns)
+            when (dnsDetails?.type) {
+                DnsType.Plain -> {
+                    // Use the plain DNS IP directly
+                    builder.parseDnsServers(dnsDetails.ip!!)
+                }
+                DnsType.Proxy -> {
+                    // For DoH/DoT, use the bootstrap IP so DNS queries go to Control-D's servers
+                    // This allows Control-D verification to work properly
+                    builder.parseDnsServers(dnsDetails.ip ?: wgRemoteParams.dns)
+                }
+                else -> {
+                    // Default to VPN's DNS for tunnel mode or when no custom DNS
+                    builder.parseDnsServers(wgRemoteParams.dns)
+                }
             }
             if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
                 builder.setMtu(preferencesHelper.packetSize)

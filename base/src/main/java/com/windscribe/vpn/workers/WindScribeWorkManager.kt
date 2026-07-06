@@ -22,6 +22,7 @@ import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.worker.BootWorker
 import com.windscribe.vpn.workers.worker.CredentialsWorker
+import com.windscribe.vpn.workers.worker.HostnameRefreshWorker
 import com.windscribe.vpn.workers.worker.LatencyWorker
 import com.windscribe.vpn.workers.worker.NotificationWorker
 import com.windscribe.vpn.workers.worker.RobertSyncWorker
@@ -115,6 +116,14 @@ class WindScribeWorkManager(
                 UNBLOCK_WG_PARAMS_WORKER_KEY,
                 REPLACE,
                 createPeriodicWorkerRequest(UnblockWgParamsWorker::class.java, DAYS),
+            )
+        WorkManager
+            .getInstance(
+                context,
+            ).enqueueUniquePeriodicWork(
+                HOSTNAME_REFRESH_WORKER_KEY,
+                REPLACE,
+                createPeriodicWorkerRequest(HostnameRefreshWorker::class.java, DAYS),
             )
         checkUpdateRepository.checkForUpdate()
         keepSessionUpdated()
@@ -271,5 +280,6 @@ class WindScribeWorkManager(
         const val LATENCY_WORKER_KEY = "com.windscribe.vpn.latencyWorker"
 
         const val UNBLOCK_WG_PARAMS_WORKER_KEY = "com.windscribe.vpn.unblockWgParamsWorker"
+        const val HOSTNAME_REFRESH_WORKER_KEY = "com.windscribe.vpn.hostnameRefreshWorker"
     }
 }

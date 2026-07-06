@@ -616,6 +616,60 @@ Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler içi
     <string name="app_icon_description">Daha fazla gizlilik için farklı bir uygulama simgesi seçin</string>
     <string name="configuration">Yapılandırma</string>
     <string name="force_upgrade_title">Güncelleme Gerekli</string>
-    <string name="force_upgrade_message">Windscribe’ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen güncelleyin.</string>
-    <string name="force_upgrade_message_with_version">Windscribe’ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen %s sürümüne güncelleyin.</string>
+    <string name="force_upgrade_message">Windscribe\'ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen güncelleyin.</string>
+    <string name="force_upgrade_message_with_version">Windscribe\'ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen %s sürümüne güncelleyin.</string>
+    <string name="domains_ips">IP &amp; Ana Bilgisayar Adı Hariç Tutmaları</string>
+    <string name="domains_ips_description">VPN tünelinden IP\'leri, aralıkları veya ana bilgisayar adlarını hariç tutun. Uygulama bölünmüş tünelleme bu kurallardan önce gelir.</string>
+    <string name="enter_ip_domain_hint">örn. 192.168.1.1 veya imgur.com</string>
+    <string name="import_button">İçe Aktar</string>
+    <string name="delete_all_button">Tümünü Sil</string>
+    <string name="no_excluded_ips_domains">Hariç tutulan IP veya alan adı yok</string>
+    <string name="delete_all_dialog_title">Tümünü Sil?</string>
+    <string name="delete_all_dialog_message">Tüm girişleri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="delete_button">Sil</string>
+    
+    <string name="account_hash">Hesap karması</string>
+    <string name="account_hash_backup_confirmation">Hesap karmamı güvenli bir şekilde yedekledim ve kaybedersem Windscribe\'ın hesabımı kurtarmama yardım edemeyeceğini anlıyorum.</string>
+    <string name="account_hash_description">Bu sizin benzersiz hesap karmanızdır, güvenli bir yerde saklayın, giriş yapmak için ihtiyacınız olacak.</string>
+    <string name="add_ip_domain">IP/Alan Adı Ekle</string>
+    <string name="add_two_fa">2FA Ekle</string>
+    <string name="already_have_account_log_in">Zaten bir hesabınız var mı? Giriş Yap</string>
+    <string name="alternate">Alternatif</string>
+    <string name="anti_censorship_screen_description">Bunlar performansı düşürür, yalnızca Windscribe normal bağlanmıyorsa etkinleştirin.</string>
+    <string name="anti_censorship_screen_title">Sansür karşıtı</string>
+    <string name="anti_censorship_settings">Sansür karşıtı ayarlar</string>
+    <string name="config_title">Yapılandırma Başlığı</string>
+    <string name="confirm_password">Şifreyi Onayla</string>
+    <string name="encryption_unavailable_warning">Cihazınız şifrelenmiş kimlik bilgisi depolamayı desteklemiyor. Oturum belirteçleri ve VPN anahtarları azaltılmış güvenlikle saklanacak.
+
+Maksimum güvenlik için, güvenilmeyen ağlarda veya root\'lanmışsa bu cihazı kullanmaktan kaçının.</string>
+    <string name="enter_account_hash_or_upload">Hesap karmasını girin veya yükleyin</string>
+    <string name="enter_email_address">E-posta adresini girin</string>
+    <string name="enter_two_fa_code">2FA kodunu girin</string>
+    <string name="explain_me">Bana açıkla!</string>
+    <string name="extra_tls_padding">Büyük TLS</string>
+    <string name="extra_tls_padding_description">TLS paketlerini yapay olarak büyütür, bazı durumlarda sansürü aşmaya yardımcı olur</string>
+    <string name="got_voucher_code">Kupon kodunuz var mı?</string>
+    <string name="hash">Karma</string>
+    <string name="hashed">Karmalanmış</string>
+    <string name="invalid_ip_domain">Geçersiz IP, aralık veya ana bilgisayar adı</string>
+    <string name="ip_domain_added">IP/Alan adı eklendi</string>
+    <string name="ip_domain_removed">IP/Alan adı kaldırıldı</string>
+    <string name="ip_stack_egress">IP Yığını - Çıkış</string>
+    <string name="note">Not</string>
+    <string name="passwords_do_not_match">Şifreler eşleşmiyor</string>
+    <string name="protocol_tweaks">Protokol ayarlamaları</string>
+    <string name="protocol_tweaks_description">WireGuard, OpenVPN ve Stealth protokollerine yapılan protokol düzeyinde değişiklikler.</string>
+    <string name="regular">Normal</string>
+    <string name="security_notice">Güvenlik Bildirimi</string>
+    <string name="server_routing">Sunucu yönlendirmesi</string>
+    <string name="server_routing_description">Gecikmeyi artırır, ancak bağlanabilme şansını iyileştirir.</string>
+    <string name="standard">Standart</string>
+    <string name="two_fa_check_app_description">Bir kod için tercih ettiğiniz tek kullanımlık şifre uygulamanızı kontrol edin.</string>
+    <string name="update_available">Güncelleme Mevcut</string>
+    <string name="update_available_message">Windscribe sürüm %s şimdi mevcut.</string>
+    <string name="update_available_message_generic">Windscribe\'ın yeni bir sürümü mevcut.</string>
+    <string name="update_later">Daha sonra güncelle</string>
+    <string name="update_now">Şimdi güncelle</string>
+
 </resources>

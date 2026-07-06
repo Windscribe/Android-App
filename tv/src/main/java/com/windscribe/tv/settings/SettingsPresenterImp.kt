@@ -214,7 +214,11 @@ class SettingsPresenterImp
                 preferencesHelper.isAntiCensorshipManualMode = true
                 settingView.setServerRoutingMode(PreferencesKeyConstants.SERVER_ROUTING_AUTO)
                 activityScope.launch {
-                    serverListRepository.update()
+                    try {
+                        serverListRepository.update()
+                    } catch (e: Exception) {
+                        logger.error("Failed to update server list: ${e.message}")
+                    }
                 }
             }
         }
@@ -225,7 +229,11 @@ class SettingsPresenterImp
                 preferencesHelper.isAntiCensorshipManualMode = true
                 settingView.setServerRoutingMode(PreferencesKeyConstants.SERVER_ROUTING_REGULAR)
                 activityScope.launch {
-                    serverListRepository.update()
+                    try {
+                        serverListRepository.update()
+                    } catch (e: Exception) {
+                        logger.error("Failed to update server list: ${e.message}")
+                    }
                 }
             }
         }
@@ -236,7 +244,11 @@ class SettingsPresenterImp
                 preferencesHelper.isAntiCensorshipManualMode = true
                 settingView.setServerRoutingMode(PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE)
                 activityScope.launch {
-                    serverListRepository.update()
+                    try {
+                        serverListRepository.update()
+                    } catch (e: Exception) {
+                        logger.error("Failed to update server list: ${e.message}")
+                    }
                 }
             }
         }

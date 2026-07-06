@@ -1,0 +1,41 @@
+{
+  "name": "translate",
+  "description": "Manage Android app translations - find missing strings, generate machine translations, and apply them",
+  "version": "1.0.0",
+  "author": "Claude",
+  "commands": {
+    "translate": {
+      "description": "Launch the interactive translation manager",
+      "usage": "/translate",
+      "script": "python3 tools/translate-tool.py"
+    },
+    "translate-find": {
+      "description": "Find missing translations only",
+      "usage": "/translate-find",
+      "script": "cd tools/translate && python3 find_missing_translations.py"
+    },
+    "translate-apply": {
+      "description": "Apply existing translations to XML files",
+      "usage": "/translate-apply",
+      "script": "cd tools/translate && python3 apply_translations.py"
+    },
+    "translate-status": {
+      "description": "Show translation status",
+      "usage": "/translate-status",
+      "script": "python3 tools/translate-tool.py --status"
+    }
+  },
+  "requirements": [
+    "python3",
+    "xml.etree.ElementTree",
+    "json",
+    "pathlib"
+  ],
+  "tags": [
+    "localization",
+    "translation",
+    "i18n",
+    "android",
+    "automation"
+  ]
+}

@@ -31,7 +31,7 @@
     <string name="sign_up_description">계정을 보호하고, 모든 기기에서 설정에 접근하며 더 많은 데이터를 받으세요.</string>
     <string name="choose_username">사용자 이름 선택</string>
     <string name="choose_password">비밀번호 선택</string>
-    <string name="email_description"><![CDATA[비밀번호 복구, 업데이트 및 프로모션 용도로만 사용됩니다. 스팸 없음]]></string>
+    <string name="email_description">비밀번호 복구, 업데이트 및 프로모션 용도로만 사용됩니다. 스팸 없음</string>
     <string name="sign_up_failed_network_alert">최선을 다했지만 이 네트워크에서는 가입할 수 없었습니다.</string>
     <string name="backup_api_end_point">백업 API 엔드포인트 시도 중…</string>
     <string name="signing_in">로그인 중…</string>
@@ -172,8 +172,10 @@
     <string name="pricing">가격</string>
     <string name="all_locations">모든 위치</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[구독은 월간, 연간으로 관리하거나 구매 후 Google Play 스토어 계정 설정에서 해제할 수 있습니다. 모든 가격에는 관련 세금이 포함되어 있습니다.]]></string>
-    <string name="terms_policy_en"><b>이용 약관</b> &amp; <b>개인정보 처리방침</b></string>
+    <string name="terms">구독은 월간, 연간으로 관리하거나 구매 후 Google Play 스토어 계정 설정에서 해제할 수 있습니다. 모든 가격에는 관련 세금이 포함되어 있습니다.</string>
+    <string name="terms_policy_en">
+        <b>이용 약관</b> &amp; <b>개인정보 처리방침</b>
+    </string>
     <string name="account_set_up">계정 설정</string>
     <string name="account_set_up_description">계정을 보호하고 모든 기기에서 접근할 수 있습니다.</string>
     <string name="continue_free_10gb_mo">무료로 월 10GB 받기</string>
@@ -491,7 +493,7 @@
     <string name="location_permission_required">위치 권한이 필요합니다.</string>
     <string name="foreground_location_permission_reason">Windscribe는 \"네트워크 화이트리스트\" 기능을 위해 위치 권한이 필요합니다. 이 권한은 Wi-Fi 네트워크 이름에 접근하는 데 필요합니다. 이 권한은 오직 이 기능과 GPS 스푸핑 기능에만 사용됩니다. 위치 데이터는 기기 밖으로 유출되지 않으며 다른 용도로 사용되지 않습니다.</string>
     <string name="missing_location_permission">위치 권한이 없습니다.</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[이 기능을 사용하려면 위치 권한이 필요합니다. 앱 설정 > 권한 > 위치로 이동하여 항상 허용을 선택하세요.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">이 기능을 사용하려면 위치 권한이 필요합니다. 앱 설정 &gt; 권한 &gt; 위치로 이동하여 항상 허용을 선택하세요.</string>
     <string name="location_permission_disclosure_title">위치 권한 공개</string>
     <string name="location_permission_disclosure_message">이 권한을 허용하기 전에 다음 사항을 확인해 주세요.\n\n사용 목적:\n• Wi-Fi 네트워크 이름(SSID) 접근\n• 네트워크 화이트리스트 기능 활성화\n• GPS 스푸핑 기능\n\n하지 않는 일:\n• 물리적 위치 추적\n• GPS 좌표 수집\n• 제3자와 데이터 공유\n• 기기 외부로 데이터 전송\n\n위치 데이터는 기기에만 저장되며 위 기능에만 사용됩니다.</string>
     <string name="background_location_permission_disclosure_message">백그라운드 위치 권한을 허용하기 전에 다음 사항을 확인해 주세요.\n\n사용 목적:\n• 앱이 백그라운드에서 실행되는 동안 Wi-Fi 네트워크 이름 접근\n• 네트워크 화이트리스트 기능 활성화\n• GPS 스푸핑 기능\n\n하지 않는 일:\n• 물리적 위치 추적\n• GPS 좌표 수집\n• 제3자와 데이터 공유\n• 기기 외부로 데이터 전송\n\n위치 데이터는 기기에만 저장되며 위 기능에만 사용됩니다.</string>
@@ -573,7 +575,6 @@
     <string name="charged_every_12_months">12개월마다 청구</string>
     <string name="continue_with_google">Google로 계속하기</string>
     <string name="continue_with_apple">Apple로 계속하기</string>
-
     <string name="look_and_feel">디자인</string>
     <string name="when_disconnected">연결 해제 시</string>
     <string name="when_connected">연결 시</string>
@@ -631,4 +632,21 @@
     <string name="force_upgrade_message_with_version">이 버전의 Windscribe는 더 이상 지원되지 않습니다. 앱을 계속 사용하시려면 %s(으)로 업데이트해 주세요.</string>
     <string name="security_notice">보안 공지</string>
     <string name="encryption_unavailable_warning">이 기기는 암호화된 자격 증명 저장소를 지원하지 않습니다. 세션 토큰과 VPN 키가 낮은 보안 수준으로 저장됩니다.\n\n최대한의 보안을 위해 신뢰할 수 없는 네트워크나 루팅된 기기에서는 이 기기를 사용하지 마세요.</string>
+    <string name="domains_ips">IP 및 호스트 이름 제외</string>
+    <string name="domains_ips_description">VPN 터널에서 IP, 범위 또는 호스트 이름을 제외합니다. 앱 분할 터널링이 이러한 규칙보다 우선합니다.</string>
+    <string name="enter_ip_domain_hint">예: 192.168.1.1 또는 imgur.com</string>
+    <string name="import_button">가져오기</string>
+    <string name="delete_all_button">모두 삭제</string>
+    <string name="no_excluded_ips_domains">제외된 IP 또는 도메인 없음</string>
+    <string name="delete_all_dialog_title">모두 삭제하시겠습니까?</string>
+    <string name="delete_all_dialog_message">모든 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</string>
+    <string name="delete_button">삭제</string>
+    
+    <string name="add_ip_domain">IP/도메인 추가</string>
+    <string name="config_title">구성 제목</string>
+    <string name="explain_me">설명해주세요!</string>
+    <string name="invalid_ip_domain">잘못된 IP, 범위 또는 호스트 이름</string>
+    <string name="ip_domain_added">IP/도메인이 추가되었습니다</string>
+    <string name="ip_domain_removed">IP/도메인이 제거되었습니다</string>
+
 </resources>

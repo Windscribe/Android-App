@@ -621,4 +621,58 @@
     <string name="force_upgrade_title">আপডেট প্রয়োজন</string>
     <string name="force_upgrade_message">Windscribe-এর এই সংস্করণটি আর সমর্থিত নয়। অ্যাপটি ব্যবহার চালিয়ে যেতে দয়া করে আপডেট করুন।</string>
     <string name="force_upgrade_message_with_version">Windscribe-এর এই সংস্করণটি আর সমর্থিত নয়। অ্যাপটি ব্যবহার চালিয়ে যেতে দয়া করে %s-এ আপডেট করুন।</string>
+    <string name="domains_ips">IP এবং হোস্টনাম বর্জন</string>
+    <string name="domains_ips_description">VPN টানেল থেকে IP, রেঞ্জ বা হোস্টনাম বাদ দিন। অ্যাপ স্প্লিট টানেলিং এই নিয়মগুলির চেয়ে অগ্রাধিকার নেয়।</string>
+    <string name="enter_ip_domain_hint">যেমন 192.168.1.1 অথবা imgur.com</string>
+    <string name="import_button">আমদানি</string>
+    <string name="delete_all_button">সব মুছুন</string>
+    <string name="no_excluded_ips_domains">কোনো বাদ দেওয়া IP বা ডোমেইন নেই</string>
+    <string name="delete_all_dialog_title">সব মুছবেন?</string>
+    <string name="delete_all_dialog_message">আপনি কি নিশ্চিত যে আপনি সমস্ত এন্ট্রি মুছে ফেলতে চান? এই ক্রিয়াটি পূর্বাবস্থায় ফিরিয়ে আনা যাবে না।</string>
+    <string name="delete_button">মুছুন</string>
+    
+    <string name="account_hash">অ্যাকাউন্ট হ্যাশ</string>
+    <string name="account_hash_backup_confirmation">আমি আমার অ্যাকাউন্ট হ্যাশ নিরাপদভাবে ব্যাকআপ করেছি এবং বুঝি যে আমি এটি হারিয়ে ফেললে Windscribe আমার অ্যাকাউন্ট পুনরুদ্ধার করতে সাহায্য করতে পারবে না।</string>
+    <string name="account_hash_description">এটি আপনার অনন্য অ্যাকাউন্ট হ্যাশ, এটি কোথাও নিরাপদে সংরক্ষণ করুন, লগইন করতে আপনার এটি প্রয়োজন হবে।</string>
+    <string name="add_ip_domain">IP/ডোমেন যোগ করুন</string>
+    <string name="add_two_fa">2FA যোগ করুন</string>
+    <string name="already_have_account_log_in">ইতিমধ্যে একটি অ্যাকাউন্ট আছে? লগ ইন করুন</string>
+    <string name="alternate">বিকল্প</string>
+    <string name="anti_censorship_screen_description">এগুলি কর্মক্ষমতা হ্রাস করে, শুধুমাত্র Windscribe স্বাভাবিকভাবে সংযোগ না করলে সক্ষম করুন।</string>
+    <string name="anti_censorship_screen_title">সেন্সরশিপ বিরোধী</string>
+    <string name="anti_censorship_settings">সেন্সরশিপ বিরোধী সেটিংস</string>
+    <string name="config_title">কনফিগ শিরোনাম</string>
+    <string name="confirm_password">পাসওয়ার্ড নিশ্চিত করুন</string>
+    <string name="encryption_unavailable_warning">আপনার ডিভাইস এনক্রিপ্টেড ক্রেডেনশিয়াল স্টোরেজ সমর্থন করে না। সেশন টোকেন এবং VPN কীগুলি কম নিরাপত্তায় সংরক্ষিত হবে।
+
+সর্বাধিক নিরাপত্তার জন্য, অবিশ্বস্ত নেটওয়ার্কে বা রুট করা থাকলে এই ডিভাইস ব্যবহার করা এড়িয়ে চলুন।</string>
+    <string name="enter_account_hash_or_upload">অ্যাকাউন্ট হ্যাশ লিখুন বা আপলোড করুন</string>
+    <string name="enter_email_address">ইমেল ঠিকানা লিখুন</string>
+    <string name="enter_two_fa_code">2FA কোড লিখুন</string>
+    <string name="explain_me">আমাকে ব্যাখ্যা করুন!</string>
+    <string name="extra_tls_padding">বড় TLS</string>
+    <string name="extra_tls_padding_description">কৃত্রিমভাবে TLS প্যাকেট বড় করুন, কিছু ক্ষেত্রে সেন্সরশিপ এড়াতে সাহায্য করে</string>
+    <string name="got_voucher_code">ভাউচার কোড আছে?</string>
+    <string name="hash">হ্যাশ</string>
+    <string name="hashed">হ্যাশড</string>
+    <string name="invalid_ip_domain">অবৈধ IP, পরিসর, বা হোস্টনাম</string>
+    <string name="ip_domain_added">IP/ডোমেন যোগ করা হয়েছে</string>
+    <string name="ip_domain_removed">IP/ডোমেন সরানো হয়েছে</string>
+    <string name="ip_stack_egress">IP স্ট্যাক - এগ্রেস</string>
+    <string name="note">নোট</string>
+    <string name="passwords_do_not_match">পাসওয়ার্ড মিলছে না</string>
+    <string name="protocol_tweaks">প্রোটোকল টুইকস</string>
+    <string name="protocol_tweaks_description">WireGuard, OpenVPN, এবং Stealth প্রোটোকলে প্রোটোকল-স্তরের পরিবর্তন করা হয়েছে।</string>
+    <string name="regular">নিয়মিত</string>
+    <string name="security_notice">নিরাপত্তা বিজ্ঞপ্তি</string>
+    <string name="server_routing">সার্ভার রাউটিং</string>
+    <string name="server_routing_description">লেটেন্সি বাড়ায়, কিন্তু সংযোগ করতে পারার সম্ভাবনা উন্নত করে।</string>
+    <string name="standard">স্ট্যান্ডার্ড</string>
+    <string name="two_fa_check_app_description">একটি কোডের জন্য আপনার পছন্দের এক-সময়ের পাসওয়ার্ড অ্যাপ্লিকেশন চেক করুন।</string>
+    <string name="update_available">আপডেট উপলব্ধ</string>
+    <string name="update_available_message">Windscribe সংস্করণ %s এখন উপলব্ধ।</string>
+    <string name="update_available_message_generic">Windscribe এর একটি নতুন সংস্করণ উপলব্ধ।</string>
+    <string name="update_later">পরে আপডেট করুন</string>
+    <string name="update_now">এখনই আপডেট করুন</string>
+
 </resources>

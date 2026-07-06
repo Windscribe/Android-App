@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.localdatabase
 
+import com.windscribe.vpn.localdatabase.tables.ExcludedIpDomain
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
@@ -50,6 +51,7 @@ class LocalDatabaseImpl
         private val serverStatusDao: ServerStatusDao,
         private val windNotificationDao: WindNotificationDao,
         private val unblockWgDao: UnblockWgDao,
+        private val excludedIpDomainDao: ExcludedIpDomainDao,
     ) : LocalDbInterface {
         // Suspend functions (Coroutines)
         override suspend fun addNetwork(networkInfo: NetworkInfo): Long = networkInfoDao.addNetwork(networkInfo)
@@ -237,4 +239,31 @@ class LocalDatabaseImpl
             val host = server.hostname.takeIf { it.isNotBlank() } ?: return null
             return Pair(ip, "http://$host:6464/latency")
         }
+
+        // Excluded IPs and Domains
+        override fun getExcludedIpsDomainsFlow(): Flow<List<ExcludedIpDomain>> = excludedIpDomainDao.getAllFlow()
+
+        override suspend fun getAllExcludedIpsDomains(): List<ExcludedIpDomain> = excludedIpDomainDao.getAll()
+
+        override suspend fun insertExcludedIpDomain(entry: ExcludedIpDomain): Long = excludedIpDomainDao.insert(entry)
+
+        override suspend fun updateExcludedIpDomain(entry: ExcludedIpDomain) = excludedIpDomainDao.update(entry)
+
+        override suspend fun deleteExcludedIpDomain(entry: ExcludedIpDomain) = excludedIpDomainDao.delete(entry)
+
+        override suspend fun deleteAllExcludedIpsDomains() = excludedIpDomainDao.deleteAll()
+
+        override suspend fun excludedIpDomainExists(value: String): Int = excludedIpDomainDao.exists(value)
+
+        override suspend fun updateExcludedIpDomainResolvedData(
+            id: Long,
+            resolvedIps: String?,
+            timestamp: Long?,
+            error: String?,
+        ) = excludedIpDomainDao.updateResolvedData(id, resolvedIps, timestamp, error)
+
+        override suspend fun getStaleExcludedHostnames(staleTimestamp: Long): List<ExcludedIpDomain> =
+            excludedIpDomainDao.getStaleHostnames(staleTimestamp)
+
+        override suspend fun getAllExcludedHostnames(): List<ExcludedIpDomain> = excludedIpDomainDao.getAllHostnames()
     }

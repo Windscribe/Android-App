@@ -618,4 +618,58 @@ Twoje dane lokalizacyjne pozostają na urządzeniu i są używane wyłącznie do
     <string name="force_upgrade_title">Wymagana aktualizacja</string>
     <string name="force_upgrade_message">Ta wersja Windscribe nie jest już obsługiwana. Zaktualizuj, aby nadal korzystać z aplikacji.</string>
     <string name="force_upgrade_message_with_version">Ta wersja Windscribe nie jest już obsługiwana. Zaktualizuj do wersji %s, aby nadal korzystać z aplikacji.</string>
+    <string name="domains_ips">Wykluczenia IP i nazw hostów</string>
+    <string name="domains_ips_description">Wyklucz adresy IP, zakresy lub nazwy hostów z tunelu VPN. Podział tunelu aplikacji ma pierwszeństwo przed tymi regułami.</string>
+    <string name="enter_ip_domain_hint">np. 192.168.1.1 lub imgur.com</string>
+    <string name="import_button">Importuj</string>
+    <string name="delete_all_button">Usuń wszystko</string>
+    <string name="no_excluded_ips_domains">Brak wykluczonych adresów IP lub domen</string>
+    <string name="delete_all_dialog_title">Usuń wszystko?</string>
+    <string name="delete_all_dialog_message">Czy na pewno chcesz usunąć wszystkie wpisy? Tej czynności nie można cofnąć.</string>
+    <string name="delete_button">Usuń</string>
+    
+    <string name="account_hash">Hash konta</string>
+    <string name="account_hash_backup_confirmation">Wykonałem bezpieczną kopię zapasową mojego hasha konta i rozumiem, że Windscribe nie będzie w stanie pomóc mi odzyskać konta, jeśli go zgubię.</string>
+    <string name="account_hash_description">To jest Twój unikalny hash konta, zapisz go w bezpiecznym miejscu, będzie Ci potrzebny do zalogowania.</string>
+    <string name="add_ip_domain">Dodaj IP/Domenę</string>
+    <string name="add_two_fa">Dodaj 2FA</string>
+    <string name="already_have_account_log_in">Masz już konto? Zaloguj się</string>
+    <string name="alternate">Alternatywny</string>
+    <string name="anti_censorship_screen_description">Te opcje pogarszają wydajność, włącz je tylko, jeśli Windscribe nie łączy się normalnie.</string>
+    <string name="anti_censorship_screen_title">Anty-cenzura</string>
+    <string name="anti_censorship_settings">Ustawienia anty-cenzury</string>
+    <string name="config_title">Tytuł konfiguracji</string>
+    <string name="confirm_password">Potwierdź hasło</string>
+    <string name="encryption_unavailable_warning">Twoje urządzenie nie obsługuje zaszyfrowanego przechowywania poświadczeń. Tokeny sesji i klucze VPN będą przechowywane z ograniczonym bezpieczeństwem.
+
+Dla maksymalnego bezpieczeństwa unikaj używania tego urządzenia w niezaufanych sieciach lub jeśli jest zrootowane.</string>
+    <string name="enter_account_hash_or_upload">Wprowadź hash konta lub prześlij</string>
+    <string name="enter_email_address">Wprowadź adres e-mail</string>
+    <string name="enter_two_fa_code">Wprowadź kod 2FA</string>
+    <string name="explain_me">Wyjaśnij mi!</string>
+    <string name="extra_tls_padding">Duży TLS</string>
+    <string name="extra_tls_padding_description">Sztucznie powiększa pakiety TLS, pomaga obejść cenzurę w niektórych przypadkach</string>
+    <string name="got_voucher_code">Masz kod vouchera?</string>
+    <string name="hash">Hash</string>
+    <string name="hashed">Zahashowane</string>
+    <string name="invalid_ip_domain">Nieprawidłowy IP, zakres lub nazwa hosta</string>
+    <string name="ip_domain_added">Dodano IP/Domenę</string>
+    <string name="ip_domain_removed">Usunięto IP/Domenę</string>
+    <string name="ip_stack_egress">Stos IP - Wyjście</string>
+    <string name="note">Uwaga</string>
+    <string name="passwords_do_not_match">Hasła nie pasują</string>
+    <string name="protocol_tweaks">Modyfikacje protokołu</string>
+    <string name="protocol_tweaks_description">Zmiany na poziomie protokołu wprowadzone do protokołów WireGuard, OpenVPN i Stealth.</string>
+    <string name="regular">Regularny</string>
+    <string name="security_notice">Powiadomienie o bezpieczeństwie</string>
+    <string name="server_routing">Routing serwera</string>
+    <string name="server_routing_description">Zwiększa opóźnienie, ale poprawia szanse na połączenie.</string>
+    <string name="standard">Standardowy</string>
+    <string name="two_fa_check_app_description">Sprawdź swoją preferowaną aplikację jednorazowego hasła, aby uzyskać kod.</string>
+    <string name="update_available">Dostępna aktualizacja</string>
+    <string name="update_available_message">Wersja %s Windscribe jest teraz dostępna.</string>
+    <string name="update_available_message_generic">Dostępna jest nowa wersja Windscribe.</string>
+    <string name="update_later">Zaktualizuj później</string>
+    <string name="update_now">Zaktualizuj teraz</string>
+
 </resources>

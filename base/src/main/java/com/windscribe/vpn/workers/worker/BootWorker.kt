@@ -22,8 +22,12 @@ class BootWorker
         private val logger = LoggerFactory.getLogger("worker")
 
         override suspend fun doWork(): Result {
+            // Check if this is a boot or app upgrade reconnection
             if (preferencesHelper.autoStartOnBoot) {
                 logger.debug("Device rebooted and Auto start on boot is true, attempting to connect.")
+                shortcutStateManager.connect()
+            } else if (preferencesHelper.globalUserConnectionPreference) {
+                logger.debug("App updated and user was connected, attempting to reconnect.")
                 shortcutStateManager.connect()
             }
             return Result.success()

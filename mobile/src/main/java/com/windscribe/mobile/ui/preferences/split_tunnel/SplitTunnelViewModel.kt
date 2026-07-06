@@ -11,10 +11,14 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.SortByName
 import com.windscribe.vpn.commonutils.SortBySelected
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Collections
 import javax.inject.Inject
@@ -28,6 +32,8 @@ abstract class SplitTunnelViewModel : ViewModel() {
     abstract val searchKeyword: StateFlow<String>
     abstract val showSystemApps: StateFlow<Boolean>
     abstract val appIconCache: AppIconCache
+    abstract val isAndroid13Plus: Boolean
+    abstract val excludedIpsCount: StateFlow<Int>
 
     open fun onModeSelected(mode: DropDownStringItem) {}
 
@@ -46,9 +52,16 @@ class SplitTunnelViewModelImpl
     constructor(
         val preferenceHelper: PreferencesHelper,
         override val appIconCache: AppIconCache,
+        private val localDbInterface: LocalDbInterface,
     ) : SplitTunnelViewModel() {
+        override val isAndroid13Plus: Boolean = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU
         private val _showProgress = MutableStateFlow(false)
         override val showProgress: StateFlow<Boolean> = _showProgress
+        override val excludedIpsCount: StateFlow<Int> =
+            localDbInterface
+                .getExcludedIpsDomainsFlow()
+                .map { it.size }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
         override val modes: List<DropDownStringItem>
             get() {
                 val modes = appContext.resources.getStringArray(R.array.split_mode_list)
