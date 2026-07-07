@@ -80,7 +80,7 @@ git checkout "$WSNET_VERSION"
 # Build
 echo "Building WSNet for Android..."
 cd tools || exit
-./build_android.sh
+./build_android.sh > /dev/null 2>&1
 
 # Copy AAR to destination
 echo "Copying wsnet.aar to $DST_DIR"
