@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 FLAVOR="${1:-fdroid}"
-WSNET_VERSION="${2:-1.5.25}"
+WSNET_VERSION="${2:-1.5.27}"
 DEFAULT_DST_DIR="$ROOT_DIR/base/src/main/libs"
 DST_DIR="${3:-$DEFAULT_DST_DIR}"
 

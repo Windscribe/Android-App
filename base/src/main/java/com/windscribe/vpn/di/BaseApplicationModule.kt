@@ -414,6 +414,7 @@ open class BaseApplicationModule {
         staticIpRepository: StaticIpRepository,
         googleSignInManager: GoogleSignInManager,
         unblockWgParamsRepository: UnblockWgParamsRepository,
+        wgConfigRepository: WgConfigRepository,
     ): UserRepository =
         UserRepository(
             scope,
@@ -428,6 +429,7 @@ open class BaseApplicationModule {
             staticIpRepository,
             googleSignInManager,
             unblockWgParamsRepository,
+            wgConfigRepository
         )
 
     @Provides
