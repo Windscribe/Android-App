@@ -59,6 +59,7 @@ class UserRepository(
     private val staticIpRepository: StaticIpRepository,
     private val googleSignInManager: GoogleSignInManager,
     private val unblockWgParamsRepository: UnblockWgParamsRepository,
+    private val wgConfigRepository: WgConfigRepository,
 ) {
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user.asStateFlow()
@@ -252,6 +253,7 @@ class UserRepository(
         onState: suspend (UserDataState) -> Unit = {},
     ) {
         onState(UserDataState.Loading("Getting session"))
+        wgConfigRepository.unregisterKey()
         val backup = preferenceHelper.getBackupParameter()
         val sessionResult =
             apiManager.getSessionGeneric(firebaseToken, backup = backup).callResult<UserSessionResponse>()
