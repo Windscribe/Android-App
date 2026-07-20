@@ -600,6 +600,9 @@ Sus datos de ubicación permanecen en su dispositivo y se utilizan únicamente p
     <string name="amnezia_preset_description">Elija la configuración preestablecida para anti-censura</string>
     <string name="amnezia_preset_russian_quick">Rápido ruso (Sin basura)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">Dominio SNI personalizado</string>
+    <string name="tls_server_name_description">Esta configuración se aplica solo a los protocolos Stealth y Wstunnel</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">Versión de IP</string>
     <string name="ipv6_mode_description">Elija qué versión de IP usar para conexiones VPN.</string>
     <string name="ip_stack">Pila de IP</string>

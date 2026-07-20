@@ -600,6 +600,9 @@ Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas
     <string name="amnezia_preset_description">Pilih konfigurasi preset untuk anti-sensor</string>
     <string name="amnezia_preset_russian_quick">Rusia Cepat (Tanpa Sampah)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">Domain SNI Kustom</string>
+    <string name="tls_server_name_description">Pengaturan ini hanya berlaku untuk protokol Stealth dan Wstunnel</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">Versi IP</string>
     <string name="ipv6_mode_description">Pilih versi IP mana yang akan digunakan untuk koneksi VPN.</string>
     <string name="ip_stack">Tumpukan IP</string>

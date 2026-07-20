@@ -62,6 +62,7 @@ class UserRepositoryTest {
     private lateinit var serverListRepository: ServerListRepository
     private lateinit var staticIpRepository: StaticIpRepository
     private lateinit var googleSignInManager: GoogleSignInManager
+    private lateinit var wgConfigRepository: WgConfigRepository
 
     @Before
     fun setUp() {
@@ -85,6 +86,7 @@ class UserRepositoryTest {
         serverListRepository = mockk(relaxed = true)
         staticIpRepository = mockk(relaxed = true)
         googleSignInManager = mockk(relaxed = true)
+        wgConfigRepository = mockk(relaxed = true)
     }
 
     private fun TestScope.buildRepo(): UserRepository =
@@ -101,6 +103,7 @@ class UserRepositoryTest {
             staticIpRepository = staticIpRepository,
             googleSignInManager = googleSignInManager,
             unblockWgParamsRepository = unblockWgParamsRepository,
+            wgConfigRepository = wgConfigRepository,
         )
 
     private fun TestScope.cleanup() = coroutineContext.cancelChildren()

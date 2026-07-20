@@ -10,6 +10,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.billing.GooglePlaySubscriptionUrl
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
@@ -43,6 +44,12 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
                             appContext.workManager.updateSession()
                         }
                     }
+                }
+
+                GooglePlaySubscriptionUrl.NOTIFICATION_TYPE -> {
+                    GooglePlaySubscriptionUrl
+                        .productIdFromPayload(appContext.packageName, payload)
+                        ?.let(appContext.applicationInterface::showSubscriptionGraceDialog)
                 }
 
                 PROMO -> {
@@ -82,7 +89,7 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        logger.info("Received new FCM Token = $token")
+        logger.info("Received new FCM Token")
     }
 
     companion object {

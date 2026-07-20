@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
 import kotlin.math.abs
 
 @Composable
@@ -31,19 +30,21 @@ fun HandleScrollHaptic(
     viewmodel: HomeViewmodel,
 ) {
     val haptic = LocalHapticFeedback.current
-    val scrollThreshold = 100
-    var lastOffset by remember { mutableIntStateOf(0) }
+    // Increase threshold to reduce haptic frequency (equivalent to ~3-4 items)
+    val itemScrollThreshold = 3
+    var lastItemIndex by remember { mutableIntStateOf(0) }
     val hapticEnabled by viewmodel.hapticFeedbackEnabled.collectAsState()
     if (!hapticEnabled) return
+
     LaunchedEffect(Unit) {
         snapshotFlow {
-            lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset
-        }.map { (index, offset) ->
-            index * 1000 + offset
-        }.collectLatest { currentPosition ->
-            if (abs(currentPosition - lastOffset) >= scrollThreshold) {
-                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                lastOffset = currentPosition
+            lazyListState.firstVisibleItemIndex
+        }.collectLatest { currentItemIndex ->
+            // Only trigger haptic when scrolling past multiple items
+            if (abs(currentItemIndex - lastItemIndex) >= itemScrollThreshold) {
+                // Use TextHandleMove for lighter haptic feedback during scrolling
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                lastItemIndex = currentItemIndex
             }
         }
     }

@@ -42,7 +42,7 @@ graph TB
 - Identifies DNS packets (UDP port 53) and routes them to Control-D
 - Manages DNS query/response tracking with transaction IDs
 - Implements non-blocking DNS handling with timeout support (5 seconds)
-- Provides detailed packet logging to `vpntunnel.log` with auto-rotation (300KB max)
+- Provides detailed packet logging to logcat (verbose level) when enabled via advanced params
 - Bypasses first `windscribe.com` query for connectivity testing
 
 ### Control-D Proxy (`wgtunnel/tools/libwg-go/cd-api.go`)
@@ -236,10 +236,10 @@ if (customTun) {
 - **Selector Timeout**: 100ms (for non-blocking DNS reads)
 
 **Logging**:
-- **Log File**: `vpntunnel.log`
-- **Max Log Size**: 300KB
-- **Truncate To**: 150KB (keeps last half when rotating)
-- **Log Location**: App's internal files directory
+- **Log Output**: Android logcat (verbose level)
+- **Enable Via**: Advanced parameter `ws-show-cd-log=true`
+- **Privacy**: No file persistence - logs only to logcat when explicitly enabled
+- **Log Tag**: `VPNTunnelWrapper` (use `adb logcat -s VPNTunnelWrapper:V` to view)
 
 ---
 

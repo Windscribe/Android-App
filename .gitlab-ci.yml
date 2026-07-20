@@ -263,6 +263,26 @@ strix-scan-standard:
 
 # ── Deploy jobs ───────────────────────────────────────────────────────────────
 
+# Manual signed APK generation job (using Docker)
+GenerateSignedAPK:
+  extends: .build_with_version
+  stage: Deploy
+  when: manual
+
+  script:
+    - echo "VERSION_NAME=$VERSION_NAME" >> build.env
+    - fastlane buildReleaseApk
+    - ls -lh ${MOBILE_APK_PATH} ${TV_APK_PATH}
+
+  artifacts:
+    name: "signed-apks-${VERSION_NAME}"
+    expire_in: 1 week
+    paths:
+      - mobile/build/outputs/apk/google/release/*.apk
+      - tv/build/outputs/apk/google/release/*.apk
+    reports:
+      dotenv: build.env
+
 # Internal App Sharing (auto on develop/main).
 InternalAppSharing:
   extends: .build_with_version

@@ -600,6 +600,9 @@
     <string name="amnezia_preset_description">सेंसरशिप-विरोधी के लिए प्रीसेट कॉन्फ़िगरेशन चुनें</string>
     <string name="amnezia_preset_russian_quick">रूसी त्वरित (कोई जंक नहीं)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">कस्टम SNI डोमेन</string>
+    <string name="tls_server_name_description">यह सेटिंग केवल Stealth और Wstunnel प्रोटोकॉल पर लागू होती है</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">IP संस्करण</string>
     <string name="ipv6_mode_description">VPN कनेक्शन के लिए कौन सा IP संस्करण उपयोग करना है चुनें।</string>
     <string name="ip_stack">IP स्टैक</string>

@@ -600,6 +600,9 @@
     <string name="amnezia_preset_description">اختر التكوين المسبق لمكافحة الرقابة</string>
     <string name="amnezia_preset_russian_quick">روسي سريع (بدون غير مرغوب)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">نطاق SNI مخصص</string>
+    <string name="tls_server_name_description">ينطبق هذا الإعداد على بروتوكولات Stealth و Wstunnel فقط</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">إصدار IP</string>
     <string name="ipv6_mode_description">اختر إصدار IP الذي سيتم استخدامه لاتصالات VPN.</string>
     <string name="ip_stack">مكدس IP</string>

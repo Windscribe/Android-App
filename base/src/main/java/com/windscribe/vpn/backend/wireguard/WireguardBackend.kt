@@ -75,7 +75,6 @@ class WireguardBackend
         override var active = false
         private var wgErrorJob: Job? = null
         private var captureLogsJob: Job? = null
-        private var handshakeMonitorJob: Job? = null
         private val backend: GoBackend by lazy { backendLazy.get() }
 
         private val testTunnel =
@@ -137,7 +136,8 @@ class WireguardBackend
                             }
 
                             UP -> {
-                                vpnLogger.debug("Tunnel UP, waiting for handshake event...")
+                                vpnLogger.debug("Tunnel UP, starting connectivity test with default delay...")
+                                testConnectivity()
                             }
                         }
                         stickyDisconnectEvent = false
@@ -157,8 +157,6 @@ class WireguardBackend
         override fun deactivate() {
             wgErrorJob?.cancel()
             connectionStateJob?.cancel()
-            handshakeMonitorJob?.cancel()
-            handshakeMonitorJob = null
             pinIpRecovery.stop()
             tunnelHealthCheck.stop()
             wgLogger.stopCapture()
@@ -176,9 +174,6 @@ class WireguardBackend
             this.protocolInformation = protocolInformation
             this.connectionId = connectionId
             startConnectionJob()
-
-            // Start handshake monitor BEFORE setting tunnel UP to avoid race condition
-            startHandshakeMonitor()
 
             scope.launch {
                 proxyDNSManager.startControlDIfRequired()
@@ -219,27 +214,5 @@ class WireguardBackend
             backend.setState(testTunnel, DOWN, null)
             vpnLogger.info("Deactivating WireGuard backend.")
             deactivate()
-        }
-
-        /**
-         * Start monitoring for WireGuard handshake success.
-         * Triggers connectivity test immediately after handshake is complete with no initial delay.
-         * Pre-fetches connectivity test data in parallel while waiting for handshake.
-         */
-        private fun startHandshakeMonitor() {
-            handshakeMonitorJob?.cancel()
-            handshakeMonitorJob =
-                scope.launch {
-                    vpnLogger.info("Waiting for WireGuard handshake success...")
-                    // Wait for handshake
-                    wgLogger.handshakeReceivedEvent.collect {
-                        vpnLogger.info("WireGuard handshake successful, starting connectivity test with no initial delay.")
-                        // Pass initialWaitTime = 0L since handshake already confirmed tunnel is ready
-                        testConnectivity(initialWaitTime = 0L)
-                        // Cancel this job after first handshake to prevent multiple tests
-                        handshakeMonitorJob?.cancel()
-                        handshakeMonitorJob = null
-                    }
-                }
         }
     }

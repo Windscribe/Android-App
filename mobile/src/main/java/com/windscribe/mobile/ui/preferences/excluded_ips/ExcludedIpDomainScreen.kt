@@ -91,6 +91,7 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
     val excludedList by viewModel.excludedList.collectAsState()
     val inputText by viewModel.inputText.collectAsState()
     val toastMessage by viewModel.toastMessage.collectAsState()
+    val dialogMessage by viewModel.dialogMessage.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     val filePickerLauncher =
@@ -123,6 +124,58 @@ fun ExcludedIpDomainScreen(viewModel: ExcludedIpDomainViewModel = hiltViewModel<
                 onImportFromFile = { filePickerLauncher.launch("text/*") },
                 onRefreshHostnames = viewModel::onRefreshHostnames,
             ),
+    )
+
+    // Show validation/import error dialog
+    dialogMessage?.let { message ->
+        ValidationErrorDialog(
+            message = message,
+            onDismiss = { viewModel.clearDialogMessage() },
+        )
+    }
+}
+
+@Composable
+private fun ValidationErrorDialog(
+    message: String,
+    onDismiss: () -> Unit,
+) {
+    val isImportResult = message.startsWith("Import Results:")
+    val title = if (isImportResult) "Import Results" else "Invalid CIDR Notation"
+
+    AlertDialog(
+        shape = RoundedCornerShape(16.dp),
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+        modifier =
+            Modifier.border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(16.dp),
+            ),
+        title = {
+            Text(
+                text = title,
+                style = font16.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.primaryTextColor,
+            )
+        },
+        text = {
+            Text(
+                text = message,
+                style = font14.copy(textAlign = TextAlign.Left),
+                color = MaterialTheme.colorScheme.primaryTextColor,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    stringResource(R.string.ok),
+                    style = font16.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.primaryTextColor,
+                )
+            }
+        },
     )
 }
 

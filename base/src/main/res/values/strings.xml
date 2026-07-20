@@ -57,6 +57,8 @@
     <string name="upgrade">UPGRADE</string>
     <string name="upgrade_case_normal">Upgrade</string>
     <string name="renew_plan">Renew Plan</string>
+    <string name="subscription_payment_issue">Subscription payment issue</string>
+    <string name="subscription_payment_issue_description">Your subscription payment needs attention. Open Google Play to review your payment method.</string>
     <string name="you_ve_been_downgraded_to_free_for_now">You’ve been downgraded to free for now</string>
     <string name="you_ve_violated_our_terms">Your account has been disabled for violating our terms</string>
     <string name="you_r_pro_plan_expired">Your Pro Plan expired!</string>
@@ -526,6 +528,9 @@ last chosen location.</string>
     <string name="amnezia_preset_description">Choose preset configuration for anti-censorship</string>
     <string name="amnezia_preset_russian_quick">Russian Quick (No Junk)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">Custom SNI Domain</string>
+    <string name="tls_server_name_description">This setting applies to Stealth and Wstunnel protocols only</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">IP Version</string>
     <string name="ipv6_mode_description">Choose which IP version to use for VPN connections.</string>
     <string name="ip_stack">IP Stack</string>

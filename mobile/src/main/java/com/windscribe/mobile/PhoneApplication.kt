@@ -114,6 +114,10 @@ class PhoneApplication :
         }
     }
 
+    override fun showSubscriptionGraceDialog(productId: String) {
+        (activeActivity as? AppStartActivity)?.showSubscriptionGraceDialog(productId)
+    }
+
     override fun showPinnedNodeErrorDialog(
         title: String,
         description: String,

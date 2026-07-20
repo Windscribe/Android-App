@@ -600,6 +600,9 @@
     <string name="amnezia_preset_description">Виберіть попередньо налаштовану конфігурацію для обходу цензури</string>
     <string name="amnezia_preset_russian_quick">Російський Швидкий (Без сміття)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">Користувацький домен SNI</string>
+    <string name="tls_server_name_description">Цей параметр застосовується лише до протоколів Stealth та Wstunnel</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">Версія IP</string>
     <string name="ipv6_mode_description">Виберіть, яку версію IP використовувати для VPN-з\'єднань.</string>
     <string name="ip_stack">IP-стек</string>

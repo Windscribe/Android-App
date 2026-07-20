@@ -600,6 +600,9 @@
     <string name="amnezia_preset_description">検閲対策のプリセット構成を選択</string>
     <string name="amnezia_preset_russian_quick">ロシア クイック（ジャンクなし）</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">カスタム SNI ドメイン</string>
+    <string name="tls_server_name_description">この設定は Stealth および Wstunnel プロトコルにのみ適用されます</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">IPバージョン</string>
     <string name="ipv6_mode_description">VPN接続に使用するIPバージョンを選択してください。</string>
     <string name="ip_stack">IPスタック</string>

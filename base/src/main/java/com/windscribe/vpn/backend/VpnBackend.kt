@@ -165,7 +165,7 @@ abstract class VpnBackend(
      @param initialWaitTime Optional override for initial delay (e.g., 0L for WireGuard). If null, uses advance parameters.
      @param pinnedLocation Optional pre-fetched pinned location to avoid DB lookup delay.
      */
-    fun testConnectivity(initialWaitTime: Long? = null) {
+    fun testConnectivity() {
         if (connectivityTestJob?.isActive == true) {
             vpnLogger.debug("Connectivity test already running, skipping new test.")
             return
@@ -174,7 +174,7 @@ abstract class VpnBackend(
         connectivityTestJob?.cancel()
         connectivityTestJob = null
         vpnLogger.info("Starting connectivity test.")
-        val startDelay = initialWaitTime ?: advanceParameterRepository.getTunnelStartDelay() ?: 500L
+        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500L
         val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
         val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
 

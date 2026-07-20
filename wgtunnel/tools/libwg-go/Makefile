@@ -11,8 +11,8 @@ NDK_GO_ARCH_MAP_arm := arm
 NDK_GO_ARCH_MAP_arm64 := arm64
 NDK_GO_ARCH_MAP_mips := mipsx
 NDK_GO_ARCH_MAP_mips64 := mips64x
-CD_TAG := 1.5.0
-CD_COMMIT := 315b97f6c768ffa77cc358aeb0b890c8889f0d6f
+CD_TAG := 1.5.4
+CD_COMMIT := 69340d151e159d055745450f16c988fba9210634
 comma := ,
 CLANG_FLAGS := --target=$(TARGET) --sysroot=$(SYSROOT)
 export CGO_CFLAGS := $(CLANG_FLAGS) $(subst -mthumb,-marm,$(CFLAGS))
@@ -45,9 +45,9 @@ $(BUILDDIR)/go-$(GO_VERSION)/.prepared: $(GRADLE_USER_HOME)/caches/golang/$(GO_T
 	tar -C "$(dir $@)" --strip-components=1 -xzf "$^" && \
 	patch -p1 -f -N -r- -d "$(dir $@)" < goruntime-boottime-over-monotonic.diff && \
 	touch "$@"'
-# Keep debug symbols for crash reporting (symbols will be extracted by Android Gradle Plugin)
-# Removed -s -w flags to preserve symbols for Google Play Console symbolication
-LD_FLAGS := \
+# Strip debug symbols and DWARF information to reduce binary size
+# Using -s -w flags for smaller binary
+LD_FLAGS := -s -w \
   -X github.com/Control-D-Inc/ctrld/cmd/cli.version=$(CD_TAG) \
   -X github.com/Control-D-Inc/ctrld/cmd/cli.commit=$(CD_COMMIT) \
   -X golang.zx2c4.com/wireguard/ipc.socketDirectory=/data/data/$(ANDROID_PACKAGE_NAME)/cache/wireguard \
