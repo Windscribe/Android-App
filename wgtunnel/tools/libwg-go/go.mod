@@ -1,6 +1,6 @@
 module golang.zx2c4.com/wireguard/android
 
-go 1.24.4
+go 1.25.12
 
 replace github.com/amnezia-vpn/amneziawg-go => github.com/Windscribe/amneziawg-go v0.2.17-0.20260128224822-ecda464cad7a
 
@@ -11,11 +11,11 @@ replace github.com/rs/zerolog => github.com/Windscribe/zerolog v0.0.0-2024120613
 replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771
 
 require (
-	github.com/Control-D-Inc/ctrld v1.4.10-0.20260503214925-368044446917
+	github.com/Control-D-Inc/ctrld v1.5.5-0.20260714152326-69340d151e15
 	github.com/Windscribe/wstunnel v1.0.7
-	github.com/amnezia-vpn/amneziawg-go v0.2.16
+	github.com/amnezia-vpn/amneziawg-go v0.2.19
 	github.com/spf13/cobra v1.9.1
-	golang.org/x/sys v0.35.0
+	golang.org/x/sys v0.46.0
 )
 
 require (
@@ -79,7 +79,7 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/prometheus/prom2json v1.3.3 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
-	github.com/quic-go/quic-go v0.57.1 // indirect
+	github.com/quic-go/quic-go v0.59.1 // indirect
 	github.com/refraction-networking/utls v1.8.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
@@ -98,13 +98,13 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	go4.org/mem v0.0.0-20220726221520-4f986261bf13 // indirect
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba // indirect
-	golang.org/x/crypto v0.41.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
-	golang.org/x/mod v0.27.0 // indirect
-	golang.org/x/net v0.43.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
-	golang.org/x/tools v0.36.0 // indirect
+	golang.org/x/mod v0.36.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
+	golang.org/x/tools v0.45.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	golang.zx2c4.com/wireguard/windows v0.5.3 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect

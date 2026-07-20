@@ -600,6 +600,9 @@ Dữ liệu vị trí của bạn vẫn ở trên thiết bị của bạn và c
     <string name="amnezia_preset_description">Chọn cấu hình đặt trước cho chống kiểm duyệt</string>
     <string name="amnezia_preset_russian_quick">Nga Nhanh (Không rác)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">Tên miền SNI tùy chỉnh</string>
+    <string name="tls_server_name_description">Cài đặt này chỉ áp dụng cho giao thức Stealth và Wstunnel</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">Phiên bản IP</string>
     <string name="ipv6_mode_description">Chọn phiên bản IP nào để sử dụng cho kết nối VPN.</string>
     <string name="ip_stack">Ngăn xếp IP</string>

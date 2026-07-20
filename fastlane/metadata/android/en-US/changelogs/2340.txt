@@ -1,0 +1,13 @@
+v4.3(Mobile)
+* Fixed unnecessary reconnect with always on VPN + start on boot.
+* Fixed serverlist not sorting after swipe to refresh.
+* Added custom SNI support for wstunnel & stealth.
+* Handle subscription in grace period notifications.
+* Prevent non-canonical CIDR addresses in IP exclusion
+* Sensitive log removal.
+* Whitelist ocsp domains from clear text restrictions.
+* Relaxed haptic feedback for serverlist scroll.
+* Trim hashed login input whitespace.
+* Ctlrd library upgraded to v1.5.4
+* WireGuard updated to v0.2.19
+* include the -s -w flags in the LD_FLAGS to build wgtunnel to smaller binary.

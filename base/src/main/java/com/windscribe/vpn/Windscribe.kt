@@ -78,6 +78,8 @@ open class Windscribe : MultiDexApplication() {
 
         fun cancelDialog() {}
 
+        fun showSubscriptionGraceDialog(productId: String) {}
+
         fun showPinnedNodeErrorDialog(
             title: String,
             description: String,

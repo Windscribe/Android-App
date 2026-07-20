@@ -131,9 +131,10 @@ class LoginViewModel
         }
 
         fun onAccountHashChanged(hash: String) {
-            this.accountHash = hash
+            val trimmedHash = hash.trim()
+            this.accountHash = trimmedHash
             viewModelScope.launch {
-                _accountHashDisplay.emit(hash)
+                _accountHashDisplay.emit(trimmedHash)
             }
             validateHashedInput()
         }
@@ -216,8 +217,9 @@ class LoginViewModel
 
                 // For hashed login, use the hash as both username and password
                 if (_selectedAuthType.value == AuthType.HASHED) {
-                    username = accountHash
-                    password = accountHash
+                    val trimmedHash = accountHash.trim()
+                    username = trimmedHash
+                    password = trimmedHash
                 }
 
                 startLoginProcess()

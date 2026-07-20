@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -21,14 +23,17 @@ import androidx.core.graphics.toColorInt
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.helper.PermissionHelper
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.popup.EncryptionWarningDialog
+import com.windscribe.mobile.ui.popup.SubscriptionGraceDialog
 import com.windscribe.mobile.ui.theme.AndroidTheme
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DARK_THEME
+import com.windscribe.vpn.billing.GooglePlaySubscriptionUrl
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 
@@ -38,6 +43,7 @@ class AppStartActivity : AppCompatActivity() {
     val viewmodel: AppStartActivityViewModel get() = viewmodelImpl
     lateinit var navController: NavController
     lateinit var permissionHelper: PermissionHelper
+    private var subscriptionGraceProductId by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         permissionHelper = PermissionHelper(this)
@@ -102,6 +108,17 @@ class AppStartActivity : AppCompatActivity() {
                             },
                         )
                     }
+                    subscriptionGraceProductId?.let { productId ->
+                        SubscriptionGraceDialog(
+                            onConfirm = {
+                                subscriptionGraceProductId = null
+                                GooglePlaySubscriptionUrl.build(packageName, productId)?.let { openUrl(it) }
+                            },
+                            onDismiss = {
+                                subscriptionGraceProductId = null
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -116,6 +133,15 @@ class AppStartActivity : AppCompatActivity() {
 
     fun Context.isTablet(): Boolean = resources.configuration.screenWidthDp >= 600
 
+    fun showSubscriptionGraceDialog(productId: String) {
+        if (GooglePlaySubscriptionUrl.build(packageName, productId) == null) return
+        runOnUiThread {
+            if (!isFinishing && !isDestroyed) {
+                subscriptionGraceProductId = productId
+            }
+        }
+    }
+
     /**
      * Handles intent extras from FCM push notifications and external app launches.
      *
@@ -123,6 +149,7 @@ class AppStartActivity : AppCompatActivity() {
      * keep this handler simple and permissive because:
      * - AppStartActivity is the launcher activity, so external apps can already launch it
      * - "promo" only deep-links to the upgrade screen (non-sensitive)
+     * - subscription grace notifications build a fixed Google Play URL from an encoded product ID
      * - "user_expired"/"user_downgraded" trigger server verification before any action
      *
      * SessionWorker validates account status with the server and only disconnects the VPN
@@ -141,6 +168,10 @@ class AppStartActivity : AppCompatActivity() {
                         PushNotificationAction(pcpid, promoCode, type)
                     viewmodel.requestDeepLink(Screen.Upgrade.route)
                 }
+            }
+            GooglePlaySubscriptionUrl.NOTIFICATION_TYPE -> {
+                val productId = extras.getString(GooglePlaySubscriptionUrl.PRODUCT_ID_EXTRA).orEmpty()
+                GooglePlaySubscriptionUrl.build(packageName, productId)?.let { openUrl(it) }
             }
             "user_expired", "user_downgraded" -> {
                 appContext.workManager.updateSession()

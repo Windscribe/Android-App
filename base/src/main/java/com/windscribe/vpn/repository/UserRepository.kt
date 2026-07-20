@@ -295,7 +295,7 @@ class UserRepository(
                     }
 
                     is CallResult.Success -> {
-                        logger.debug("Successfully added token $firebaseToken to ${result.data.userName}.")
+                        logger.debug("Successfully added token to user account.")
                         if (preferenceHelper.deviceUuid == null) {
                             logger.debug("No device id is found for the current user, generating and saving UUID")
                             preferenceHelper.deviceUuid = UUID.randomUUID().toString()

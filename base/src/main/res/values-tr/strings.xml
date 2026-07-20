@@ -600,6 +600,9 @@ Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler içi
     <string name="amnezia_preset_description">Sansüre karşı önceden ayarlanmış yapılandırmayı seçin</string>
     <string name="amnezia_preset_russian_quick">Rus Hızlı (Gereksiz Yok)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">Özel SNI Etki Alanı</string>
+    <string name="tls_server_name_description">Bu ayar yalnızca Stealth ve Wstunnel protokolleri için geçerlidir</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">IP Sürümü</string>
     <string name="ipv6_mode_description">VPN bağlantıları için hangi IP sürümünün kullanılacağını seçin.</string>
     <string name="ip_stack">IP Yığını</string>

@@ -514,6 +514,9 @@
     <string name="amnezia_preset_description">검열 우회를 위한 사전 설정 구성을 선택하세요.</string>
     <string name="amnezia_preset_russian_quick">Russian Quick (No Junk)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">사용자 정의 SNI 도메인</string>
+    <string name="tls_server_name_description">이 설정은 Stealth 및 Wstunnel 프로토콜에만 적용됩니다</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">IP 버전</string>
     <string name="ipv6_mode_description">VPN 연결에 사용할 IP 버전을 선택하세요.</string>
     <string name="ip_stack">IP 스택</string>

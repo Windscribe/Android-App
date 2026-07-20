@@ -604,6 +604,9 @@ last chosen location.</string>
     <string name="amnezia_preset_description">سینسر شپ مخالف کے لیے پہلے سے طے شدہ ترتیب کا انتخاب کریں</string>
     <string name="amnezia_preset_russian_quick">روسی فوری (کوڑا نہیں)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">اپنی مرضی کا SNI ڈومین</string>
+    <string name="tls_server_name_description">یہ سیٹنگ صرف Stealth اور Wstunnel پروٹوکولز پر لاگو ہوتی ہے</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">IP ورژن</string>
     <string name="ipv6_mode_description">VPN کنکشن کے لیے کون سا IP ورژن استعمال کرنا ہے منتخب کریں۔</string>
     <string name="ip_stack">IP اسٹیک</string>

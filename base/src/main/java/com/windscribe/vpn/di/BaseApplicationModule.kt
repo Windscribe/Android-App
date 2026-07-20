@@ -429,7 +429,7 @@ open class BaseApplicationModule {
             staticIpRepository,
             googleSignInManager,
             unblockWgParamsRepository,
-            wgConfigRepository
+            wgConfigRepository,
         )
 
     @Provides

@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.serverlist
 
-import android.icu.text.LocaleDisplayNames.UiListItem.getComparator
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -726,7 +725,14 @@ class ServerViewModelImpl
                     ServerListType.Config -> latencyRepository.updateConfigLatencies()
                 }
                 latencyRepository.latencyEvent.first()
-                delay(100)
+                if (preferencesHelper.selection == LATENCY_LIST_SELECTION_MODE) {
+                    when (serverListType) {
+                        ServerListType.All -> fetchAllLists()
+                        ServerListType.Fav -> fetchFavouriteList()
+                        ServerListType.Static -> fetchStaticList()
+                        ServerListType.Config -> fetchConfigList()
+                    }
+                }
                 _refreshState.emit(false)
             }
         }

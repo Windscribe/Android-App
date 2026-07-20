@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true"/>
+    <base-config cleartextTrafficPermitted="false"/>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">lencr.org</domain>
+        <domain includeSubdomains="true">ocsp.int-x3.letsencrypt.org</domain>
+        <!-- Add other CRL/OCSP domains as needed -->
+    </domain-config>
     <debug-overrides>
         <trust-anchors>
             <!-- Trust user added CAs while debuggable only -->

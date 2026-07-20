@@ -3,6 +3,7 @@ package com.windscribe.vpn.backend.openvpn
 import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.isProtocolTweaksEnabled
+import com.windscribe.vpn.commonutils.Ext.maskMiddle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -43,9 +44,14 @@ class ProxyTunnelManager(
                         }
                     val logFile = File(appContext.filesDir, PROXY_LOG).path
                     tunnelLib.initialise(BuildConfig.DEV, logFile)
-                    logger.debug("Running proxy on local port: $localPort")
                     val protocolTweaksEnabled = appContext.preference.isProtocolTweaksEnabled
                     val tlsServerName = appContext.preference.tlsServerName
+                    logger.debug(
+                        "Running proxy on local port: $localPort Protocol Tweaks: $protocolTweaksEnabled SNI: ${tlsServerName.maskMiddle(
+                            4,
+                            4,
+                        )}",
+                    )
                     if (isWSTunnel) {
                         val remote =
                             "wss://$ip:$port/$PROXY_TUNNEL_PROTOCOL/$PROXY_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"

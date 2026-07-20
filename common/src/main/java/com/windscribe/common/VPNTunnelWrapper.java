@@ -24,13 +24,10 @@ import org.pcap4j.packet.TcpPacket;
 import org.pcap4j.packet.IcmpV4CommonPacket;
 import org.pcap4j.packet.IcmpV6CommonPacket;
 
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetSocketAddress;
@@ -72,12 +69,8 @@ public class VPNTunnelWrapper {
     private DatagramChannel controlDChannel;
     private Boolean byPassControlD = true;
 
-    private static final long MAX_LOG_SIZE = 300 * 1024;
-    private static final long TRUNCATE_TO_SIZE = 150 * 1024;
-    private PrintWriter logWriter;
-    private File logFile;
+    // Removed file logging - only log to logcat for privacy
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
-    private final Object logLock = new Object();
 
     public VPNTunnelWrapper(ParcelFileDescriptor parcelFileDescriptor, VpnService vpnService) throws ErrnoException, IOException {
         this(parcelFileDescriptor, vpnService, 5355, false);
@@ -98,95 +91,17 @@ public class VPNTunnelWrapper {
         socketInputChannel = new FileInputStream(socketFileDescriptor.getFileDescriptor()).getChannel();
         socketOutputChannel = new FileOutputStream(socketFileDescriptor.getFileDescriptor()).getChannel();
         threadPool = Executors.newFixedThreadPool(3);
-        initializeLogging(vpnService);
-    }
-
-    private void initializeLogging(VpnService vpnService) {
-        try {
-            logFile = new File(vpnService.getFilesDir(), "vpntunnel.log");
-
-            if (logFile.exists() && logFile.length() > MAX_LOG_SIZE) {
-                truncateLogFile();
-            }
-
-            logWriter = new PrintWriter(new FileWriter(logFile, true));
-            logToFile("=== VPNTunnelWrapper initialized, port: " + controlDAddress.getPort() + " ===");
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to initialize logging", e);
+        // File logging removed - only use logcat for privacy
+        if (enablePacketLogging) {
+            Log.v(TAG, "VPNTunnelWrapper initialized with packet logging enabled (logcat only), port: " + controlDPort);
         }
     }
 
+    // Logging to logcat only when enabled - no file writing for privacy
     private void logToFile(String message) {
-        synchronized (logLock) {
-            if (logWriter != null && logFile != null) {
-                try {
-                    // Write the message first
-                    String timestamp = dateFormat.format(new Date());
-                    logWriter.println("[VPNTunnel] " + timestamp + " " + message);
-                    Log.i("tunnel", "[VPNTunnel] " + timestamp + " " + message);
-                    logWriter.flush();
-
-                    // Now check file size after flush to get accurate size
-                    long currentSize = logFile.length();
-                    if (currentSize > MAX_LOG_SIZE) {
-                        Log.i(TAG, "Truncating log file: current size = " + currentSize + " bytes (" + (currentSize / 1024) + "KB), max = " + (MAX_LOG_SIZE / 1024) + "KB");
-                        logWriter.close();
-                        truncateLogFile();
-                        logWriter = new PrintWriter(new FileWriter(logFile, true));
-                        logWriter.println("[VPNTunnel] === File was " + (currentSize / 1024) + "KB, truncated to " + (logFile.length() / 1024) + "KB ===");
-                        logWriter.flush();
-                    }
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to write to log file", e);
-                }
-            }
-        }
-    }
-
-    private void truncateLogFile() {
-        try {
-            if (logFile != null && logFile.exists()) {
-                long fileSize = logFile.length();
-                if (fileSize > TRUNCATE_TO_SIZE) {
-                    try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(logFile, "r")) {
-                        raf.seek(fileSize - TRUNCATE_TO_SIZE);
-                        byte[] buffer = new byte[(int) TRUNCATE_TO_SIZE];
-                        raf.readFully(buffer);
-
-                        // Find the first complete line by looking for a newline followed by [VPNTunnel]
-                        int startIndex = 0;
-                        String bufferStr = new String(buffer, "UTF-8");
-                        int searchLimit = Math.min(1000, buffer.length / 2); // Search up to 1KB or half the buffer
-
-                        for (int i = 0; i < searchLimit; i++) {
-                            if (buffer[i] == '\n') {
-                                // Check if the next line starts with [VPNTunnel] to ensure it's a complete entry
-                                if (i + 1 < buffer.length) {
-                                    String nextPart = bufferStr.substring(i + 1, Math.min(i + 20, bufferStr.length()));
-                                    if (nextPart.startsWith("[VPNTunnel]")) {
-                                        startIndex = i + 1;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        try (FileWriter fw = new FileWriter(logFile, false)) {
-                            fw.write("[VPNTunnel] ========================================\n");
-                            fw.write("[VPNTunnel] === Log truncated at " + dateFormat.format(new Date()) + " ===\n");
-                            fw.write("[VPNTunnel] === Keeping last " + (TRUNCATE_TO_SIZE / 1024) + "KB of " + (MAX_LOG_SIZE / 1024) + "KB ===\n");
-                            fw.write("[VPNTunnel] ========================================\n");
-                            fw.write(new String(buffer, startIndex, buffer.length - startIndex, "UTF-8"));
-                        }
-                    }
-                } else {
-                    try (FileWriter fw = new FileWriter(logFile, false)) {
-                        fw.write("[VPNTunnel] === Log cleared at " + dateFormat.format(new Date()) + " ===\n");
-                    }
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to truncate log file", e);
+        if (enablePacketLogging) {
+            String timestamp = dateFormat.format(new Date());
+            Log.v(TAG, "[VPNTunnel] " + timestamp + " " + message);
         }
     }
 
@@ -197,7 +112,7 @@ public class VPNTunnelWrapper {
     }
 
     void log(String message) {
-        Log.i("VPNTunnelWrapper", message);
+        Log.v("VPNTunnelWrapper", message);
     }
 
     public ParcelFileDescriptor getParcelDescriptor() {
@@ -236,13 +151,7 @@ public class VPNTunnelWrapper {
             log(e.getMessage());
         }
 
-        synchronized (logLock) {
-            if (logWriter != null) {
-                logToFile("=== VPNTunnelWrapper stopped ===");
-                logWriter.close();
-                logWriter = null;
-            }
-        }
+        logToFile("=== VPNTunnelWrapper stopped ===");
     }
 
     private void buildSocketPair() throws ErrnoException, IOException {

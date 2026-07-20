@@ -605,6 +605,9 @@
     <string name="amnezia_preset_description">选择反审查的预设配置</string>
     <string name="amnezia_preset_russian_quick">俄罗斯快速(无垃圾)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">自定义 SNI 域名</string>
+    <string name="tls_server_name_description">此设置仅适用于 Stealth 和 Wstunnel 协议</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">IP版本</string>
     <string name="ipv6_mode_description">选择用于VPN连接的IP版本。</string>
     <string name="ip_stack">IP堆栈</string>

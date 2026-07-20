@@ -322,7 +322,7 @@ class UpgradePresenterImpl
             logger.info("Saving purchased item to process later...")
             upgradeView.showProgressBar("#Verifying purchase...")
             preferencesHelper.purchasedItem = purchase.originalJson
-            logger.info("Verifying payment for purchased item: " + purchase.originalJson)
+            logger.info("Verifying payment for purchased item")
             val receipt =
                 ReceiptParams(
                     purchaseToken = purchase.purchaseToken,

@@ -603,6 +603,9 @@
     <string name="amnezia_preset_description">সেন্সরশিপ-বিরোধী জন্য প্রিসেট কনফিগারেশন চয়ন করুন</string>
     <string name="amnezia_preset_russian_quick">রাশিয়ান দ্রুত (জাঙ্ক ছাড়া)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">কাস্টম SNI ডোমেইন</string>
+    <string name="tls_server_name_description">এই সেটিং শুধুমাত্র Stealth এবং Wstunnel প্রোটোকলের জন্য প্রযোজ্য</string>
+    <string name="tls_server_name_hint">www.example.com</string>
     <string name="ipv6_mode">IP সংস্করণ</string>
     <string name="ipv6_mode_description">VPN সংযোগগুলির জন্য কোন IP সংস্করণ ব্যবহার করবেন তা চয়ন করুন।</string>
     <string name="ip_stack">IP স্ট্যাক</string>

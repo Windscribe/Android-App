@@ -1,25 +1,44 @@
 package com.windscribe.mobile.ui.preferences.anticensorship
 
 import PreferencesNavBar
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -28,13 +47,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.PreferenceBackground
-import com.windscribe.mobile.ui.common.StyledTextField
 import com.windscribe.mobile.ui.common.SwitchItemView
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.mobile.ui.nav.LocalNavController
+import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font14
+import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
@@ -160,12 +180,11 @@ fun AntiCensorshipContent(
                     actions.onExtraTlsPaddingToggled,
                 )
 
-                // TLS Server Name Section - hidden for now
-                // Spacer(modifier = Modifier.height(16.dp))
-                // TlsServerNameSection(
-                //     state.tlsServerName,
-                //     actions.onTlsServerNameChanged,
-                // )
+                Spacer(modifier = Modifier.height(16.dp))
+                TlsServerNameSection(
+                    state.tlsServerName,
+                    actions.onTlsServerNameChanged,
+                )
             }
         }
     }
@@ -181,7 +200,7 @@ private fun ScreenDescription() {
                     width = 1.dp,
                     color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.10f),
                     shape = RoundedCornerShape(12.dp),
-                ).padding(14.dp),
+                ).padding(12.dp),
     ) {
         Text(
             text = stringResource(com.windscribe.vpn.R.string.anti_censorship_screen_description),
@@ -271,25 +290,137 @@ private fun ServerRoutingSection(
     }
 }
 
-// Hidden for now - kept for easy re-enabling. See AntiCensorshipContent.
-@Suppress("unused")
 @Composable
 private fun TlsServerNameSection(
     value: String,
     onTlsServerNameChanged: (String) -> Unit,
 ) {
+    var enabled by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
     Column {
-        Text(
-            text = "TLS Server Name",
-            style = font14,
-            color = MaterialTheme.colorScheme.primaryTextColor,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-        StyledTextField(
-            value = value,
-            onValueChange = onTlsServerNameChanged,
-            placeholder = "Enter TLS server name (optional)",
-        )
+        // Header section with title and description
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                    ).padding(12.dp),
+        ) {
+            Text(
+                stringResource(com.windscribe.vpn.R.string.tls_server_name),
+                style = font16,
+                color = MaterialTheme.colorScheme.primaryTextColor,
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(
+                stringResource(com.windscribe.vpn.R.string.tls_server_name_description),
+                style = font14.copy(textAlign = TextAlign.Start, fontWeight = FontWeight.Normal),
+                color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(1.dp))
+
+        // Text field section with edit controls
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
+                    ).padding(horizontal = 16.dp, vertical = 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TextField(
+                modifier =
+                    Modifier
+                        .weight(1.0f)
+                        .focusRequester(focusRequester),
+                enabled = enabled,
+                value = value,
+                placeholder = {
+                    Text(
+                        stringResource(com.windscribe.vpn.R.string.tls_server_name_hint),
+                        style = font14,
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.6f),
+                    )
+                },
+                textStyle = font14.copy(textAlign = TextAlign.Start),
+                singleLine = true,
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.primaryTextColor,
+                        unfocusedTextColor = MaterialTheme.colorScheme.primaryTextColor,
+                        disabledTextColor = MaterialTheme.colorScheme.primaryTextColor,
+                        disabledPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.6f),
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                        selectionColors =
+                            androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                                backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f),
+                            ),
+                    ),
+                onValueChange = {
+                    onTlsServerNameChanged(it)
+                },
+            )
+            if (enabled) {
+                Icon(
+                    painterResource(R.drawable.ic_close_white),
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f),
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) {
+                                enabled = false
+                                focusManager.clearFocus()
+                            }.padding(4.dp),
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+            Icon(
+                painterResource(if (enabled) R.drawable.ic_check else R.drawable.ic_edit_icon),
+                contentDescription = "",
+                tint =
+                    if (enabled) {
+                        AppColors.neonGreen
+                    } else {
+                        MaterialTheme.colorScheme.primaryTextColor.copy(
+                            alpha = 0.5f,
+                        )
+                    },
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) {
+                            if (enabled) {
+                                enabled = false
+                                focusManager.clearFocus()
+                            } else {
+                                enabled = true
+                                focusRequester.requestFocus()
+                            }
+                        }.padding(4.dp),
+            )
+        }
     }
 }
 
