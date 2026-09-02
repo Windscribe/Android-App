@@ -17,6 +17,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import com.windscribe.vpn.wsnet.WSNetWrapper
@@ -362,7 +363,18 @@ class DeviceStateManager
                     try {
                         val telephonyManager =
                             context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
-                        val operatorName = telephonyManager?.networkOperatorName
+
+                        val dataSubId =
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                SubscriptionManager.getActiveDataSubscriptionId()
+                            } else {
+                                @Suppress("DEPRECATION")
+                                SubscriptionManager.getDefaultDataSubscriptionId()
+                            }
+
+                        val dataSimTelephonyManager =
+                            telephonyManager?.createForSubscriptionId(dataSubId)
+                        val operatorName = dataSimTelephonyManager?.networkOperatorName
 
                         when {
                             operatorName.isNullOrBlank() || operatorName == "Unknown" -> {
