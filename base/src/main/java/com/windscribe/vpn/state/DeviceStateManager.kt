@@ -72,6 +72,18 @@ class DeviceStateManager
         // Store the whitelisted network name for comparison
         private var whitelistedNetworkName: String? = null
 
+        /** The mirror of [whitelistedNetworkName]: that records "no here", this records "yes here". */
+        private var optedInNetworkName: String? = null
+
+        private val _isCurrentNetworkOptedIn = MutableStateFlow(false)
+
+        /**
+         * True when the user connected while on this network. Auto-Secure off means "do not bring the
+         * VPN up here by yourself", not permission to tear down a connection they started by hand —
+         * without this, any network re-emission (waking the device produces one) disconnected them.
+         */
+        val isCurrentNetworkOptedIn: StateFlow<Boolean> = _isCurrentNetworkOptedIn.asStateFlow()
+
         private var context: Context? = null
         private var connectivityManager: ConnectivityManager? = null
         private var networkCallback: ConnectivityManager.NetworkCallback? = null
@@ -186,15 +198,21 @@ class DeviceStateManager
             if (force || currentDetail != detail) {
                 _networkDetail.emit(detail)
 
-                // Clear whitelist when network changes (so user can auto-connect when returning to network)
-                if (currentDetail?.name != detail?.name && whitelistedNetworkName != null) {
-                    logger.info("Network changed from ${currentDetail?.name} to ${detail?.name} - clearing whitelist")
-                    whitelistedNetworkName = null
+                // Both decisions are scoped to the network they were made on, so a change drops them.
+                if (currentDetail?.name != detail?.name) {
+                    if (whitelistedNetworkName != null) {
+                        logger.info("Network changed from ${currentDetail?.name} to ${detail?.name} - clearing whitelist")
+                        whitelistedNetworkName = null
+                    }
+                    if (optedInNetworkName != null) {
+                        logger.info("Network changed from ${currentDetail?.name} to ${detail?.name} - clearing opt-in")
+                        optedInNetworkName = null
+                    }
                 }
             }
 
-            // Update whitelisted network state
             updateWhitelistedNetworkState(detail)
+            updateOptedInNetworkState(detail)
 
             // Log only if something changed
             if (force || currentOnline != online || currentDetail != detail) {
@@ -226,6 +244,23 @@ class DeviceStateManager
             whitelistedNetworkName = networkName
             logger.info("Whitelisted network set to: $networkName")
             updateWhitelistedNetworkState(_networkDetail.value)
+        }
+
+        private fun updateOptedInNetworkState(currentNetworkDetail: NetworkDetail?) {
+            val isOptedIn = currentNetworkDetail?.name != null && currentNetworkDetail.name == optedInNetworkName
+            if (_isCurrentNetworkOptedIn.value != isOptedIn) {
+                _isCurrentNetworkOptedIn.value = isOptedIn
+                logger.debug(
+                    "Opted-in network state changed: $isOptedIn (current: ${currentNetworkDetail?.name}, opted in: $optedInNetworkName)",
+                )
+            }
+        }
+
+        /** Records that the user connected on [networkName], or clears it with null. */
+        fun setOptedInNetwork(networkName: String?) {
+            optedInNetworkName = networkName
+            logger.info("Opted-in network set to: $networkName")
+            updateOptedInNetworkState(_networkDetail.value)
         }
 
         /**

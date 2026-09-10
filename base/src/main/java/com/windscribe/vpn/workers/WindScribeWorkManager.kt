@@ -21,7 +21,6 @@ import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.worker.BootWorker
-import com.windscribe.vpn.workers.worker.CredentialsWorker
 import com.windscribe.vpn.workers.worker.HostnameRefreshWorker
 import com.windscribe.vpn.workers.worker.LatencyWorker
 import com.windscribe.vpn.workers.worker.NotificationWorker
@@ -78,7 +77,11 @@ class WindScribeWorkManager(
     }
 
     fun onAppStart() {
-        if (preferencesHelper.sessionHash == null) return
+        if (preferencesHelper.sessionHash == null) {
+            // Skips the session refresh and every periodic worker; only the next app start recovers.
+            logger.warn("onAppStart: no session hash, skipping startup work.")
+            return
+        }
         // One time
         preferencesHelper.migrationRequired = true
         updateSession()
@@ -130,7 +133,10 @@ class WindScribeWorkManager(
     }
 
     fun onAppMovedToForeground() {
-        if (preferencesHelper.sessionHash == null) return
+        if (preferencesHelper.sessionHash == null) {
+            logger.warn("onAppMovedToForeground: no session hash, skipping session refresh.")
+            return
+        }
         WorkManager
             .getInstance(
                 context,
@@ -203,22 +209,23 @@ class WindScribeWorkManager(
             )
     }
 
-    fun updateCredentialsUpdate() {
+    /**
+     * @param reason why we are reconnecting — [BootWorker.REASON_BOOT] or
+     * [BootWorker.REASON_APP_UPDATED]. The worker cannot tell the two apart on its own, and logging a
+     * reboot after a package replace sent me looking for a reboot that never happened.
+     */
+    fun connectOnBoot(reason: String) {
         WorkManager
             .getInstance(
                 context,
             ).enqueueUniqueWork(
-                CREDENTIALS_WORKER_KEY,
+                BOOT_WORKER_KEY,
                 ExistingWorkPolicy.REPLACE,
-                createOneTimeWorkerRequest(CredentialsWorker::class.java),
+                createOneTimeWorkerRequest(
+                    BootWorker::class.java,
+                    Data.Builder().putString(BootWorker.KEY_REASON, reason).build(),
+                ),
             )
-    }
-
-    fun connectOnBoot() {
-        WorkManager
-            .getInstance(
-                context,
-            ).enqueueUniqueWork(BOOT_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(BootWorker::class.java))
     }
 
     fun updateStaticIpList() {
@@ -273,7 +280,6 @@ class WindScribeWorkManager(
         const val SESSION_DAY_WORKER_KEY = "com.windscribe.vpn.session_day_worker"
         const val SERVER_LIST_WORKER_KEY = "com.windscribe.vpn.server_list"
         const val STATIC_IP_WORKER_KEY = "com.windscribe.vpn.static_ip"
-        const val CREDENTIALS_WORKER_KEY = "com.windscribe.vpn.credentials"
         const val BOOT_WORKER_KEY = "com.windscribe.vpn.boot"
         const val PENDING_GOGGLE_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingGoogleReceipts"
         const val PENDING_AMAZON_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingAmazonReceipts"

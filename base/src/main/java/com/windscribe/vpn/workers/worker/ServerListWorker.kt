@@ -4,11 +4,9 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.workers.ReconnectAfterRefresh
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -23,9 +21,7 @@ class ServerListWorker
         @Assisted workerParams: WorkerParameters,
         private val serverListRepository: ServerListRepository,
         private val userRepository: UserRepository,
-        private val locationRepository: LocationRepository,
-        private val preferencesHelper: PreferencesHelper,
-        private val vpnController: WindVpnController,
+        private val reconnectAfterRefresh: ReconnectAfterRefresh,
         private val mainScope: CoroutineScope,
     ) : CoroutineWorker(context, workerParams) {
         private val logger = LoggerFactory.getLogger("worker")
@@ -37,32 +33,12 @@ class ServerListWorker
                 serverListRepository.update()
                 logger.debug("Successfully updated server list.")
                 mainScope.launch {
-                    handleLocationUpdate()
+                    reconnectAfterRefresh.run()
                 }
                 Result.success()
             }.getOrElse { error ->
                 logger.debug("Failed to update server list: $error")
                 Result.failure()
-            }
-        }
-
-        private suspend fun handleLocationUpdate() {
-            try {
-                val previousLocation = locationRepository.selectedCity.value
-                val updatedLocation = locationRepository.updateLocation()
-                if (updatedLocation != previousLocation && preferencesHelper.globalUserConnectionPreference) {
-                    logger.debug("Last selected location is changed Now Reconnecting")
-                    locationRepository.setSelectedCity(updatedLocation)
-                    vpnController.connectAsync()
-                } else if (preferencesHelper.globalUserConnectionPreference && !locationRepository.isNodeAvailable()) {
-                    logger.debug(
-                        "Currently connected node is no longer eligible (removed or force disconnected). " +
-                            "Now reconnecting to same location.",
-                    )
-                    vpnController.connectAsync()
-                }
-            } catch (e: Exception) {
-                logger.debug("Failed to update last selected location.")
             }
         }
     }

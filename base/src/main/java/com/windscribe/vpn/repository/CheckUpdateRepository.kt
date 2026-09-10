@@ -4,6 +4,7 @@
 package com.windscribe.vpn.repository
 
 import android.os.Build
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.CheckUpdateResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -43,7 +44,7 @@ class CheckUpdateRepository
                 preferencesHelper.lastUpdateCheckTimestamp = System.currentTimeMillis()
                 val appVersion =
                     try {
-                        val context = com.windscribe.vpn.Windscribe.Companion.appContext
+                        val context = appContext
                         val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
                         pInfo.versionName ?: ""
                     } catch (e: Exception) {
@@ -51,7 +52,7 @@ class CheckUpdateRepository
                     }
                 val appBuild =
                     try {
-                        val context = com.windscribe.vpn.Windscribe.Companion.appContext
+                        val context = appContext
                         val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                             pInfo.longVersionCode.toString()

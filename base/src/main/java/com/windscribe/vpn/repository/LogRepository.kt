@@ -20,6 +20,7 @@ import java.io.File
 import java.io.FileReader
 import java.io.IOException
 import java.nio.charset.Charset
+import java.util.zip.ZipInputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -80,13 +81,21 @@ class LogRepository
                 )
             val builder = StringBuilder()
             builder.append(logFile)
-            val file = File(debugFilePath)
-            val bufferedReader = BufferedReader(FileReader(file))
-            while (bufferedReader.readLine().also { logLine = it } != null) {
-                builder.append(logLine)
-                builder.append("\n")
+            // Oldest first. Without it a report filed just after a roll carries almost nothing.
+            if (debugFilePath == appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME) {
+                builder.append(
+                    readRolledLog(
+                        File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_ROLLED_FILE_NAME),
+                    ),
+                )
             }
-            bufferedReader.close()
+            val file = File(debugFilePath)
+            BufferedReader(FileReader(file)).use { bufferedReader ->
+                while (bufferedReader.readLine().also { logLine = it } != null) {
+                    builder.append(logLine)
+                    builder.append("\n")
+                }
+            }
             return String(
                 Base64.encode(
                     builder.toString().toByteArray(Charset.defaultCharset()),
@@ -112,3 +121,25 @@ class LogRepository
             }
         }
     }
+
+/**
+ * The previous log, which logback rolled into a zip, or empty when there is none. Never fails the
+ * upload: an unreadable backup costs the older half of the history, not the report.
+ */
+internal fun readRolledLog(rolled: File): String {
+    if (!rolled.isFile) {
+        return ""
+    }
+    return runCatching {
+        ZipInputStream(rolled.inputStream().buffered()).use { zip ->
+            if (zip.nextEntry == null) {
+                return@use ""
+            }
+            val text = zip.reader(Charsets.UTF_8).readText()
+            if (text.isEmpty() || text.endsWith("\n")) text else text + "\n"
+        }
+    }.getOrElse {
+        LoggerFactory.getLogger("log-repo").warn("Could not read the rolled log: ${it.message}")
+        ""
+    }
+}
