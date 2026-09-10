@@ -7,7 +7,6 @@ import android.system.StructPollfd
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.services.ping.EchoPacketBuilder
 import com.windscribe.vpn.state.DeviceStateManager
-import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,8 +22,8 @@ class TunnelHealthCheck(
     private val scope: CoroutineScope,
     private val wgLogger: WgLogger,
     private val deviceStateManager: DeviceStateManager,
-    private val workManager: WindScribeWorkManager,
-    private val getService: () -> WireGuardWrapperService?,
+    /** Marks a socket so it bypasses the tunnel. */
+    private val protect: (Int) -> Boolean,
     private val disconnect: suspend (VPNState.Error?) -> Unit,
 ) {
     private val logger = LoggerFactory.getLogger("tunnel-health-check")
@@ -33,6 +32,7 @@ class TunnelHealthCheck(
     private var handshakeFailureJob: Job? = null
     private val isHealthCheckRunning = AtomicBoolean(false)
     private var lastExternalCheckTime: Long? = null
+    private var lastTunnelCheckTime: Long? = null
     private var externalCheckFailureCount: Int = 0
     private var tunnelCheckFailureCount: Int = 0
     private var endpointHost: String? = null
@@ -45,6 +45,18 @@ class TunnelHealthCheck(
         private const val TUNNEL_CHECK_RETRIES = 3
         private const val TUNNEL_CHECK_RETRY_DELAY_MS = 2000L
         private const val REQUIRED_CONSECUTIVE_FAILURES = 3
+
+        /**
+         * Floor between two tunnel checks.
+         *
+         * This handler is driven by `handshakeFailureEvent` and has no pacing of its own. A failing
+         * check is slow because it burns its retry timeouts, but a passing one returns in
+         * milliseconds — and a passing ping does not refresh [lastHandshakeTimestamp], so the timeout
+         * guard stays true and the handler spins until a real handshake lands.
+         *
+         * Below what a failing check already costs, so failure detection is unaffected.
+         */
+        private const val TUNNEL_CHECK_MIN_INTERVAL_MS = 15_000L
     }
 
     fun start(profileContent: String) {
@@ -67,6 +79,8 @@ class TunnelHealthCheck(
                     lastHandshakeTimestamp = System.currentTimeMillis()
                     externalCheckFailureCount = 0
                     tunnelCheckFailureCount = 0
+                    // So the next problem gets a prompt first check, not the tail of this floor.
+                    lastTunnelCheckTime = null
                 }
             }
 
@@ -86,6 +100,7 @@ class TunnelHealthCheck(
         handshakeFailureJob = null
         lastHandshakeTimestamp = null
         lastExternalCheckTime = null
+        lastTunnelCheckTime = null
         externalCheckFailureCount = 0
         tunnelCheckFailureCount = 0
         isHealthCheckRunning.set(false)
@@ -107,6 +122,14 @@ class TunnelHealthCheck(
             if (!deviceStateManager.isOnline.value) {
                 return
             }
+
+            val checkedAt = System.currentTimeMillis()
+            lastTunnelCheckTime?.let { previous ->
+                if (checkedAt - previous < TUNNEL_CHECK_MIN_INTERVAL_MS) {
+                    return
+                }
+            }
+            lastTunnelCheckTime = checkedAt
 
             logger.warn("Handshake timeout exceeded: ${timeSinceHandshake}ms since last successful handshake (device is online)")
 
@@ -190,7 +213,6 @@ class TunnelHealthCheck(
     private suspend fun checkConnectivity(bypassTunnel: Boolean): Boolean {
         return withContext(Dispatchers.IO) {
             val serverHost = endpointHost ?: return@withContext false
-            val service = if (bypassTunnel) getService() ?: return@withContext false else null
 
             var fd: FileDescriptor? = null
             var pfd: ParcelFileDescriptor? = null
@@ -203,9 +225,9 @@ class TunnelHealthCheck(
                     return@withContext false
                 }
 
-                if (bypassTunnel && service != null) {
+                if (bypassTunnel) {
                     pfd = ParcelFileDescriptor.dup(fd)
-                    if (!service.protect(pfd.fd)) {
+                    if (!protect(pfd.fd)) {
                         pfd.close()
                         Os.close(fd)
                         return@withContext false
@@ -264,9 +286,10 @@ class TunnelHealthCheck(
 
     private suspend fun recoverFromBrokenTunnel() {
         try {
-            logger.error("Initiating tunnel recovery: disconnect + session update")
+            // The disconnect requests the session refresh: `BrokenTunnel` is one of the errors that
+            // cannot say why the tunnel stopped, so asking here as well is the same request twice.
+            logger.error("Initiating tunnel recovery: disconnecting")
             disconnect(VPNState.Error(error = VPNState.ErrorType.BrokenTunnel, message = "Tunnel health check failed"))
-            workManager.updateSession()
             logger.info("Tunnel recovery completed")
         } catch (e: Exception) {
             logger.error("Error during tunnel recovery: ${e.message}", e)

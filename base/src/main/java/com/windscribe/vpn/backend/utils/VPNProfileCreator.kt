@@ -12,6 +12,7 @@ import com.google.gson.Gson
 import com.windscribe.common.DNSDetails
 import com.windscribe.common.DnsType
 import com.windscribe.common.getDNSDetails
+import com.windscribe.common.tunnel.TunConfig
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -101,41 +102,19 @@ class VPNProfileCreator
             return PROXY_TUNNEL_PORT
         }
 
+        /**
+         * The allowed-IP set for LAN bypass: every public IPv4 prefix, plus the IPv6 default route
+         * and the tunnel's own DNS range, which sits inside 10/8 and so has to be routed back in.
+         *
+         * The v4 half is [TunConfig.PUBLIC_ROUTES_V4], shared with the blocking TUN. Held as strings
+         * because both consumers want strings — WireGuard's `parseAllowedIPs` and IKEv2's
+         * `includedSubnets`.
+         */
         private val publicIpV4Array =
-            arrayOf(
-                "0.0.0.0/5",
-                "8.0.0.0/7",
-                "11.0.0.0/8",
-                "12.0.0.0/6",
-                "16.0.0.0/4",
-                "32.0.0.0/3",
-                "64.0.0.0/2",
-                "128.0.0.0/3",
-                "160.0.0.0/5",
-                "168.0.0.0/6",
-                "172.0.0.0/12",
-                "172.32.0.0/11",
-                "172.64.0.0/10",
-                "172.128.0.0/9",
-                "173.0.0.0/8",
-                "174.0.0.0/7",
-                "176.0.0.0/4",
-                "192.0.0.0/9",
-                "192.128.0.0/11",
-                "192.160.0.0/13",
-                "192.169.0.0/16",
-                "192.170.0.0/15",
-                "192.172.0.0/14",
-                "192.176.0.0/12",
-                "192.192.0.0/10",
-                "193.0.0.0/8",
-                "194.0.0.0/7",
-                "196.0.0.0/6",
-                "200.0.0.0/5",
-                "208.0.0.0/4",
-                "::0/0",
-                "10.255.255.0/24",
-            )
+            (
+                TunConfig.PUBLIC_ROUTES_V4.map { it.toString() } +
+                    listOf("::0/0", "10.255.255.0/24")
+            ).toTypedArray()
 
         fun createIkEV2Profile(
             location: LastSelectedLocation,
@@ -148,8 +127,7 @@ class VPNProfileCreator
             profile.id = 1
             profile.uuid = UUID.randomUUID()
             profile.name = vpnParameters.hostName
-            // Changing it to use altered ip instead of hostname.
-            // profile.gateway = vpnParameters.hostName
+            // The IP, not the hostname, so the gateway is not resolved again here.
             profile.gateway = vpnParameters.ikev2Ip
             profile.espProposal = "aes256gcm16-sha256-ecp384"
             profile.ikeProposal = "aes256gcm16-sha256-ecp384"
@@ -370,16 +348,6 @@ class VPNProfileCreator
                         false,
                     )
                 }
-                // Old stunnel setup
-
-            /*if (WindStunnelUtility.isStunnelRunning) {
-                WindStunnelUtility.stopLocalTunFromAppContext(appContext)
-            }
-            preferencesHelper.selectedPort = protocolInformation.port
-            if (proxyIp != null) {
-                WindUtilities.writeStunnelConfig(appContext, proxyIp, protocolInformation.port)
-                WindStunnelUtility.startLocalTun()
-            }*/
             } else if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
                 if (proxyTunnelManager.running) {
                     proxyTunnelManager.stopProxyTunnel()

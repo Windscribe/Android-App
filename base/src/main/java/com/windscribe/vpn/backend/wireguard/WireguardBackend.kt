@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.backend.wireguard
 
+import com.windscribe.common.tunnel.TunnelManager
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
@@ -15,36 +16,45 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
+import com.windscribe.vpn.backend.tunnel.VpnServiceGate
+import com.windscribe.vpn.backend.tunnel.WindscribeVpnService
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.wsnet.WSNetWrapper
 import com.wireguard.android.backend.GoBackend
+import com.wireguard.android.backend.Tunnel
 import com.wireguard.android.backend.Tunnel.State.DOWN
 import com.wireguard.android.backend.Tunnel.State.TOGGLE
 import com.wireguard.android.backend.Tunnel.State.UP
+import com.wireguard.android.engine.WireGuardEngineProfile
+import com.wireguard.android.engine.WireGuardTunConfigMapper
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Orchestrates WireGuard on top of the single VPN service.
+ *
+ * Holds no service and no TUN. It asks [TunnelManager] to run the WireGuard engine; the TUN is
+ * established once per session by [WindscribeVpnService] and reused across every handover.
+ */
 @Singleton
 class WireguardBackend
     @Inject
     constructor(
-        private val backendLazy: Lazy<GoBackend>,
+        private val engineBackendLazy: Lazy<GoBackend>,
         var scope: CoroutineScope,
         var networkInfoManager: NetworkInfoManager,
         vpnStateManager: VPNConnectionStateManager,
@@ -55,10 +65,12 @@ class WireguardBackend
         val proxyDNSManager: ProxyDNSManager,
         localDbInterface: LocalDbInterface,
         val wgLogger: WgLogger,
-        val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
+        val wgConfigRepository: WgConfigRepository,
         private val apiManager: IApiCallManager,
         wsNetWrapper: WSNetWrapper,
         resourceHelper: ResourceHelper,
+        private val tunnelManager: TunnelManager,
+        serviceGate: VpnServiceGate,
     ) : VpnBackend(
             scope,
             vpnStateManager,
@@ -69,20 +81,20 @@ class WireguardBackend
             localDbInterface,
             wsNetWrapper,
             resourceHelper,
+            serviceGate,
+            proxyDNSManager,
         ) {
-        var service: WireGuardWrapperService? = null
         private var connectionStateJob: Job? = null
         override var active = false
         private var wgErrorJob: Job? = null
         private var captureLogsJob: Job? = null
-        private val backend: GoBackend by lazy { backendLazy.get() }
 
-        private val testTunnel =
-            WireGuardTunnel(
-                name = appContext.getString(R.string.app_name),
-                config = null,
-                state = DOWN,
-            )
+        /** wg-go's own state, reported by the engine. It owns no `Tunnel`; it only reports. */
+        private val engineState =
+            MutableSharedFlow<Tunnel.State>(
+                replay = 1,
+                extraBufferCapacity = 5,
+            ).apply { tryEmit(DOWN) }
 
         private val pinIpRecovery =
             PinIpRecovery(
@@ -100,30 +112,36 @@ class WireguardBackend
                 scope = scope,
                 wgLogger = wgLogger,
                 deviceStateManager = deviceStateManager,
-                workManager = appContext.workManager,
-                getService = { service },
+                protect = { fd -> serviceGate.current?.protect(fd) == true },
                 disconnect = { error -> disconnect(error = error) },
             )
 
-        fun serviceCreated(vpnService: WireGuardWrapperService) {
-            vpnLogger.info("WireGuard service created.")
-            service = vpnService
-        }
-
-        fun serviceDestroyed() {
-            vpnLogger.info("WireGuard service destroyed.")
-            service = null
-        }
-
+        /**
+         * Reports engine state up to connection state, swallowing the spurious initial DOWN a fresh
+         * tunnel object emits.
+         */
         private var stickyDisconnectEvent = false
+
+        @Volatile
+        private var lastLoggedEngineState: Tunnel.State? = null
+
+        fun onEngineState(state: Tunnel.State) {
+            engineState.tryEmit(state)
+        }
 
         override fun activate() {
             stickyDisconnectEvent = true
-            vpnLogger.info("Activating wireGuard backend.")
+            lastLoggedEngineState = null
+            vpnLogger.info("Activating WireGuard backend.")
             connectionStateJob =
                 scope.launch {
-                    testTunnel.stateFlow.cancellable().collectLatest {
-                        vpnLogger.info("WireGuard tunnel state changed to ${it.name}")
+                    engineState.collectLatest {
+                        // The repeat still runs the handling below; only the line is dropped. A
+                        // teardown reports DOWN from both the engine stop and the deactivate.
+                        if (it != lastLoggedEngineState) {
+                            lastLoggedEngineState = it
+                            vpnLogger.info("WireGuard engine state: ${it.name}")
+                        }
                         when (it) {
                             DOWN -> {
                                 if (!stickyDisconnectEvent && !reconnecting) {
@@ -131,27 +149,29 @@ class WireguardBackend
                                 }
                             }
 
-                            TOGGLE -> {
-                                updateState(VPNState(Connecting))
-                            }
+                            // Both guarded: an engine event that arrives while a disconnect is in
+                            // flight must not overwrite it. wg has not been seen to do this, but the
+                            // rule is the same for every engine and one of them did.
+                            TOGGLE ->
+                                if (!disconnecting) {
+                                    updateState(VPNState(Connecting))
+                                }
 
-                            UP -> {
-                                vpnLogger.debug("Tunnel UP, starting connectivity test with default delay...")
-                                testConnectivity()
-                            }
+                            UP ->
+                                if (!disconnecting) {
+                                    vpnLogger.debug("Engine up, starting connectivity test.")
+                                    testConnectivity()
+                                }
                         }
                         stickyDisconnectEvent = false
                     }
                 }
-            vpnLogger.info("WireGuard backend activated.")
             active = true
             captureLogsJob?.cancel()
-            captureLogsJob =
-                scope.launch {
-                    wgLogger.captureLogs(appContext)
-                }
+            captureLogsJob = scope.launch { wgLogger.captureLogs(appContext) }
             pinIpRecovery.start()
             startNetworkInfoObserver()
+            vpnLogger.info("WireGuard backend activated.")
         }
 
         override fun deactivate() {
@@ -174,59 +194,30 @@ class WireguardBackend
             this.protocolInformation = protocolInformation
             this.connectionId = connectionId
             startConnectionJob()
-
-            scope.launch {
-                try {
-                    proxyDNSManager.startControlDIfRequired()
-                } catch (e: Exception) {
-                    // Fail closed: without a confirmed DNS proxy this connection would leak or
-                    // blackhole every app's DNS. Surface it instead of connecting regardless.
-                    vpnLogger.error("DNS proxy failed to start. Aborting connection.", e)
-                    disconnect(
-                        VPNState.Error(
-                            error = VPNState.ErrorType.GenericError,
-                            message = "DNS proxy failed to start.",
-                            showError = true,
-                        ),
-                    )
-                    return@launch
-                }
-                vpnLogger.info("Getting WireGuard profile.")
-                Util.getProfile<WireGuardVpnProfile>()?.let { profile ->
-                    withContext(Dispatchers.IO) {
-                        val content = WireGuardVpnProfile.createConfigFromString(profile.content)
-                        try {
-                            backend.setState(testTunnel, UP, content)
-                            // Start tunnel health monitoring after connection is established
+            launchEngineStart {
+                runConnect("WireGuard", tunnelManager) {
+                    val profile = Util.getProfile<WireGuardVpnProfile>() ?: return@runConnect null
+                    val config = WireGuardVpnProfile.createConfigFromString(profile.content)
+                    val sessionName = appContext.getString(R.string.app_name)
+                    EnginePlan(
+                        profile = WireGuardEngineProfile(sessionName, config),
+                        tunConfig = WireGuardTunConfigMapper.toTunConfig(sessionName, config),
+                        afterStart = {
                             if (!preferencesHelper.isConnectingToConfigured) {
                                 tunnelHealthCheck.start(profile.content)
                             }
-                        } catch (e: Exception) {
-                            vpnLogger.error("Exception while setting WireGuard state UP.", e)
-                            updateState(VPNState(Disconnected))
-                        }
-                    }
-                } ?: kotlin.run {
-                    vpnLogger.info("Failed to get WireGuard profile.")
-                    updateState(VPNState(Disconnected))
+                        },
+                    )
                 }
             }
         }
 
         override suspend fun disconnect(error: VPNState.Error?) {
             this.error = error
-            // Save disconnection error to persistent preferences for tunnel recovery
-            preferencesHelper.lastDisconnectionError = error?.error?.name
             if (proxyDNSManager.invalidConfig) {
                 proxyDNSManager.stopControlD()
             }
             connectionJob?.cancel()
-            vpnLogger.info("Stopping WireGuard service.")
-            service?.close()
-            delay(20)
-            vpnLogger.info("Setting WireGuard tunnel state down.")
-            backend.setState(testTunnel, DOWN, null)
-            vpnLogger.info("Deactivating WireGuard backend.")
-            deactivate()
+            runDisconnect("WireGuard", tunnelManager, error) { engineState.tryEmit(DOWN) }
         }
     }

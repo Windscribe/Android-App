@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.backend.ikev2
 
+import com.windscribe.common.tunnel.TunnelManager
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -14,6 +15,8 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
+import com.windscribe.vpn.backend.tunnel.VpnServiceGate
+import com.windscribe.vpn.backend.tunnel.WindscribeVpnService
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
@@ -22,7 +25,6 @@ import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -48,6 +50,8 @@ class IKev2VpnBackend
         localDbInterface: LocalDbInterface,
         wsNetWrapper: WSNetWrapper,
         resourceHelper: ResourceHelper,
+        private val tunnelManager: TunnelManager,
+        serviceGate: VpnServiceGate,
     ) : VpnBackend(
             scope,
             vpnStateManager,
@@ -58,8 +62,9 @@ class IKev2VpnBackend
             localDbInterface,
             wsNetWrapper,
             resourceHelper,
+            serviceGate,
+            proxyDNSManager,
         ) {
-        var service: CharonVpnServiceWrapper? = null // Direct reference like WireGuard
         private var connectionStateJob: Job? = null
         override var active = false
 
@@ -69,30 +74,71 @@ class IKev2VpnBackend
         // Sticky flag to prevent initial DOWN state from triggering disconnect (like WireGuard)
         private var stickyDisconnectEvent = false
 
+        @Volatile
+        private var lastLoggedState: IKev2Tunnel.State? = null
+
         private var strongswanInitialized = false
 
-        fun serviceCreated(charonVpnServiceWrapper: CharonVpnServiceWrapper) {
-            vpnLogger.info("IKEv2 service created.")
-            service = charonVpnServiceWrapper
-            initStrongswan()
+        private companion object {
+            /** Charon's status codes, resolved by value from native. */
+            const val STATE_CHILD_SA_UP = 1
+            const val STATE_CHILD_SA_DOWN = 2
+            const val STATE_AUTH_ERROR = 3
+            const val STATE_PEER_AUTH_ERROR = 4
+            const val STATE_LOOKUP_ERROR = 5
+            const val STATE_UNREACHABLE_ERROR = 6
+            const val STATE_CERTIFICATE_UNAVAILABLE = 7
+            const val STATE_GENERIC_ERROR = 8
         }
 
+        /**
+         * Initialises the strongSwan Java layer once per process.
+         *
+         * `setService` gets the single VPN service, which is what the system starts for Always-on.
+         * The engine itself is a plain object driven by [TunnelManager].
+         */
         private fun initStrongswan() {
             if (strongswanInitialized) {
-                vpnLogger.debug("StrongSwan already initialized, skipping.")
                 return
             }
-
             vpnLogger.info("Initializing StrongSwan for the first time.")
             StrongSwanApplication.setContext(appContext)
-            StrongSwanApplication.setService(CharonVpnServiceWrapper::class.java)
+            StrongSwanApplication.setService(WindscribeVpnService::class.java)
             init(appContext)
             strongswanInitialized = true
         }
 
-        fun serviceDestroyed() {
-            vpnLogger.info("IKEv2 service destroyed.")
-            service = null
+        /** Charon's raw status codes, reported by the engine core. */
+        fun onCharonStatus(status: Int) {
+            when (status) {
+                STATE_CHILD_SA_DOWN -> ikev2Tunnel.onStateChange(IKev2Tunnel.State.CONNECTING)
+                STATE_CHILD_SA_UP -> ikev2Tunnel.onStateChange(IKev2Tunnel.State.CONNECTED)
+                STATE_AUTH_ERROR ->
+                    failWith(VPNState.ErrorType.AuthenticationError, "Authentication failed.")
+                STATE_PEER_AUTH_ERROR ->
+                    failWith(VPNState.ErrorType.AuthenticationError, "Peer authentication failed.")
+                STATE_LOOKUP_ERROR ->
+                    failWith(VPNState.ErrorType.GenericError, "Failed to resolve server hostname.")
+                STATE_UNREACHABLE_ERROR ->
+                    failWith(VPNState.ErrorType.TimeoutError, "Server unreachable.")
+                STATE_CERTIFICATE_UNAVAILABLE ->
+                    failWith(VPNState.ErrorType.AuthenticationError, "Certificate unavailable.")
+                STATE_GENERIC_ERROR ->
+                    failWith(VPNState.ErrorType.GenericError, "Connection error.")
+                else -> vpnLogger.warn("Unknown IKEv2 status: $status")
+            }
+        }
+
+        private fun failWith(
+            type: VPNState.ErrorType,
+            message: String,
+        ) {
+            vpnLogger.error("IKEv2: $message")
+            scope.launch { disconnect(VPNState.Error(error = type, message = message)) }
+        }
+
+        fun onTunnelDown() {
+            ikev2Tunnel.onStateChange(IKev2Tunnel.State.DOWN)
         }
 
         /**
@@ -102,12 +148,17 @@ class IKev2VpnBackend
 
         override fun activate() {
             stickyDisconnectEvent = true // Prevent initial DOWN from triggering disconnect
+            lastLoggedState = null
             vpnLogger.info("Activating IKEv2 backend.")
             // Start observing tunnel state changes (like WireGuard does)
             connectionStateJob =
                 scope.launch {
                     ikev2Tunnel.stateFlow.cancellable().collectLatest { state ->
-                        vpnLogger.info("IKEv2 tunnel state changed to ${state.name}")
+                        // The repeat still runs the handling below; only the line is dropped.
+                        if (state != lastLoggedState) {
+                            lastLoggedState = state
+                            vpnLogger.info("IKEv2 tunnel state changed to ${state.name}")
+                        }
                         when (state) {
                             IKev2Tunnel.State.DOWN -> {
                                 // Only disconnect if not the initial activation event and not reconnecting
@@ -118,11 +169,18 @@ class IKev2VpnBackend
                             }
 
                             IKev2Tunnel.State.CONNECTING -> {
-                                updateState(VPNState(Connecting))
+                                // Charon reports CHILD_SA_DOWN as CONNECTING while it tears down, so
+                                // without this a disconnect in flight gets overwritten by the very
+                                // teardown it asked for.
+                                if (!disconnecting) {
+                                    updateState(VPNState(Connecting))
+                                }
                             }
 
                             IKev2Tunnel.State.CONNECTED -> {
-                                testConnectivity()
+                                if (!disconnecting) {
+                                    testConnectivity()
+                                }
                             }
 
                             IKev2Tunnel.State.DISCONNECTING -> {
@@ -152,42 +210,17 @@ class IKev2VpnBackend
             this.connectionId = connectionId
             vpnLogger.info("Connecting to IKEv2 Service.")
             startConnectionJob()
-            scope.launch {
-                try {
-                    proxyDNSManager.startControlDIfRequired()
-                } catch (e: Exception) {
-                    // Fail closed: without a confirmed DNS proxy this connection would leak or
-                    // blackhole every app's DNS. Surface it instead of connecting regardless.
-                    vpnLogger.error("DNS proxy failed to start. Aborting connection.", e)
-                    disconnect(
-                        VPNState.Error(
-                            error = VPNState.ErrorType.GenericError,
-                            message = "DNS proxy failed to start.",
-                            showError = true,
-                        ),
+            launchEngineStart {
+                initStrongswan()
+                runConnect("IKEv2", tunnelManager) {
+                    // Like OpenVPN, IKEv2's interface is negotiated: charon fills the BuilderCache
+                    // and calls requestTun() from establish().
+                    EnginePlan(
+                        IKev2EngineProfile(),
+                        // Self excluded: charon fetches CRLs over plain HTTP from a socket nothing
+                        // protects, and a fresh install has no cached CRL. See §12.7.3.
+                        provisionalTunConfig(blackholeAddress = "172.16.252.1", excludeSelf = true),
                     )
-                    return@launch
-                }
-
-                // Start the CharonVpnServiceWrapper service (if not already started)
-                val context = appContext.applicationContext
-                val intent = android.content.Intent(context, CharonVpnServiceWrapper::class.java)
-
-                try {
-                    vpnLogger.info("Starting CharonVpnServiceWrapper service.")
-                    androidx.core.content.ContextCompat
-                        .startForegroundService(context, intent)
-
-                    // Give service time to start and call serviceCreated()
-                    delay(100)
-
-                    // Now trigger connection
-                    vpnLogger.info("Triggering connection via service.")
-                    service?.connect() ?: run {
-                        vpnLogger.error("Service is null after starting! Cannot connect.")
-                    }
-                } catch (e: Exception) {
-                    vpnLogger.error("Failed to start CharonVpnServiceWrapper: ${e.message}")
                 }
             }
         }
@@ -198,21 +231,9 @@ class IKev2VpnBackend
                 proxyDNSManager.stopControlD()
             }
             connectionJob?.cancel()
-            vpnLogger.info("Stopping IKEv2 service.")
-
-            // Stop the VPN tunnel by setting next profile to null
-            vpnLogger.info("Setting next profile to null to stop tunnel.")
-            service?.setNextProfile(null)
-
-            delay(20) // Short delay for profile to stop
-
-            // Then close the service cleanly (WireGuard's approach - no startForegroundService!)
-            vpnLogger.info("Closing CharonVpnServiceWrapper.")
-            service?.close()
-
-            delay(DISCONNECT_DELAY)
-            vpnLogger.info("Deactivating IKEv2 backend.")
-            deactivate()
+            runDisconnect("IKEv2", tunnelManager, error) {
+                ikev2Tunnel.onStateChange(IKev2Tunnel.State.DOWN)
+            }
         }
 
         private fun checkLogFileSize() {

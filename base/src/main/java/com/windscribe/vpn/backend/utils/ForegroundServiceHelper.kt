@@ -17,16 +17,13 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.constants.NotificationConstants
 
 /**
- * Provides immediate foreground promotion for services BEFORE Dagger injection.
+ * Promotes a service to foreground before Dagger injection.
  *
- * Android enforces a strict timeout (~5s on Android 12+, ~10s on older) between
- * startForegroundService() and startForeground(). Dagger injection can exceed this
- * on slow devices or under memory pressure, causing:
- *   - ForegroundServiceDidNotStartInTimeException (Android 12+)
- *   - "Context.startForegroundService() did not then call Service.startForeground()" (older)
+ * Android allows ~5s between `startForegroundService()` and `startForeground()`, and injection can
+ * exceed that on a slow device, throwing `ForegroundServiceDidNotStartInTimeException`.
  *
- * Call [Service.startForegroundImmediately] as the FIRST line of onCreate(), before
- * any DI or heavy work. The notification will be replaced by the proper one after DI.
+ * Call [Service.startForegroundImmediately] as the first line of `onCreate()`, then
+ * [startForegroundSafely] once injection is done.
  */
 object ForegroundServiceHelper {
     /**
@@ -68,13 +65,11 @@ object ForegroundServiceHelper {
 }
 
 /**
- * Immediately promotes this service to foreground with a minimal placeholder notification.
- * Call this as the VERY FIRST line in Service.onCreate(), before Dagger injection.
+ * Promotes this service to foreground with a placeholder notification. Call as the first line of
+ * `onCreate()`, then [startForegroundSafely] once injection is done.
  *
- * After DI completes, call [startForegroundSafely] to replace with the full notification.
- *
- * @param notificationId The notification ID to use (must match the one used in startForegroundSafely)
- * @param serviceType The foreground service type (defaults to FOREGROUND_SERVICE_TYPE_SPECIAL_USE for VPN services)
+ * @param notificationId must match the one passed to [startForegroundSafely].
+ * @param serviceType defaults to `FOREGROUND_SERVICE_TYPE_SPECIAL_USE`.
  */
 fun Service.startForegroundImmediately(
     notificationId: Int,

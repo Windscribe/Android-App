@@ -19,6 +19,7 @@ import (
 	"runtime/debug"
 	"strings"
 	"sync"
+	"time"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -54,6 +55,16 @@ type TunnelHandle struct {
 var tunnelHandles map[int32]TunnelHandle
 var tunnelHandlesMutex sync.RWMutex
 var signalHandlerOnce sync.Once
+
+// How long wgTurnOff waits for the device to shut down before abandoning it.
+const shutdownTimeout = 2 * time.Second
+
+func logShutdown(format string, args ...interface{}) {
+	AndroidLogger{
+		level: C.ANDROID_LOG_ERROR,
+		tag:   cstring("WireGuard/GoBackend"),
+	}.Printf(format, args...)
+}
 
 func init() {
 	tunnelHandles = make(map[int32]TunnelHandle)
@@ -171,10 +182,24 @@ func wgTurnOff(tunnelHandle int32) {
 	delete(tunnelHandles, tunnelHandle)
 	tunnelHandlesMutex.Unlock()
 
-	if handle.uapi != nil {
-		handle.uapi.Close()
+	// device.Close() waits on every device and peer goroutine with no deadline of its
+	// own. Callers reach here from Android lifecycle callbacks on the main thread, so
+	// the wait is bounded here instead: an abandoned close strands one socketpair
+	// descriptor, an unbounded one strands the main thread.
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if handle.uapi != nil {
+			handle.uapi.Close()
+		}
+		handle.device.Close()
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(shutdownTimeout):
+		logShutdown("Device did not shut down within %v; abandoning it", shutdownTimeout)
 	}
-	handle.device.Close()
 }
 
 //export wgGetSocketV4

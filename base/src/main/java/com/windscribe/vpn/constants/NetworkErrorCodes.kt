@@ -18,6 +18,11 @@ object NetworkErrorCodes {
     const val ERROR_WG_KEY_LIMIT_EXCEEDED = 1313
     const val EXPIRED_OR_BANNED_ACCOUNT = 1700
 
+    // Non Windscribe (ESET partner licence errors)
+    const val ERROR_ACCOUNT_DELETED = 8001
+    const val ERROR_LICENCE_INVALIDATED = 8012
+    const val ERROR_LICENCE_SUSPENDED = 8013
+
     // Internal app error codes.
     const val ERROR_UNABLE_TO_REACH_API = 30001
     const val ERROR_UNEXPECTED_API_DATA = 30002

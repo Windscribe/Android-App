@@ -13,6 +13,8 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connected
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
+import com.windscribe.vpn.backend.utils.ConnectSource
+import com.windscribe.vpn.backend.utils.USER_DISCONNECT
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -52,11 +54,12 @@ class VpnTileService : TileService() {
     override fun onClick() {
         super.onClick()
         logger.debug("Quick tile icon clicked....")
-        if (vpnConnectionStateManager.isVPNActive()) {
+        // Gated on the tunnel, not isVPNActive(): with no tunnel to drop, a tap has to connect.
+        if (vpnConnectionStateManager.isTunnelUp()) {
             preferencesHelper.globalUserConnectionPreference = false
-            vpnController.disconnectAsync()
+            vpnController.disconnectAsync(USER_DISCONNECT)
         } else {
-            shortcutStateManager.connect()
+            shortcutStateManager.connect(ConnectSource.User)
         }
     }
 
@@ -96,12 +99,13 @@ class VpnTileService : TileService() {
                 setTileState(getIcon(true), Tile.STATE_ACTIVE)
             }
 
+            // No tunnel in any of these, so the tile must read as off.
             VPNState.Status.Disconnecting,
             VPNState.Status.RequiresUserInput,
             VPNState.Status.UnsecuredNetwork,
             VPNState.Status.InvalidSession,
             -> {
-                logger.debug("Changing quick tile status to Disconnecting/Inactive: $status")
+                logger.debug("Changing quick tile status to inactive: $status")
                 setTileState(getIcon(), Tile.STATE_INACTIVE)
             }
 

@@ -68,4 +68,5 @@ dependencies {
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     testImplementation("junit:junit:4.13.2")
     implementation(project(":common"))
+    implementation("org.slf4j:slf4j-api:2.0.18")
 }

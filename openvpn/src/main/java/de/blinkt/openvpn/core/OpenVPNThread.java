@@ -29,7 +29,10 @@ public class OpenVPNThread implements Runnable {
     @SuppressLint("SdCardPath")
     private static final String TAG = "OpenVPN";
     // 1380308330.240114 18000002 Send to HTTP proxy: 'X-Online-Host: bla.blabla.com'
-    private static final Pattern LOG_PATTERN = Pattern.compile("(\\d+).(\\d+) ([0-9a-f])+ (.*)");
+    // The + belongs inside the group: outside it, group(3) is the last hex digit rather than the
+    // whole field, so every flag above the low nibble — M_FATAL, M_NONFATAL, M_WARN, M_DEBUG —
+    // reads as unset and every message from the process is logged as INFO.
+    static final Pattern LOG_PATTERN = Pattern.compile("(\\d+).(\\d+) ([0-9a-f]+) (.*)");
     public static final int M_FATAL = (1 << 4);
     public static final int M_NONFATAL = (1 << 5);
     public static final int M_WARN = (1 << 6);
@@ -41,6 +44,18 @@ public class OpenVPNThread implements Runnable {
     private OpenVPNService mService;
     private String mDumpPath;
     private boolean mNoProcessExitStatus = false;
+
+    static VpnStatus.LogLevel levelFromFlags(int flags) {
+        if ((flags & M_FATAL) != 0)
+            return VpnStatus.LogLevel.ERROR;
+        if ((flags & M_NONFATAL) != 0)
+            return VpnStatus.LogLevel.WARNING;
+        if ((flags & M_WARN) != 0)
+            return VpnStatus.LogLevel.WARNING;
+        if ((flags & M_DEBUG) != 0)
+            return VpnStatus.LogLevel.VERBOSE;
+        return VpnStatus.LogLevel.INFO;
+    }
 
     public OpenVPNThread(OpenVPNService service, String[] argv, String nativelibdir, String tmpdir) {
         mArgv = argv;
@@ -140,16 +155,7 @@ public class OpenVPNThread implements Runnable {
                     String msg = m.group(4);
                     int logLevel = flags & 0x0F;
 
-                    VpnStatus.LogLevel logStatus = VpnStatus.LogLevel.INFO;
-
-                    if ((flags & M_FATAL) != 0)
-                        logStatus = VpnStatus.LogLevel.ERROR;
-                    else if ((flags & M_NONFATAL) != 0)
-                        logStatus = VpnStatus.LogLevel.WARNING;
-                    else if ((flags & M_WARN) != 0)
-                        logStatus = VpnStatus.LogLevel.WARNING;
-                    else if ((flags & M_DEBUG) != 0)
-                        logStatus = VpnStatus.LogLevel.VERBOSE;
+                    VpnStatus.LogLevel logStatus = levelFromFlags(flags);
 
                     if (msg.startsWith("MANAGEMENT: CMD"))
                         logLevel = Math.max(4, logLevel);

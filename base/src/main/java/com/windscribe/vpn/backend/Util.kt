@@ -63,18 +63,48 @@ object Util {
             throw WindScribeException("No saved location")
         }
 
+    /**
+     * The profile most recently written by [saveProfile], kept so the connect path does not have to
+     * deserialise it straight back off disk.
+     *
+     * The file is still written, since cold start, always-on and process restart all need it. This
+     * only saves deserialising it back in the same process.
+     *
+     * Public only because [getProfile] is `inline` with a `reified` type parameter and cannot see a
+     * private member. Not for direct use.
+     */
+    @PublishedApi
+    @Volatile
+    internal var cachedProfile: Any? = null
+
+    /**
+     * The saved VPN profile, or null if there is none of the requested type.
+     *
+     * Reads the in-memory copy when it is present and of the right type; otherwise falls back to the
+     * file, which is the source of truth across process death.
+     */
     inline fun <reified T> getProfile(): T? {
+        (cachedProfile as? T)?.let { return it }
         try {
             val file = ObjectInputStream(Windscribe.appContext.openFileInput(VPN_PROFILE_NAME))
             val obj = file.readObject()
             file.close()
             if (obj is T) {
+                cachedProfile = obj
                 return obj
             }
         } catch (ignored: Exception) {
             return null
         }
         return null
+    }
+
+    /**
+     * Drops the in-memory copy. Must be called by anything that removes `wd.vp`, or the cache would
+     * outlive the file it mirrors — see `WindUtilities.deleteProfileCompletely`.
+     */
+    fun clearProfileCache() {
+        cachedProfile = null
     }
 
     fun saveSelectedLocation(selectedLocation: LastSelectedLocation) {
@@ -106,6 +136,7 @@ object Util {
         vpnFile.writeObject(profile)
         vpnFile.flush()
         vpnFile.close()
+        cachedProfile = profile
         return profile.toString()
     }
 

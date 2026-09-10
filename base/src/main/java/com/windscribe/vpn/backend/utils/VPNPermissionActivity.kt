@@ -63,7 +63,7 @@ class VPNPermissionActivity : ComponentActivity() {
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            vpnBackendHolder.connect(protocolInformation, connectionId)
+            scope.launch { vpnController.connectWithGrantedPermission(protocolInformation, connectionId) }
             finish()
         }
 
@@ -82,7 +82,7 @@ class VPNPermissionActivity : ComponentActivity() {
             when (action) {
                 DynamicShortcutManager.QUICK_CONNECT_ACTION -> {
                     appContext.preference.globalUserConnectionPreference = true
-                    vpnController.connectAsync()
+                    vpnController.connectAsync(ConnectSource.User)
                 }
 
                 DynamicShortcutManager.RECENT_CONNECT_ACTION -> {
@@ -90,12 +90,12 @@ class VPNPermissionActivity : ComponentActivity() {
                     locationRepository.setSelectedCity(connectId)
                     setupLocationTypeInt()
                     appContext.preference.globalUserConnectionPreference = true
-                    vpnController.connectAsync()
+                    vpnController.connectAsync(ConnectSource.User)
                 }
 
                 else -> {
                     appContext.preference.globalUserConnectionPreference = false
-                    vpnController.disconnectAsync()
+                    vpnController.disconnectAsync(USER_DISCONNECT)
                 }
             }
         }
@@ -125,13 +125,13 @@ class VPNPermissionActivity : ComponentActivity() {
         if (resultCode == RESULT_OK) {
             logger.info("User granted VPN Permission.")
             if (isNotificationsEnabled()) {
-                vpnBackendHolder.connect(protocolInformation, connectionId)
+                scope.launch { vpnController.connectWithGrantedPermission(protocolInformation, connectionId) }
                 finish()
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
-                    vpnBackendHolder.connect(protocolInformation, connectionId)
+                    scope.launch { vpnController.connectWithGrantedPermission(protocolInformation, connectionId) }
                     finish()
                 }
             }
@@ -145,7 +145,8 @@ class VPNPermissionActivity : ComponentActivity() {
             ) {
                 scope.launch {
                     try {
-                        vpnController.disconnectAsync()
+                        // The user denied the permission, so this one is theirs.
+                        vpnController.disconnectAsync(USER_DISCONNECT)
                     } catch (e: Exception) {
                         logger.error("Failed to disconnect VPN: ${e.message}")
                     } finally {
@@ -169,7 +170,8 @@ class VPNPermissionActivity : ComponentActivity() {
                 VpnService.prepare(this)
             } catch (e: Exception) {
                 logger.info(e.toString())
-                scope.launch { vpnController.disconnectAsync() }
+                // VpnService.prepare() threw — a device problem, not a user decision.
+                scope.launch { vpnController.disconnectAsync(SYSTEM_DISCONNECT) }
                 return
             }
         fixDevTun()
@@ -177,7 +179,7 @@ class VPNPermissionActivity : ComponentActivity() {
             try {
                 vpnPermissionLauncher.launch(intent)
             } catch (ane: ActivityNotFoundException) {
-                scope.launch { vpnController.disconnectAsync() }
+                scope.launch { vpnController.disconnectAsync(SYSTEM_DISCONNECT) }
                 logger.debug("Device image does not support vpn.")
             }
         } else {
