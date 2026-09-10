@@ -1,5 +1,6 @@
 package com.windscribe.vpn.commonutils
 
+import androidx.annotation.Keep
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.UserStatusConstants
@@ -10,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import java.util.Locale
 
+@Keep
 object Ext {
     /**
      * Wraps a suspend API call to catch exceptions (like WindScribeException from checkSession)

@@ -8,18 +8,27 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+/**
+ * A row of `Network_Info`, published through a `StateFlow` by `NetworkInfoManager`.
+ *
+ * `data` and `val` are both required: the flow conflates equal values, and Room returns a fresh
+ * object per read. Without value equality every reload emits again; without immutability, mutating
+ * the published value makes the next read compare equal and emit nothing.
+ *
+ * Change a setting with [copy] and publish the result.
+ */
 @Entity(tableName = "Network_Info")
-class NetworkInfo(
+data class NetworkInfo(
     @PrimaryKey
-    var networkName: String,
+    val networkName: String,
     @ColumnInfo(name = "is_auto_secure")
-    var isAutoSecureOn: Boolean,
+    val isAutoSecureOn: Boolean,
     @ColumnInfo(name = "is_preferred")
-    var isPreferredOn: Boolean,
+    val isPreferredOn: Boolean,
     @ColumnInfo(name = "protocol")
-    var protocol: String?,
+    val protocol: String?,
     @ColumnInfo(name = "port")
-    var port: String?,
+    val port: String?,
 ) {
     override fun toString(): String =
         "NetworkInfo{" +

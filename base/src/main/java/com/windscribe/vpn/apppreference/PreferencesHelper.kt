@@ -4,6 +4,7 @@
 package com.windscribe.vpn.apppreference
 
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
+import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
@@ -22,7 +23,14 @@ interface PreferencesHelper {
     val backgroundAspectRatioOptionFlow: kotlinx.coroutines.flow.Flow<Int>
     val selectionFlow: kotlinx.coroutines.flow.Flow<String>
 
-    fun clearAllData()
+    suspend fun clearAllData()
+
+    /**
+     * Records that the one-time install report succeeded, clearing both flags that gate it in a
+     * single atomic write. Readers test `isNewApplicationInstance && newInstallation == I_NEW`, so
+     * these two must never be observable in a half-updated state.
+     */
+    suspend fun markInstallRecorded()
 
     fun clearOldSessionAuth()
 
@@ -121,7 +129,6 @@ interface PreferencesHelper {
     var isNewApplicationInstance: Boolean
     var isPackageSizeModeAuto: Boolean
     var isReconnecting: Boolean
-    var lastDisconnectionError: String?
     var isShowLocationHealthEnabled: Boolean
     var isStartedByAlwaysOn: Boolean
     var isDecoyTrafficOn: Boolean
@@ -188,6 +195,14 @@ interface PreferencesHelper {
     val secureStorageEncryptionFlow: StateFlow<Boolean?>
     var hasAcknowledgedEncryptionWarning: Boolean
     var tlsServerName: String
+
+    // Non Windscribe
+    var licenceCode: String?
+    var serverListOrder: String
+    var themeMode: String
+
+    /** Error code from the last session refresh, or -1 if it succeeded. */
+    var lastSessionErrorCode: Int
 }
 
 /**
@@ -214,7 +229,7 @@ val PreferencesHelper.isProtocolTweaksEnabled: Boolean
                         val session =
                             com.google.gson.Gson().fromJson(
                                 sessionJson,
-                                com.windscribe.vpn.api.response.UserSessionResponse::class.java,
+                                UserSessionResponse::class.java,
                             )
                         !session.serverInventory?.amneziaWgConfigId.isNullOrEmpty()
                     } catch (e: Exception) {

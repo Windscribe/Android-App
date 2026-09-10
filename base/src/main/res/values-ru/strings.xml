@@ -692,4 +692,13 @@
     <string name="accessibility_status_connecting">Подключение</string>
     <string name="accessibility_status_disconnected">Отключено</string>
 
+    <string name="notification_paused">Приостановлено — ваш трафик не защищён</string>
+    <string name="notification_waiting_for_secured">Ожидание защищённой сети</string>
+    <string name="notification_stood_down">Автоподключение отключено для этой сети</string>
+    <string name="notification_stood_down_on">Автоподключение отключено для %1$s</string>
+    <string name="notification_action_pause">Пауза</string>
+    <string name="notification_action_resume">Возобновить</string>
+    <string name="notification_action_connect">Подключить</string>
+    <string name="notification_action_turn_off">Выключить</string>
+    <string name="accessibility_status_paused">Приостановлено, ваш трафик не защищён</string>
 </resources>

@@ -50,6 +50,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.common.StyledTextField
 import com.windscribe.mobile.ui.helper.copyTextToClipboard
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
@@ -211,7 +212,7 @@ fun HashedSignupForm(
             text = stringResource(com.windscribe.vpn.R.string.got_voucher_code),
         ) {
             Spacer(modifier = Modifier.height(8.dp))
-            com.windscribe.mobile.ui.common.StyledTextField(
+            StyledTextField(
                 value = voucher,
                 onValueChange = onVoucherChange,
                 placeholder = stringResource(com.windscribe.vpn.R.string.voucher_code),

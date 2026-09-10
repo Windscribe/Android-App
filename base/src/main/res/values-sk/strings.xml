@@ -692,4 +692,13 @@ Pre maximálnu bezpečnosť sa vyhnite používaniu tohto zariadenia v nedôvery
     <string name="accessibility_status_connecting">Pripájanie</string>
     <string name="accessibility_status_disconnected">Odpojené</string>
 
+    <string name="notification_paused">Pozastavené — vaša prevádzka nie je chránená</string>
+    <string name="notification_waiting_for_secured">Čaká sa na zabezpečenú sieť</string>
+    <string name="notification_stood_down">Automatické pripojenie je pre túto sieť vypnuté</string>
+    <string name="notification_stood_down_on">Automatické pripojenie je pre %1$s vypnuté</string>
+    <string name="notification_action_pause">Pozastaviť</string>
+    <string name="notification_action_resume">Pokračovať</string>
+    <string name="notification_action_connect">Pripojiť</string>
+    <string name="notification_action_turn_off">Vypnúť</string>
+    <string name="accessibility_status_paused">Pozastavené, vaša prevádzka nie je chránená</string>
 </resources>

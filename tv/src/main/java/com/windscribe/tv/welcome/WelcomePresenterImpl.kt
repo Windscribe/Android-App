@@ -198,7 +198,7 @@ class WelcomePresenterImpl
                             is CallResult.Success -> {
                                 if (result.data.captcha != null) {
                                     val captchaArt = result.data.captcha!!.asciiArt!!
-                                    logger.info("Captcha received: $captchaArt")
+                                    logger.info("Captcha received: ${captchaArt.length} chars starting ${captchaArt.take(16)}")
                                     welcomeView.prepareUiForApiCallFinished()
                                     welcomeView.captchaReceived(
                                         username,

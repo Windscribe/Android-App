@@ -217,4 +217,11 @@ object DataStoreKeys {
     fun previousAccountStatus(userName: String) = intPreferencesKey("${userName}${PreferencesKeyConstants.PREVIOUS_ACCOUNT_STATUS}")
 
     fun previousUserStatus(userName: String) = intPreferencesKey("${userName}${PreferencesKeyConstants.PREVIOUS_USER_STATUS}")
+
+    // Non Windscribe
+    val LICENCE_CODE = stringPreferencesKey(PreferencesKeyConstants.ESET_LICENCE_CODE)
+    val SERVER_LIST_ORDER = stringPreferencesKey(PreferencesKeyConstants.ESET_SERVER_LIST_ORDER)
+    val THEME_MODE = stringPreferencesKey(PreferencesKeyConstants.ESET_THEME_MODE)
+    val LAST_SESSION_ERROR_CODE =
+        intPreferencesKey(PreferencesKeyConstants.ESET_LAST_SESSION_ERROR_CODE)
 }

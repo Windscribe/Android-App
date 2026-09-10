@@ -692,4 +692,13 @@ Dữ liệu vị trí của bạn vẫn ở trên thiết bị của bạn và c
     <string name="accessibility_status_connecting">Đang kết nối</string>
     <string name="accessibility_status_disconnected">Đã ngắt kết nối</string>
 
+    <string name="notification_paused">Đã tạm dừng — lưu lượng của bạn không được bảo vệ</string>
+    <string name="notification_waiting_for_secured">Đang chờ mạng được bảo vệ</string>
+    <string name="notification_stood_down">Tự động kết nối đang tắt cho mạng này</string>
+    <string name="notification_stood_down_on">Tự động kết nối đang tắt cho %1$s</string>
+    <string name="notification_action_pause">Tạm dừng</string>
+    <string name="notification_action_resume">Tiếp tục</string>
+    <string name="notification_action_connect">Kết nối</string>
+    <string name="notification_action_turn_off">Tắt</string>
+    <string name="accessibility_status_paused">Đã tạm dừng, lưu lượng của bạn không được bảo vệ</string>
 </resources>

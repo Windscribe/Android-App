@@ -692,4 +692,13 @@ Für maximale Sicherheit vermeiden Sie die Nutzung dieses Geräts in nicht vertr
     <string name="accessibility_status_connecting">Verbindung wird hergestellt</string>
     <string name="accessibility_status_disconnected">Getrennt</string>
 
+    <string name="notification_paused">Pausiert – Ihr Datenverkehr ist nicht geschützt</string>
+    <string name="notification_waiting_for_secured">Warten auf ein gesichertes Netzwerk</string>
+    <string name="notification_stood_down">Automatische Verbindung ist für dieses Netzwerk deaktiviert</string>
+    <string name="notification_stood_down_on">Automatische Verbindung ist für %1$s deaktiviert</string>
+    <string name="notification_action_pause">Pausieren</string>
+    <string name="notification_action_resume">Fortsetzen</string>
+    <string name="notification_action_connect">Verbinden</string>
+    <string name="notification_action_turn_off">Ausschalten</string>
+    <string name="accessibility_status_paused">Pausiert, Ihr Datenverkehr ist nicht geschützt</string>
 </resources>

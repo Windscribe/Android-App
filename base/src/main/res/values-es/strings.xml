@@ -692,4 +692,13 @@ Para máxima seguridad, evita usar este dispositivo en redes no confiables o si 
     <string name="accessibility_status_connecting">Conectando</string>
     <string name="accessibility_status_disconnected">Desconectado</string>
 
+    <string name="notification_paused">En pausa: tu tráfico no está protegido</string>
+    <string name="notification_waiting_for_secured">Esperando una red protegida</string>
+    <string name="notification_stood_down">La conexión automática está desactivada para esta red</string>
+    <string name="notification_stood_down_on">La conexión automática está desactivada para %1$s</string>
+    <string name="notification_action_pause">Pausar</string>
+    <string name="notification_action_resume">Reanudar</string>
+    <string name="notification_action_connect">Conectar</string>
+    <string name="notification_action_turn_off">Desactivar</string>
+    <string name="accessibility_status_paused">En pausa, tu tráfico no está protegido</string>
 </resources>

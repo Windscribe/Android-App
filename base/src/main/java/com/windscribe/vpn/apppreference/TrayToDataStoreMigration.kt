@@ -52,6 +52,7 @@ class TrayToDataStoreMigration(
                 "is_premium_user",
                 "last_mtu_value",
                 "last_selected_server_tab",
+                "last_session_error_code",
                 "lowest_ping_id",
                 "our_ip",
                 "port_map_version",
@@ -180,6 +181,9 @@ class TrayToDataStoreMigration(
                 "user_session_data",
                 "wg_local_params",
                 "wire_guard_config",
+                "licence_code",
+                "server_list_order",
+                "theme_mode",
             )
     }
 
@@ -242,7 +246,7 @@ class TrayToDataStoreMigration(
                 val cursor =
                     db.rawQuery(
                         "SELECT KEY, VALUE FROM $TRAY_TABLE_NAME WHERE MODULE = ?",
-                        arrayOf("com.windscribe.vpn"),
+                        arrayOf(context.packageName),
                     )
 
                 if (cursor.count == 0) {
@@ -369,7 +373,12 @@ class TrayToDataStoreMigration(
             }
 
             markMigrationComplete()
-            return MigrationResult.Success(successCount, errorCount, allKeys.size, notificationIdsToMarkRead)
+            return MigrationResult.Success(
+                successCount,
+                errorCount,
+                allKeys.size,
+                notificationIdsToMarkRead,
+            )
         } catch (e: Exception) {
             logger.error("Migration failed with exception: ${e.message}", e)
             return MigrationResult.Error(e.message ?: "Unknown error")

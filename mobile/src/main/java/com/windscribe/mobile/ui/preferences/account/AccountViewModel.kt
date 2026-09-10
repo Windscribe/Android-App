@@ -12,6 +12,7 @@ import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.api.response.VerifyExpressLoginResponse
 import com.windscribe.vpn.api.response.WebSession
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -154,7 +155,7 @@ class AccountViewModelImpl
         val userRepository: UserRepository,
         val api: IApiCallManager,
         val workManager: WindScribeWorkManager,
-        val preferencesHelper: com.windscribe.vpn.apppreference.PreferencesHelper,
+        val preferencesHelper: PreferencesHelper,
     ) : AccountViewModel() {
         private val _showProgress = MutableStateFlow(false)
         override val showProgress: StateFlow<Boolean> = _showProgress

@@ -692,4 +692,13 @@ Per la massima sicurezza, evita di utilizzare questo dispositivo su reti non aff
     <string name="accessibility_status_connecting">Connessione in corso</string>
     <string name="accessibility_status_disconnected">Disconnesso</string>
 
+    <string name="notification_paused">In pausa — il tuo traffico non è protetto</string>
+    <string name="notification_waiting_for_secured">In attesa di una rete protetta</string>
+    <string name="notification_stood_down">La connessione automatica è disattivata per questa rete</string>
+    <string name="notification_stood_down_on">La connessione automatica è disattivata per %1$s</string>
+    <string name="notification_action_pause">Pausa</string>
+    <string name="notification_action_resume">Riprendi</string>
+    <string name="notification_action_connect">Connetti</string>
+    <string name="notification_action_turn_off">Disattiva</string>
+    <string name="accessibility_status_paused">In pausa, il tuo traffico non è protetto</string>
 </resources>

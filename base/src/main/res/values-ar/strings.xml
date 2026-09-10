@@ -692,4 +692,13 @@
     <string name="accessibility_status_connecting">جارٍ الاتصال</string>
     <string name="accessibility_status_disconnected">غير متصل</string>
 
+    <string name="notification_paused">مؤقّت — حركة بياناتك غير محمية</string>
+    <string name="notification_waiting_for_secured">في انتظار شبكة مؤمَّنة</string>
+    <string name="notification_stood_down">الاتصال التلقائي معطّل لهذه الشبكة</string>
+    <string name="notification_stood_down_on">الاتصال التلقائي معطّل لـ %1$s</string>
+    <string name="notification_action_pause">إيقاف مؤقت</string>
+    <string name="notification_action_resume">استئناف</string>
+    <string name="notification_action_connect">اتصال</string>
+    <string name="notification_action_turn_off">إيقاف التشغيل</string>
+    <string name="accessibility_status_paused">مؤقّت، حركة بياناتك غير محمية</string>
 </resources>

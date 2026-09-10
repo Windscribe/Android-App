@@ -5,26 +5,34 @@
 package com.windscribe.vpn
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy.Builder
 import android.os.StrictMode.VmPolicy
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.classic.joran.JoranConfigurator
+import ch.qos.logback.core.CoreConstants
 import com.windscribe.vpn.apppreference.MigrationResult
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.apppreference.TrayToDataStoreMigration
 import com.windscribe.vpn.apppreference.windscribeDataStore
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
 import com.windscribe.vpn.autoconnection.ProtocolInformation
+import com.windscribe.vpn.backend.tunnel.startVpnServiceWatching
+import com.windscribe.vpn.backend.utils.ForegroundServiceHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -33,16 +41,19 @@ import com.windscribe.vpn.debug.MainThreadWatchdog
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
+import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.services.FirebaseManager
-import com.windscribe.vpn.services.canAccessNetworkName
-import com.windscribe.vpn.services.startAutoConnectService
 import com.windscribe.vpn.state.AppLifeCycleObserver
+import com.windscribe.vpn.state.ConnectionPolicy
+import com.windscribe.vpn.state.ConnectionPolicyInputs
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.windscribe.vpn.wsnet.WSNetWrapper
+import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -84,6 +95,9 @@ open class Windscribe : MultiDexApplication() {
             title: String,
             description: String,
         ) {}
+
+        /** No-op unless the build activates with a partner licence code. */
+        fun showLicenceSuspendedDialog() {}
     }
 
     private val logger = LoggerFactory.getLogger("windscribe-main")
@@ -115,6 +129,12 @@ open class Windscribe : MultiDexApplication() {
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
 
     @Inject
+    lateinit var connectionPolicyInputs: ConnectionPolicyInputs
+
+    @Inject
+    lateinit var autoConnectionManager: AutoConnectionManager
+
+    @Inject
     lateinit var mockLocationManager: MockLocationManager
 
     @Inject
@@ -135,9 +155,42 @@ open class Windscribe : MultiDexApplication() {
     @Inject
     lateinit var localDbInterface: LocalDbInterface
 
+    // Lazy to avoid a dependency cycle, as elsewhere in the core.
+    @Inject
+    lateinit var userRepository: Lazy<UserRepository>
+
+    @Inject
+    lateinit var locationRepository: Lazy<LocationRepository>
+
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(base)
+        bindLogDirectory(base)
+    }
+
+    /** logback's own `${DATA_DIR}` resolves empty this early, so the appender needs a real files dir. */
+    private fun bindLogDirectory(base: Context) {
+        val loggerContext = LoggerFactory.getILoggerFactory() as? LoggerContext ?: return
+        try {
+            // Opened before the reset, which would otherwise leave no appenders at all.
+            base.assets.open(LOGBACK_CONFIG).use { config ->
+                loggerContext.reset()
+                loggerContext.putProperty(CoreConstants.DATA_DIR_KEY, base.filesDir.absolutePath)
+                JoranConfigurator()
+                    .apply { context = loggerContext }
+                    .doConfigure(config)
+            }
+        } catch (e: Exception) {
+            Log.e("windscribe-main", "Could not configure logging; the app log will be empty.", e)
+        }
+    }
+
     override fun onCreate() {
         if (BuildConfig.DEV) {
             setupStrictMode()
+        }
+        // DEBUG, not DEV: DEV means staging, and CI sets it on signed release builds for Internal
+        // App Sharing, which would ship a main-thread sampler to real testers.
+        if (BuildConfig.DEBUG) {
             MainThreadWatchdog().start()
         }
         // Must precede super.onCreate(): Hilt-constructed singletons read appContext from init blocks.
@@ -145,7 +198,7 @@ open class Windscribe : MultiDexApplication() {
         super.onCreate()
         // Ensure notification channel exists before any service can start.
         // This must happen before DI so foreground services can post immediately.
-        com.windscribe.vpn.backend.utils.ForegroundServiceHelper
+        ForegroundServiceHelper
             .ensureNotificationChannel(this)
         registerForegroundActivityObserver()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
@@ -153,37 +206,29 @@ open class Windscribe : MultiDexApplication() {
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifeCycleObserver)
         reloadAfterMigration()
 
-        preference.isNewApplicationInstance = true
         setUpNewInstallation()
         if (BuildConfig.APP_ID.isNotEmpty()) {
             firebaseManager.initialise()
         }
         deviceStateManager.init(this)
 
-        // Start AutoConnectService when network changes if needed
+        // Bring the VPN service up in watch mode when the network changes, if needed
         applicationScope.launch {
             var previousNetwork: String? = null
             deviceStateManager.networkDetail.collect { detail ->
                 val currentNetwork = detail?.name
 
-                // Start AutoConnectService if needed when network changes
+                // The service connects itself once up; this only decides whether to start it.
                 if (previousNetwork != null && previousNetwork != currentNetwork && currentNetwork != null) {
                     applicationScope.launch {
                         try {
                             val networkInfo = windscribeDatabase.networkInfoDao().getNetwork(currentNetwork)
-                            val isVpnActive = vpnConnectionStateManager.isVPNActive()
-
-                            // Start service if: auto-secure ON, VPN not active, and autoConnect enabled
-                            if (networkInfo?.isAutoSecureOn == true &&
-                                !isVpnActive &&
-                                preference.autoConnect &&
-                                canAccessNetworkName()
-                            ) {
-                                logger.debug("Network changed to auto-secure ON network - starting AutoConnectService")
-                                startAutoConnectService()
+                            if (ConnectionPolicy.shouldAutoConnect(connectionPolicyInputs.from(networkInfo))) {
+                                logger.debug("Network changed to one we should secure - starting the watcher")
+                                startVpnServiceWatching()
                             }
                         } catch (e: Exception) {
-                            logger.debug("Error checking network for AutoConnectService: ${e.message}")
+                            logger.debug("Error checking network for the watcher: ${e.message}")
                         }
                     }
                 }
@@ -220,11 +265,15 @@ open class Windscribe : MultiDexApplication() {
                 preference.wsNetSettings,
                 true,
                 ExtraConstants.AMNEZIA_WG_VERSION,
+                BuildConfig.INTEGRATION,
             )
         }
         applicationScope.launch {
-            if (preference.sessionHash != null && preference.autoConnect && canAccessNetworkName()) {
-                startAutoConnectService()
+            // Cold start: bring the service up if there is anything for it to watch for.
+            if (preference.sessionHash != null &&
+                ConnectionPolicy.shouldWatch(connectionPolicyInputs.current())
+            ) {
+                startVpnServiceWatching()
             }
         }
         logger.info("Application startup finished.")
@@ -335,6 +384,12 @@ open class Windscribe : MultiDexApplication() {
     }
 
     private fun reloadAfterMigration() {
+        // Both repositories read their state in constructors that Hilt runs during
+        // super.onCreate(), before runTrayMigrationEarly() has committed: UserRepository caches a
+        // null user so loggedIn() stays false, and LocationRepository caches selectedCity as -1 so
+        // updateLocation() replaces the user's city with a fallback. Re-read both now.
+        userRepository.get().reload()
+        locationRepository.get().setSelectedCity()
         if (notificationIdsToMigrate.isNotEmpty()) {
             applicationScope.launch {
                 try {
@@ -411,6 +466,9 @@ open class Windscribe : MultiDexApplication() {
         lateinit var appContext: Windscribe
 
         var applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+        /** In assets, and the only configuration logback is given. */
+        private const val LOGBACK_CONFIG = "logback.xml"
     }
 
     override fun onLowMemory() {

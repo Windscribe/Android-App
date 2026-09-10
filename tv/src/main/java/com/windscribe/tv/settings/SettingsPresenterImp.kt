@@ -35,6 +35,7 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.commonutils.ResourceHelper
@@ -45,6 +46,7 @@ import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.LogRepository
+import com.windscribe.vpn.repository.PortMapRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
@@ -75,9 +77,9 @@ class SettingsPresenterImp
         private val vpnConnectionStateManager: VPNConnectionStateManager,
         private val logRepository: LogRepository,
         private var proxyDNSManager: ProxyDNSManager,
-        private val portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
+        private val portMapRepository: PortMapRepository,
         private val wgParamsRepository: UnblockWgParamsRepository,
-        private val appIconCache: com.windscribe.vpn.cache.AppIconCache,
+        private val appIconCache: AppIconCache,
         private val serverListRepository: ServerListRepository,
     ) : SettingsPresenter,
         InstalledAppsAdapter.InstalledAppListener {

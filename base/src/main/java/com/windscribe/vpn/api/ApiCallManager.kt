@@ -312,6 +312,17 @@ open class ApiCallManager
             }
         }
 
+        override suspend fun loginWithCode(licenseCode: String): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?> {
+            val api = wsNetWrapper.awaitServerAPI()
+            return suspendCancellableCoroutine { continuation ->
+                val callback =
+                    api.loginWithLicense(licenseCode) { code, json ->
+                        buildResponse(continuation, code, json, UserLoginResponse::class.java)
+                    }
+                continuation.invokeOnCancellation { callback.cancel() }
+            }
+        }
+
         override suspend fun checkUpdate(
             appVersion: String,
             appBuild: String,

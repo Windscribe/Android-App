@@ -136,6 +136,29 @@
     <string name="state_add_routes">Adding routes</string>
     <string name="state_connected">Connected</string>
     <string name="state_disconnected">Disconnect</string>
+    <!-- Ongoing VPN notification: the states the service can sit in with no tunnel, and the actions each offers. -->
+    <string name="notification_protocol_switch">Waiting for protocol switch</string>
+    <string name="notification_reconnecting_to">Reconnecting to %1$s</string>
+    <string name="notification_reconnecting">Reconnecting</string>
+    <string name="notification_opted_out">Auto-secure is off for this network</string>
+    <string name="notification_opted_out_on">Auto-secure is off for %1$s</string>
+    <string name="notification_awaiting_session">Awaiting session update</string>
+    <string name="notification_config_auth_failed">Authentication failed — check your config</string>
+    <string name="notification_account_expired">Account expired — turn off Windscribe to restore internet, then upgrade</string>
+    <string name="notification_account_banned">Account banned — turn off Windscribe to restore internet</string>
+    <string name="notification_no_network">No network — nothing to connect over</string>
+    <string name="notification_paused">Paused — your traffic is not protected</string>
+    <string name="notification_waiting_for_secured">Not connected — will connect automatically</string>
+    <string name="notification_stood_down">Auto-connect is off for this network</string>
+    <string name="notification_stood_down_on">Auto-connect is off for %1$s</string>
+    <string name="notification_action_pause">Pause</string>
+    <string name="notification_action_resume">Resume</string>
+    <string name="notification_action_connect">Connect</string>
+    <string name="notification_action_turn_off">Turn off</string>
+    <string name="notification_action_retry">Retry</string>
+    <string name="notification_failed_to">Couldn\'t connect to %1$s</string>
+    <string name="notification_failed">Couldn\'t connect on this network</string>
+    <string name="notification_blocked">Couldn\'t connect — traffic is blocked</string>
     <string name="state_reconnecting">Reconnecting</string>
     <string name="state_exiting">Exiting</string>
     <string name="state_noprocess">Not running</string>
@@ -635,6 +658,7 @@ last chosen location.</string>
     <string name="accessibility_status_connected_split_routing">Connected, split tunneling on</string>
     <string name="accessibility_status_connecting">Connecting</string>
     <string name="accessibility_status_disconnected">Disconnected</string>
+    <string name="accessibility_status_paused">Paused, your traffic is not protected</string>
     <string name="none">None</string>
     <string name="free">Free</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>

@@ -693,4 +693,13 @@
     <string name="accessibility_status_connecting">正在连接</string>
     <string name="accessibility_status_disconnected">已断开连接</string>
 
+    <string name="notification_paused">已暂停 — 您的流量未受保护</string>
+    <string name="notification_waiting_for_secured">正在等待受保护的网络</string>
+    <string name="notification_stood_down">此网络的自动连接已关闭</string>
+    <string name="notification_stood_down_on">%1$s 的自动连接已关闭</string>
+    <string name="notification_action_pause">暂停</string>
+    <string name="notification_action_resume">恢复</string>
+    <string name="notification_action_connect">连接</string>
+    <string name="notification_action_turn_off">关闭</string>
+    <string name="accessibility_status_paused">已暂停，您的流量未受保护</string>
 </resources>

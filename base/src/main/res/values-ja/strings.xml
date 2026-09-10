@@ -692,4 +692,13 @@
     <string name="accessibility_status_connecting">接続中</string>
     <string name="accessibility_status_disconnected">切断されました</string>
 
+    <string name="notification_paused">一時停止中 — 通信は保護されていません</string>
+    <string name="notification_waiting_for_secured">保護対象のネットワークを待機中</string>
+    <string name="notification_stood_down">このネットワークでは自動接続がオフです</string>
+    <string name="notification_stood_down_on">%1$s では自動接続がオフです</string>
+    <string name="notification_action_pause">一時停止</string>
+    <string name="notification_action_resume">再開</string>
+    <string name="notification_action_connect">接続</string>
+    <string name="notification_action_turn_off">オフにする</string>
+    <string name="accessibility_status_paused">一時停止中、通信は保護されていません</string>
 </resources>

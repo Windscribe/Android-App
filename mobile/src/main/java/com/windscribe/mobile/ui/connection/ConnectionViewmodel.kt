@@ -19,8 +19,10 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.backend.utils.ConnectSource
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType
+import com.windscribe.vpn.backend.utils.USER_DISCONNECT
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.ResourceHelper
@@ -41,6 +43,7 @@ import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.DatacenterStatus
 import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.state.ConnectionPolicy
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -131,6 +134,12 @@ sealed class ConnectionUIState {
     ) : ConnectionUIState()
 
     data class Disconnected(
+        override val protocolInfo: ProtocolInformation,
+        override val locationInfo: LocationInfoState,
+    ) : ConnectionUIState()
+
+    /** No tunnel, traffic in the clear, one tap from being back. Must not read as [Disconnected]. */
+    data class Paused(
         override val protocolInfo: ProtocolInformation,
         override val locationInfo: LocationInfoState,
     ) : ConnectionUIState()
@@ -408,12 +417,13 @@ class ConnectionViewmodelImpl
         private fun fetchConnectionState() {
             viewModelScope.launch(Dispatchers.IO) {
                 combine(
-                    vpnConnectionStateManager.state,
+                    // Paired with the state so a mode change re-renders on its own.
+                    vpnConnectionStateManager.state.combine(vpnConnectionStateManager.serviceMode, ::Pair),
                     autoConnectionManager.connectedProtocol,
                     autoConnectionManager.nextInLineProtocol,
                     serverListRepository.customRegions,
                     serverListRepository.customCities,
-                ) { state, connectedProtocol, nextInLineProtocol, _, _ ->
+                ) { (state, serviceMode), connectedProtocol, nextInLineProtocol, _, _ ->
                     val protocolInfo =
                         when (state.status) {
                             VPNState.Status.Connected, VPNState.Status.Connecting -> connectedProtocol
@@ -437,9 +447,14 @@ class ConnectionViewmodelImpl
                             )
                         }
 
+                        // A paused service reports Disconnected, so the mode separates the two.
                         VPNState.Status.Disconnected -> {
-                            handleError(state)
-                            ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                            if (serviceMode is ConnectionPolicy.ServiceMode.Paused) {
+                                ConnectionUIState.Paused(protocolInfo, locationInfo)
+                            } else {
+                                handleError(state)
+                                ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                            }
                         }
 
                         else -> {
@@ -654,9 +669,13 @@ class ConnectionViewmodelImpl
         override fun onConnectButtonClick() {
             val currentState = connectionUIState.value
             val selectedLocation = lastLocationState.value ?: return
-            if (currentState !is ConnectionUIState.Disconnected) {
+            // Paused belongs with Disconnected: there is no tunnel to drop, so the button connects.
+            val isOff =
+                currentState is ConnectionUIState.Disconnected ||
+                    currentState is ConnectionUIState.Paused
+            if (!isOff) {
                 preferences.globalUserConnectionPreference = false
-                vpnController.disconnectAsync()
+                vpnController.disconnectAsync(USER_DISCONNECT)
                 return
             }
             val locationSource = WindUtilities.getSourceTypeBlocking()
@@ -775,7 +794,7 @@ class ConnectionViewmodelImpl
                     saveLastLocation(datacenterAndLocation)
                     logger.debug("Attempting to connect")
                     appScope.launch {
-                        autoConnectionManager.connectInForeground()
+                        autoConnectionManager.connectInForeground(ConnectSource.User)
                     }
                 } catch (_: Exception) {
                     showToast("Unable to find selected location in database. Update server list.")
@@ -824,7 +843,7 @@ class ConnectionViewmodelImpl
                     saveLastLocation(staticRegion)
                     logger.debug("Attempting to connect..")
                     appScope.launch {
-                        autoConnectionManager.connectInForeground()
+                        autoConnectionManager.connectInForeground(ConnectSource.User)
                     }
                 } catch (e: Exception) {
                     showToast("Unable to find selected location in database. Update server list.")
@@ -860,7 +879,7 @@ class ConnectionViewmodelImpl
                         _goto.emit(HomeGoto.EditCustomConfig(config.primaryKey, true))
                         return@launch
                     } else {
-                        vpnController.connectAsync()
+                        vpnController.connectAsync(ConnectSource.User)
                     }
                 } catch (e: Exception) {
                     showToast("Unable to find selected location in database. Update server list.")
@@ -874,7 +893,7 @@ class ConnectionViewmodelImpl
             } else {
                 appScope.launch {
                     preferences.globalUserConnectionPreference = true
-                    autoConnectionManager.changeProtocolInForeground()
+                    autoConnectionManager.changeProtocolInForeground(ConnectSource.User)
                 }
             }
         }

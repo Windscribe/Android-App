@@ -42,6 +42,9 @@ object PreferencesKeyConstants {
     const val USER_NAME = "user_name"
     const val BEST_LOCATION_IP_2 = "best_location_ip_2"
     const val DEBUG_LOG_FILE_NAME = "/applog.txt"
+
+    /** Dictated by the fileNamePattern in logback.xml; changing one without the other loses it. */
+    const val DEBUG_LOG_ROLLED_FILE_NAME = "/applog.1.log.zip"
     const val LOCATION_HASH = "loc_hash"
     const val ALC_LIST = "alc_list"
     const val VPN_DISCONNECTED = "disconnected"
@@ -176,4 +179,12 @@ object PreferencesKeyConstants {
     const val EXTRA_TLS_PADDING = "extra_tls_padding"
     const val TLS_SERVER_NAME = "tlsServerName"
     const val ENCRYPTION_WARNING_ACKNOWLEDGED = "encryption_warning_acknowledged"
+
+    // Non Windscribe
+    const val ESET_LICENCE_CODE = "licence_code"
+    const val ESET_SERVER_LIST_ORDER = "server_list_order"
+    const val ESET_THEME_MODE = "theme_mode"
+    const val ESET_LAST_SESSION_ERROR_CODE = "last_session_error_code"
+    const val ESET_DEFAULT_SERVER_LIST_ORDER = "Geography"
+    const val ESET_DEFAULT_THEME_MODE = "Dark"
 }

@@ -12,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import com.windscribe.mobile.ui.helper.AccessibilityHelper
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.AuthToken
+import com.windscribe.vpn.api.response.GeneratePasswordResponse
+import com.windscribe.vpn.api.response.GenerateUsernameResponse
 import com.windscribe.vpn.api.response.UserRegistrationResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.PlayIntegrityManager
@@ -270,7 +272,7 @@ class SignupViewModel
         fun generateUsername() {
             viewModelScope.launch {
                 val result =
-                    result<com.windscribe.vpn.api.response.GenerateUsernameResponse> {
+                    result<GenerateUsernameResponse> {
                         apiCallManager.generateUsername()
                     }
                 when (result) {
@@ -291,7 +293,7 @@ class SignupViewModel
         fun generatePassword() {
             viewModelScope.launch {
                 val result =
-                    result<com.windscribe.vpn.api.response.GeneratePasswordResponse> {
+                    result<GeneratePasswordResponse> {
                         apiCallManager.generatePassword()
                     }
                 when (result) {

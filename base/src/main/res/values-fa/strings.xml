@@ -688,4 +688,13 @@
     <string name="accessibility_status_connecting">در حال اتصال</string>
     <string name="accessibility_status_disconnected">قطع شده</string>
 
+    <string name="notification_paused">متوقف شده — ترافیک شما محافظت نمی‌شود</string>
+    <string name="notification_waiting_for_secured">در انتظار یک شبکه ایمن</string>
+    <string name="notification_stood_down">اتصال خودکار برای این شبکه خاموش است</string>
+    <string name="notification_stood_down_on">اتصال خودکار برای %1$s خاموش است</string>
+    <string name="notification_action_pause">توقف</string>
+    <string name="notification_action_resume">ادامه</string>
+    <string name="notification_action_connect">اتصال</string>
+    <string name="notification_action_turn_off">خاموش کردن</string>
+    <string name="accessibility_status_paused">متوقف شده، ترافیک شما محافظت نمی‌شود</string>
 </resources>

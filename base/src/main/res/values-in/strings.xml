@@ -692,4 +692,13 @@ Untuk keamanan maksimal, hindari menggunakan perangkat ini di jaringan yang tida
     <string name="accessibility_status_connecting">Menghubungkan</string>
     <string name="accessibility_status_disconnected">Terputus</string>
 
+    <string name="notification_paused">Dijeda — lalu lintas Anda tidak terlindungi</string>
+    <string name="notification_waiting_for_secured">Menunggu jaringan yang diamankan</string>
+    <string name="notification_stood_down">Sambung otomatis nonaktif untuk jaringan ini</string>
+    <string name="notification_stood_down_on">Sambung otomatis nonaktif untuk %1$s</string>
+    <string name="notification_action_pause">Jeda</string>
+    <string name="notification_action_resume">Lanjutkan</string>
+    <string name="notification_action_connect">Sambungkan</string>
+    <string name="notification_action_turn_off">Matikan</string>
+    <string name="accessibility_status_paused">Dijeda, lalu lintas Anda tidak terlindungi</string>
 </resources>

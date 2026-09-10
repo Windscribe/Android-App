@@ -691,4 +691,13 @@
     <string name="accessibility_status_connecting">Γίνεται σύνδεση</string>
     <string name="accessibility_status_disconnected">Αποσυνδέθηκε</string>
 
+    <string name="notification_paused">Σε παύση — η κίνησή σας δεν προστατεύεται</string>
+    <string name="notification_waiting_for_secured">Αναμονή για ασφαλισμένο δίκτυο</string>
+    <string name="notification_stood_down">Η αυτόματη σύνδεση είναι ανενεργή για αυτό το δίκτυο</string>
+    <string name="notification_stood_down_on">Η αυτόματη σύνδεση είναι ανενεργή για %1$s</string>
+    <string name="notification_action_pause">Παύση</string>
+    <string name="notification_action_resume">Συνέχιση</string>
+    <string name="notification_action_connect">Σύνδεση</string>
+    <string name="notification_action_turn_off">Απενεργοποίηση</string>
+    <string name="accessibility_status_paused">Σε παύση, η κίνησή σας δεν προστατεύεται</string>
 </resources>

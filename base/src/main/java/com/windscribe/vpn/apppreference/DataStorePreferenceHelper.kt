@@ -14,7 +14,10 @@ import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.ESET_DEFAULT_SERVER_LIST_ORDER
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.ESET_DEFAULT_THEME_MODE
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import com.windscribe.vpn.commonutils.MainThreadWatch
 import com.windscribe.vpn.constants.ExtraConstants.DEFAULT_ICON
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
@@ -105,7 +108,10 @@ class DataStorePreferenceHelper(
     private suspend fun getString(
         key: Preferences.Key<String>,
         default: String,
-    ): String = dataStore.data.first()[key] ?: default
+    ): String {
+        MainThreadWatch.warnIfMainThread("DataStore read ${key.name}")
+        return dataStore.data.first()[key] ?: default
+    }
 
     /**
      * Get int from DataStore
@@ -113,7 +119,10 @@ class DataStorePreferenceHelper(
     private suspend fun getInt(
         key: Preferences.Key<Int>,
         default: Int,
-    ): Int = dataStore.data.first()[key] ?: default
+    ): Int {
+        MainThreadWatch.warnIfMainThread("DataStore read ${key.name}")
+        return dataStore.data.first()[key] ?: default
+    }
 
     /**
      * Get boolean from DataStore
@@ -122,8 +131,9 @@ class DataStorePreferenceHelper(
     private suspend fun getBoolean(
         key: Preferences.Key<Boolean>,
         default: Boolean,
-    ): Boolean =
-        try {
+    ): Boolean {
+        MainThreadWatch.warnIfMainThread("DataStore read ${key.name}")
+        return try {
             dataStore.data.first()[key] ?: default
         } catch (_: ClassCastException) {
             // Handle migration case: value stored as String instead of Boolean
@@ -136,6 +146,7 @@ class DataStorePreferenceHelper(
                 else -> default
             }
         }
+    }
 
     /**
      * Get long from DataStore
@@ -143,7 +154,10 @@ class DataStorePreferenceHelper(
     private suspend fun getLong(
         key: Preferences.Key<Long>,
         default: Long,
-    ): Long = dataStore.data.first()[key] ?: default
+    ): Long {
+        MainThreadWatch.warnIfMainThread("DataStore read ${key.name}")
+        return dataStore.data.first()[key] ?: default
+    }
 
     /**
      * Set string (DataStore only) - ASYNC
@@ -172,6 +186,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<String>,
         value: String?,
     ) {
+        MainThreadWatch.warnIfMainThread("DataStore WRITE string (blocking)")
         runBlocking {
             dataStore.edit { preferences ->
                 if (value != null) {
@@ -204,6 +219,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Int>,
         value: Int,
     ) {
+        MainThreadWatch.warnIfMainThread("DataStore WRITE int (blocking)")
         runBlocking {
             dataStore.edit { it[key] = value }
         }
@@ -230,6 +246,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Boolean>,
         value: Boolean,
     ) {
+        MainThreadWatch.warnIfMainThread("DataStore WRITE boolean (blocking)")
         runBlocking {
             dataStore.edit { it[key] = value }
         }
@@ -251,21 +268,33 @@ class DataStorePreferenceHelper(
     // PREFERENCE IMPLEMENTATIONS
     // ============================================================================
 
-    override fun clearAllData() {
+    override suspend fun clearAllData() {
         val installation = newInstallation
         val savedCustomIcon = customIcon
         val language = savedLanguage
         val theme = selectedTheme
-        scope.launch {
-            dataStore.edit { it.clear() }
+        // Clear and re-seed in one transaction. Split across two, nothing orders the restores
+        // against the clear, and a sign-out can wipe the user's icon, language and theme.
+        dataStore.edit { preferences ->
+            preferences.clear()
+            if (PreferencesKeyConstants.I_OLD == installation) {
+                preferences[DataStoreKeys.NEW_INSTALLATION] = PreferencesKeyConstants.I_OLD
+            }
+            preferences[DataStoreKeys.CUSTOM_ICON] = savedCustomIcon
+            preferences[DataStoreKeys.USER_LANGUAGE] = language
+            preferences[DataStoreKeys.SELECTED_THEME] = theme
         }
         securePreferences.clear()
-        if (PreferencesKeyConstants.I_OLD == installation) {
-            newInstallation = PreferencesKeyConstants.I_OLD
+    }
+
+    override suspend fun markInstallRecorded() {
+        // Both flags in one transaction. Readers gate on `isNewApplicationInstance &&
+        // newInstallation == I_NEW`, so process death between two separate writes would leave an
+        // install that could never be reported.
+        dataStore.edit { preferences ->
+            preferences[DataStoreKeys.ON_CREATE_APPLICATION] = false
+            preferences[DataStoreKeys.NEW_INSTALLATION] = PreferencesKeyConstants.I_OLD
         }
-        customIcon = savedCustomIcon
-        savedLanguage = language
-        selectedTheme = theme
     }
 
     override fun clearOldSessionAuth() {
@@ -453,7 +482,7 @@ class DataStorePreferenceHelper(
                     appContext.getAppSupportedSystemLanguage(),
                 )
             }
-        set(value) = setString(DataStoreKeys.USER_LANGUAGE, value)
+        set(value) = setStringSync(DataStoreKeys.USER_LANGUAGE, value)
 
     override var savedProtocol: String
         get() =
@@ -605,10 +634,6 @@ class DataStorePreferenceHelper(
     override var isReconnecting: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.CONNECTION_RETRY_ENABLED, false) }
         set(value) = setBoolean(DataStoreKeys.CONNECTION_RETRY_ENABLED, value)
-
-    override var lastDisconnectionError: String?
-        get() = runBlocking { getString(DataStoreKeys.LAST_DISCONNECTION_ERROR, "").takeIf { it.isNotEmpty() } }
-        set(value) = setStringSync(DataStoreKeys.LAST_DISCONNECTION_ERROR, value)
 
     override var isStartedByAlwaysOn: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.STARTED_BY_ALWAYS_ON, false) }
@@ -1192,4 +1217,25 @@ class DataStorePreferenceHelper(
         set(value) {
             setStringSync(DataStoreKeys.TLS_SERVER_NAME, value)
         }
+
+    // Non Windscribe
+    override var licenceCode: String?
+        get() = runBlocking { getStringOrNull(DataStoreKeys.LICENCE_CODE) }
+        set(value) = setStringSync(DataStoreKeys.LICENCE_CODE, value)
+
+    // Sync setter: the UI restarts the activity straight after writing this and reads it back.
+    override var themeMode: String
+        get() = runBlocking { getString(DataStoreKeys.THEME_MODE, ESET_DEFAULT_THEME_MODE) }
+        set(value) = setStringSync(DataStoreKeys.THEME_MODE, value)
+
+    override var serverListOrder: String
+        get() = runBlocking { getString(DataStoreKeys.SERVER_LIST_ORDER, ESET_DEFAULT_SERVER_LIST_ORDER) }
+        set(value) = setString(DataStoreKeys.SERVER_LIST_ORDER, value)
+
+    // Sync setter: written before the tunnel is torn down.
+    override var lastSessionErrorCode: Int
+        get() = runBlocking { getInt(DataStoreKeys.LAST_SESSION_ERROR_CODE, -1) }
+        set(value) = setIntSync(DataStoreKeys.LAST_SESSION_ERROR_CODE, value)
+
+    private suspend fun getStringOrNull(key: Preferences.Key<String>): String? = dataStore.data.first()[key]
 }

@@ -692,4 +692,13 @@
     <string name="accessibility_status_connecting">正在連線</string>
     <string name="accessibility_status_disconnected">已中斷連線</string>
 
+    <string name="notification_paused">已暫停 — 您的流量未受保護</string>
+    <string name="notification_waiting_for_secured">正在等待受保護的網路</string>
+    <string name="notification_stood_down">此網路的自動連線已關閉</string>
+    <string name="notification_stood_down_on">%1$s 的自動連線已關閉</string>
+    <string name="notification_action_pause">暫停</string>
+    <string name="notification_action_resume">恢復</string>
+    <string name="notification_action_connect">連線</string>
+    <string name="notification_action_turn_off">關閉</string>
+    <string name="accessibility_status_paused">已暫停，您的流量未受保護</string>
 </resources>

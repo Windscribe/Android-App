@@ -89,6 +89,14 @@ interface IApiCallManager {
         installer: String? = null,
     ): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>
 
+    /**
+     * Log in with a partner licence code instead of credentials (ESET activation).
+     *
+     * The code is also handed to wsnet via WSNetWrapper.setLicenseCode() from the UI side, which the
+     * native layer needs for the calls that follow activation.
+     */
+    suspend fun loginWithCode(licenseCode: String): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>
+
     suspend fun getWebSession(): GenericResponseClass<WebSession?, ApiErrorResponse?>
 
     suspend fun checkUpdate(

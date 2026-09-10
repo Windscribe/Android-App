@@ -13,6 +13,7 @@ import com.windscribe.vpn.repository.BridgeApiRepository
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.RepositoryState
 import com.windscribe.vpn.serverlist.entity.Favourite
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -94,7 +95,7 @@ class BridgeApiViewModelImpl
             viewModelScope.launch(Dispatchers.IO) {
                 ipRepository.state.collect { state ->
                     when (state) {
-                        is com.windscribe.vpn.repository.RepositoryState.Success -> {
+                        is RepositoryState.Success -> {
                             _ipState.emit(state.data)
                         }
 

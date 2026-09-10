@@ -696,4 +696,13 @@ last chosen location.</string>
     <string name="accessibility_status_connecting">منسلک ہو رہا ہے</string>
     <string name="accessibility_status_disconnected">غیر منسلک</string>
 
+    <string name="notification_paused">موقوف — آپ کا ٹریفک محفوظ نہیں ہے</string>
+    <string name="notification_waiting_for_secured">محفوظ نیٹ ورک کا انتظار</string>
+    <string name="notification_stood_down">اس نیٹ ورک کے لیے خودکار کنکشن بند ہے</string>
+    <string name="notification_stood_down_on">%1$s کے لیے خودکار کنکشن بند ہے</string>
+    <string name="notification_action_pause">موقوف کریں</string>
+    <string name="notification_action_resume">دوبارہ شروع کریں</string>
+    <string name="notification_action_connect">منسلک کریں</string>
+    <string name="notification_action_turn_off">بند کریں</string>
+    <string name="accessibility_status_paused">موقوف، آپ کا ٹریفک محفوظ نہیں ہے</string>
 </resources>

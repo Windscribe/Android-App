@@ -1,5 +1,6 @@
 package com.windscribe.vpn.wsnet
 
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetAdvancedParameters
 import com.wsnet.lib.WSNetBridgeAPI
@@ -21,7 +22,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  * - Use safe accessors (safeBridgeAPI, safeAdvancedParameters, etc.) which return null if not ready
  * - All methods are thread-safe
  */
-class WSNetWrapper {
+class WSNetWrapper(
+    private val preferencesHelper: PreferencesHelper,
+) {
     private val logger = LoggerFactory.getLogger("wsnet-wrapper")
     private val initialized = AtomicBoolean(false)
     private val _isReady = MutableStateFlow(false)
@@ -68,6 +71,7 @@ class WSNetWrapper {
         persistentSettings: String?,
         ignoreTestDomains: Boolean,
         amneziaWgVersion: String,
+        integration: String,
     ): Boolean {
         if (initialized.get()) {
             logger.warn("WSNet already initialized")
@@ -94,6 +98,8 @@ class WSNetWrapper {
             wsNetInstance = wsNet
             // Capture all sub-API peers before marking ready, so accessors never re-fetch them. See captureSubApis().
             captureSubApis(wsNet)
+            applyIntegration(wsNet, integration)
+            applyLicenseCode(wsNet, preferencesHelper.licenceCode ?: "")
             initialized.set(true)
             updateReadyState()
             logger.debug("WSNet initialized successfully")
@@ -120,6 +126,75 @@ class WSNetWrapper {
         } catch (e: Exception) {
             logger.error("Failed to capture WSNet sub-API peers: ${e.message}", e)
         }
+    }
+
+    private fun applyIntegration(
+        wsNet: WSNet,
+        integration: String,
+    ) {
+        try {
+            wsNet.setIntegration(integration)
+            if (integration.isNotEmpty()) {
+                logger.debug("WSNet integration set to '$integration'")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to set WSNet integration '$integration': ${e.message}", e)
+        }
+    }
+
+    /**
+     * Set the API integration wsnet identifies as. Empty for plain Windscribe builds, "eset" for the
+     * whitelabel build. Normally applied by initialize(); call this only to change it afterwards.
+     * Returns true if it was applied.
+     */
+    fun setIntegration(integration: String): Boolean {
+        val wsNet = getInstance()
+        if (wsNet == null) {
+            logger.warn("setIntegration ignored: WSNet not ready")
+            return false
+        }
+        applyIntegration(wsNet, integration)
+        return true
+    }
+
+    private fun applyLicenseCode(
+        wsNet: WSNet,
+        licenseCode: String,
+    ) {
+        try {
+            wsNet.setLicenseCode(licenseCode)
+            if (licenseCode.isNotEmpty()) {
+                logger.debug("WSNet licence code applied")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to set WSNet licence code: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Set the licence code wsnet activates with, and persist it so initialize() restores it on the
+     * next launch. Called from the UI side once the user enters a code; must be set before
+     * loginWithCode(). Returns true if it was applied to the live WSNet instance; the code is
+     * persisted either way.
+     */
+    fun setLicenseCode(licenseCode: String): Boolean {
+        preferencesHelper.licenceCode = licenseCode
+        val wsNet = getInstance()
+        if (wsNet == null) {
+            logger.warn("setLicenseCode: WSNet not ready, stored for next initialize()")
+            return false
+        }
+        applyLicenseCode(wsNet, licenseCode)
+        return true
+    }
+
+    /**
+     * Suspend until WSNet is initialized, then set the licence code. Safe to call from the main
+     * thread; prefer this over setLicenseCode() when the code is available before init finishes.
+     */
+    suspend fun awaitAndSetLicenseCode(licenseCode: String): Boolean {
+        isReady.first { it }
+        return setLicenseCode(licenseCode)
     }
 
     /**
@@ -237,7 +312,9 @@ class WSNetWrapper {
      */
     private fun logWsNetMessage(log: String) {
         try {
-            if (!log.contains("6464/latency")) {
+            // BridgeAPI_impl:: lines narrate setter calls with no outcome — four per connectivity
+            // test, and the request they configure is logged on its own.
+            if (!log.contains("6464/latency") && !log.contains("BridgeAPI_impl::")) {
                 val outerMsg = log.substringAfter("\"msg\":\"").substringBeforeLast("\"}")
                 val unescaped = outerMsg.replace("\\\"", "\"")
                 val actualMsg = unescaped.substringAfter("\"msg\": \"").substringBeforeLast("\"")

@@ -8,13 +8,16 @@ import com.windscribe.mobile.ui.preferences.connection.PortMapItem
 import com.windscribe.mobile.ui.preferences.connection.ProtoItem
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.utils.ConnectSource
+import com.windscribe.vpn.backend.utils.SYSTEM_DISCONNECT
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.PortMapRepository
+import com.windscribe.vpn.state.ConnectionPolicy
+import com.windscribe.vpn.state.ConnectionPolicyInputs
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
-import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,9 +60,9 @@ class NetworkDetailViewModelImpl
         val preferencesHelper: PreferencesHelper,
         val networkNetworkManager: NetworkInfoManager,
         val vpnController: WindVpnController,
-        val vpnConnectionStateManager: VPNConnectionStateManager,
         val portMapRepository: PortMapRepository,
-        val deviceStateManager: DeviceStateManager,
+        private val policyInputs: ConnectionPolicyInputs,
+        private val deviceStateManager: DeviceStateManager,
     ) : NetworkDetailViewModel() {
         private val _showProgress = MutableStateFlow(false)
         override val showProgress: StateFlow<Boolean> = _showProgress
@@ -161,23 +164,21 @@ class NetworkDetailViewModelImpl
                             isMyNetwork.value = isMine
                         }
 
-                        val vpnActive = vpnConnectionStateManager.isVPNActive()
-                        logger.debug(
-                            "VPN active: $vpnActive, auto-secure: ${networkInfo?.isAutoSecureOn}, global pref: ${preferencesHelper.globalUserConnectionPreference}",
-                        )
-                        val isWhitelisted = deviceStateManager.isCurrentNetworkWhitelisted.value
-                        when {
-                            networkInfo?.isAutoSecureOn == true &&
-                                !vpnActive &&
-                                preferencesHelper.globalUserConnectionPreference &&
-                                !isWhitelisted -> {
-                                logger.info("Auto-connecting VPN for secure network: ${networkInfo.networkName}")
-                                vpnController.connectAsync()
-                            }
+                        // Editing another saved network's settings must not connect or disconnect.
+                        if (isMine) {
+                            val input = policyInputs.from(networkInfo)
+                            when {
+                                ConnectionPolicy.shouldAutoConnect(input) -> {
+                                    logger.info("Auto-connecting for secure network: ${networkInfo?.networkName}")
+                                    vpnController.connectAsync(ConnectSource.App)
+                                }
 
-                            networkInfo?.isAutoSecureOn == false && vpnActive && isMine -> {
-                                logger.info("Auto-disconnecting VPN for non-secure network: ${networkInfo.networkName}")
-                                vpnController.disconnectAsync()
+                                ConnectionPolicy.shouldAutoDisconnect(input) -> {
+                                    logger.info("Auto-disconnecting for non-secure network: ${networkInfo?.networkName}")
+                                    // Auto-Secure off already stops auto-connect here; standing the
+                                    // network down as well would be redundant and misreported.
+                                    vpnController.disconnectAsync(SYSTEM_DISCONNECT)
+                                }
                             }
                         }
 
@@ -192,16 +193,37 @@ class NetworkDetailViewModelImpl
             }
         }
 
+        /**
+         * Publishes a changed row, writes it, then republishes the shared flow; all three matter.
+         *
+         * [NetworkInfo] is a value type, so the change must be a new instance — mutating the one the
+         * flow holds makes it compare equal to the row read back and emit nothing. The reload is for
+         * readers outside this screen, which take the network from `networkInfo.value`.
+         */
+        private suspend fun persist(updated: NetworkInfo) {
+            _networkDetail.value = updated
+            withContext(Dispatchers.IO) {
+                localDbInterface.updateNetworkSync(updated)
+            }
+            networkNetworkManager.reload()
+        }
+
         override fun onAutoSecureChanged() {
             viewModelScope.launch {
                 _showProgress.value = true
                 val networkInfo = _networkDetail.value
                 networkInfo?.let {
                     val updatedAutoSecure = !it.isAutoSecureOn
-                    it.isAutoSecureOn = updatedAutoSecure
-                    withContext(Dispatchers.IO) {
-                        Log.i("NetworkDetail", "onAutoSecureChanged: $it")
-                        localDbInterface.updateNetworkSync(it)
+                    // A copy, never a mutation of the value the flow is holding. Mutating it in place
+                    // makes the row the database returns a moment later compare *equal* to what is
+                    // already published, so nothing is emitted and the screen sits on stale state.
+                    val updated = it.copy(isAutoSecureOn = updatedAutoSecure)
+                    Log.i("NetworkDetail", "onAutoSecureChanged: $updated")
+                    persist(updated)
+                    // Turning Auto-Secure off by hand withdraws any earlier "connect here", so it
+                    // applies now instead of being exempt for the rest of the session.
+                    if (!updatedAutoSecure && isMyNetwork.value) {
+                        deviceStateManager.setOptedInNetwork(null)
                     }
                 }
                 _showProgress.value = false
@@ -213,11 +235,7 @@ class NetworkDetailViewModelImpl
                 _showProgress.value = true
                 val networkInfo = _networkDetail.value
                 networkInfo?.let {
-                    val updatedPreferred = !it.isPreferredOn
-                    it.isPreferredOn = updatedPreferred
-                    withContext(Dispatchers.IO) {
-                        localDbInterface.updateNetworkSync(it)
-                    }
+                    persist(it.copy(isPreferredOn = !it.isPreferredOn))
                 }
                 _showProgress.value = false
             }
@@ -241,7 +259,7 @@ class NetworkDetailViewModelImpl
                 _showProgress.value = true
                 val networkInfo = _networkDetail.value
                 networkInfo?.let {
-                    it.protocol = protocol.key
+                    var updated = it.copy(protocol = protocol.key)
 
                     // Always update ports list when protocol changes
                     val portMapItem = portMapItems.firstOrNull { item -> item.protoItem.proto == protocol.key }
@@ -249,14 +267,12 @@ class NetworkDetailViewModelImpl
                     _ports.value = newPorts.map { port -> DropDownStringItem(port, port) }
 
                     // If current port is not valid for new protocol, select first available port
-                    if (!isValidPort(it.protocol ?: "", it.port ?: "") && newPorts.isNotEmpty()) {
-                        it.port = newPorts.first()
-                        _selectedPort.value = it.port ?: ""
+                    if (!isValidPort(updated.protocol ?: "", updated.port ?: "") && newPorts.isNotEmpty()) {
+                        updated = updated.copy(port = newPorts.first())
+                        _selectedPort.value = updated.port ?: ""
                     }
 
-                    withContext(Dispatchers.IO) {
-                        localDbInterface.updateNetworkSync(it)
-                    }
+                    persist(updated)
                 }
                 _showProgress.value = false
             }
@@ -278,10 +294,7 @@ class NetworkDetailViewModelImpl
                 _showProgress.value = true
                 val networkInfo = _networkDetail.value
                 networkInfo?.let {
-                    it.port = port.key
-                    withContext(Dispatchers.IO) {
-                        localDbInterface.updateNetworkSync(it)
-                    }
+                    persist(it.copy(port = port.key))
                 }
                 _showProgress.value = false
             }

@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui.popup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.windscribe.vpn.backend.utils.ConnectSource
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -132,7 +133,7 @@ class EditCustomConfigViewmodelImpl
                     config.isRemember = isRemember.value
                     localDbInterface.addConfigSync(config)
                     if (connect.value && !config.username.isNullOrEmpty() && !config.password.isNullOrEmpty()) {
-                        vpnController.connectAsync()
+                        vpnController.connectAsync(ConnectSource.User)
                     }
                     _shouldExit.emit(true)
                 }

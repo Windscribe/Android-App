@@ -692,4 +692,13 @@
     <string name="accessibility_status_connecting">कनेक्ट हो रहा है</string>
     <string name="accessibility_status_disconnected">डिस्कनेक्ट है</string>
 
+    <string name="notification_paused">रोका गया — आपका ट्रैफ़िक सुरक्षित नहीं है</string>
+    <string name="notification_waiting_for_secured">सुरक्षित नेटवर्क की प्रतीक्षा में</string>
+    <string name="notification_stood_down">इस नेटवर्क के लिए ऑटो-कनेक्ट बंद है</string>
+    <string name="notification_stood_down_on">%1$s के लिए ऑटो-कनेक्ट बंद है</string>
+    <string name="notification_action_pause">रोकें</string>
+    <string name="notification_action_resume">फिर से शुरू करें</string>
+    <string name="notification_action_connect">कनेक्ट करें</string>
+    <string name="notification_action_turn_off">बंद करें</string>
+    <string name="accessibility_status_paused">रोका गया, आपका ट्रैफ़िक सुरक्षित नहीं है</string>
 </resources>

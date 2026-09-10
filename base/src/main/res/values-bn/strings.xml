@@ -691,4 +691,13 @@
     <string name="accessibility_status_connecting">সংযোগ হচ্ছে</string>
     <string name="accessibility_status_disconnected">সংযোগ বিচ্ছিন্ন</string>
 
+    <string name="notification_paused">বিরতি দেওয়া হয়েছে — আপনার ট্রাফিক সুরক্ষিত নয়</string>
+    <string name="notification_waiting_for_secured">একটি সুরক্ষিত নেটওয়ার্কের অপেক্ষায়</string>
+    <string name="notification_stood_down">এই নেটওয়ার্কের জন্য স্বয়ংক্রিয় সংযোগ বন্ধ</string>
+    <string name="notification_stood_down_on">%1$s এর জন্য স্বয়ংক্রিয় সংযোগ বন্ধ</string>
+    <string name="notification_action_pause">বিরতি</string>
+    <string name="notification_action_resume">পুনরায় শুরু</string>
+    <string name="notification_action_connect">সংযোগ করুন</string>
+    <string name="notification_action_turn_off">বন্ধ করুন</string>
+    <string name="accessibility_status_paused">বিরতি দেওয়া হয়েছে, আপনার ট্রাফিক সুরক্ষিত নয়</string>
 </resources>

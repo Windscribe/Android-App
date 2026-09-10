@@ -692,4 +692,13 @@ Maksimum güvenlik için, güvenilmeyen ağlarda veya root\'lanmışsa bu cihaz�
     <string name="accessibility_status_connecting">Bağlanıyor</string>
     <string name="accessibility_status_disconnected">Bağlantı kesildi</string>
 
+    <string name="notification_paused">Duraklatıldı — trafiğiniz korunmuyor</string>
+    <string name="notification_waiting_for_secured">Güvenli bir ağ bekleniyor</string>
+    <string name="notification_stood_down">Bu ağ için otomatik bağlanma kapalı</string>
+    <string name="notification_stood_down_on">%1$s için otomatik bağlanma kapalı</string>
+    <string name="notification_action_pause">Duraklat</string>
+    <string name="notification_action_resume">Sürdür</string>
+    <string name="notification_action_connect">Bağlan</string>
+    <string name="notification_action_turn_off">Kapat</string>
+    <string name="accessibility_status_paused">Duraklatıldı, trafiğiniz korunmuyor</string>
 </resources>

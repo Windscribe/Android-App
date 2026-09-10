@@ -692,4 +692,13 @@
     <string name="accessibility_status_connecting">Підключення</string>
     <string name="accessibility_status_disconnected">Відключено</string>
 
+    <string name="notification_paused">Призупинено — ваш трафік не захищено</string>
+    <string name="notification_waiting_for_secured">Очікування захищеної мережі</string>
+    <string name="notification_stood_down">Автопідключення вимкнено для цієї мережі</string>
+    <string name="notification_stood_down_on">Автопідключення вимкнено для %1$s</string>
+    <string name="notification_action_pause">Пауза</string>
+    <string name="notification_action_resume">Відновити</string>
+    <string name="notification_action_connect">Підключити</string>
+    <string name="notification_action_turn_off">Вимкнути</string>
+    <string name="accessibility_status_paused">Призупинено, ваш трафік не захищено</string>
 </resources>

@@ -692,4 +692,13 @@ Dla maksymalnego bezpieczeństwa unikaj używania tego urządzenia w niezaufanyc
     <string name="accessibility_status_connecting">Łączenie</string>
     <string name="accessibility_status_disconnected">Rozłączono</string>
 
+    <string name="notification_paused">Wstrzymano — Twój ruch nie jest chroniony</string>
+    <string name="notification_waiting_for_secured">Oczekiwanie na zabezpieczoną sieć</string>
+    <string name="notification_stood_down">Automatyczne łączenie jest wyłączone dla tej sieci</string>
+    <string name="notification_stood_down_on">Automatyczne łączenie jest wyłączone dla %1$s</string>
+    <string name="notification_action_pause">Wstrzymaj</string>
+    <string name="notification_action_resume">Wznów</string>
+    <string name="notification_action_connect">Połącz</string>
+    <string name="notification_action_turn_off">Wyłącz</string>
+    <string name="accessibility_status_paused">Wstrzymano, Twój ruch nie jest chroniony</string>
 </resources>
