@@ -140,6 +140,59 @@ UnitTests:
       junit:
         - "**/build/test-results/test*UnitTest/TEST-*.xml"
 
+# The fused AAR partners consume. Nothing else in the pipeline builds it, so a change that breaks
+# it — a missing consumer rule, a module that stops fusing — surfaces only when a partner reports it.
+# :partner-stub is the test: it depends on the AAR, carries no rules of its own, and shrinks, so R8
+# has only the AAR's proguard.txt to work from. Shrinking one of our own apps proves nothing here —
+# an app's rules cover the fused code too, so a rule missing from the contract still passes, which
+# is how the inet.ipaddr keeps sat in mobile/ and tv/ while the AAR shipped without them.
+#
+# A missing rule does not fail R8, it silently strips: seeds.txt is what catches that.
+Windscribe core AAR:
+  extends: .metal_arm64
+  rules:
+    - *mr_to_develop_or_main
+    - when: manual
+      allow_failure: true
+
+  script:
+    - ./gradlew :windscribe-core:bundle
+    # The snippet a partner applies has to describe the AAR they were given.
+    - ./gradlew :partner-stub:verifyConsumerDependencies
+    - ./gradlew :partner-stub:minifyReleaseWithR8
+    # Everything logback.xml, gson and native code resolve by name, in a build with no rules but the
+    # AAR's. Absent one, R8 succeeds and the class is simply gone.
+    - |
+      seeds=partner-stub/build/outputs/mapping/release/seeds.txt
+      for symbol in \
+        inet.ipaddr \
+        com.wsnet. \
+        com.scapix. \
+        org.strongswan.android \
+        org.pcap4j. \
+        org.minidns. \
+        ch.qos. \
+        org.slf4j. \
+        com.google.gson.reflect.TypeToken \
+        com.windscribe.vpn.api.response \
+        com.windscribe.vpn.serverlist.entity \
+        com.windscribe.vpn.backend.CdLib \
+        com.windscribe.vpn.commonutils.Ext \
+        com.windscribe.vpn.commonutils.JsonMessageConverter \
+        com.windscribe.vpn.commonutils.ConnectionIdConverter \
+        com.windscribe.vpn.commonutils.LowerCaseLevelConverter
+      do
+        grep -q -- "$symbol" "$seeds" \
+          || { echo "R8 stripped $symbol from a partner build; windscribe-core.aar is missing a keep rule for it"; exit 1; }
+      done
+
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - "windscribe-core/build/outputs/**"
+      - "partner-stub/build/outputs/mapping/**"
+
 # End to end critical flow tests on device.
 E2E tests:
   extends: .metal_arm64

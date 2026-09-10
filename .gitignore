@@ -34,3 +34,7 @@ maestro/.env
 
 # Maestro test reports
 /maestro-reports/
+
+# Kotlin compiler session/error scratch dir
+.kotlin/
+/partner-stub/build
