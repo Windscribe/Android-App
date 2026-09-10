@@ -12,7 +12,51 @@
 
 - [README.md](README.md) — Human-friendly overview and build instructions
 - [SKILL.md](SKILL.md) — Operational workflows for AI agents
-- [docs/](docs/) — Supplementary documentation
+- [docs/architecture/VPN_BACKEND.md](docs/architecture/VPN_BACKEND.md) — **how the VPN backend works; read this before changing anything under `base/backend/`**
+- [docs/architecture/MODULE_STRUCTURE.md](docs/architecture/MODULE_STRUCTURE.md) — modules and the dependency graph
+- [docs/architecture/DATA_FLOW.md](docs/architecture/DATA_FLOW.md) — API, database, preferences, workers
+- [docs/architecture/VPN_PROTOCOLS.md](docs/architecture/VPN_PROTOCOLS.md) — the six protocols
+- [docs/architecture/DNS_INTERCEPTION.md](docs/architecture/DNS_INTERCEPTION.md) — DNS through Control D
+- [docs/features/ANTI_CENSORSHIP.md](docs/features/ANTI_CENSORSHIP.md) — protocol tweaks, server routing, TLS padding
+- [docs/workflows/DEBUGGING.md](docs/workflows/DEBUGGING.md) — reading the app log, build commands
+- [docs/guides/OPENVPN_UPDATE.md](docs/guides/OPENVPN_UPDATE.md) — updating the OpenVPN native build
+
+---
+
+## Comments
+
+Hard rule, and the one most often broken here: **state the non-obvious fact and stop.**
+
+A comment earns its place only when the code cannot say it: a constraint from outside this file, an
+ordering that looks arbitrary, a value the platform dictates. Everything else is noise that goes
+stale.
+
+Never write:
+
+- the history of a bug, or what the code used to do — that is what `git log` is for
+- what was tried and rejected, or why an alternative is worse
+- a restatement of the line below it
+- a symptom narrative ("without this, X breaks, then Y, and the user sees Z")
+
+Size is the tell. If a comment is longer than the code it explains, it is wrong. One or two lines is
+normal; a KDoc paragraph on a private helper is not. Prefer a clear name over a comment explaining
+an unclear one.
+
+```kotlin
+// Wrong — four lines narrating a bug that git already records.
+// logback resolves ${DATA_DIR} through AppGlobals.getInitialApplication(), which is null while
+// the Application is constructed, so the very first getLogger call configures the appender before
+// there is an application to ask. DATA_DIR comes back empty, the file lands at the filesystem
+// root, and nothing is written for the whole process.
+private fun bindLogDirectory(base: Context) {
+
+// Right — the constraint, once.
+/** logback's own `${DATA_DIR}` is empty this early; the appender needs a real files dir. */
+private fun bindLogDirectory(base: Context) {
+```
+
+The same applies to docs under `docs/`: describe how it works now, minimally. No changelogs, no
+rejected designs.
 
 ---
 
@@ -76,141 +120,56 @@ Windscribe Android is a multi-protocol VPN application with comprehensive privac
 - **base** → **common** (tunnel wrapper, DNS routing)
 - NO circular dependencies
 
-### File Tree with Annotations
+### File Tree
 
 ```
 androidapp/
-├── base/                                    # Core functionality — ALL business logic
-│   ├── api/                                # wsnet integration — ONLY way to call APIs
-│   │   ├── IApiCallManager.kt              # API interface (all endpoints)
-│   │   └── ApiCallManager.kt               # Implementation using wsnet
-│   ├── backend/                            # VPN protocol communication & control
-│   │   ├── utils/
-│   │   │   └── WindVpnController.kt        # 🔑 Main VPN controller (start/stop/switch)
-│   │   ├── openvpn/
-│   │   │   ├── VpnBackend.kt               # OpenVPN backend (UDP/TCP/Stealth/WSTunnel)
-│   │   │   └── DeviceStateReceiverWrapper.kt # Network change handling
-│   │   ├── ikev2/
-│   │   │   └── IKev2VpnBackend.kt          # IKEv2 backend
-│   │   └── wireguard/
-│   │       └── WireGuardBackend.kt         # WireGuard backend
-│   ├── localdatabase/                      # Room database (all persistent data)
-│   │   ├── WindscribeDatabase.kt           # Database instance
-│   │   ├── entities/                       # Data models
-│   │   │   ├── Region.kt                   # VPN server region
-│   │   │   ├── City.kt                     # City within region
-│   │   │   └── StaticRegion.kt             # Static IP region
-│   │   └── dao/                            # Database access objects
-│   │       ├── RegionDao.kt
-│   │       ├── CityDao.kt
-│   │       └── ...
-│   ├── repository/                         # Data layer (API + Database)
-│   │   ├── ServerListRepository.kt         # 🔑 Server list management
-│   │   ├── UserRepository.kt               # User account data
-│   │   └── NotificationRepository.kt       # In-app notifications
-│   ├── services/                           # Android services (background work)
-│   │   ├── WindVpnService.kt               # 🔑 Main VPN service (always-alive)
-│   │   ├── AutoConnectService.kt           # 🔑 Network change auto-connect
-│   │   └── UpdateService.kt                # App update checks
-│   ├── state/                              # State managers (app-level state)
-│   │   ├── DeviceStateManager.kt           # 🔑 Network state, whitelist logic
-│   │   └── VPNConnectionStateManager.kt    # VPN connection state
-│   ├── apppreference/                      # Preferences (Tray library wrapper)
-│   │   ├── PreferencesHelper.kt            # Interface for all preferences
-│   │   └── AppPreferencesImpl.kt           # Implementation
-│   ├── managers/                           # Feature managers
-│   │   ├── ProtocolConnectionManager.kt    # Protocol switching logic
-│   │   └── LocationManager.kt              # Server location selection
-│   └── constants/
-│       └── PreferencesKeyConstants.kt      # All preference key constants
-│
-├── mobile/                                 # Phone/Tablet UI (100% Jetpack Compose)
-│   └── src/main/java/com/windscribe/mobile/
-│       ├── ui/
-│       │   └── AppStartActivity.kt         # 🔑 Main activity (Compose entry point)
-│       ├── nav/
-│       │   ├── Screen.kt                   # Screen route definitions
-│       │   └── NavigationStack.kt          # Navigation graph (hiltViewModel() per screen)
-│       └── [screens]/                      # Compose UI screens
-│           ├── HomeScreen.kt
-│           ├── LocationsScreen.kt
-│           └── SettingsScreen.kt
-│
-├── tv/                                     # Android TV UI (100% Kotlin, XML layouts)
-│   └── src/main/java/com/windscribe/tv/
-│       ├── splash/
-│       │   └── SplashActivity.kt           # 🔑 TV entry point
-│       ├── home/
-│       │   └── HomeActivity.kt             # Main TV interface
-│       └── [features]/                     # Feature activities
-│
-├── openvpn/                                # OpenVPN implementation (built from source)
-│   ├── src/main/cpp/                       # Native C++ code (OpenVPN core)
-│   │   ├── openvpn3/                       # OpenVPN 3 library
-│   │   └── jni/                            # JNI bindings
-│   └── src/main/java/                      # Kotlin wrapper
-│       └── com/windscribe/vpn/openvpn/
-│           └── OpenVPNManager.kt
-│
-├── strongswan/                             # IKEv2/IPSec (prebuilt binaries)
-│   ├── libs/                               # Prebuilt .so files (armeabi-v7a, arm64-v8a, x86, x86_64)
-│   └── src/main/java/
-│       └── org/strongswan/android/
-│           └── logic/VpnStateService.kt
-│
-├── wgtunnel/                               # Single native library (Go code compiled to .so)
-│   │                                       # Contains: WireGuard, WSTunnel, Stunnel, ControlD (ctrld)
-│   ├── src/main/go/                        # Go source code
-│   │   ├── wireguard/                      # WireGuard implementation
-│   │   ├── wstunnel/                       # WebSocket tunnel (OpenVPN over WS)
-│   │   ├── stunnel/                        # Stealth protocol wrapper
-│   │   └── ctrld/                          # ControlD DNS (DoH/DoT)
-│   └── src/main/java/
-│       └── com/windscribe/vpn/wgtunnel/
-│           └── WgTunnelManager.kt          # Kotlin interface to Go lib
-│
-├── common/                                 # Tunnel wrapper + DNS traffic separation
-│   └── src/main/java/
-│       └── com/windscribe/vpn/common/
-│           ├── TunnelManager.kt            # Tunnel abstraction layer
-│           └── DnsResolver.kt              # DNS routing logic
-│
-├── wsnet/                                  # In-house networking library (ALL API calls)
-│   └── src/main/java/
-│       └── com/windscribe/wsnet/
-│           ├── WSNetServerAPI.kt           # API client interface
-│           └── [endpoints]/                # API endpoint implementations
-│
-├── test/                                   # Shared test utilities
-│   └── src/main/java/
-│       └── com/windscribe/vpn/test/
-│           └── TestHelpers.kt
-│
-├── docs/                                   # 📚 Supplementary documentation
-│   ├── architecture/                       # Architecture deep-dives
-│   ├── features/                           # Feature-specific docs
-│   ├── guides/                             # How-to guides
-│   ├── workflows/                          # Process documentation
-│   ├── api/                                # API references
-│   └── security/                           # Security documentation
-│
-├── AGENTS.md                               # This file (AI architecture reference)
-├── SKILL.md                                # AI operational workflows
-├── README.md                               # Human-friendly overview
-└── build.gradle.kts                        # Root build configuration
+├── common/                       # Tunnel contracts + PacketMux. Depends on nothing.
+│   └── tunnel/                   #   VpnHost, VpnEngine, TunConfig, TunnelManager,
+│                                 #   PacketMux, ControlDDnsStage
+├── base/                         # ALL app logic
+│   └── src/main/java/com/windscribe/vpn/
+│       ├── backend/              # 🔑 VPN orchestration
+│       │   ├── tunnel/           #   WindscribeVpnService — the only VpnService
+│       │   │                     #   VpnServiceGate, AutoConnectWatcher
+│       │   ├── utils/            #   WindVpnController, WindNotificationBuilder,
+│       │   │                     #   ExcludedIpHolder
+│       │   ├── wireguard/        #   WireGuard backend + TunnelHealthCheck
+│       │   ├── openvpn/          #   OpenVPN backend
+│       │   ├── ikev2/            #   IKEv2 backend
+│       │   ├── VpnBackend.kt     # 🔑 Shared connect/disconnect skeleton
+│       │   └── ProxyDNSManager.kt
+│       ├── state/                # 🔑 ConnectionPolicy, ConnectionPolicyInputs,
+│       │                         #   VPNConnectionStateManager, NetworkInfoManager,
+│       │                         #   DeviceStateManager
+│       ├── autoconnection/       #   AutoConnectionManager — protocol failover
+│       ├── repository/           #   UserRepository, ServerListRepository, …
+│       ├── localdatabase/        #   Room (WindscribeDatabase, v43)
+│       ├── apppreference/        #   DataStore preferences
+│       ├── workers/              #   WorkManager jobs (SessionWorker, …)
+│       ├── api/, wsnet/          #   API surface over the wsnet AAR
+│       └── di/                   #   Dagger modules
+├── mobile/                       # Phone/tablet UI (Compose)
+├── tv/                           # Android TV UI (XML)
+├── openvpn/                      # OpenVPN engine + C++ native build
+├── strongswan/                   # IKEv2 engine, prebuilt charon
+├── wgtunnel/                     # WireGuard (wg-go) + ctrld, Go → .so
+├── windscribe-core/              # Fused AAR of base + everything under it
+├── docs/                         # Architecture and workflow documentation
+├── AGENTS.md                     # This file
+└── build.gradle.kts
 ```
 
-**Key Files** (🔑 marked above):
-- **WindVpnController**: Main VPN controller — start/stop/switch protocols
-- **VpnBackend**: OpenVPN backend — handles UDP/TCP/Stealth/WSTunnel
-- **WindVpnService**: Main VPN service — runs as foreground service
-- **AutoConnectService**: Network change detection → auto-connect logic
-- **DeviceStateManager**: Network state tracking, auto-secure whitelist
-- **ServerListRepository**: Server list management (API → Database → UI)
-- **AppStartActivity** (mobile): Main Compose entry point
-- **SplashActivity** (tv): Android TV entry point
+There is **no** `wsnet` or `test` module — `wsnet` is a prebuilt AAR dependency.
 
----
+**Key entry points**:
+- `WindscribeVpnService` — the only `android.net.VpnService`; owns the TUN for a session
+- `WindVpnController` — orchestration: what to connect to, in what order, when to give up
+- `ConnectionPolicy` — every connect/disconnect/block decision, as pure functions
+- `VpnBackend` — the shared connect/disconnect skeleton all three protocols run through
+- `TunnelManager` / `PacketMux` — attach/detach engines, move packets
+- `VPNConnectionStateManager` — publishes connection status and service mode
+
 
 ## Key Implementation Decisions
 
@@ -311,23 +270,21 @@ class ServerListRepository @Inject constructor(
 }
 ```
 
-### 6. Auto-Secure Network Whitelist System
+### 6. One Decision Object: `ConnectionPolicy`
 
-**Purpose**: Prevent auto-reconnect after user manually disconnects on an auto-secure network.
+Every connect, disconnect, block and stand-down decision is a pure function on
+`ConnectionPolicy` (`base/state/`), with no Android or coroutine dependencies. Callers read
+their inputs through `ConnectionPolicyInputs` and ask the policy; **none of them re-implement a
+condition locally**. That rule exists because the same decision used to be spelled out in five
+places with four different predicates.
 
-**Behavior**:
-- User disconnect on auto-secure ON network → Network whitelisted, auto-connect blocked
-- Network change → Whitelist cleared, auto-connect resumes normally
-- Return to network → Auto-connect works (whitelist was cleared when user left)
-- System disconnect (protocol change, auto-secure OFF) → No whitelist, auto-reconnect continues
+Includes what used to be the "auto-secure whitelist": a user disconnect stands the current network
+down (`standsDown`), so auto-connect does not immediately undo it.
 
-**Key Components**:
-- `DeviceStateManager` (base/state/) — Whitelist state tracking, network change detection
-- `WindVpnController` (base/backend/utils/) — Whitelist set/clear logic
-- `AutoConnectService` (base/services/) — Whitelist check before auto-connect
-- `VpnBackend` (base/backend/) — System disconnect handling
+**Do not add a sixth place that decides these things.** Add the rule to `ConnectionPolicy`, cover it
+in `ConnectionPolicyTest`, and call it.
 
-**Implementation**: Session-based (in-memory), cleared on network change. See [docs/features/AUTO_SECURE_WHITELIST.md](docs/features/AUTO_SECURE_WHITELIST.md).
+See [docs/architecture/VPN_BACKEND.md](docs/architecture/VPN_BACKEND.md) §8.
 
 ### 7. Build Variants: Google vs F-Droid
 
@@ -345,19 +302,15 @@ class ServerListRepository @Inject constructor(
 
 **Code Pattern**:
 ```kotlin
-// mobile/src/google/java/com/windscribe/mobile/billing/
-class BillingManagerImpl : BillingManager { ... }
-
-// mobile/src/fdroid/java/com/windscribe/mobile/billing/
-class BillingManagerImpl : BillingManager {
-    override fun purchase() { /* no-op */ }
-}
+// base/src/google/... — GoogleBillingManager, AmazonBillingManager
+// The fdroid flavor provides no-op equivalents, so :mobile compiles either way.
 ```
 
 ### 8. Language: Kotlin
 
-`base`, `mobile`, and `tv` are 100% Kotlin. The only Java in the repo is the vendored native VPN
-backend modules (`openvpn`, `strongswan`, `wgtunnel`), which are upstream-sourced and out of scope.
+`base`, `mobile` and `tv` are 100% Kotlin. Our own Java is confined to `:common` — `PacketMux` and
+`ControlDDnsStage`, which sit on the packet path. The rest is the vendored native backend modules
+(`openvpn`, `strongswan`, `wgtunnel`), which are upstream-sourced.
 
 **Rule**: ALL code is Kotlin. No new Java files.
 
@@ -373,26 +326,20 @@ backend modules (`openvpn`, `strongswan`, `wgtunnel`), which are upstream-source
 - Traditional MVP pattern
 - State exposed via `StateFlow`/`SharedFlow` (no LiveData)
 
-### 10. Protocol Connection Flow
+### 10. One Service Owns the Interface
 
-**Start Connection**:
-1. User selects location/protocol → `WindVpnController.connect()`
-2. Controller selects backend based on protocol → `VpnBackend` / `IKev2VpnBackend` / `WireGuardBackend`
-3. Backend prepares config → Calls native library (OpenVPN/StrongSwan/WireGuard)
-4. `WindVpnService` started as foreground service → Notification shown
-5. VPN interface created → Traffic routed through tunnel
-6. `VPNConnectionStateManager` emits state updates → UI reflects connection status
+`WindscribeVpnService` is the **only** `android.net.VpnService` in the app and owns the TUN for an
+entire session. WireGuard, OpenVPN and IKEv2 are plain `VpnEngine` objects behind `PacketMux`;
+switching protocol detaches one and attaches another without closing the interface.
 
-**Auto-Connect Flow**:
-1. Network change detected → `DeviceStateReceiverWrapper` broadcasts
-2. `AutoConnectService` receives broadcast → Checks whitelist
-3. If not whitelisted + auto-connect enabled → `WindVpnController.connect()`
-4. Same flow as manual connection
+The service is started **before** the profile is built, not after, so the blocking interface is up
+while the API round trips happen. Getting this order wrong reopens a traffic-in-the-clear window.
 
-**Protocol Fallback**:
-1. Connection fails → Backend emits error
-2. `ProtocolConnectionManager` receives error → Tries next protocol in preference order
-3. Max 3 retries → Show error to user if all fail
+Because the interface outlives any single attempt it can be *held* with no engine attached — which is
+how failover avoids a leak, and how blocking mode works without a separate killswitch.
+
+Full flow, service modes, holds, failover budgets and the decision rules:
+[docs/architecture/VPN_BACKEND.md](docs/architecture/VPN_BACKEND.md).
 
 ---
 
@@ -433,7 +380,7 @@ UI updates (new server list displayed)
 **Code Example**:
 ```kotlin
 // ViewModel
-class LocationsViewModel(
+class SomeViewmodel(
     private val serverListRepository: ServerListRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow<LocationsState>(LocationsState.Loading)
@@ -511,13 +458,13 @@ ViewModel.setAutoSecure(true)
     ↓
 PreferencesHelper.isAutoSecureOn = true
     ↓
-Tray preference written to storage
+DataStore preference written
     ↓
-DeviceStateManager.onAutoSecureChanged()
+NetworkInfoManager re-reads the network
     ↓
-AutoConnectService checks current network
+AutoConnectWatcher asks ConnectionPolicy.shouldAutoConnect()
     ↓
-If unsafe network + VPN disconnected → Connect
+If it says yes → WindVpnController.connectAsync()
 ```
 
 ---
@@ -526,39 +473,37 @@ If unsafe network + VPN disconnected → Connect
 
 ### base/backend ↔ Protocol Modules
 
-**OpenVPN Example**:
+Protocol modules implement `:common` contracts. They never depend on `:base`, and `:base` never
+talks to a native library directly — it goes through `TunnelManager`.
+
 ```kotlin
-// base/backend/openvpn/VpnBackend.kt
-class VpnBackend {
-    private val openVPNManager = OpenVPNManager() // from openvpn module
-
-    fun startVPN(config: OpenVPNConfig) {
-        openVPNManager.startVPN(config.toNativeConfig())
-    }
+// common/.../tunnel/VpnEngine.kt — implemented in each protocol module
+interface VpnEngine {
+    fun start(profile: EngineProfile, tunFd: Int)
+    fun stop()
+    fun onRevoked()
 }
 
-// openvpn/src/main/java/com/windscribe/vpn/openvpn/OpenVPNManager.kt
-class OpenVPNManager {
-    external fun startVPN(config: String): Int // JNI call to C++
-}
+// base asks TunnelManager to attach one; the service owns the interface
+tunnelManager.connect(engineId, profile, tunConfig, hold)
 ```
+
+The engine is handed a file descriptor from `PacketMux`, not the TUN itself — which is what lets one
+engine be swapped for another without closing the interface.
 
 ### mobile/tv → base (Repository Pattern)
 
 **Mobile (Compose)**:
 ```kotlin
-// mobile/src/main/java/com/windscribe/mobile/ui/HomeScreen.kt
+// mobile/src/main/java/com/windscribe/mobile/ui/home/HomeScreen.kt
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
+fun HomeScreen(viewModel: HomeViewmodel) {
     val state by viewModel.state.collectAsState()
     // UI rendering
 }
 
-// Provided by Hilt
-@HiltViewModel
-class HomeViewModelImpl @Inject constructor(
-    private val serverListRepository: ServerListRepository // from base/
-) : HomeViewModel()
+// mobile/src/main/java/com/windscribe/mobile/ui/home/HomeViewmodel.kt
+// Note the spelling: Viewmodel, not ViewModel, throughout mobile/ui.
 ```
 
 **TV (XML)**:
@@ -674,8 +619,6 @@ See [SKILL.md](SKILL.md) for complete pattern.
 
 ### Adding a VPN Feature
 
-See [docs/guides/ADDING_VPN_FEATURE.md](docs/guides/ADDING_VPN_FEATURE.md).
-
 **Pattern**:
 1. Update `base/backend` — Core VPN logic
 2. Update protocol module if needed (openvpn/wgtunnel/strongswan)
@@ -685,8 +628,6 @@ See [docs/guides/ADDING_VPN_FEATURE.md](docs/guides/ADDING_VPN_FEATURE.md).
 6. Add tests (unit + integration)
 
 ### Database Migration
-
-See [docs/guides/DATABASE_MIGRATIONS.md](docs/guides/DATABASE_MIGRATIONS.md).
 
 **Pattern**:
 1. Update entity (`@Entity` class)
