@@ -182,8 +182,25 @@ class ConnectionPolicyTest {
 
     @Test
     fun `an unnameable network still honours a user disconnect`() {
-        // Recorded per network name, so without one the last manual action stands in.
         assertFalse(
+            ConnectionPolicy.shouldAutoConnect(
+                input(
+                    canReadNetworkName = false,
+                    isAutoSecureOn = null,
+                    isNetworkStoodDown = true,
+                ),
+            ),
+        )
+    }
+
+    /**
+     * Regression: `globalUserConnectionPreference` is false for someone who has never connected as
+     * well as for someone who disconnected, so a fresh install with no location permission read as
+     * a stand-down and Auto-Connect never fired.
+     */
+    @Test
+    fun `a fresh install connects on an unnameable network`() {
+        assertTrue(
             ConnectionPolicy.shouldAutoConnect(
                 input(
                     canReadNetworkName = false,
@@ -223,7 +240,7 @@ class ConnectionPolicyTest {
     fun `an unnameable network reports the stand-down it actually applies`() {
         // The notification must not promise a reconnect shouldAutoConnect will refuse.
         val stoodDown =
-            input(canReadNetworkName = false, globalUserConnectionPreference = false)
+            input(canReadNetworkName = false, isNetworkStoodDown = true)
         assertFalse(ConnectionPolicy.shouldAutoConnect(stoodDown))
         assertEquals(
             ServiceMode.Watching(WatchReason.StoodDownByUser),
@@ -233,7 +250,7 @@ class ConnectionPolicyTest {
 
     @Test
     fun `an unnameable network the user did not stop still reconnects`() {
-        val armed = input(canReadNetworkName = false, globalUserConnectionPreference = true)
+        val armed = input(canReadNetworkName = false, globalUserConnectionPreference = false)
         assertTrue(ConnectionPolicy.shouldAutoConnect(armed))
         assertEquals(
             ServiceMode.Watching(WatchReason.NetworkNotSecured),
@@ -505,6 +522,145 @@ class ConnectionPolicyTest {
     fun `does not disconnect on a secured or unidentifiable network`() {
         assertFalse(ConnectionPolicy.shouldAutoDisconnect(input(isAutoSecureOn = true, status = VPNState.Status.Connected)))
         assertFalse(ConnectionPolicy.shouldAutoDisconnect(input(isAutoSecureOn = null, status = VPNState.Status.Connected)))
+    }
+
+    // ---------------------------------------------- undoing an Auto-Secure teardown
+
+    /**
+     * Auto-Secure tears a session down whatever Auto-Connect says, so the undo has to work there
+     * too. Without this the service stops, and nothing is left to notice the next network.
+     */
+    private fun optedOut() =
+        input(
+            autoConnect = false,
+            isAutoSecureOn = false,
+            globalUserConnectionPreference = true,
+        )
+
+    @Test
+    fun `an auto-secure teardown keeps the service up with auto-connect off`() {
+        assertEquals(
+            ServiceMode.Watching(WatchReason.NetworkOptedOut),
+            ConnectionPolicy.serviceModeAfterSession(optedOut(), SessionEnd.SystemDisconnect),
+        )
+    }
+
+    /** The whole point: the session the user asked for comes back on a network we secure. */
+    @Test
+    fun `the next secured network restores the session with auto-connect off`() {
+        assertTrue(
+            ConnectionPolicy.shouldAutoConnect(
+                input(
+                    autoConnect = false,
+                    isAutoSecureOn = true,
+                    serviceMode = ServiceMode.Watching(WatchReason.NetworkOptedOut),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `another opted-out network keeps waiting rather than connecting`() {
+        assertFalse(
+            ConnectionPolicy.shouldAutoConnect(
+                input(
+                    autoConnect = false,
+                    isAutoSecureOn = false,
+                    serviceMode = ServiceMode.Watching(WatchReason.NetworkOptedOut),
+                ),
+            ),
+        )
+    }
+
+    /** Overriding the user's Auto-Connect setting needs a network we positively know we secure. */
+    @Test
+    fun `does not restore on a network it cannot name`() {
+        assertFalse(
+            ConnectionPolicy.shouldAutoConnect(
+                input(
+                    autoConnect = false,
+                    isAutoSecureOn = null,
+                    canReadNetworkName = false,
+                    serviceMode = ServiceMode.Watching(WatchReason.NetworkOptedOut),
+                ),
+            ),
+        )
+    }
+
+    /** Only Auto-Secure's own teardown is undone; an ordinary disconnect still stops everything. */
+    @Test
+    fun `does not restore without the opted-out state`() {
+        assertFalse(
+            ConnectionPolicy.shouldAutoConnect(input(autoConnect = false, isAutoSecureOn = true)),
+        )
+        assertFalse(
+            ConnectionPolicy.shouldAutoConnect(
+                input(
+                    autoConnect = false,
+                    isAutoSecureOn = true,
+                    serviceMode = ServiceMode.Watching(WatchReason.NetworkNotSecured),
+                ),
+            ),
+        )
+    }
+
+    /** A hand disconnect on an opted-out network is the user's decision, not Auto-Secure's doing. */
+    @Test
+    fun `a manual disconnect on an opted-out network still stops the service`() {
+        assertEquals(
+            ServiceMode.Off,
+            ConnectionPolicy.serviceModeAfterSession(
+                input(autoConnect = false, isAutoSecureOn = false, isNetworkStoodDown = true),
+                SessionEnd.UserDisconnect,
+            ),
+        )
+    }
+
+    /** Nothing was taken away, so there is nothing to give back. */
+    @Test
+    fun `a session the user never asked for is not restored`() {
+        assertEquals(
+            ServiceMode.Off,
+            ConnectionPolicy.serviceModeAfterSession(
+                input(autoConnect = false, isAutoSecureOn = false, globalUserConnectionPreference = false),
+                SessionEnd.SystemDisconnect,
+            ),
+        )
+        assertFalse(
+            ConnectionPolicy.shouldAutoConnect(
+                input(
+                    autoConnect = false,
+                    isAutoSecureOn = true,
+                    globalUserConnectionPreference = false,
+                    serviceMode = ServiceMode.Watching(WatchReason.NetworkOptedOut),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `an account that cannot connect is not kept waiting for a secured network`() {
+        assertEquals(
+            ServiceMode.Off,
+            ConnectionPolicy.serviceModeAfterSession(
+                input(autoConnect = false, isAutoSecureOn = false, accountStatus = User.AccountStatus.Expired),
+                SessionEnd.SystemDisconnect,
+            ),
+        )
+    }
+
+    /** The restore is one attempt: a connect clears the mode, and a failure replaces it. */
+    @Test
+    fun `a failed restore does not retry`() {
+        assertFalse(
+            ConnectionPolicy.shouldAutoConnect(
+                input(
+                    autoConnect = false,
+                    isAutoSecureOn = true,
+                    serviceMode = ServiceMode.Failed(),
+                ),
+            ),
+        )
     }
 
     // ------------------------------------------------------------------ serviceModeAfterSession

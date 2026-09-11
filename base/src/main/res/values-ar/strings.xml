@@ -482,7 +482,7 @@
     <string name="anti_censorship">التحايل على الرقابة</string>
     <string name="anti_censorship_explainer">اتصل بشبكة VPN حتى في بيئة معادية</string>
     <string name="auto_connect">الاتصال التلقائي</string>
-    <string name="auto_connect_explainer">يتصل بآخر موقع مستخدم عند تشغيل التطبيق أو الانضمام إلى شبكة.</string>
+    <string name="auto_connect_explainer">يتصل بآخر موقع استخدمته على أي شبكة لم تستثنها، ويحجب الإنترنت إذا تعذّر الاتصال. الحجب يحدث فقط عند فشل الاتصال — أما قطع الاتصال أو الإيقاف المؤقت فلا يحجب أبدًا.</string>
     <string name="save">حفظ</string>
     <string name="clear">واضح</string>
     <string name="enter_1_key_value_per_line">أدخل مفتاح=قيمة في كل سطر.</string>

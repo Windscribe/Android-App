@@ -71,7 +71,6 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.coroutineContext
 
 /**
  * Ceiling for building a profile: DB reads plus `createVPNProfile`'s API round trips. Generous
@@ -393,11 +392,18 @@ open class WindVpnController
             disconnect(error = VPNState.Error(error = VPNState.ErrorType.UserPause))
         }
 
-        /** Stops everything, watching included: the only way to make the notification go away. */
+        /**
+         * Stops everything, watching included: the only way to make the notification go away, and the
+         * only way out of a blocked device. Settles the service itself rather than relying on the
+         * teardown to reach one — a TUN held with no engine has no backend to disconnect, so nothing
+         * in [disconnect] runs, and the block used to stand.
+         */
         suspend fun turnOff() {
             logger.info("Turning off: no tunnel, no watcher, no notification.")
             preferencesHelper.globalUserConnectionPreference = false
-            disconnect(error = VPNState.Error(error = VPNState.ErrorType.UserTurnOff))
+            runCatching { disconnect(error = VPNState.Error(error = VPNState.ErrorType.UserTurnOff)) }
+                .onFailure { logger.error("Teardown failed on the way to turning off.", it) }
+            endSession(ConnectionPolicy.SessionEnd.UserTurnOff)
         }
 
         /** Applies a change to Auto-Connect, which nothing observes. Call after writing it. */
@@ -411,7 +417,13 @@ open class WindVpnController
             }
         }
 
-        /** [ConnectionPolicy.ServiceMode.AccountBlocked] is the only mode nothing else clears. */
+        /**
+         * [ConnectionPolicy.ServiceMode.AccountBlocked] is the only mode nothing else clears.
+         *
+         * Expired and banned both land there, and both took away a session the user had asked for,
+         * so recovering gives it back regardless of Auto-Connect — that switch governs connecting on
+         * its own, not restoring what we interrupted.
+         */
         fun onAccountRecovered() {
             scope.launch {
                 if (vpnConnectionStateManager.serviceMode.value !is ConnectionPolicy.ServiceMode.AccountBlocked) {
@@ -419,6 +431,12 @@ open class WindVpnController
                 }
                 logger.info("The account can connect again; clearing the block.")
                 vpnConnectionStateManager.setServiceMode(null)
+                if (preferencesHelper.globalUserConnectionPreference) {
+                    logger.info("Restoring the session the account block interrupted.")
+                    // Through failover, like every other reconnect the session refresh drives.
+                    autoConnectionManager.connectInForeground(ConnectSource.SessionRefresh)
+                    return@launch
+                }
                 reconcile("the account can connect again")
             }
         }
@@ -681,9 +699,7 @@ open class WindVpnController
                 // Here with the stand-down, not at each call site: one surface missing it left the
                 // same act reconnecting on the next boot.
                 preferencesHelper.globalUserConnectionPreference = false
-                val networkName = deviceStateManager.getCurrentNetworkName()
-                deviceStateManager.setWhitelistedNetwork(networkName)
-                logger.debug("User disconnected - standing down auto-connect on: $networkName")
+                deviceStateManager.standDownCurrentNetwork()
             } else {
                 logger.debug("Not standing the network down (reconnecting=$reconnecting, error=${error?.error})")
             }
@@ -751,7 +767,6 @@ open class WindVpnController
             protocolInformation: ProtocolInformation?,
         ) {
             logger.debug("code: ${error.code} error: ${error.errorMessage}")
-            val context = coroutineContext
             when (error.code) {
                 ERROR_UNABLE_TO_REACH_API, ERROR_UNEXPECTED_API_DATA -> {
                     val message = "Unable to reach the server. Please check your internet connection."
@@ -767,8 +782,23 @@ open class WindVpnController
                 }
 
                 ERROR_WG_KEY_LIMIT_EXCEEDED -> {
+                    // With no screen the dialog is never posted, so neither callback ever runs.
+                    if (appContext.activeActivity == null) {
+                        logger.info("WireGuard key limit reached with no screen to ask on; ending the attempt.")
+                        disconnect(
+                            error =
+                                VPNState.Error(
+                                    error = VPNState.ErrorType.GenericError,
+                                    message = error.errorMessage,
+                                ),
+                        )
+                        return
+                    }
                     showRetryDialog(error.errorMessage, {
-                        CoroutineScope(context).launch {
+                        // Not the connect's scope: it ends when this dialog is posted, and a
+                        // launch on a finished job never runs.
+                        scope.launch {
+                            logger.info("Replacing the oldest WireGuard key and retrying.")
                             vpnProfileCreator.wgForceInit.set(true)
                             val vpnState =
                                 VPNState(
@@ -782,6 +812,10 @@ open class WindVpnController
                             vpnState.protocolInformation = protocolInformation
                             vpnState.connectionId = connectionId
                             vpnConnectionStateManager.setState(vpnState)
+                            // Failover collects that state; an auto-connect has nothing that does.
+                            if (!autoConnectionManager.isFailoverActive) {
+                                connect(ConnectSource.User, protocolInformation = protocolInformation)
+                            }
                         }
                     }, {
                         logger.info("Cancel clicked")

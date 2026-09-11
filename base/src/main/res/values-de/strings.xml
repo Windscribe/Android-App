@@ -482,7 +482,7 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="anti_censorship">Zensur umgehen</string>
     <string name="anti_censorship_explainer">Verbindung zum VPN auch in kritischer Umgebung</string>
     <string name="auto_connect">Automatische Verbindung</string>
-    <string name="auto_connect_explainer">Stellt eine Verbindung mit dem zuletzt verwendeten Standort her, wenn die App gestartet wird oder einem Netzwerk beitritt.</string>
+    <string name="auto_connect_explainer">Verbindet sich in jedem Netzwerk, das Sie nicht ausgeschlossen haben, mit Ihrem letzten Standort und blockiert Ihren Internetzugang, wenn keine Verbindung möglich ist. Blockiert wird nur bei einem fehlgeschlagenen Verbindungsversuch — beim Trennen oder Pausieren nie.</string>
     <string name="save">Speichern</string>
     <string name="clear">Klar</string>
     <string name="enter_1_key_value_per_line">Geben Sie pro Zeile 1 Schlüssel=Wert ein.</string>

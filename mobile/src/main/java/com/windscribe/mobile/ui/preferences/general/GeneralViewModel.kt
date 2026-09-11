@@ -6,6 +6,7 @@ import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -51,6 +52,7 @@ class GeneralViewModelImpl
     constructor(
         private val preferenceHelper: PreferencesHelper,
         private val userRepository: UserRepository,
+        private val trafficCounter: TrafficCounter,
     ) : GeneralViewModel() {
         private val _reloadApp = MutableSharedFlow<Boolean>()
         override val reloadApp: SharedFlow<Boolean> = _reloadApp
@@ -114,6 +116,8 @@ class GeneralViewModelImpl
             val newValue = !_isNotificationStatEnabled.value
             preferenceHelper.notificationStat = newValue
             _isNotificationStatEnabled.value = newValue
+            // Nothing observes the setting, so a live session would keep the counter it started with.
+            trafficCounter.reset(newValue)
         }
 
         override val versionName: String

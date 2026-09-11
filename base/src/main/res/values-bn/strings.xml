@@ -481,7 +481,7 @@
     <string name="anti_censorship">সেন্সরশিপ এড়িয়ে চলুন</string>
     <string name="anti_censorship_explainer">শত্রুতাপূর্ণ পরিবেশেও VPN-এ সংযোগ করুন</string>
     <string name="auto_connect">স্বয়ংক্রিয় সংযোগ </string>
-    <string name="auto_connect_explainer">অ্যাপটি চালু হলে বা নেটওয়ার্কে যোগ দিলে সর্বশেষ ব্যবহৃত স্থানের সাথে সংযোগ করে।</string>
+    <string name="auto_connect_explainer">আপনি বাদ দেননি এমন যেকোনো নেটওয়ার্কে আপনার শেষ অবস্থানে সংযোগ করে, এবং সংযোগ করতে না পারলে আপনার ইন্টারনেট ব্লক করে। শুধু ব্যর্থ সংযোগেই ব্লক হয় — নিজে সংযোগ বিচ্ছিন্ন করলে বা বিরতি দিলে কখনও নয়।</string>
     <string name="save">সংরক্ষণ করুন</string>
     <string name="clear">খালি করুন </string>
     <string name="enter_1_key_value_per_line">প্রতি লাইনে 1 key=value লিখুন।.</string>

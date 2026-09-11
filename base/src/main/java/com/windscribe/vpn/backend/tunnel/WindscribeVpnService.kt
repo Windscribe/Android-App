@@ -221,15 +221,9 @@ class WindscribeVpnService :
                 shortcutStateManager.connect(ConnectSource.User)
             }
 
-            // Only reachable from an idle state, where the notification says "Turn off".
             ACTION_TURN_OFF -> {
                 logger.info("Turned off by the user; the service is stopping.")
-                if (!tunnelManager.hasTunnel) {
-                    preferencesHelper.globalUserConnectionPreference = false
-                    endSession(ConnectionPolicy.SessionEnd.UserTurnOff)
-                } else {
-                    scope.launch { vpnController.turnOff() }
-                }
+                scope.launch { vpnController.turnOff() }
             }
 
             else ->

@@ -165,6 +165,12 @@ class AutoConnectionManager(
             runBlocking {
                 attemptJob = coroutineContext[Job]
                 val newConnectionId = UUID.randomUUID()
+                // One retry each. Both paths reconnect under the same connectionId and keep
+                // collecting, so without a bound a server that refuses freshly fetched credentials
+                // loops here forever - two API calls and a handshake every 650ms - and failover
+                // never gets to try another protocol.
+                var credentialsRefreshed = false
+                var keysReinitialised = false
                 vpnController.get().connect(
                     source = source,
                     connectionId = newConnectionId,
@@ -178,6 +184,11 @@ class AutoConnectionManager(
                         .first {
                             if (it.connectionId == newConnectionId) {
                                 if (it.error?.error == VPNState.ErrorType.AuthenticationError) {
+                                    if (credentialsRefreshed) {
+                                        logger.debug("Credentials already refreshed and still refused; giving up.")
+                                        return@first true
+                                    }
+                                    credentialsRefreshed = true
                                     logger.debug("Updating user auth credentials.")
                                     if (connectionDataRepository.update()) {
                                         logger.debug("Auth updated successfully.")
@@ -193,6 +204,11 @@ class AutoConnectionManager(
                                         return@first true
                                     }
                                 } else if (it.error?.error == VPNState.ErrorType.WireguardAuthenticationError) {
+                                    if (keysReinitialised) {
+                                        logger.debug("Wireguard keys already re-initialised and still refused; giving up.")
+                                        return@first true
+                                    }
+                                    keysReinitialised = true
                                     logger.debug("Trying wireguard with force init.")
                                     vpnController.get().connect(
                                         source = source,

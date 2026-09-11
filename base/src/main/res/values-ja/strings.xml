@@ -482,7 +482,7 @@
     <string name="anti_censorship">検閲の回避</string>
     <string name="anti_censorship_explainer">過酷な環境でもVPNに接続します</string>
     <string name="auto_connect">自動接続</string>
-    <string name="auto_connect_explainer">アプリの起動時またはネットワークへの参加時に、最後に使用した場所に接続します。</string>
+    <string name="auto_connect_explainer">除外していないすべてのネットワークで、最後に使用した場所に接続します。接続できない場合はインターネットを遮断します。遮断されるのは接続に失敗したときだけで、自分で切断または一時停止した場合は遮断されません。</string>
     <string name="save">保存</string>
     <string name="clear">クリア</string>
     <string name="enter_1_key_value_per_line">1 行に 1 つの key=value を入力します。</string>

@@ -482,7 +482,7 @@
     <string name="anti_censorship">Contornar a censura</string>
     <string name="anti_censorship_explainer">Conecte-se à VPN mesmo em ambiente hostil</string>
     <string name="auto_connect">Ligação Automática</string>
-    <string name="auto_connect_explainer">Conecta-se ao último local usado quando o aplicativo é iniciado ou ingressa em uma rede.</string>
+    <string name="auto_connect_explainer">Liga-se à sua última localização em qualquer rede que não tenha excluído e bloqueia a sua Internet se não conseguir ligar-se. O bloqueio só ocorre quando a ligação falha — nunca quando se desliga ou coloca em pausa.</string>
     <string name="save">Guardar</string>
     <string name="clear">Limpar</string>
     <string name="enter_1_key_value_per_line">Insira 1 chave=valor por linha.</string>

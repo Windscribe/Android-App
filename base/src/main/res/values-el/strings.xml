@@ -487,7 +487,7 @@
     <string name="anti_censorship">Παράκαμψη λογοκρισίας</string>
     <string name="anti_censorship_explainer">Σύνδεση στο Εικονικό Ιδιωτικό Δίκτυο (ΕΙΔ) ακόμη και σε εχθρικά περιβάλλοντα</string>
     <string name="auto_connect">Αυτόματη σύνδεση</string>
-    <string name="auto_connect_explainer">Συνδέεται στη πιο πρόσφατη τοποθεσία όταν εκκινείται η εφαρμογή ή όταν συνδέεται σε δίκτυο.</string>
+    <string name="auto_connect_explainer">Συνδέεται στην τελευταία σας τοποθεσία σε κάθε δίκτυο που δεν έχετε εξαιρέσει και μπλοκάρει το ίντερνετ σας αν δεν μπορεί να συνδεθεί. Το μπλοκάρισμα γίνεται μόνο σε αποτυχημένη σύνδεση — ποτέ όταν αποσυνδέεστε ή κάνετε παύση.</string>
     <string name="save">Αποθήκευση</string>
     <string name="clear">Καθαρισμός</string>
     <string name="enter_1_key_value_per_line">Εισάγετε 1 κλειδί=τιμή ανά γραμμή.</string>

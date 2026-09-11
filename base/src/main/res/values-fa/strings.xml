@@ -478,7 +478,7 @@
     <string name="anti_censorship">دور زدن سانسور</string>
     <string name="anti_censorship_explainer">به VPN حتی در محیط‌های خصمانه متصل شوید</string>
     <string name="auto_connect">اتصال خودکار</string>
-    <string name="auto_connect_explainer">زمانی که برنامه راه‌اندازی می‌شود یا به شبکه‌ای متصل می‌گردد، به مکان آخر استفاده شده متصل می‌شود.</string>
+    <string name="auto_connect_explainer">در هر شبکه‌ای که آن را مستثنا نکرده‌اید به آخرین موقعیت شما متصل می‌شود و اگر نتواند متصل شود اینترنت شما را مسدود می‌کند. مسدودسازی فقط در صورت شکست اتصال رخ می‌دهد — قطع کردن یا توقف موقت هرگز آن را ایجاد نمی‌کند.</string>
     <string name="save">سو</string>
     <string name="clear">پاک</string>
     <string name="enter_1_key_value_per_line">در هر خط یک کلید=مقدار وارد کنید.</string>

@@ -482,7 +482,7 @@ son seçilen yer.</string>
     <string name="anti_censorship">Sansürü Aşın</string>
     <string name="anti_censorship_explainer">Düşmanca bir ortamda bile VPN e bağlanın</string>
     <string name="auto_connect">Otomatik Bağlan</string>
-    <string name="auto_connect_explainer">Uygulama başlatıldığında veya bir ağa katıldığında son kullanılan konuma bağlanır.</string>
+    <string name="auto_connect_explainer">Hariç tutmadığınız her ağda son konumunuza bağlanır ve bağlanamazsa internetinizi engeller. Engelleme yalnızca bağlantı başarısız olduğunda olur — bağlantıyı kendiniz kestiğinizde veya duraklattığınızda asla.</string>
     <string name="save">Kaydet</string>
     <string name="clear">Berrak</string>
     <string name="enter_1_key_value_per_line">Her satıra 1 anahtar=değer girin.</string>

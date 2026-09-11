@@ -122,15 +122,21 @@ class SessionWorkerAccountStatusTest {
             verify(exactly = 0) { preferences.globalUserConnectionPreference = false }
         }
 
+    /**
+     * An account lapsing is not the user asking to stop, and the flag is what puts the session back
+     * once they pay. Nothing can connect meanwhile: every connect path gates on the account status.
+     */
     @Test
-    fun `a banned account still clears the intent of a Windscribe connection`() =
+    fun `a lapsed account keeps the intent of a Windscribe connection`() =
         runTest {
-            val response = session(accountStatus = 3)
-            arrange(response)
-            every { preferences.isConnectingToConfigured } returns false
+            listOf(2, 3).forEach { status ->
+                val response = session(accountStatus = status)
+                arrange(response)
+                every { preferences.isConnectingToConfigured } returns false
 
-            buildWorker().doWork()
+                buildWorker().doWork()
 
-            verify { preferences.globalUserConnectionPreference = false }
+                verify(exactly = 0) { preferences.globalUserConnectionPreference = false }
+            }
         }
 }

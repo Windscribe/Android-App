@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.Date
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 
 /**
@@ -47,6 +48,34 @@ class DataStorePreferenceHelper(
     private val securePreferences: SecurePreferences,
     private val scope: CoroutineScope,
 ) : PreferencesHelper {
+    /**
+     * Values written here, by key name. `dataStore.edit` commits asynchronously, so without this a
+     * read straight after a write returns the previous value. Reads are not cached.
+     */
+    private val writtenValues = ConcurrentHashMap<String, Any>()
+
+    /** `ConcurrentHashMap` holds no nulls, so a removed key is recorded as this. */
+    private object Removed
+
+    private fun remember(
+        key: Preferences.Key<*>,
+        value: Any?,
+    ) {
+        writtenValues[key.name] = value ?: Removed
+    }
+
+    /** @return the value written here, or null to read the store. A removed key answers [default]. */
+    private inline fun <reified T : Any> written(
+        key: Preferences.Key<T>,
+        default: T,
+    ): T? =
+        when (val value = writtenValues[key.name]) {
+            null -> null
+            Removed -> default
+            is T -> value
+            else -> null
+        }
+
     // ============================================================================
     // REACTIVE FLOWS
     // ============================================================================
@@ -109,6 +138,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<String>,
         default: String,
     ): String {
+        written(key, default)?.let { return it }
         MainThreadWatch.warnIfMainThread("DataStore read ${key.name}")
         return dataStore.data.first()[key] ?: default
     }
@@ -120,6 +150,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Int>,
         default: Int,
     ): Int {
+        written(key, default)?.let { return it }
         MainThreadWatch.warnIfMainThread("DataStore read ${key.name}")
         return dataStore.data.first()[key] ?: default
     }
@@ -132,6 +163,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Boolean>,
         default: Boolean,
     ): Boolean {
+        written(key, default)?.let { return it }
         MainThreadWatch.warnIfMainThread("DataStore read ${key.name}")
         return try {
             dataStore.data.first()[key] ?: default
@@ -155,6 +187,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Long>,
         default: Long,
     ): Long {
+        written(key, default)?.let { return it }
         MainThreadWatch.warnIfMainThread("DataStore read ${key.name}")
         return dataStore.data.first()[key] ?: default
     }
@@ -167,6 +200,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<String>,
         value: String?,
     ) {
+        remember(key, value)
         scope.launch {
             dataStore.edit { preferences ->
                 if (value != null) {
@@ -186,6 +220,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<String>,
         value: String?,
     ) {
+        remember(key, value)
         MainThreadWatch.warnIfMainThread("DataStore WRITE string (blocking)")
         runBlocking {
             dataStore.edit { preferences ->
@@ -206,6 +241,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Int>,
         value: Int,
     ) {
+        remember(key, value)
         scope.launch {
             dataStore.edit { it[key] = value }
         }
@@ -219,6 +255,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Int>,
         value: Int,
     ) {
+        remember(key, value)
         MainThreadWatch.warnIfMainThread("DataStore WRITE int (blocking)")
         runBlocking {
             dataStore.edit { it[key] = value }
@@ -233,6 +270,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Boolean>,
         value: Boolean,
     ) {
+        remember(key, value)
         scope.launch {
             dataStore.edit { it[key] = value }
         }
@@ -246,6 +284,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Boolean>,
         value: Boolean,
     ) {
+        remember(key, value)
         MainThreadWatch.warnIfMainThread("DataStore WRITE boolean (blocking)")
         runBlocking {
             dataStore.edit { it[key] = value }
@@ -259,6 +298,7 @@ class DataStorePreferenceHelper(
         key: Preferences.Key<Long>,
         value: Long,
     ) {
+        remember(key, value)
         scope.launch {
             dataStore.edit { it[key] = value }
         }
@@ -284,6 +324,7 @@ class DataStorePreferenceHelper(
             preferences[DataStoreKeys.USER_LANGUAGE] = language
             preferences[DataStoreKeys.SELECTED_THEME] = theme
         }
+        writtenValues.clear()
         securePreferences.clear()
     }
 
@@ -295,9 +336,12 @@ class DataStorePreferenceHelper(
             preferences[DataStoreKeys.ON_CREATE_APPLICATION] = false
             preferences[DataStoreKeys.NEW_INSTALLATION] = PreferencesKeyConstants.I_OLD
         }
+        remember(DataStoreKeys.ON_CREATE_APPLICATION, false)
+        remember(DataStoreKeys.NEW_INSTALLATION, PreferencesKeyConstants.I_OLD)
     }
 
     override fun clearOldSessionAuth() {
+        remember(DataStoreKeys.SESSION_HASH, null)
         scope.launch {
             dataStore.edit { it.remove(DataStoreKeys.SESSION_HASH) }
         }

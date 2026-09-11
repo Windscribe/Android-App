@@ -658,6 +658,7 @@ private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
             is ConnectionUIState.Connected -> "connection_status_connected"
             is ConnectionUIState.Connecting -> "connection_status_connecting"
             is ConnectionUIState.Paused -> "connection_status_paused"
+            is ConnectionUIState.Blocked -> "connection_status_blocked"
             else -> "connection_status_disconnected"
         }
     Box(
@@ -688,6 +689,16 @@ private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
 
             is ConnectionUIState.Connecting -> {
                 Dots(modifier = Modifier.align(Alignment.Center))
+            }
+
+            // Not OFF: the device has no internet and only Turn off restores it.
+            is ConnectionUIState.Blocked -> {
+                Text(
+                    text = "BLOCKED",
+                    style = font12.copy(fontWeight = FontWeight.SemiBold),
+                    color = containerColor,
+                    modifier = Modifier.align(Alignment.Center),
+                )
             }
 
             // Paused is not OFF: the user chose it and can resume from it.

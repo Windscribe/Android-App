@@ -482,7 +482,7 @@ ostatnio wybrana lokalizacja.</string>
     <string name="anti_censorship">Obchodzenie cenzury</string>
     <string name="anti_censorship_explainer">Połącz się z VPN nawet w nieprzyjaznym środowisku</string>
     <string name="auto_connect">Automatyczne łączenie</string>
-    <string name="auto_connect_explainer">Łączy się z ostatnio używaną lokalizacją po uruchomieniu aplikacji lub dołączeniu do sieci.</string>
+    <string name="auto_connect_explainer">Łączy się z Twoją ostatnią lokalizacją w każdej sieci, której nie wykluczono, i blokuje internet, gdy nie może się połączyć. Blokada następuje tylko przy nieudanym połączeniu — nigdy po rozłączeniu lub wstrzymaniu przez Ciebie.</string>
     <string name="save">Zapisz</string>
     <string name="clear">Jasny</string>
     <string name="enter_1_key_value_per_line">Wprowadź 1 klucz=wartość w każdej linii.</string>

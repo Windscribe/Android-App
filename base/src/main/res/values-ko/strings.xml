@@ -527,7 +527,7 @@
     <string name="ip_stack_egress">IP 스택 - 송신</string>
     <string name="ipv4_only">IPv4만</string>
     <string name="auto_connect">자동 연결</string>
-    <string name="auto_connect_explainer">앱이 시작되거나 네트워크에 연결될 때 마지막으로 사용한 위치에 연결합니다.</string>
+    <string name="auto_connect_explainer">제외하지 않은 모든 네트워크에서 마지막 위치로 연결하며, 연결할 수 없으면 인터넷을 차단합니다. 차단은 연결에 실패했을 때만 발생하며, 직접 연결을 끊거나 일시 중지한 경우에는 차단되지 않습니다.</string>
     <string name="save">저장</string>
     <string name="clear">지우기</string>
     <string name="enter_1_key_value_per_line">한 줄에 하나씩 key=value 형식으로 입력하세요.</string>

@@ -170,7 +170,7 @@ why they cannot be one enum.
 | Reason | Meaning | Notification |
 |---|---|---|
 | `NetworkNotSecured` | Auto-Connect is on and this network was not opted out. | "Not connected — will connect automatically" |
-| `NetworkOptedOut` | Auto-Secure is off for this network. | "Auto-secure is off for X" |
+| `NetworkOptedOut` | Auto-Secure is off for this network. Also marks a session Auto-Secure took away, for the next secured network to give back. | "Auto-secure is off for X" |
 | `StoodDownByUser` | The user disconnected here, so we do not immediately reconnect. | "Auto-connect is off for X" |
 
 ```mermaid
@@ -232,6 +232,22 @@ to watch for.
 
 `NoNetwork` and `AwaitingSession` are independent of Auto-Connect: the service stays up either way,
 because the state is something the user needs to see.
+
+### Undoing an Auto-Secure teardown
+
+`shouldAutoDisconnect` fires regardless of Auto-Connect, so its undo does too — otherwise Auto-Secure
+is a one-way door for everyone with Auto-Connect off, which is the default. A teardown of a session
+the user asked for settles as `Watching(NetworkOptedOut)` rather than `Off`, and that mode is what
+`shouldAutoConnect` reads to connect again on the next network we secure.
+
+Both halves are gated on `globalUserConnectionPreference`, which is only true for a session the user
+started and has not ended, and on the network not being stood down — a hand disconnect on an
+opted-out network is the user's own decision and still stops the service. The reconnect is stricter
+than ordinary auto-connect: it needs `isAutoSecureOn == true`, never an unnameable network, because
+it is overriding a setting the user turned off.
+
+It is one attempt. Starting a connect clears the mode, so a network that refuses is not retried; the
+next teardown arms it again.
 
 ### Whose fault the drop was
 
@@ -438,6 +454,12 @@ than the device.
 Reading the network name needs location permission. Without it `isAutoSecureOn` is unknown, not false —
 so `networkAllowsAutoConnect` treats an unknown network as securable. Auto-Connect means connect; it
 does not mean connect only where we can name the network.
+
+A stand-down must survive the same gap, so `DeviceStateManager.standDownCurrentNetwork()` records one
+whether or not there is a name to key it to, and `standsDown` reads only that. It is deliberately not
+inferred from `globalUserConnectionPreference`: that is equally false for someone who has never
+connected, which read every fresh install as a stand-down and left Auto-Connect unable to fire until
+the user connected once by hand.
 
 The global **Auto-Secure new networks** setting is not consulted at this point, and should not be
 added here. `NetworkInfoManager` creates a row for every network the moment it is first seen, seeded

@@ -482,7 +482,7 @@ last chosen location.</string>
     <string name="anti_censorship">Circumvent Censorship</string>
     <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
     <string name="auto_connect">Auto-Connect</string>
-    <string name="auto_connect_explainer">Connects to last used location when the app launches or joins a network.</string>
+    <string name="auto_connect_explainer">Conecta ao seu último local em qualquer rede que você não tenha excluído e bloqueia sua internet se não conseguir conectar. O bloqueio só acontece quando a conexão falha — nunca quando você desconecta ou pausa.</string>
     <string name="save">Save</string>
     <string name="clear">Clear</string>
     <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
