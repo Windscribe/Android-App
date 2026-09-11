@@ -402,14 +402,41 @@ distinction is already in the state stream: `VpnStatus.getLevel` maps `WAIT`/`TC
 | `NO_SERVER_REPLY_YET` | Nothing has come back at all | `NO_SERVER_REPLY_WAIT` = 12 s — one round trip, with margin |
 | `SERVER_REPLIED` | The handshake is progressing | 30 s — the expensive, variable work lives here |
 
-### WireGuard health check
+### WireGuard traffic monitor
 
-`TunnelHealthCheck` covers the case a connect timeout cannot: a tunnel that came up and later stopped
-passing traffic. WireGuard is silent about this, so the check watches handshake age
-(`HANDSHAKE_TIMEOUT_MS` = 180 s, plus a 10 s grace) and requires `REQUIRED_CONSECUTIVE_FAILURES` = 3.
-It then ends the session as `AwaitingSession` rather than reconnecting, because the reason for the drop
-is not knowable here — see §4. It applies to WireGuard only; the other protocols report their own
-tunnel loss.
+`TunnelTrafficMonitor` covers the case a connect timeout cannot: a tunnel that came up and later
+stopped passing traffic. WireGuard is silent about this — a peer that stops answering looks the same
+whether the account lapsed, the node died or the network moved.
+
+`PacketMux` counts plaintext packets in both directions at the TUN boundary,
+`TunnelManager.traffic()` exposes a reading, and the monitor samples every 5 s. DNS the stage answered
+locally is counted in neither direction, and wg keepalives never reach the TUN at all.
+
+The measurement is a **silence streak** — time since the last packet that came back, carrying the
+egress spent since. Egress is context, never a condition: a break decays to nothing within two
+minutes. `Offline`, `Held` and `Warmup` end a streak; none is the tunnel's doing.
+
+#### Corroborating a silence
+
+Silence alone cannot tell a dead tunnel from an idle one, since keepalives never reach the TUN either
+way. `GoBackend.getCurrentStatistics()` does see them: it reads the peer's `rx_bytes`, `tx_bytes` and
+last handshake time straight off wg-go's UAPI, and the monitor samples them beside the mux counters.
+
+Past `CANDIDATE_SILENCE_MS` (120 s) the silence must be corroborated by all three of those sitting
+unchanged for `PEER_SILENT_MS` (190 s). wg's `REJECT_AFTER_TIME` is 180 s and the profile's 25 s
+keepalive has to send inside that, so a peer that is answering cannot go this long without a rekey
+moving one of them.
+
+Staleness is measured on `elapsedRealtime` from the last sample that differed, not from the handshake
+timestamp itself, which is wall clock and can jump. `Offline`, `Held` and `NoTunnel` reset it —
+corroboration has to be earned inside the window it judges.
+
+When both hold the monitor logs `BROKEN TUNNEL` and ends the session once, as `BrokenTunnel` — the
+ending a rejected IKEv2 or OpenVPN handshake takes, so §4 applies unchanged. `BROKEN TUNNEL CLEARED`
+means it fired on a tunnel that recovered by itself. Those two are the only lines it writes; a session
+that stays up says nothing.
+
+It runs for WireGuard only, and not for a user-supplied config, which answers to someone else.
 
 ### Failing over needs a foreground Activity
 
@@ -522,7 +549,8 @@ Two lifecycle hazards the code guards explicitly:
 |---|---|
 | Service | `base/.../backend/tunnel/WindscribeVpnService.kt` — the only `android.net.VpnService`. Plus `VpnServiceGate.kt`, `AutoConnectWatcher.kt` |
 | Orchestration | `base/.../backend/utils/WindVpnController.kt`, `backend/VpnBackendHolder.kt`, `backend/VpnBackend.kt` |
-| Failover | `base/.../autoconnection/AutoConnectionManager.kt`, `backend/wireguard/TunnelHealthCheck.kt` |
+| Failover | `base/.../autoconnection/AutoConnectionManager.kt` |
+| Tunnel health | `base/.../backend/wireguard/TunnelTrafficMonitor.kt`, `common/.../tunnel/PacketMux.java` |
 | Engines | `base/.../backend/{wireguard,openvpn,ikev2}/` |
 | Engine parents | `wgtunnel/.../GoBackend.java`, `openvpn/.../core/OpenVPNService.java`, `strongswan/.../logic/CharonVpnService.java` |
 | Contracts | `common/.../tunnel/{VpnHost.kt, VpnEngine.kt, TunConfig.kt, TunnelManager.kt}` |

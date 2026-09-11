@@ -2,6 +2,7 @@ package com.windscribe.vpn.backend.wireguard
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.withContext
@@ -11,11 +12,10 @@ import java.io.File
 import java.io.InputStreamReader
 
 class WgLogger {
-    private val _handshakeReceivedEvent = MutableSharedFlow<Unit>(replay = 0)
+    // Never suspending: emit runs on the thread reading logcat, and a slow collector would park it.
+    private val _handshakeReceivedEvent =
+        MutableSharedFlow<Unit>(extraBufferCapacity = EVENT_BUFFER, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val handshakeReceivedEvent: SharedFlow<Unit> = _handshakeReceivedEvent
-
-    private val _handshakeFailureEvent = MutableSharedFlow<Unit>(replay = 0)
-    val handshakeFailureEvent: SharedFlow<Unit> = _handshakeFailureEvent
 
     private val logger = LoggerFactory.getLogger("vpn")
 
@@ -27,9 +27,9 @@ class WgLogger {
 
     companion object {
         private const val HANDSHAKE_RESPONSE_RECEIVED = "Received handshake response"
-        private const val HANDSHAKE_NOT_COMPLETE = "Handshake did not complete after 5 seconds, retrying"
         private const val MAX_LINES = 500
         private const val TRIM_CHECK_INTERVAL = 100
+        private const val EVENT_BUFFER = 8
     }
 
     suspend fun captureLogs(context: Context) {
@@ -93,15 +93,9 @@ class WgLogger {
         }
     }
 
-    private suspend fun processHandshakeEvents(line: String) {
-        when {
-            line.contains(HANDSHAKE_RESPONSE_RECEIVED) -> {
-                _handshakeReceivedEvent.emit(Unit)
-            }
-
-            line.contains(HANDSHAKE_NOT_COMPLETE) -> {
-                _handshakeFailureEvent.emit(Unit)
-            }
+    private fun processHandshakeEvents(line: String) {
+        if (line.contains(HANDSHAKE_RESPONSE_RECEIVED)) {
+            _handshakeReceivedEvent.tryEmit(Unit)
         }
     }
 

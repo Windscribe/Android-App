@@ -55,9 +55,10 @@ Two more things reorder the list at connect time, in `AutoConnectionManager.relo
 
 ## Per protocol, as we use it
 
-**WireGuard** — the default. Handshake-based, so a dead tunnel is silent; `TunnelHealthCheck` watches
-handshake age and is the only protocol with that monitoring. `PinIpRecovery` handles the pinned-IP
-case. Connect budget is 20 s, shorter than the others.
+**WireGuard** — the default. Handshake-based, so a dead tunnel is silent; `TunnelTrafficMonitor`
+watches the mux's packet counters for a run with no ingress, and is the only protocol with that
+monitoring. `PinIpRecovery` handles the pinned-IP case. Connect budget is 20 s, shorter than the
+others.
 
 **IKEv2** — charon, driven through JNI. The interface is negotiated: charon fills the builder and
 calls `requestTun()` from `establish()`, so the profile is built before the config is known.

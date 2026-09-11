@@ -200,6 +200,16 @@ public final class GoBackend implements Backend {
     }
 
     /**
+     * Stats for whatever tunnel is up, or null when none is. The orchestrator holds no {@link Tunnel}
+     * of its own to ask with.
+     */
+    @Nullable
+    public Statistics getCurrentStatistics() {
+        final Tunnel tunnel = currentTunnel;
+        return tunnel == null ? null : getStatistics(tunnel);
+    }
+
+    /**
      * Get the version of the underlying wireguard-go library.
      *
      * @return {@link String} value of the version of the wireguard-go library.
