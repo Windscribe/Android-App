@@ -107,13 +107,20 @@ class WireguardBackend
                 getPinnedIpForSelectedCity = { getPinnedIpForSelectedCity() },
             )
 
-        private val tunnelHealthCheck =
-            TunnelHealthCheck(
+        private val trafficMonitor =
+            TunnelTrafficMonitor(
                 scope = scope,
-                wgLogger = wgLogger,
                 deviceStateManager = deviceStateManager,
-                protect = { fd -> serviceGate.current?.protect(fd) == true },
-                disconnect = { error -> disconnect(error = error) },
+                traffic = { tunnelManager.traffic() },
+                peerStats = { peerStats() },
+                onBrokenTunnel = {
+                    disconnect(
+                        VPNState.Error(
+                            error = VPNState.ErrorType.BrokenTunnel,
+                            message = "Tunnel stopped carrying traffic",
+                        ),
+                    )
+                },
             )
 
         /**
@@ -178,7 +185,7 @@ class WireguardBackend
             wgErrorJob?.cancel()
             connectionStateJob?.cancel()
             pinIpRecovery.stop()
-            tunnelHealthCheck.stop()
+            trafficMonitor.stop()
             wgLogger.stopCapture()
             captureLogsJob?.cancel()
             captureLogsJob = null
@@ -203,13 +210,21 @@ class WireguardBackend
                         profile = WireGuardEngineProfile(sessionName, config),
                         tunConfig = WireGuardTunConfigMapper.toTunConfig(sessionName, config),
                         afterStart = {
+                            // A config the user supplied answers to someone else.
                             if (!preferencesHelper.isConnectingToConfigured) {
-                                tunnelHealthCheck.start(profile.content)
+                                trafficMonitor.start()
                             }
                         },
                     )
                 }
             }
+        }
+
+        /** Our profiles carry exactly one peer. */
+        private fun peerStats(): PeerStats? {
+            val stats = engineBackendLazy.get().currentStatistics ?: return null
+            val peer = stats.peers().firstOrNull()?.let { stats.peer(it) } ?: return null
+            return PeerStats(peer.rxBytes, peer.txBytes, peer.latestHandshakeEpochMillis)
         }
 
         override suspend fun disconnect(error: VPNState.Error?) {

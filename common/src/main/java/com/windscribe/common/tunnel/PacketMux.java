@@ -80,6 +80,22 @@ public final class PacketMux {
         DROP
     }
 
+    /**
+     * What the packet path has carried, as one reading. Plaintext at the TUN boundary: DNS the stage
+     * answered locally is counted in neither direction.
+     */
+    public static final class Traffic {
+        public final State state;
+        public final long egressPackets;
+        public final long ingressPackets;
+
+        Traffic(State state, long egressPackets, long ingressPackets) {
+            this.state = state;
+            this.egressPackets = egressPackets;
+            this.ingressPackets = ingressPackets;
+        }
+    }
+
     /** Notified when the mux can no longer do its job. Never called from a pump's hot path. */
     public interface Listener {
         void onMuxFailure(String detail);
@@ -326,6 +342,17 @@ public final class PacketMux {
 
     public State state() {
         return snapshot.get().state;
+    }
+
+    /**
+     * Not a consistent snapshot: the pumps keep running, so callers work in deltas. Ingress is read
+     * last, so a straddled reading over-reports it rather than showing silence that was not there.
+     */
+    public Traffic traffic() {
+        State state = snapshot.get().state;
+        long egressPackets = forwardedEgress.get();
+        long ingressPackets = forwardedIngress.get();
+        return new Traffic(state, egressPackets, ingressPackets);
     }
 
     public synchronized void stop() {

@@ -134,7 +134,7 @@ androidapp/
 │       │   │                     #   VpnServiceGate, AutoConnectWatcher
 │       │   ├── utils/            #   WindVpnController, WindNotificationBuilder,
 │       │   │                     #   ExcludedIpHolder
-│       │   ├── wireguard/        #   WireGuard backend + TunnelHealthCheck
+│       │   ├── wireguard/        #   WireGuard backend + TunnelTrafficMonitor
 │       │   ├── openvpn/          #   OpenVPN backend
 │       │   ├── ikev2/            #   IKEv2 backend
 │       │   ├── VpnBackend.kt     # 🔑 Shared connect/disconnect skeleton

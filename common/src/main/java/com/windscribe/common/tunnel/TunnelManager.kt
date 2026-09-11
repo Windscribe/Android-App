@@ -64,6 +64,10 @@ class TunnelManager(
     val activeEngineId: String?
         @Synchronized get() = activeEngine?.id
 
+    /** Per-session, not per-engine: the counters survive a handover, so callers work in deltas. */
+    @Synchronized
+    fun traffic(): PacketMux.Traffic? = mux?.traffic()
+
     @Synchronized
     fun attachHost(host: VpnHost) {
         this.host = host
