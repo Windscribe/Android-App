@@ -11,6 +11,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.SortByName
 import com.windscribe.vpn.commonutils.SortBySelected
+import com.windscribe.vpn.commonutils.labelsByPackage
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -92,14 +93,14 @@ class SplitTunnelViewModelImpl
                 _showProgress.value = true
                 val savedApps = preferenceHelper.installedApps
                 val pm = appContext.packageManager
-                val installedApps =
-                    pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                val installedApps = pm.getInstalledApplications(0)
+                val labels = pm.labelsByPackage(installedApps)
                 val appList = mutableListOf<InstalledAppsData>()
                 installedApps.forEach {
                     val isSystemApp = (it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 1
                     val app =
                         InstalledAppsData(
-                            pm.getApplicationLabel(it).toString(),
+                            labels[it.packageName] ?: it.packageName,
                             it.packageName,
                         )
                     app.isSystemApp = isSystemApp

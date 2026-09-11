@@ -4,7 +4,6 @@
 package com.windscribe.tv.adapter
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.BitmapDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.windscribe.tv.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.cache.AppIconCache
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
 
 class InstalledAppsAdapter(
     mAppsList: List<InstalledAppsData>,
@@ -27,6 +30,7 @@ class InstalledAppsAdapter(
         val imgAppLogo: ImageView = itemView.findViewById(R.id.banner)
         val imgCheck: ImageView = itemView.findViewById(R.id.check)
         val tvAppName: TextView = itemView.findViewById(R.id.app_name)
+        var iconJob: Job? = null
     }
 
     interface InstalledAppListener {
@@ -35,6 +39,11 @@ class InstalledAppsAdapter(
             reloadAdapter: Boolean,
         )
     }
+
+    private val scope = MainScope()
+
+    /** Matches the `banner` view in installed_apps_viewholder.xml. */
+    private val iconSizePx = (ICON_DP * appContext.resources.displayMetrics.density).toInt()
 
     private val specialPackages: MutableList<String> = ArrayList()
     private val copyAppsList: List<InstalledAppsData>
@@ -49,12 +58,7 @@ class InstalledAppsAdapter(
     ) {
         val listViewHolder = viewHolder as InstalledAppsViewHolder
         val installedAppsData = mAppsList!![viewHolder.getAdapterPosition()]
-        val iconBitmap = appIconCache.getIcon(installedAppsData.packageName)
-        if (iconBitmap != null) {
-            listViewHolder.imgAppLogo.setImageDrawable(BitmapDrawable(appContext.resources, iconBitmap))
-        } else {
-            listViewHolder.imgAppLogo.setImageResource(android.R.drawable.sym_def_app_icon)
-        }
+        bindIcon(listViewHolder, installedAppsData.packageName)
 
         listViewHolder.tvAppName.text = installedAppsData.appName
         if (installedAppsData.isChecked) {
@@ -81,6 +85,35 @@ class InstalledAppsAdapter(
             notifyItemChanged(listViewHolder.adapterPosition)
             installedAppListener.onInstalledAppClick(installedAppsData, false)
         }
+    }
+
+    /** Decoded off the main thread, and abandoned if the row is reused before it arrives. */
+    private fun bindIcon(
+        holder: InstalledAppsViewHolder,
+        packageName: String,
+    ) {
+        holder.iconJob?.cancel()
+        val cached = appIconCache.cached(packageName, iconSizePx)
+        if (cached != null) {
+            holder.imgAppLogo.setImageBitmap(cached)
+            return
+        }
+        holder.imgAppLogo.setImageResource(android.R.drawable.sym_def_app_icon)
+        holder.iconJob =
+            scope.launch {
+                appIconCache.icon(packageName, iconSizePx)?.let { holder.imgAppLogo.setImageBitmap(it) }
+            }
+    }
+
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        (holder as? InstalledAppsViewHolder)?.iconJob?.cancel()
+        super.onViewRecycled(holder)
+    }
+
+    /** Children only: the adapter is usable again if it is re-attached. */
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        scope.coroutineContext.cancelChildren()
+        super.onDetachedFromRecyclerView(recyclerView)
     }
 
     override fun onCreateViewHolder(
@@ -131,5 +164,9 @@ class InstalledAppsAdapter(
         specialPackages.add("Netflix")
         specialPackages.add("Prime Video")
         specialPackages.add("Chrome")
+    }
+
+    companion object {
+        private const val ICON_DP = 60
     }
 }
