@@ -34,7 +34,6 @@ import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.tunnel.startVpnServiceWatching
 import com.windscribe.vpn.backend.utils.ForegroundServiceHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.debug.MainThreadWatchdog
@@ -147,9 +146,6 @@ open class Windscribe : MultiDexApplication() {
     lateinit var vpnController: WindVpnController
 
     @Inject
-    lateinit var appIconCache: AppIconCache
-
-    @Inject
     lateinit var wsNetWrapper: WSNetWrapper
 
     @Inject
@@ -239,7 +235,6 @@ open class Windscribe : MultiDexApplication() {
 
         mockLocationManager.init()
         reviewManager.handleAppReview()
-        appIconCache.preloadIcons(applicationScope)
 
         // Initialize WSNet in background after DI is ready
         applicationScope.launch(Dispatchers.IO) {

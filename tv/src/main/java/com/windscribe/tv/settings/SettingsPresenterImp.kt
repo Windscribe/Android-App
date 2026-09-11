@@ -39,6 +39,7 @@ import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.commonutils.ResourceHelper
+import com.windscribe.vpn.commonutils.labelsByPackage
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -740,13 +741,14 @@ class SettingsPresenterImp
             val pm = appContext.packageManager
             activityScope.launch(Dispatchers.IO) {
                 try {
-                    val packages = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                    val packages = pm.getInstalledApplications(0)
+                    val labels = pm.labelsByPackage(packages)
                     installedAppList.clear()
                     for (applicationInfo in packages) {
                         val isSystemApp = applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 1
                         val mData =
                             InstalledAppsData(
-                                pm.getApplicationLabel(applicationInfo).toString(),
+                                labels[applicationInfo.packageName] ?: applicationInfo.packageName,
                                 applicationInfo.packageName,
                                 isSystemApp,
                             )
