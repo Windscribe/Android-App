@@ -32,7 +32,6 @@ class AppLifeCycleObserver
         private val vpnConnectionStateManager: VPNConnectionStateManager,
         private val proxyDNSManager: ProxyDNSManager,
         private val wsNetWrapper: WSNetWrapper,
-        private val deviceStateManager: DeviceStateManager,
     ) : DefaultLifecycleObserver {
         private val logger = LoggerFactory.getLogger("app")
         private val startingFresh = AtomicBoolean(false)
@@ -63,8 +62,6 @@ class AppLifeCycleObserver
             wsNetWrapper.withWSNet { wsNet ->
                 appContext.preference.wsNetSettings = wsNet.currentPersistentSettings()
             }
-            // Clear whitelist when app goes to background
-            deviceStateManager.setWhitelistedNetwork(null)
             logger.info("----------App going to background.--------\n")
         }
 

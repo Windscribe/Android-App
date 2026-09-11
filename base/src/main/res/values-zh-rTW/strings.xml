@@ -482,7 +482,7 @@
     <string name="anti_censorship">規避審查</string>
     <string name="anti_censorship_explainer">即使在惡劣的環境中也能連接到 VPN。</string>
     <string name="auto_connect">自動連接</string>
-    <string name="auto_connect_explainer">在應用啟動或加入網路時連接到上次使用的位置。</string>
+    <string name="auto_connect_explainer">在您未排除的任何網路上連線到您上次使用的位置；無法連線時會封鎖您的網路。只有連線失敗才會封鎖——您自己中斷連線或暫停則不會。</string>
     <string name="save">保存</string>
     <string name="clear">清楚</string>
     <string name="enter_1_key_value_per_line">每行輸入1個鍵=值。</string>

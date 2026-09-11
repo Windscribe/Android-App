@@ -482,7 +482,7 @@ Lokasi terakhir yang dipilih.</string>
     <string name="anti_censorship">Hindari Sensor</string>
     <string name="anti_censorship_explainer">Hubungkan ke VPN bahkan di lingkungan yang tidak bersahabat</string>
     <string name="auto_connect">Hubungkan Otomatis</string>
-    <string name="auto_connect_explainer">Terhubung ke lokasi yang terakhir digunakan saat aplikasi diluncurkan atau bergabung dengan jaringan.</string>
+    <string name="auto_connect_explainer">Menyambung ke lokasi terakhir Anda di jaringan mana pun yang tidak Anda kecualikan, dan memblokir internet Anda jika tidak dapat tersambung. Pemblokiran hanya terjadi saat koneksi gagal — tidak pernah saat Anda memutus sambungan atau menjeda.</string>
     <string name="save">Simpan</string>
     <string name="clear">Jelas</string>
     <string name="enter_1_key_value_per_line">Masukkan 1 kunci=nilai per baris.</string>

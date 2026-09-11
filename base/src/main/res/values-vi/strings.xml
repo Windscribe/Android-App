@@ -482,7 +482,7 @@ Vị trí được chọn cuối cùng.</string>
     <string name="anti_censorship">Phá vỡ kiểm duyệt</string>
     <string name="anti_censorship_explainer">Kết nối với VPN ngay cả trong môi trường thù địch</string>
     <string name="auto_connect">Tự động kết nối</string>
-    <string name="auto_connect_explainer">Kết nối với vị trí được sử dụng gần đây nhất khi ứng dụng khởi chạy hoặc tham gia mạng.</string>
+    <string name="auto_connect_explainer">Kết nối tới vị trí gần nhất của bạn trên mọi mạng bạn chưa loại trừ, và chặn Internet nếu không thể kết nối. Chỉ kết nối thất bại mới bị chặn — tự ngắt kết nối hoặc tạm dừng thì không bao giờ.</string>
     <string name="save">Lưu</string>
     <string name="clear">Trong</string>
     <string name="enter_1_key_value_per_line">Nhập 1 key=value mỗi dòng.</string>

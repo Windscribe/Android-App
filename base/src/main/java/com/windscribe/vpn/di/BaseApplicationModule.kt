@@ -619,7 +619,6 @@ open class BaseApplicationModule {
         vpnConnectionStateManager: VPNConnectionStateManager,
         proxyDNSManager: ProxyDNSManager,
         wsNetWrapper: WSNetWrapper,
-        deviceStateManager: DeviceStateManager,
     ): AppLifeCycleObserver =
         AppLifeCycleObserver(
             workManager,
@@ -627,7 +626,6 @@ open class BaseApplicationModule {
             vpnConnectionStateManager,
             proxyDNSManager,
             wsNetWrapper,
-            deviceStateManager,
         )
 
     @Provides

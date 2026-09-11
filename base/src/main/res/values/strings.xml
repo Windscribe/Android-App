@@ -566,7 +566,7 @@ last chosen location.</string>
     <string name="ip_stack_egress">IP Stack - Egress</string>
     <string name="ipv4_only">IPv4 Only</string>
     <string name="auto_connect">Auto-Connect</string>
-    <string name="auto_connect_explainer">Connects to last used location when the app launches or joins a network.</string>
+    <string name="auto_connect_explainer">Connects to your last location on any network you haven\'t excluded, and blocks your internet if it can\'t connect. Only a failed connection blocks — disconnecting or pausing never does.</string>
     <string name="save">Save</string>
     <string name="clear">Clear</string>
     <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
@@ -659,6 +659,7 @@ last chosen location.</string>
     <string name="accessibility_status_connecting">Connecting</string>
     <string name="accessibility_status_disconnected">Disconnected</string>
     <string name="accessibility_status_paused">Paused, your traffic is not protected</string>
+    <string name="accessibility_status_blocked">Blocked, your internet is off until you turn Windscribe off</string>
     <string name="none">None</string>
     <string name="free">Free</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>

@@ -173,10 +173,10 @@ object ConnectionPolicy {
             input.accountStatus != User.AccountStatus.Okay &&
             !input.isConnectingToConfigured
 
-    /** `globalUserConnectionPreference` is not consulted: auto-connect acts without a manual action. */
+    /** `globalUserConnectionPreference` is not consulted, except by [restoresOptedOutSession]. */
     fun shouldAutoConnect(input: PolicyInput): Boolean =
         networkAllowsAutoConnect(input) &&
-            input.autoConnect &&
+            (input.autoConnect || restoresOptedOutSession(input)) &&
             // Losing connectivity clears the stand-down, so this is what stops an attempt with
             // nothing to attempt it over.
             input.isOnline &&
@@ -204,14 +204,11 @@ object ConnectionPolicy {
     private fun networkAllowsAutoConnect(input: PolicyInput): Boolean = input.isAutoSecureOn ?: !input.canReadNetworkName
 
     /**
-     * True when the user's last action says not to reconnect here.
-     *
-     * A stand-down is recorded against the network's name, so an unnameable one falls back to their
-     * last manual action.
+     * True when the user disconnected here and we have not left since. `DeviceStateManager` records
+     * it with or without a network name, never inferred from `globalUserConnectionPreference` -
+     * that is equally false for someone who has never connected.
      */
-    fun standsDown(input: PolicyInput): Boolean =
-        input.isNetworkStoodDown ||
-            (!input.canReadNetworkName && !input.globalUserConnectionPreference)
+    fun standsDown(input: PolicyInput): Boolean = input.isNetworkStoodDown
 
     /**
      * Fires regardless of Auto-Connect: Auto-Secure off is an instruction about this network.
@@ -221,6 +218,30 @@ object ConnectionPolicy {
         input.isAutoSecureOn == false &&
             !input.isNetworkOptedIn &&
             input.status == VPNState.Status.Connected
+
+    /**
+     * True when [shouldAutoDisconnect] took away a session the user asked for. The teardown ignores
+     * Auto-Connect, so the undo does too; nothing observes the next network once the service stops.
+     *
+     * Excludes a stand-down, so a hand disconnect on an opted-out network still stops the service.
+     */
+    private fun awaitsSecuredNetwork(input: PolicyInput): Boolean =
+        input.isAutoSecureOn == false &&
+            input.globalUserConnectionPreference &&
+            !standsDown(input) &&
+            !accountCannotConnect(input)
+
+    /**
+     * Gives back what [awaitsSecuredNetwork] held. A connect clears the mode, so this fires once per
+     * teardown rather than retrying a network that refuses.
+     *
+     * `isAutoSecureOn == true`, not the usual fallback: this overrides Auto-Connect being off, so it
+     * needs a network we know we secure rather than one we cannot name.
+     */
+    private fun restoresOptedOutSession(input: PolicyInput): Boolean =
+        input.globalUserConnectionPreference &&
+            input.serviceMode == ServiceMode.Watching(WatchReason.NetworkOptedOut) &&
+            input.isAutoSecureOn == true
 
     /**
      * True when nothing may leave the device outside the VPN while no tunnel is carrying it.
@@ -334,7 +355,8 @@ object ConnectionPolicy {
             SessionEnd.AuthFailed -> ServiceMode.AuthFailed
             SessionEnd.UserDisconnect, SessionEnd.SystemDisconnect ->
                 when {
-                    !shouldWatch(input) -> ServiceMode.Off
+                    // Nothing else here outlives Auto-Connect being off.
+                    !shouldWatch(input) && !awaitsSecuredNetwork(input) -> ServiceMode.Off
                     // Staying up makes the stand-down visible rather than silent.
                     standsDown(input) -> ServiceMode.Watching(WatchReason.StoodDownByUser)
                     // Nothing is waiting to happen here, so the copy must not promise a connect.
@@ -350,7 +372,10 @@ enum class WatchReason {
     /** Nothing is stopping a reconnect; the next network that needs securing gets one. */
     NetworkNotSecured,
 
-    /** Auto-Secure is off for this network, so we deliberately will not connect on it. */
+    /**
+     * Auto-Secure is off for this network, so we deliberately will not connect on it. Also marks a
+     * session Auto-Secure took away, for the next secured network to give back.
+     */
     NetworkOptedOut,
 
     /** The user disconnected here. */

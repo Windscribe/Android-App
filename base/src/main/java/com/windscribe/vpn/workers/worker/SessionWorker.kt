@@ -224,11 +224,10 @@ class SessionWorker
             }
             if (user.accountStatus == User.AccountStatus.Banned || user.accountStatus == User.AccountStatus.Expired) {
                 wgConfigRepository.unregisterKey()
-                // Not for a custom config: the later reconcile and app-update paths read this flag
-                // to decide whether to restore that tunnel.
-                if (!preferencesHelper.isConnectingToConfigured) {
-                    preferencesHelper.globalUserConnectionPreference = false
-                }
+                // globalUserConnectionPreference is deliberately left alone. An account lapsing is
+                // not the user asking to stop, and it is what `onAccountRecovered` reads to put the
+                // session back. Nothing can connect meanwhile: every connect path gates on the
+                // account status.
                 // The disconnect above re-runs the policy on its way out; with none to end, nothing does.
                 if (!shouldDisconnect && !vpnStateManager.isTunnelUp()) {
                     logger.info("Account is ${user.accountStatus} and no session is left to end; settling the service.")

@@ -483,7 +483,7 @@ Ultima posizione scelta.</string>
     <string name="anti_censorship">Aggira la censura</string>
     <string name="anti_censorship_explainer">Connettiti alla VPN anche in ambienti ostili</string>
     <string name="auto_connect">Connessione automatica</string>
-    <string name="auto_connect_explainer">Si connette all\'ultima posizione utilizzata quando l\'app viene avviata o si unisce a una rete.</string>
+    <string name="auto_connect_explainer">Si connette alla tua ultima posizione su qualsiasi rete che non hai escluso e blocca la tua connessione a Internet se non riesce a connettersi. Il blocco avviene solo quando la connessione fallisce — mai quando disconnetti o metti in pausa.</string>
     <string name="save">Salva</string>
     <string name="clear">Cancella</string>
     <string name="enter_1_key_value_per_line">Inserisci 1 chiave=valore per riga.</string>

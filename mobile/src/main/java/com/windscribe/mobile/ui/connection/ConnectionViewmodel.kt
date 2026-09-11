@@ -118,6 +118,21 @@ sealed class NetworkInfoState {
     object Unknown : NetworkInfoState()
 }
 
+/** Why traffic is being held, for the copy the screen shows next to the way out. */
+enum class BlockReason {
+    AccountExpired,
+    AccountBanned,
+
+    /** Waiting on the server to say whether the location or the account killed the tunnel. */
+    AwaitingSession,
+
+    /** A config the user supplied was rejected by its own server. */
+    ConfigAuthFailed,
+
+    /** Every protocol was tried and none came up. */
+    ConnectFailed,
+}
+
 sealed class ConnectionUIState {
     abstract val locationInfo: LocationInfoState?
     abstract val protocolInfo: ProtocolInformation?
@@ -144,6 +159,17 @@ sealed class ConnectionUIState {
         override val locationInfo: LocationInfoState,
     ) : ConnectionUIState()
 
+    /**
+     * No tunnel and the device has no internet, because we are holding it. Never [Disconnected]: the
+     * user cannot browse, cannot pay, and nothing they tap will help until the block is released, so
+     * the screen has to say so and offer [ConnectionViewmodel.onTurnOffClick].
+     */
+    data class Blocked(
+        override val protocolInfo: ProtocolInformation,
+        override val locationInfo: LocationInfoState,
+        val reason: BlockReason,
+    ) : ConnectionUIState()
+
     object Idle : ConnectionUIState() {
         override val protocolInfo: ProtocolInformation?
             get() = null
@@ -166,6 +192,9 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val newFeedCount: StateFlow<Int>
 
     abstract fun onConnectButtonClick()
+
+    /** Releases a [ConnectionUIState.Blocked] hold. The only action that works from that state. */
+    abstract fun onTurnOffClick()
 
     abstract fun onCityClick(
         city: Datacenter,
@@ -447,13 +476,21 @@ class ConnectionViewmodelImpl
                             )
                         }
 
-                        // A paused service reports Disconnected, so the mode separates the two.
+                        // Paused, blocked and plain disconnected all report Disconnected, so the
+                        // service mode is the only thing that separates them.
                         VPNState.Status.Disconnected -> {
-                            if (serviceMode is ConnectionPolicy.ServiceMode.Paused) {
-                                ConnectionUIState.Paused(protocolInfo, locationInfo)
-                            } else {
-                                handleError(state)
-                                ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                            val blockReason = blockReasonFor(serviceMode)
+                            when {
+                                serviceMode is ConnectionPolicy.ServiceMode.Paused ->
+                                    ConnectionUIState.Paused(protocolInfo, locationInfo)
+
+                                blockReason != null ->
+                                    ConnectionUIState.Blocked(protocolInfo, locationInfo, blockReason)
+
+                                else -> {
+                                    handleError(state)
+                                    ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                                }
                             }
                         }
 
@@ -666,8 +703,36 @@ class ConnectionViewmodelImpl
             }
         }
 
+        /** Null unless the service is holding traffic, in which case it says why. */
+        private fun blockReasonFor(serviceMode: ConnectionPolicy.ServiceMode?): BlockReason? =
+            when (serviceMode) {
+                is ConnectionPolicy.ServiceMode.AccountBlocked ->
+                    if (serviceMode.status == User.AccountStatus.Banned) {
+                        BlockReason.AccountBanned
+                    } else {
+                        BlockReason.AccountExpired
+                    }
+
+                is ConnectionPolicy.ServiceMode.AwaitingSession -> BlockReason.AwaitingSession
+                is ConnectionPolicy.ServiceMode.AuthFailed -> BlockReason.ConfigAuthFailed
+                // Only this one knows whether it actually held the interface.
+                is ConnectionPolicy.ServiceMode.Failed -> BlockReason.ConnectFailed.takeIf { serviceMode.blocking }
+                else -> null
+            }
+
+        override fun onTurnOffClick() {
+            appScope.launch { vpnController.turnOff() }
+        }
+
         override fun onConnectButtonClick() {
             val currentState = connectionUIState.value
+            // We are the reason there is no internet, so the button gives it back. Before the
+            // location check below, which returns early and would make the button do nothing at all.
+            if (currentState is ConnectionUIState.Blocked) {
+                logger.debug("Connect tapped while blocked; releasing the block.")
+                onTurnOffClick()
+                return
+            }
             val selectedLocation = lastLocationState.value ?: return
             // Paused belongs with Disconnected: there is no tunnel to drop, so the button connects.
             val isOff =

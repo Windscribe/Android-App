@@ -482,7 +482,7 @@
     <string name="anti_censorship">Обхід цензури</string>
     <string name="anti_censorship_explainer">Підключайтеся до VPN навіть у ворожому середовищі</string>
     <string name="auto_connect">Автоматичне підключення</string>
-    <string name="auto_connect_explainer">Підключається до останнього використовуваного розташування, коли програма запускається або приєднується до мережі.</string>
+    <string name="auto_connect_explainer">Підключається до вашого останнього розташування в будь-якій мережі, яку ви не виключили, і блокує інтернет, якщо підключитися не вдається. Блокування відбувається лише в разі невдалого підключення — ніколи після від’єднання чи паузи.</string>
     <string name="save">Зберегти</string>
     <string name="clear">Ясний</string>
     <string name="enter_1_key_value_per_line">Введіть 1 ключ=значення в кожному рядку.</string>

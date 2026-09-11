@@ -1663,6 +1663,32 @@ def get_translations():
             "vi": "Cập nhật ngay",
             "zh": "立即更新",
             "zh-rTW": "立即更新"
+        },
+        # Auto-Connect owns two promises: connect on any network not excluded, and block when it cannot.
+        "auto_connect_explainer": {
+            "ar": "يتصل بآخر موقع استخدمته على أي شبكة لم تستثنها، ويحجب الإنترنت إذا تعذّر الاتصال. الحجب يحدث فقط عند فشل الاتصال — أما قطع الاتصال أو الإيقاف المؤقت فلا يحجب أبدًا.",
+            "bn": "আপনি বাদ দেননি এমন যেকোনো নেটওয়ার্কে আপনার শেষ অবস্থানে সংযোগ করে, এবং সংযোগ করতে না পারলে আপনার ইন্টারনেট ব্লক করে। শুধু ব্যর্থ সংযোগেই ব্লক হয় — নিজে সংযোগ বিচ্ছিন্ন করলে বা বিরতি দিলে কখনও নয়।",
+            "de": "Verbindet sich in jedem Netzwerk, das Sie nicht ausgeschlossen haben, mit Ihrem letzten Standort und blockiert Ihren Internetzugang, wenn keine Verbindung möglich ist. Blockiert wird nur bei einem fehlgeschlagenen Verbindungsversuch — beim Trennen oder Pausieren nie.",
+            "el": "Συνδέεται στην τελευταία σας τοποθεσία σε κάθε δίκτυο που δεν έχετε εξαιρέσει και μπλοκάρει το ίντερνετ σας αν δεν μπορεί να συνδεθεί. Το μπλοκάρισμα γίνεται μόνο σε αποτυχημένη σύνδεση — ποτέ όταν αποσυνδέεστε ή κάνετε παύση.",
+            "es": "Se conecta a tu última ubicación en cualquier red que no hayas excluido y bloquea tu internet si no puede conectarse. Solo bloquea cuando falla la conexión — nunca al desconectarte o poner en pausa.",
+            "fa": "در هر شبکه‌ای که آن را مستثنا نکرده‌اید به آخرین موقعیت شما متصل می‌شود و اگر نتواند متصل شود اینترنت شما را مسدود می‌کند. مسدودسازی فقط در صورت شکست اتصال رخ می‌دهد — قطع کردن یا توقف موقت هرگز آن را ایجاد نمی‌کند.",
+            "fr": "Se connecte à votre dernier emplacement sur tout réseau que vous n’avez pas exclu, et bloque votre connexion Internet s’il ne parvient pas à se connecter. Seul un échec de connexion bloque — vous déconnecter ou mettre en pause, jamais.",
+            "hi": "आपके द्वारा बाहर न रखे गए किसी भी नेटवर्क पर आपके अंतिम स्थान से कनेक्ट करता है, और कनेक्ट न हो पाने पर आपका इंटरनेट ब्लॉक कर देता है। ब्लॉक केवल कनेक्शन विफल होने पर होता है — खुद डिस्कनेक्ट करने या पॉज़ करने पर कभी नहीं।",
+            "in": "Menyambung ke lokasi terakhir Anda di jaringan mana pun yang tidak Anda kecualikan, dan memblokir internet Anda jika tidak dapat tersambung. Pemblokiran hanya terjadi saat koneksi gagal — tidak pernah saat Anda memutus sambungan atau menjeda.",
+            "it": "Si connette alla tua ultima posizione su qualsiasi rete che non hai escluso e blocca la tua connessione a Internet se non riesce a connettersi. Il blocco avviene solo quando la connessione fallisce — mai quando disconnetti o metti in pausa.",
+            "ja": "除外していないすべてのネットワークで、最後に使用した場所に接続します。接続できない場合はインターネットを遮断します。遮断されるのは接続に失敗したときだけで、自分で切断または一時停止した場合は遮断されません。",
+            "ko": "제외하지 않은 모든 네트워크에서 마지막 위치로 연결하며, 연결할 수 없으면 인터넷을 차단합니다. 차단은 연결에 실패했을 때만 발생하며, 직접 연결을 끊거나 일시 중지한 경우에는 차단되지 않습니다.",
+            "pl": "Łączy się z Twoją ostatnią lokalizacją w każdej sieci, której nie wykluczono, i blokuje internet, gdy nie może się połączyć. Blokada następuje tylko przy nieudanym połączeniu — nigdy po rozłączeniu lub wstrzymaniu przez Ciebie.",
+            "pt": "Liga-se à sua última localização em qualquer rede que não tenha excluído e bloqueia a sua Internet se não conseguir ligar-se. O bloqueio só ocorre quando a ligação falha — nunca quando se desliga ou coloca em pausa.",
+            "pt-rBR": "Conecta ao seu último local em qualquer rede que você não tenha excluído e bloqueia sua internet se não conseguir conectar. O bloqueio só acontece quando a conexão falha — nunca quando você desconecta ou pausa.",
+            "ru": "Подключается к последнему использованному местоположению в любой сети, которую вы не исключили, и блокирует интернет, если подключиться не удаётся. Блокировка происходит только при неудачном подключении — при отключении или паузе никогда.",
+            "sk": "Pripojí sa k vašej poslednej polohe v každej sieti, ktorú ste nevylúčili, a zablokuje internet, ak sa nedokáže pripojiť. Blokovanie nastáva len pri neúspešnom pripojení — nikdy pri odpojení alebo pozastavení.",
+            "tr": "Hariç tutmadığınız her ağda son konumunuza bağlanır ve bağlanamazsa internetinizi engeller. Engelleme yalnızca bağlantı başarısız olduğunda olur — bağlantıyı kendiniz kestiğinizde veya duraklattığınızda asla.",
+            "uk": "Підключається до вашого останнього розташування в будь-якій мережі, яку ви не виключили, і блокує інтернет, якщо підключитися не вдається. Блокування відбувається лише в разі невдалого підключення — ніколи після від’єднання чи паузи.",
+            "ur": "جس نیٹ ورک کو آپ نے مستثنیٰ نہیں کیا، اس پر آپ کے آخری مقام سے منسلک ہوتا ہے، اور اگر منسلک نہ ہو سکے تو آپ کا انٹرنیٹ بلاک کر دیتا ہے۔ بلاک صرف ناکام کنکشن پر ہوتا ہے — خود منقطع کرنے یا وقفہ دینے پر کبھی نہیں۔",
+            "vi": "Kết nối tới vị trí gần nhất của bạn trên mọi mạng bạn chưa loại trừ, và chặn Internet nếu không thể kết nối. Chỉ kết nối thất bại mới bị chặn — tự ngắt kết nối hoặc tạm dừng thì không bao giờ.",
+            "zh": "在您未排除的任何网络上连接到您上次使用的位置；无法连接时会阻断您的网络。只有连接失败才会阻断——您自己断开连接或暂停则不会。",
+            "zh-rTW": "在您未排除的任何網路上連線到您上次使用的位置；無法連線時會封鎖您的網路。只有連線失敗才會封鎖——您自己中斷連線或暫停則不會。"
         }
     }
 

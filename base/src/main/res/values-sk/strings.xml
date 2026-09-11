@@ -496,7 +496,7 @@ naposledy vybranú polohu.</string>
     <string name="anti_censorship">Obchádzanie cenzúry</string>
     <string name="anti_censorship_explainer">Pripojte sa k VPN aj v nepriateľskom prostredí</string>
     <string name="auto_connect">Auto-pripojenie</string>
-    <string name="auto_connect_explainer">Pripojí sa k naposledy použitej polohe, keď sa aplikácia spustí alebo pripojí k sieti.</string>
+    <string name="auto_connect_explainer">Pripojí sa k vašej poslednej polohe v každej sieti, ktorú ste nevylúčili, a zablokuje internet, ak sa nedokáže pripojiť. Blokovanie nastáva len pri neúspešnom pripojení — nikdy pri odpojení alebo pozastavení.</string>
     <string name="save">Uložiť</string>
     <string name="clear">Vymazať</string>
     <string name="enter_1_key_value_per_line">Zadajte 1 kľúč=hodnota na riadok.</string>

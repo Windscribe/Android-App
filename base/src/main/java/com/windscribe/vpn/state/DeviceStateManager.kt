@@ -72,6 +72,9 @@ class DeviceStateManager
         // Store the whitelisted network name for comparison
         private var whitelistedNetworkName: String? = null
 
+        /** A stand-down on a network we could not name. Dropping it reads as "never connected". */
+        private var standDownWithoutName = false
+
         /** The mirror of [whitelistedNetworkName]: that records "no here", this records "yes here". */
         private var optedInNetworkName: String? = null
 
@@ -209,6 +212,11 @@ class DeviceStateManager
                         optedInNetworkName = null
                     }
                 }
+                // Two unnamed networks compare equal above, so this cannot key off the name.
+                if (standDownWithoutName) {
+                    logger.info("Network changed - clearing the unnamed stand-down")
+                    standDownWithoutName = false
+                }
             }
 
             updateWhitelistedNetworkState(detail)
@@ -225,7 +233,9 @@ class DeviceStateManager
          * Non-blocking operation using StateFlow.value assignment.
          */
         private fun updateWhitelistedNetworkState(currentNetworkDetail: NetworkDetail?) {
-            val isWhitelisted = currentNetworkDetail?.name != null && currentNetworkDetail.name == whitelistedNetworkName
+            val isWhitelisted =
+                standDownWithoutName ||
+                    (currentNetworkDetail?.name != null && currentNetworkDetail.name == whitelistedNetworkName)
             if (_isCurrentNetworkWhitelisted.value != isWhitelisted) {
                 _isCurrentNetworkWhitelisted.value = isWhitelisted
                 logger.debug(
@@ -242,7 +252,22 @@ class DeviceStateManager
          */
         fun setWhitelistedNetwork(networkName: String?) {
             whitelistedNetworkName = networkName
+            if (networkName == null) {
+                standDownWithoutName = false
+            }
             logger.info("Whitelisted network set to: $networkName")
+            updateWhitelistedNetworkState(_networkDetail.value)
+        }
+
+        /** Records that the user disconnected here, whether or not the network can be named. */
+        fun standDownCurrentNetwork() {
+            val networkName = getCurrentNetworkName()
+            if (networkName != null) {
+                whitelistedNetworkName = networkName
+            } else {
+                standDownWithoutName = true
+            }
+            logger.info("User disconnected - standing down auto-connect on: ${networkName ?: "an unnamed network"}")
             updateWhitelistedNetworkState(_networkDetail.value)
         }
 

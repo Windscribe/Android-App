@@ -423,7 +423,9 @@ class WindNotificationBuilder
                 trafficCounter.trafficStats.collectLatest { traffic ->
                     trafficStats = traffic.text
                     val status = vpnConnectionStateManager.state.value.status
-                    if (status == Connected && preferencesHelper.globalUserConnectionPreference) {
+                    // Connected is the whole condition: an auto-connected session sets no user
+                    // preference, and gating on one left it with a notification that never ticked.
+                    if (status == Connected) {
                         notificationManager.notify(
                             NotificationConstants.SERVICE_NOTIFICATION_ID,
                             buildNotification(status),

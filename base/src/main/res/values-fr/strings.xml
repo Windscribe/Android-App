@@ -482,7 +482,7 @@ dernier emplacement choisi.</string>
     <string name="anti_censorship">Contourner la censure</string>
     <string name="anti_censorship_explainer">Connectez-vous au VPN, même dans un environnement hostile</string>
     <string name="auto_connect">Connexion automatique</string>
-    <string name="auto_connect_explainer">Se connecte au dernier emplacement utilisé lorsque l’application se lance ou rejoint un réseau.</string>
+    <string name="auto_connect_explainer">Se connecte à votre dernier emplacement sur tout réseau que vous n’avez pas exclu, et bloque votre connexion Internet s’il ne parvient pas à se connecter. Seul un échec de connexion bloque — vous déconnecter ou mettre en pause, jamais.</string>
     <string name="save">Enregistrer</string>
     <string name="clear">Effacer</string>
     <string name="enter_1_key_value_per_line">Saisissez une clé=valeur par ligne.</string>

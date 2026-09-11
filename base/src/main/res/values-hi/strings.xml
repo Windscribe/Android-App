@@ -482,7 +482,7 @@
     <string name="anti_censorship">सेंसरशिप को दरकिनार करें</string>
     <string name="anti_censorship_explainer">शत्रुतापूर्ण वातावरण में भी वीपीएन से कनेक्ट करें.</string>
     <string name="auto_connect">ऑटो-कनेक्ट</string>
-    <string name="auto_connect_explainer">ऐप लॉन्च होने या नेटवर्क में शामिल होने पर अंतिम उपयोग किए गए स्थान से कनेक्ट होता है।</string>
+    <string name="auto_connect_explainer">आपके द्वारा बाहर न रखे गए किसी भी नेटवर्क पर आपके अंतिम स्थान से कनेक्ट करता है, और कनेक्ट न हो पाने पर आपका इंटरनेट ब्लॉक कर देता है। ब्लॉक केवल कनेक्शन विफल होने पर होता है — खुद डिस्कनेक्ट करने या पॉज़ करने पर कभी नहीं।</string>
     <string name="save">सेव</string>
     <string name="clear">स्पष्ट</string>
     <string name="enter_1_key_value_per_line">प्रति पंक्ति 1 key=value दर्ज करें।</string>
