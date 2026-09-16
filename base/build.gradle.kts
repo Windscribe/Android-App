@@ -164,5 +164,5 @@ dependencies {
     "googleApi"("com.google.android.gms:play-services-appset:16.0.2")
     "googleApi"("com.google.android.play:review-ktx:2.0.2")
     "googleApi"("com.google.android.gms:play-services-auth:21.4.0")
-    "googleApi"("com.google.android.play:integrity:1.6.0")
+    "googleApi"("com.google.android.play:integrity:1.4.0")
 }
