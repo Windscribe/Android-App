@@ -65,7 +65,7 @@ class SplitTunnelViewModelImpl
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
         override val modes: List<DropDownStringItem>
             get() {
-                val modes = appContext.resources.getStringArray(R.array.split_mode_list)
+                val modes = appContext.localized.resources.getStringArray(R.array.split_mode_list)
                 val keys = appContext.resources.getStringArray(R.array.split_mode_list_keys)
                 return keys.zip(modes).map { DropDownStringItem(it.first, it.second) }
             }

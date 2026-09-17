@@ -17,7 +17,6 @@ import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.R
 import com.windscribe.tv.adapter.InstalledAppsAdapter
 import com.windscribe.tv.base.BaseActivity
-import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.confirmemail.ConfirmActivity
 import com.windscribe.tv.customview.CustomDialog
 import com.windscribe.tv.databinding.ActivitySettingBinding
@@ -518,7 +517,6 @@ class SettingActivity :
     }
 
     override fun updateLocale() {
-        applyAppLocale()
     }
 
     private fun addClickListeners() {

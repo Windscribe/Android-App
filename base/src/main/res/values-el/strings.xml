@@ -160,7 +160,7 @@
     <string name="add_email">Προσθήκη διεύθυνσης ηλεκτρονικού ταχυδρομείου</string>
     <string name="unlimited_data">Απεριόριστα δεδομένα κινητής</string>
     <string name="preferences">Ρυθμίσεις</string>
-    <string name="optional">(Προαιρετικό)</string>
+    <string name="optional">Προαιρετικό</string>
     <string name="get_10_gb">Πάρτε 10GB/ Μήνα</string>
     <string name="plans">Συνδρομές</string>
     <string name="pro">Προ</string>
@@ -310,7 +310,6 @@
     <string name="locations">τοποθεσίες</string>
     <string name="notifications">Ειδοποιήσεις</string>
     <string name="support">Υποστήριξη</string>
-    a
     <string name="support_content">Πηγαίνετε στην επάνω διεύθυνση στο κινητό ή τον υπολογιστή σας για όλες τις ερώτησεις υποστήριξης.</string>
     <string name="add_email_title">Προσθήκη διεύθυνσης ηλεκτρονικού ταχυδρομείου</string>
     <string name="upgradeNoData">Φαίνεται ότι έχεις μείνει από πολύτιμη ιδιωτικότητα</string>
@@ -349,7 +348,7 @@
     <string name="Error">Σφάλμα</string>
     <string name="text_account_set_up">Εγγραφή</string>
     <string name="xpress_login">Εύκολη Σύνδεση</string>
-    <string name="scan_lazy_login_qr_code">Σαρώστε αυτόν τον κωδικό QR με το τηλέφωνό σας για να συνδεθείτε.</string>
+    <string name="scan_lazy_login_qr_code">Σαρώστε αυτόν τον κωδικό QR</string>
     <string name="web_login_description">Σαρώστε τον κωδικό QR ή εισάγετε τον κωδικό στην εφαρμογή Windscribe για κινητά στο <b>Λογαριασμός → Εύκολη Σύνδεση</b>.</string>
     <string name="app_login_manual_entry">Εισάγετε στην εφαρμογή για κινητά στο <b>Λογαριασμός → Εύκολη Σύνδεση</b></string>
     <string name="or">Ή</string>
@@ -560,7 +559,7 @@
     <string name="unblock_full_access">Ξεκλειδώστε πλήρης πρόσβαση στο Windscribe</string>
     <string name="go_pro_for_unlimited_everything">Αναβαθμίστε στο Pro για τα πάντα απεριόριστα</string>
     <string name="custom_configs">Προσαρμοσμένες ρυθμίσεις</string>
-    <string name="slide_puzzle_piece_into_place">Σύρτε το αριστερό κομμάτι του puzzle στη θέση του</string>
+    <string name="slide_puzzle_piece_into_place">Σύρετε την αριστερή εικόνα στο κενό δεξιά</string>
     <string name="complete_puzzle_to_continue">Λύστε το puzzle για να προχωρήσετε</string>
     <string name="none">Κανένα</string>
     <string name="free">Δωρεάν</string>
@@ -609,7 +608,7 @@
     <string name="ipv6_mode_description">Επιλέξτε ποια έκδοση IP θα χρησιμοποιηθεί για συνδέσεις VPN.</string>
     <string name="ip_stack">Στοίβα IP</string>
     <string name="ip_stack_description">Διαμορφώστε τη στοίβα IP για συνδέσεις VPN.</string>
-    <string name="egress">Egress (WireGuard only)</string>
+    <string name="egress">Έξοδος (μόνο WireGuard)</string>
     <string name="ingress">Είσοδος</string>
     <string name="ipv4_only">Μόνο IPv4</string>
     <string name="manual_connection_mode_failed_title">Αποτυχία χειροκίνητης λειτουργίας σύνδεσης</string>
@@ -700,4 +699,23 @@
     <string name="notification_action_connect">Σύνδεση</string>
     <string name="notification_action_turn_off">Απενεργοποίηση</string>
     <string name="accessibility_status_paused">Σε παύση, η κίνησή σας δεν προστατεύεται</string>
+    <string name="accessibility_status_blocked">Αποκλεισμένο, το ίντερνετ σας είναι κλειστό μέχρι να απενεργοποιήσετε το Windscribe</string>
+    <string name="notification_account_banned">Ο λογαριασμός αποκλείστηκε — απενεργοποιήστε το Windscribe για να επανέλθει το ίντερνετ</string>
+    <string name="notification_account_expired">Ο λογαριασμός έληξε — απενεργοποιήστε το Windscribe για να επανέλθει το ίντερνετ και μετά αναβαθμίστε</string>
+    <string name="notification_action_retry">Επανάληψη</string>
+    <string name="notification_awaiting_session">Αναμονή για ενημέρωση συνεδρίας</string>
+    <string name="notification_blocked">Δεν ήταν δυνατή η σύνδεση — η κίνηση είναι αποκλεισμένη</string>
+    <string name="notification_config_auth_failed">Η ταυτοποίηση απέτυχε — ελέγξτε τη διαμόρφωσή σας</string>
+    <string name="notification_failed">Δεν ήταν δυνατή η σύνδεση σε αυτό το δίκτυο</string>
+    <string name="notification_failed_to">Δεν ήταν δυνατή η σύνδεση με %1$s</string>
+    <string name="notification_no_network">Δεν υπάρχει δίκτυο — δεν υπάρχει σύνδεση για να χρησιμοποιηθεί</string>
+    <string name="notification_opted_out">Η αυτόματη προστασία είναι ανενεργή για αυτό το δίκτυο</string>
+    <string name="notification_opted_out_on">Η αυτόματη προστασία είναι ανενεργή για %1$s</string>
+    <string name="notification_protocol_switch">Αναμονή για αλλαγή πρωτοκόλλου</string>
+    <string name="notification_reconnecting">Γίνεται επανασύνδεση</string>
+    <string name="notification_reconnecting_to">Γίνεται επανασύνδεση με %1$s</string>
+    <string name="manual_enter_code">Ή εισαγάγετε αυτόν τον κωδικό χειροκίνητα:</string>
+    <string name="qr_generation_failed">Αποτυχία δημιουργίας κωδικού QR</string>
+    <string name="subscription_payment_issue">Πρόβλημα με την πληρωμή της συνδρομής</string>
+    <string name="subscription_payment_issue_description">Η πληρωμή της συνδρομής σας χρειάζεται προσοχή. Ανοίξτε το Google Play για να ελέγξετε τον τρόπο πληρωμής σας.</string>
 </resources>

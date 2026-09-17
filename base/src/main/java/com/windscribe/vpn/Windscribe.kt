@@ -5,16 +5,20 @@
 package com.windscribe.vpn
 
 import android.app.Activity
+import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.os.LocaleList
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy.Builder
 import android.os.StrictMode.VmPolicy
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -201,6 +205,7 @@ open class Windscribe : MultiDexApplication() {
         runTrayMigrationEarly()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifeCycleObserver)
         reloadAfterMigration()
+        syncAppLocale()
 
         setUpNewInstallation()
         if (BuildConfig.APP_ID.isNotEmpty()) {
@@ -319,6 +324,124 @@ open class Windscribe : MultiDexApplication() {
         } else {
             Locale.Builder().setLanguage(language).build()
         }
+    }
+
+    /**
+     * The `R.array.language` entry for [locale], or null when the app has no such language.
+     *
+     * `Locale` rewrites Indonesian to its withdrawn `in` code, so the language tag is compared
+     * first and the bare language only as a fallback for region-qualified system locales.
+     */
+    private fun getLanguageEntry(locale: Locale): String? {
+        val tag = locale.toLanguageTag()
+        return appContext.resources.getStringArray(R.array.language).firstOrNull {
+            val code = getLanguageCode(it)
+            code.equals(tag, ignoreCase = true) || code.equals(locale.language, ignoreCase = true)
+        }
+    }
+
+    @Volatile
+    private var localizedContext: Context? = null
+
+    /**
+     * Resources in the language the user picked, rather than the device language.
+     *
+     * Below API 33 the platform has no per-app locale and AppCompat's backport reaches activities
+     * only, so the Application context goes on resolving against the system language. Everything
+     * that reads a string off [appContext] — notifications, dialogs, [ResourceHelper] — has to come
+     * through here, or it renders in the device language while the screens render in the chosen one.
+     */
+    val localized: Context
+        get() {
+            localizedContext?.let { return it }
+            // A service can post a notification before Hilt has supplied `preference`. Falling back
+            // to the plain context costs one notification the right language, not a crash.
+            val context = runCatching { createLocalizedContext() }.getOrNull() ?: return this
+            localizedContext = context
+            return context
+        }
+
+    private fun createLocalizedContext(): Context =
+        createConfigurationContext(
+            Configuration(resources.configuration).apply { setLocale(getSavedLocale()) },
+        )
+
+    /**
+     * The per-app locale the platform holds, empty when it has none.
+     *
+     * Not [AppCompatDelegate]: from API 33 it reaches the `LocaleManager` through a live activity
+     * delegate, and during `onCreate` there is none, so its getter and setter both do nothing at
+     * all — silently, with no return value to check.
+     */
+    private fun platformAppLocales(): LocaleListCompat =
+        if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            LocaleListCompat.wrap(getSystemService(LocaleManager::class.java).applicationLocales)
+        } else {
+            AppCompatDelegate.getApplicationLocales()
+        }
+
+    private fun setPlatformAppLocale(locale: Locale) {
+        if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            getSystemService(LocaleManager::class.java).applicationLocales =
+                LocaleList.forLanguageTags(locale.toLanguageTag())
+        } else {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(locale))
+        }
+    }
+
+    /**
+     * Brings the app language and the platform per-app locale into agreement at startup.
+     *
+     * On API 33+ the per-app locale outlives the process and the system language screen can change
+     * it, so once set it is the source of truth and the in-app picker follows it. Below that it is
+     * re-applied from preferences on every start, because nothing persists it.
+     */
+    fun syncAppLocale() {
+        val platformLocale = platformAppLocales().takeIf { !it.isEmpty }?.get(0)
+        when {
+            // Set, so it wins: on API 33+ the system language screen can change it behind the app.
+            platformLocale != null -> getLanguageEntry(platformLocale)?.let { preference.savedLanguage = it }
+
+            // Below API 33 nothing persists it, so the stored choice is re-applied every start.
+            VERSION.SDK_INT < VERSION_CODES.TIRAMISU -> setPlatformAppLocale(getSavedLocale())
+
+            // First start on a build that has a per-app locale: hand the stored choice over once.
+            // Only a real choice, or defaulting to the device language would pin the app to it.
+            !preference.appLocaleMigrated -> {
+                val chosen = preference.savedLanguage != getAppSupportedSystemLanguage()
+                if (chosen) setPlatformAppLocale(getSavedLocale())
+                // Consume the one-shot only once the platform took it, so a failed hand-off retries.
+                preference.appLocaleMigrated = !chosen || !platformAppLocales().isEmpty
+            }
+
+            // Handed over already and now cleared: the user asked for the device language back.
+            else -> preference.savedLanguage = getAppSupportedSystemLanguage()
+        }
+        onAppLocaleChanged()
+    }
+
+    /** Applies [language], an entry of `R.array.language`, as the app language. */
+    fun setAppLanguage(language: String) {
+        preference.savedLanguage = language
+        setPlatformAppLocale(getSavedLocale())
+        onAppLocaleChanged()
+    }
+
+    /**
+     * Drops the stale [localized] context and re-points JVM-wide formatting at the app language.
+     *
+     * `SimpleDateFormat` and `String.format` across the app pass `Locale.getDefault()`, which
+     * otherwise stays on the device language.
+     */
+    private fun onAppLocaleChanged() {
+        localizedContext = null
+        runCatching { Locale.setDefault(getSavedLocale()) }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Built from the configuration that just went stale.
+        localizedContext = null
     }
 
     private var notificationIdsToMigrate: List<Int> = emptyList()

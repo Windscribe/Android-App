@@ -18,6 +18,7 @@ Automated translation management for Android apps. Find missing translations, ge
 | `./translate --apply` | Apply to XML files |
 | `./translate --all` | Complete workflow |
 | `./translate --status` | Check current status |
+| `./translate --drift` | Find translations older than their English source |
 | `./translate --clean` | Remove temp files |
 
 ## 📁 Project Structure
@@ -27,6 +28,7 @@ tools/translate/
 ├── find_missing_translations.py    # Scans for missing strings
 ├── generate_real_translations.py   # Contains real translations
 ├── apply_translations.py          # Updates XML files
+├── find_drifted_translations.py   # Finds translations older than their English
 └── fix_translation_escapes.py     # Fixes XML apostrophes
 ```
 
@@ -50,6 +52,22 @@ Uses `generate_real_translations.py` to create actual translations (no placehold
 
 **Output:**
 - `translations.json` - Real translated strings ready to apply
+
+### 🕰️ Find Drifted Translations
+```bash
+./translate --drift
+```
+`--find` compares each translation against the current English string, so it only
+catches strings nobody translated. It cannot catch a translation that faithfully
+renders an English sentence that has since been reworded.
+
+This walks git history instead, recording for every key the commit in which its
+value last changed, in English and in each locale. A translation older than its
+English source is describing the previous wording.
+
+**Output:** `drifted_translations.md` — each key with its old and new English text.
+A typo or capitalisation fix leaves the translations correct, so read both wordings
+before sending a key out for retranslation.
 
 ### 3️⃣ Apply & Fix
 ```bash

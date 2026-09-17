@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.windscribe.tv.R
-import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.databinding.ActivityGetMoreDataBinding
 import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.tv.welcome.WelcomeActivity
@@ -20,7 +19,6 @@ class GetMoreDataActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyAppLocale()
         binding = ActivityGetMoreDataBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupUI()

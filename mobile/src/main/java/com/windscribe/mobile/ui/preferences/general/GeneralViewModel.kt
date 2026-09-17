@@ -59,7 +59,7 @@ class GeneralViewModelImpl
 
         override val orderByItems: List<DropDownStringItem>
             get() =
-                with(appContext.resources) {
+                with(appContext.localized.resources) {
                     val values = getStringArray(R.array.order_list)
                     val keys = getStringArray(R.array.order_list_keys)
                     keys.zip(values) { key, value -> DropDownStringItem(key, value) }
@@ -84,7 +84,7 @@ class GeneralViewModelImpl
 
         override fun onLanguageItemSelected(item: DropDownStringItem) {
             viewModelScope.launch {
-                preferenceHelper.savedLanguage = item.key
+                appContext.setAppLanguage(item.key)
                 _reloadApp.emit(true)
             }
         }

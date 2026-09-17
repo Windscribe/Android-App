@@ -65,6 +65,7 @@ interface PreferencesHelper {
     var isHapticFeedbackEnabled: Boolean
     var alcListString: String?
     var autoStartOnBoot: Boolean
+    var appLocaleMigrated: Boolean
     var blurIp: Boolean
     var blurNetworkName: Boolean
     var connectedFlagPath: String?

@@ -13,7 +13,7 @@ fun showRetryDialog(
     message: String,
     retryCallBack: () -> Unit,
     cancelCallBack: () -> Unit,
-    title: String = appContext.getString(R.string.error),
+    title: String = appContext.localized.getString(R.string.error),
 ) {
     var autoDismiss = true
     safeDialog {
@@ -29,11 +29,11 @@ fun showRetryDialog(
         }
         with(builder) {
             setPositiveButton(
-                appContext.getString(R.string.ok),
+                appContext.localized.getString(R.string.ok),
                 DialogInterface.OnClickListener(function = listener),
             )
             setNegativeButton(
-                appContext.getString(R.string.cancel),
+                appContext.localized.getString(R.string.cancel),
                 DialogInterface.OnClickListener(function = listener),
             )
             setOnCancelListener { cancelCallBack() }
@@ -50,7 +50,7 @@ fun showRetryDialog(
 fun createDialogBuilder(
     activity: Activity,
     message: String,
-    title: String = appContext.getString(R.string.error),
+    title: String = appContext.localized.getString(R.string.error),
 ): AlertDialog.Builder {
     val builder = AlertDialog.Builder(activity, R.style.AlertDialog)
     val view: View = LayoutInflater.from(activity).inflate(R.layout.alert_dialog_view, null)
@@ -74,7 +74,7 @@ fun showAlertDialog(
         }
         with(builder) {
             setPositiveButton(
-                appContext.getString(R.string.ok),
+                appContext.localized.getString(R.string.ok),
                 DialogInterface.OnClickListener(function = listener),
             )
             show()
@@ -90,7 +90,7 @@ fun showErrorDialog(message: String) {
         }
         with(builder) {
             setNeutralButton(
-                appContext.getString(R.string.ok),
+                appContext.localized.getString(R.string.ok),
                 DialogInterface.OnClickListener(function = listener),
             )
             show()
@@ -101,8 +101,8 @@ fun showErrorDialog(message: String) {
 fun showAlertDialog(
     title: String,
     message: String,
-    positionButtonLabel: String = appContext.getString(R.string.ok),
-    negativeButtonLabel: String = appContext.getString(R.string.cancel),
+    positionButtonLabel: String = appContext.localized.getString(R.string.ok),
+    negativeButtonLabel: String = appContext.localized.getString(R.string.cancel),
     retryCallBack: () -> Unit,
 ) {
     safeDialog {
@@ -146,7 +146,7 @@ fun showErrorDialog(
             }
             with(builder) {
                 setNeutralButton(
-                    appContext.getString(R.string.ok),
+                    appContext.localized.getString(R.string.ok),
                     DialogInterface.OnClickListener(function = listener),
                 )
                 show()

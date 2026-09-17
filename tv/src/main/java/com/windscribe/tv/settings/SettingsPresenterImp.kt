@@ -367,7 +367,7 @@ class SettingsPresenterImp
             if (savedLanguage == selectedLanguage) {
                 logger.info("Language selected is same as saved. No action taken...")
             } else {
-                preferencesHelper.savedLanguage = selectedLanguage
+                appContext.setAppLanguage(selectedLanguage)
                 settingView.reloadApp()
             }
         }
