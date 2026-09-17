@@ -527,7 +527,7 @@ class DataStorePreferenceHelper(
             runBlocking {
                 getString(
                     DataStoreKeys.USER_LANGUAGE,
-                    appContext.getAppSupportedSystemLanguage(),
+                    appContext.getAppSupportedCurrentLanguage(),
                 )
             }
         set(value) = setStringSync(DataStoreKeys.USER_LANGUAGE, value)
