@@ -75,6 +75,9 @@ object PreferencesKeyConstants {
     const val SPLIT_TUNNEL_TOGGLE = "tunnel_toggle"
     const val SHOW_SYSTEM_APPS = "show_system_apps"
     const val AUTO_START_ON_BOOT = "auto_start_boot"
+
+    /** Set once the stored language has been handed to the platform per-app locale. */
+    const val APP_LOCALE_MIGRATED = "app_locale_migrated"
     const val INSTALLED_APPS_DATA = "installed_app_data"
     const val LAST_CONNECTION_USING_SPLIT = "last_connection_using_split"
     const val NOTIFICATION_STAT = "notification_stat"

@@ -2,8 +2,8 @@
 <resources>
     <string name="username_empty">Пустое имя пользователя!</string>
     <string name="password_empty">Пустой пароль!</string>
-    <string name="enter_username">Пожалуйста, введите свое имя пользователя!</string>
-    <string name="enter_password">Пожалуйста, введите свой пароль!</string>
+    <string name="enter_username">Введите имя пользователя</string>
+    <string name="enter_password">Введите пароль</string>
     <string name="password_too_short">Слишком короткий!</string>
     <string name="login_credential_error">Что-то не так с вашим именем пользователя или паролем :(</string>
     <string name="sign_out">Выйдите из системы</string>
@@ -100,14 +100,14 @@
     <string name="fake_traffic_volume">Объем фальшивого трафика</string>
     <string name="potential_data_use">Предполагаемый трафик</string>
     <string name="plan_pro">Про</string>
-    <string name="a_la_carte_unlimited_plan">Неограниченный</string>
+    <string name="a_la_carte_unlimited_plan">Безлимит по выбору</string>
     <string name="expiry_date">Срок действия до</string>
     <string name="reset_date">Дата сброса</string>
     <string name="gb_per_month"> ГБ/месяц</string>
     <string name="my_account">Моя учётная запись</string>
     <string name="cancel">Отмена</string>
     <string name="edit_account">Управление учетной записью</string>
-    <string name="info">ИНФОРМАЦИЯ</string>
+    <string name="info">ДАННЫЕ АККАУНТА</string>
     <string name="plan">ТАРИФ</string>
     <string name="please_login">Пожалуйста, сначала войдите в систему, чтобы подключиться!</string>
     <string name="please_login_to_see_account_details">Зарегистрируйтесь или войдите, чтобы просмотреть данные своей учетной записи и защитить свои предпочтения.</string>
@@ -159,7 +159,7 @@
     <string name="add_email">Добавить адрес электронной почты</string>
     <string name="unlimited_data">Неограниченный пакет трафика</string>
     <string name="preferences">Настройки</string>
-    <string name="optional">(Необязательно)</string>
+    <string name="optional">Необязательно</string>
     <string name="get_10_gb">Получите 10 ГБ в месяц</string>
     <string name="plans">Тарифы</string>
     <string name="pro">Pro</string>
@@ -236,7 +236,7 @@
     <string name="forget_network">Забыть сеть</string>
     <string name="network_secured">Защищена</string>
     <string name="network_unsecured">Не защищена</string>
-    <string name="preferred_protocol_description">Выберите протокол по умолчанию для этой сети, если у вас возникли проблемы с подключением</string>
+    <string name="preferred_protocol_description">Windscribe всегда будет использовать этот протокол для подключения в этой сети. Это переопределяет общие настройки подключения.</string>
     <string name="unknown">Неизвестная сеть</string>
     <string name="loading_network_list">Загрузка списка сетей\nПожалуйста, подождите...</string>
     <string name="no_saved_network_list">Нет сохраненного списка сетей!</string>
@@ -257,7 +257,7 @@
     <string name="knowledge_base">База знаний</string>
     <string name="knowledge_base_description">Все, что вам нужно знать о Windscribe.</string>
     <string name="talk_to_garry">Поговорите с Гарри</string>
-    <string name="talk_to_garry_description">Не такой умный, как человек, но все же может ответить на ваши вопросы.</string>
+    <string name="talk_to_garry_description">Нужна помощь? Garry поможет с большинством вопросов — обратитесь к нему.</string>
     <string name="contact_humans">Связаться с «людьми»</string>
     <string name="contact_humans_description">Есть проблема, которую Garry не может решить? Такой проблемы не существует.</string>
     <string name="community_support">Поддержка силами сообщества</string>
@@ -347,7 +347,7 @@
     <string name="Error">Ошибка</string>
     <string name="text_account_set_up">Регистрация</string>
     <string name="xpress_login">Быстрый вход</string>
-    <string name="scan_lazy_login_qr_code">Отсканируйте этот QR-код телефоном, чтобы войти.</string>
+    <string name="scan_lazy_login_qr_code">Отсканируйте этот QR-код</string>
     <string name="web_login_description">Отсканируйте QR-код или введите код в мобильном приложении Windscribe в <b>Аккаунт → Lazy Login</b>.</string>
     <string name="app_login_manual_entry">Введите в мобильном приложении в <b>Аккаунт → Lazy Login</b></string>
     <string name="or">ИЛИ</string>
@@ -388,9 +388,9 @@
     <string name="latency_display_description">Отображать задержку в виде полос или в миллисекундах.</string>
     <string name="language_description">Локализовать Windscribe на поддерживаемые языки.</string>
     <string name="notification_stats_description">Показывать статистику трафика в шторке уведомлений.</string>
-    <string name="location_load_description">Отображать степень загруженности локаций. Короткая полоса означает меньшую загруженность серверов.</string>
+    <string name="location_load_description">Показывает загруженность локации. Чем меньше дуга круга, тем меньше нагрузка (использование).</string>
     <string name="haptic_feedback_description">Вибрировать при определённых действиях пользователя</string>
-    <string name="connection_mode_description">Выберите, следует ли Windscribe автоматически выбирать комбинацию протоколов и портов, наиболее оптимальную для вашей сети, или укажите их вручную.</string>
+    <string name="connection_mode_description">Выбирайте протокол VPN автоматически или вручную. ПРИМЕЧАНИЕ: \"Предпочитаемый протокол\" переопределит эту настройку.</string>
     <string name="packet_size_description">Выберите, следует ли Windscribe определить MTU для вашего подключения автоматически, или укажите параметр вручную.</string>
     <string name="allow_lan_description">Выберите, следует ли разрешить доступ к ресурсам в локальной сети (например, файловым серверам, принтерам, медиабоксам и т. д.) при подключении к Windscribe.</string>
     <string name="keep_alive_description">Периодическая отправка пакетов серверу для проверки активности сессии и поддержания NAT-записи (только для IKEv2)</string>
@@ -563,7 +563,7 @@
     <string name="power_whitelist_title">Оптимизация батареи</string>
     <string name="power_whitelist_summary">Пожалуйста, удалите Windscribe из настроек оптимизации батареи для поддержания стабильного соединения.</string>
     <string name="never_aks_again_for_permission">Больше не спрашивать</string>
-    <string name="slide_puzzle_piece_into_place">Сдвиньте фрагмент головоломки на место</string>
+    <string name="slide_puzzle_piece_into_place">Перетащите левое изображение в вырез справа</string>
     <string name="complete_puzzle_to_continue">Завершите головоломку для продолжения</string>
     <string name="none">Нет</string>
     <string name="free">Бесплатно</string>
@@ -608,7 +608,7 @@
     <string name="ipv6_mode_description">Выберите, какую версию IP использовать для VPN-подключений.</string>
     <string name="ip_stack">IP-стек</string>
     <string name="ip_stack_description">Настройте IP-стек для VPN-подключений.</string>
-    <string name="egress">Egress (WireGuard only)</string>
+    <string name="egress">Исходящий (только WireGuard)</string>
     <string name="ingress">Входящий</string>
     <string name="ipv4_only">Только IPv4</string>
     <string name="manual_connection_mode_failed_title">Режим ручного подключения не удался</string>
@@ -701,4 +701,23 @@
     <string name="notification_action_connect">Подключить</string>
     <string name="notification_action_turn_off">Выключить</string>
     <string name="accessibility_status_paused">Приостановлено, ваш трафик не защищён</string>
+    <string name="accessibility_status_blocked">Заблокировано, интернет отключён, пока вы не выключите Windscribe</string>
+    <string name="notification_account_banned">Аккаунт заблокирован — выключите Windscribe, чтобы восстановить интернет</string>
+    <string name="notification_account_expired">Срок действия аккаунта истёк — выключите Windscribe, чтобы восстановить интернет, затем обновите план</string>
+    <string name="notification_action_retry">Повторить</string>
+    <string name="notification_awaiting_session">Ожидание обновления сессии</string>
+    <string name="notification_blocked">Не удалось подключиться — трафик заблокирован</string>
+    <string name="notification_config_auth_failed">Ошибка аутентификации — проверьте конфигурацию</string>
+    <string name="notification_failed">Не удалось подключиться в этой сети</string>
+    <string name="notification_failed_to">Не удалось подключиться к %1$s</string>
+    <string name="notification_no_network">Нет сети — подключаться не через что</string>
+    <string name="notification_opted_out">Автозащита отключена для этой сети</string>
+    <string name="notification_opted_out_on">Автозащита отключена для %1$s</string>
+    <string name="notification_protocol_switch">Ожидание смены протокола</string>
+    <string name="notification_reconnecting">Переподключение</string>
+    <string name="notification_reconnecting_to">Переподключение к %1$s</string>
+    <string name="manual_enter_code">Или введите этот код вручную:</string>
+    <string name="qr_generation_failed">Не удалось создать QR-код</string>
+    <string name="subscription_payment_issue">Проблема с оплатой подписки</string>
+    <string name="subscription_payment_issue_description">Оплата подписки требует внимания. Откройте Google Play, чтобы проверить способ оплаты.</string>
 </resources>

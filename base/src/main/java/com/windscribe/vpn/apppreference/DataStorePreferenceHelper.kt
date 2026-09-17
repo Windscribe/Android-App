@@ -508,6 +508,10 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getBoolean(DataStoreKeys.AUTO_START_ON_BOOT, false) }
         set(value) = setBoolean(DataStoreKeys.AUTO_START_ON_BOOT, value)
 
+    override var appLocaleMigrated: Boolean
+        get() = runBlocking { getBoolean(DataStoreKeys.APP_LOCALE_MIGRATED, false) }
+        set(value) = setBoolean(DataStoreKeys.APP_LOCALE_MIGRATED, value)
+
     override var selectedTheme: String
         get() =
             runBlocking {

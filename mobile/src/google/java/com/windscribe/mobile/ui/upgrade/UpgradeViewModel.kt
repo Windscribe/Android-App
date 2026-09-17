@@ -770,7 +770,7 @@ class UpgradeViewModel
         private fun string(
             resId: Int,
             vararg args: Any,
-        ): String = appContext.resources.getString(resId, *args)
+        ): String = appContext.localized.resources.getString(resId, *args)
 
         private fun websiteLink(path: String): String =
             NetworkKeyConstants

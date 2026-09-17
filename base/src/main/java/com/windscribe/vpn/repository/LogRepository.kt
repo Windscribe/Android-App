@@ -69,7 +69,7 @@ class LogRepository
             var logLine: String?
             val debugFilePath = getDebugFilePath()
             val logFile =
-                appContext.resources.getString(
+                appContext.localized.resources.getString(
                     com.windscribe.vpn.R.string.log_file_header,
                     Build.VERSION.SDK_INT,
                     Build.BRAND,

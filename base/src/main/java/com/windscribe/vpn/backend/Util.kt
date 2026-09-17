@@ -227,42 +227,42 @@ object Util {
             ProtocolInformation(
                 PreferencesKeyConstants.PROTO_IKev2,
                 PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
-                appContext.getString(R.string.iKEV2_description),
+                appContext.localized.getString(R.string.iKEV2_description),
                 ProtocolConnectionStatus.Disconnected,
             )
         val protocol2 =
             ProtocolInformation(
                 PreferencesKeyConstants.PROTO_UDP,
                 PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
-                appContext.getString(R.string.Udp_description),
+                appContext.localized.getString(R.string.Udp_description),
                 ProtocolConnectionStatus.Disconnected,
             )
         val protocol3 =
             ProtocolInformation(
                 PreferencesKeyConstants.PROTO_TCP,
                 PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
-                appContext.getString(R.string.Tcp_description),
+                appContext.localized.getString(R.string.Tcp_description),
                 ProtocolConnectionStatus.Disconnected,
             )
         val protocol4 =
             ProtocolInformation(
                 PreferencesKeyConstants.PROTO_STEALTH,
                 PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT,
-                appContext.getString(R.string.Stealth_description),
+                appContext.localized.getString(R.string.Stealth_description),
                 ProtocolConnectionStatus.Disconnected,
             )
         val protocol5 =
             ProtocolInformation(
                 PROTO_WIRE_GUARD,
                 PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
-                appContext.getString(R.string.Wireguard_description),
+                appContext.localized.getString(R.string.Wireguard_description),
                 ProtocolConnectionStatus.Disconnected,
             )
         val protocol6 =
             ProtocolInformation(
                 PreferencesKeyConstants.PROTO_WS_TUNNEL,
                 PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT,
-                appContext.getString(R.string.WSTunnel_description),
+                appContext.localized.getString(R.string.WSTunnel_description),
                 ProtocolConnectionStatus.Disconnected,
             )
         val supportedProtocoList =

@@ -39,6 +39,7 @@ object DataStoreKeys {
 
     // App Settings
     val AUTO_START_ON_BOOT = booleanPreferencesKey(PreferencesKeyConstants.AUTO_START_ON_BOOT)
+    val APP_LOCALE_MIGRATED = booleanPreferencesKey(PreferencesKeyConstants.APP_LOCALE_MIGRATED)
     val SELECTED_THEME = stringPreferencesKey(PreferencesKeyConstants.SELECTED_THEME)
     val USER_LANGUAGE = stringPreferencesKey(PreferencesKeyConstants.USER_LANGUAGE)
     val NOTIFICATION_STAT = booleanPreferencesKey(PreferencesKeyConstants.NOTIFICATION_STAT)

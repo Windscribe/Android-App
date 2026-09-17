@@ -130,7 +130,7 @@
     <string name="state_assign_ip">Priraďovanie IP adries</string>
     <string name="state_add_routes">Pridávanie ciest</string>
     <string name="state_connected">Pripojené</string>
-    <string name="state_disconnected">Odpojené</string>
+    <string name="state_disconnected">Odpojiť</string>
     <string name="state_reconnecting">Opätovné pripájanie</string>
     <string name="state_exiting">Ukončovanie</string>
     <string name="state_noprocess">Nespustené</string>
@@ -160,7 +160,7 @@
     <string name="add_email">Pridať e-mail</string>
     <string name="unlimited_data">Neobmedzené dáta</string>
     <string name="preferences">Preferencie</string>
-    <string name="optional">(Voliteľné)</string>
+    <string name="optional">Voliteľné</string>
     <string name="get_10_gb">Získať 10GB/mesiac</string>
     <string name="plans">Plány</string>
     <string name="pro">Pro</string>
@@ -356,8 +356,8 @@
     <string name="back_uppercase">Späť</string>
     <string name="Error">Chyba</string>
     <string name="text_account_set_up">Zaregistrovať sa</string>
-    <string name="xpress_login">Lazy Login</string>
-    <string name="scan_lazy_login_qr_code">Naskenujte tento QR kód telefónom a prihláste sa.</string>
+    <string name="xpress_login">Lenivé prihlásenie</string>
+    <string name="scan_lazy_login_qr_code">Naskenujte tento QR kód</string>
     <string name="web_login_description">Naskenujte QR kód alebo zadajte kód v mobilnej aplikácii Windscribe na <b>Účet → Lazy Login</b>.</string>
     <string name="app_login_manual_entry">Zadajte v mobilnej aplikácii na <b>Účet → Lazy Login</b></string>
     <string name="or">ALEBO</string>
@@ -569,7 +569,7 @@ naposledy vybranú polohu.</string>
     <string name="unblock_full_access">Odomknúť plný prístup k Windscribe</string>
     <string name="go_pro_for_unlimited_everything">Prejsť na Pro pre neobmedzené všetko</string>
     <string name="custom_configs">Vlastné konfigurácie</string>
-    <string name="slide_puzzle_piece_into_place">Potiahnite ľavý dielik puzzle na miesto</string>
+    <string name="slide_puzzle_piece_into_place">Posuňte ľavý obrázok do medzery vpravo</string>
     <string name="complete_puzzle_to_continue">Dokončite puzzle na pokračovanie"</string>
     <string name="none">Žiadne</string>
     <string name="free">Bezplatné</string>
@@ -610,7 +610,7 @@ Vaše údaje o polohe zostávajú vo vašom zariadení a používajú sa výluč
     <string name="ipv6_mode_description">Vyberte, ktorú verziu IP použiť pre VPN pripojenia.</string>
     <string name="ip_stack">IP zásobník</string>
     <string name="ip_stack_description">Nakonfigurujte IP zásobník pre VPN pripojenia.</string>
-    <string name="egress">Egress (WireGuard only)</string>
+    <string name="egress">Výstup (len WireGuard)</string>
     <string name="ingress">Vstup</string>
     <string name="ipv4_only">Iba IPv4</string>
     <string name="manual_connection_mode_failed_title">Manuálny režim pripojenia zlyhal</string>
@@ -701,4 +701,23 @@ Pre maximálnu bezpečnosť sa vyhnite používaniu tohto zariadenia v nedôvery
     <string name="notification_action_connect">Pripojiť</string>
     <string name="notification_action_turn_off">Vypnúť</string>
     <string name="accessibility_status_paused">Pozastavené, vaša prevádzka nie je chránená</string>
+    <string name="accessibility_status_blocked">Zablokované, váš internet je vypnutý, kým nevypnete Windscribe</string>
+    <string name="notification_account_banned">Účet je zablokovaný — vypnite Windscribe, aby sa obnovil internet</string>
+    <string name="notification_account_expired">Platnosť účtu vypršala — vypnite Windscribe, aby sa obnovil internet, a potom prejdite na vyšší plán</string>
+    <string name="notification_action_retry">Skúsiť znova</string>
+    <string name="notification_awaiting_session">Čaká sa na aktualizáciu relácie</string>
+    <string name="notification_blocked">Nepodarilo sa pripojiť — prevádzka je zablokovaná</string>
+    <string name="notification_config_auth_failed">Overenie zlyhalo — skontrolujte svoju konfiguráciu</string>
+    <string name="notification_failed">V tejto sieti sa nepodarilo pripojiť</string>
+    <string name="notification_failed_to">Nepodarilo sa pripojiť k %1$s</string>
+    <string name="notification_no_network">Žiadna sieť — nie je cez čo sa pripojiť</string>
+    <string name="notification_opted_out">Automatické zabezpečenie je pre túto sieť vypnuté</string>
+    <string name="notification_opted_out_on">Automatické zabezpečenie je pre %1$s vypnuté</string>
+    <string name="notification_protocol_switch">Čaká sa na zmenu protokolu</string>
+    <string name="notification_reconnecting">Opätovné pripájanie</string>
+    <string name="notification_reconnecting_to">Opätovné pripájanie k %1$s</string>
+    <string name="manual_enter_code">Alebo zadajte tento kód ručne:</string>
+    <string name="qr_generation_failed">Nepodarilo sa vygenerovať QR kód</string>
+    <string name="subscription_payment_issue">Problém s platbou za predplatné</string>
+    <string name="subscription_payment_issue_description">Platba za vaše predplatné vyžaduje pozornosť. Otvorte Google Play a skontrolujte svoj spôsob platby.</string>
 </resources>

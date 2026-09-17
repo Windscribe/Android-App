@@ -260,7 +260,7 @@ class WindNotificationBuilder
         private fun getString(
             resId: Int,
             vararg formatArgs: Any?,
-        ): String = Windscribe.appContext.getString(resId, *formatArgs)
+        ): String = Windscribe.appContext.localized.getString(resId, *formatArgs)
 
         /** Cancels one notification. Not `cancelAll()`, which would take every other one with it. */
         fun cancelNotification(notificationId: Int) {

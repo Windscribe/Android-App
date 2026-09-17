@@ -14,6 +14,7 @@
         android:largeHeap="true"
         android:theme="@style/DarkTheme"
         android:enableOnBackInvokedCallback="true"
+        android:localeConfig="@xml/locales_config"
         tools:targetApi="33">
         <activity
             android:name="com.windscribe.vpn.backend.utils.VPNPermissionActivity"

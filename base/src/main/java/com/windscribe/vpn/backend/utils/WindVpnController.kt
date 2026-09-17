@@ -822,7 +822,7 @@ open class WindVpnController
                         preferencesHelper.globalUserConnectionPreference = false
                         // The user dismissed the wg key-limit dialog, so this one really is theirs.
                         disconnectAsync(USER_DISCONNECT)
-                    }, title = appContext.getString(R.string.note))
+                    }, title = appContext.localized.getString(R.string.note))
                 }
 
                 ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP, ERROR_WG_UNABLE_TO_GENERATE_PSK -> {
@@ -901,7 +901,7 @@ open class WindVpnController
                             return@collect
                         }
                         if (state.status == Disconnected && connectionAttempt < connectionInfo.size) {
-                            val text = appContext.resources.getString(R.string.connecting)
+                            val text = appContext.localized.resources.getString(R.string.connecting)
                             callback(text)
                             vpnConnectionStateManager.setState(VPNState(status = Connecting))
                             val connectionUUID = UUID.randomUUID()
