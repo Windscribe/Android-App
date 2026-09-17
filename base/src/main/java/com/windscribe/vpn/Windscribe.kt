@@ -9,6 +9,7 @@ import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.LocaleList
@@ -290,25 +291,24 @@ open class Windscribe : MultiDexApplication() {
         }
     }
 
-    fun getAppSupportedSystemLanguage(): String {
-        val systemLanguageCode =
-            resources.configuration.locales
-                .get(0)
-                .language
-        return appContext.resources.getStringArray(R.array.language).firstOrNull {
-            systemLanguageCode == getLanguageCode(it)
-        } ?: PreferencesKeyConstants.DEFAULT_LANGUAGE
-    }
+    /** The device language; from API 33 `resources.configuration` holds the per-app locale instead. */
+    private fun systemLocale(): Locale? =
+        if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            getSystemService(LocaleManager::class.java).systemLocales
+        } else {
+            Resources.getSystem().configuration.locales
+        }.takeIf { !it.isEmpty }?.get(0)
+
+    fun getAppSupportedSystemLanguage(): String = systemLocale()?.let { getLanguageEntry(it) } ?: PreferencesKeyConstants.DEFAULT_LANGUAGE
+
+    fun getAppSupportedCurrentLanguage(): String =
+        getLanguageEntry(resources.configuration.locales.get(0)) ?: PreferencesKeyConstants.DEFAULT_LANGUAGE
 
     val isRegionRestricted: Boolean
         get() {
-            val systemLanguageCode =
-                resources.configuration.locales
-                    .get(0)
-                    .language
             // Censored countries: Belarus, Iran, Russia, Turkey, China
             val censoredCountries = setOf("be", "fa", "ru", "tr", "zh")
-            return censoredCountries.contains(systemLanguageCode)
+            return censoredCountries.contains(systemLocale()?.language)
         }
 
     fun getSavedLocale(): Locale {
@@ -330,14 +330,14 @@ open class Windscribe : MultiDexApplication() {
      * The `R.array.language` entry for [locale], or null when the app has no such language.
      *
      * `Locale` rewrites Indonesian to its withdrawn `in` code, so the language tag is compared
-     * first and the bare language only as a fallback for region-qualified system locales.
+     * first and the bare language only as a fallback for region-qualified system locales. Separate
+     * passes: one pass would match `zh-TW` against the earlier `zh` entry.
      */
     private fun getLanguageEntry(locale: Locale): String? {
+        val entries = appContext.resources.getStringArray(R.array.language)
         val tag = locale.toLanguageTag()
-        return appContext.resources.getStringArray(R.array.language).firstOrNull {
-            val code = getLanguageCode(it)
-            code.equals(tag, ignoreCase = true) || code.equals(locale.language, ignoreCase = true)
-        }
+        return entries.firstOrNull { getLanguageCode(it).equals(tag, ignoreCase = true) }
+            ?: entries.firstOrNull { getLanguageCode(it).equals(locale.language, ignoreCase = true) }
     }
 
     @Volatile
@@ -417,6 +417,7 @@ open class Windscribe : MultiDexApplication() {
             // Handed over already and now cleared: the user asked for the device language back.
             else -> preference.savedLanguage = getAppSupportedSystemLanguage()
         }
+        lastKnownLocale = resources.configuration.locales.get(0)
         onAppLocaleChanged()
     }
 
@@ -438,10 +439,20 @@ open class Windscribe : MultiDexApplication() {
         runCatching { Locale.setDefault(getSavedLocale()) }
     }
 
+    @Volatile
+    private var lastKnownLocale: Locale? = null
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         // Built from the configuration that just went stale.
         localizedContext = null
+        // Guarded on the locale: rotation and theme changes arrive here too, and below API 33
+        // re-applying the locale recreates activities.
+        val locale = newConfig.locales.get(0)
+        if (locale != lastKnownLocale) {
+            lastKnownLocale = locale
+            syncAppLocale()
+        }
     }
 
     private var notificationIdsToMigrate: List<Int> = emptyList()
