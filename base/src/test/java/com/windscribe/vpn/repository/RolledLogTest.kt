@@ -51,6 +51,20 @@ class RolledLogTest {
     }
 
     @Test
+    fun `the viewer gets the rolled lines with no blank one at the join`() {
+        val body = "{\"tm\":\"1\",\"msg\":\"one\"}\n{\"tm\":\"2\",\"msg\":\"two\"}\n"
+        assertEquals(
+            listOf("{\"tm\":\"1\",\"msg\":\"one\"}", "{\"tm\":\"2\",\"msg\":\"two\"}"),
+            rolledLogLines(zipped("lines.zip", body)),
+        )
+    }
+
+    @Test
+    fun `nothing rolled yet leaves the viewer with the live log alone`() {
+        assertEquals(emptyList<String>(), rolledLogLines(File(folder.root, "none.zip")))
+    }
+
+    @Test
     fun `an empty archive is not an error`() {
         val empty =
             folder.newFile("empty.zip").also { file ->

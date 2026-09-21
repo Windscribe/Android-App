@@ -121,7 +121,7 @@ class VPNProfileCreator
             vpnParameters: VPNParameters,
             config: ProtocolInformation,
         ): String {
-            logger.info("creating IKEv2 Profile.")
+            logger.info("Creating IKEv2 profile.")
             // Vpn profile
             val profile = VpnProfile()
             profile.id = 1
@@ -197,7 +197,7 @@ class VPNProfileCreator
             vpnParameters: VPNParameters,
             protocolInformation: ProtocolInformation,
         ): String {
-            logger.info("Creating open vpn profile.")
+            logger.info("Creating OpenVPN profile.")
             // Create a new profile
             val profile = de.blinkt.openvpn.VpnProfile("Windscribe")
             profile.mUsePull = true

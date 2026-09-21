@@ -88,13 +88,13 @@ class NetworkDetailViewModelImpl
                 return
             }
             selectedNetworkName = networkName
-            logger.info("Setting network name: $networkName")
+            logger.debug("Setting network name: $networkName")
             loadNetworkDetails()
         }
 
         private fun loadPortMapItems() {
             viewModelScope.launch(Dispatchers.IO) {
-                logger.info("Loading portmap.")
+                logger.debug("Loading portmap.")
                 val portMapResult = portMapRepository.getPortMap()
                 if (portMapResult.isSuccess) {
                     val portMap = portMapResult.getOrNull()
@@ -128,7 +128,7 @@ class NetworkDetailViewModelImpl
         }
 
         private fun loadPorts() {
-            logger.info("Loading ports.")
+            logger.debug("Loading ports.")
             portMapItems
                 .firstOrNull { item ->
                     item.protoItem.proto == networkDetail.value?.protocol
@@ -141,7 +141,7 @@ class NetworkDetailViewModelImpl
         }
 
         private fun loadNetworkDetails() {
-            logger.info("Loading network details for network: $selectedNetworkName")
+            logger.debug("Loading network details for network: $selectedNetworkName")
             viewModelScope.launch(Dispatchers.IO) {
                 _showProgress.value = true
                 localDbInterface.allNetworks
@@ -154,7 +154,7 @@ class NetworkDetailViewModelImpl
                         )
 
                         if (_networkDetail.value != networkInfo) {
-                            logger.info("Network detail changed, updating to: ${networkInfo?.networkName}")
+                            logger.debug("Network detail changed, updating to: ${networkInfo?.networkName}")
                             _networkDetail.value = networkInfo
                         }
 

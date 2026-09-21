@@ -488,9 +488,7 @@ open class Windscribe : MultiDexApplication() {
 
                             is MigrationResult.AlreadyCompleted -> { }
 
-                            is MigrationResult.NoTrayData -> {
-                                logger.info("No Tray data to migrate (fresh install or already migrated)")
-                            }
+                            is MigrationResult.NoTrayData -> { }
 
                             is MigrationResult.Error -> {
                                 logger.error("Tray migration failed: ${result.message}")

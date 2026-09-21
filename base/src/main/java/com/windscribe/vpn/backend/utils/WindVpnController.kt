@@ -172,11 +172,12 @@ open class WindVpnController
             connectionId: UUID,
         ) {
             try {
+                activeConnectionId = connectionId
                 if (VpnService.prepare(appContext) == null) {
                     logger.debug("VPN Permission available.")
                     vpnBackendHolder.connect(protocolInformation, connectionId)
                 } else {
-                    logger.debug("Requesting VPN Permission")
+                    logger.info("Requesting VPN Permission")
                     val startIntent = Intent(appContext, VPNPermissionActivity::class.java)
                     startIntent.putExtra("protocolInformation", protocolInformation)
                     startIntent.putExtra("connectionId", connectionId)
@@ -558,6 +559,7 @@ open class WindVpnController
             try {
                 ConnectionLogContext.set(connectionId)
                 activeConnectionId = connectionId
+                // Debug on purpose: the next line logs this same moment at info.
                 logger.debug("Connecting to VPN.")
                 vpnConnectionStateManager.setState(VPNState(Connecting, connectionId = connectionId))
                 // Before anything is established: requestTun() applies these to *every* interface

@@ -220,7 +220,7 @@ class UpgradeViewModel
                 onBillingSetupSuccessful()
             }
             collect(googleBillingManager.onBillingSetupFailure) { code ->
-                logger.info("Billing client set up failure...")
+                logger.warn("Billing client set up failure...")
                 showBillingError(getBillingErrorMessage(code))
             }
             collect(googleBillingManager.onProductConsumeSuccess) { purchase ->

@@ -10,7 +10,6 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.AdvanceParamKeys
@@ -30,10 +29,7 @@ class LogRepository
     constructor(
         private val preferencesHelper: PreferencesHelper,
         private val apiCallManager: IApiCallManager,
-        private val playIntegrityManager: PlayIntegrityManager,
     ) {
-        private val logger = LoggerFactory.getLogger("log-repo")
-
         fun getDebugFilePath(): String {
             val advanceParams = parseAdvanceParams(preferencesHelper.advanceParamText)
             return when {
@@ -45,11 +41,13 @@ class LogRepository
                     "${appContext.filesDir}/wireguard_log.txt"
                 }
 
-                else -> {
-                    appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
-                }
+                else -> appLogPath()
             }
         }
+
+        private fun appLogPath(): String = appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
+
+        private fun rolledLogFile(): File = File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_ROLLED_FILE_NAME)
 
         private fun parseAdvanceParams(text: String): Map<String, String> {
             val map = mutableMapOf<String, String>()
@@ -82,12 +80,8 @@ class LogRepository
             val builder = StringBuilder()
             builder.append(logFile)
             // Oldest first. Without it a report filed just after a roll carries almost nothing.
-            if (debugFilePath == appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME) {
-                builder.append(
-                    readRolledLog(
-                        File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_ROLLED_FILE_NAME),
-                    ),
-                )
+            if (debugFilePath == appLogPath()) {
+                builder.append(readRolledLog(rolledLogFile()))
             }
             val file = File(debugFilePath)
             BufferedReader(FileReader(file)).use { bufferedReader ->
@@ -104,23 +98,28 @@ class LogRepository
             )
         }
 
-        fun getPartialLog(): List<String> =
-            try {
-                File(getDebugFilePath()).readLines()
-            } catch (_: IOException) {
-                emptyList()
-            }
+        fun getPartialLog(): List<String> {
+            val debugFilePath = getDebugFilePath()
+            val rolled = if (debugFilePath == appLogPath()) rolledLogLines(rolledLogFile()) else emptyList()
+            val active =
+                try {
+                    File(debugFilePath).readLines()
+                } catch (_: IOException) {
+                    emptyList()
+                }
+            return rolled + active
+        }
 
-        suspend fun onSendLog(): CallResult<GenericSuccess> {
-            // Request Play Integrity token before reading log file
-            val integrityToken = playIntegrityManager.requestIntegrityToken()
-            logger.info("PlayIntegrity: reset-token android ${if (integrityToken != null) "available" else "unavailable"}")
-
-            return result<GenericSuccess> {
+        suspend fun onSendLog(): CallResult<GenericSuccess> =
+            result<GenericSuccess> {
                 apiCallManager.postDebugLog(preferencesHelper.userName, getEncodedLog())
             }
-        }
     }
+
+internal fun rolledLogLines(rolled: File): List<String> {
+    val text = readRolledLog(rolled).trimEnd('\n')
+    return if (text.isEmpty()) emptyList() else text.split("\n")
+}
 
 /**
  * The previous log, which logback rolled into a zip, or empty when there is none. Never fails the

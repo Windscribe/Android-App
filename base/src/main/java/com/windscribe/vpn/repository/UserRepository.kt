@@ -178,7 +178,7 @@ class UserRepository(
                 WorkManager.getInstance(appContext).cancelAllWork()
                 scope.launch {
                     try {
-                        logger.debug("Deleting user session.")
+                        logger.info("Deleting user session.")
                         var attempts = 0
                         val maxAttempts = 3
                         var success = false
@@ -257,19 +257,15 @@ class UserRepository(
         }
         val configId = sessionResponse.serverInventory?.amneziaWgConfigId
         if (configId.isNullOrEmpty()) {
-            // No recommendation - remains in Auto mode but effectively disabled
-            logger.info("Auto mode: No server recommendation for Protocol Tweaks")
+            return
+        }
+        val params = unblockWgParamsRepository.unblockWgParams.value
+        val matchingPreset = params.firstOrNull { it.id == configId }
+        if (matchingPreset != null) {
+            logger.info("Auto mode: Selecting preset ID: ${matchingPreset.id}, title: ${matchingPreset.title}")
+            unblockWgParamsRepository.setSelectedUnblockWgParam(matchingPreset.id)
         } else {
-            // Server recommends a config - try to find and select it by ID
-            val params = unblockWgParamsRepository.unblockWgParams.value
-            val matchingPreset = params.firstOrNull { it.id == configId }
-
-            if (matchingPreset != null) {
-                logger.info("Auto mode: Selecting preset ID: ${matchingPreset.id}, title: ${matchingPreset.title}")
-                unblockWgParamsRepository.setSelectedUnblockWgParam(matchingPreset.id)
-            } else {
-                logger.warn("Auto mode: Server recommended config_id '$configId' not found in presets")
-            }
+            logger.warn("Auto mode: Server recommended config_id '$configId' not found in presets")
         }
     }
 

@@ -225,7 +225,7 @@ class BridgeApiViewModelImpl
                         }
                         val nodeIp = preferences.selectedIp
                         localdb.addToFavouritesAsync(Favourite(datacenterAndLocation.datacenter.id, ip, nodeIp))
-                        logger.info("Pin IP request successful: ${result.data} $ip with nodeIp: $nodeIp")
+                        logger.info("Pin IP request successful: $ip with nodeIp: $nodeIp")
                         _favouriteIconAnimation.value = _favouriteIconAnimation.value + 1
                         true
                     } catch (e: Exception) {

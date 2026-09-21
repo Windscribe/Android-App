@@ -179,7 +179,7 @@ class TunnelManager(
         }
         try {
             currentHost.requestTun(excluded)
-            logger.info("holding the TUN with our own package excluded so the reconnect can use the network")
+            logger.debug("holding the TUN with our own package excluded so the reconnect can use the network")
         } catch (e: Exception) {
             // Keep blackholing rather than drop it: an engine is about to attach.
             logger.error("could not exclude self while holding; the reconnect may fail", e)
@@ -342,7 +342,7 @@ class TunnelManager(
         val existing = mux
         if (existing != null && tunnelUp) {
             if (currentHost.tunCovers(tunConfig)) {
-                logger.info("live TUN already covers the incoming config — no establish()")
+                logger.debug("live TUN already covers the incoming config — no establish()")
                 reconcileDnsStage(currentHost, existing)
                 return existing
             }

@@ -94,12 +94,17 @@ class OpenVPNBackend
                     // Kept at debug rather than dropped, so the line is still in the file.
                     VpnStatus.LogLevel.ERROR ->
                         if (disconnecting) openVPNLogger.debug(item.text()) else openVPNLogger.error(item.text())
-                    VpnStatus.LogLevel.WARNING -> openVPNLogger.warn(item.text())
+                    VpnStatus.LogLevel.WARNING ->
+                        item.text().let { if (isConfigChatter(it)) openVPNLogger.debug(it) else openVPNLogger.warn(it) }
                     VpnStatus.LogLevel.INFO ->
                         item.text().let { if (!isCertificateSuccessChatter(it)) openVPNLogger.debug(it) }
                     else -> {}
                 }
             }
+
+        private fun isConfigChatter(text: String): Boolean =
+            text.startsWith("DEPRECATED: --persist-key option ignored") ||
+                text.startsWith("WARNING: this configuration may cache passwords in memory")
 
         /** The success path: six lines per connect. A failure prints VERIFY ERROR, matched by none. */
         private fun isCertificateSuccessChatter(text: String): Boolean =

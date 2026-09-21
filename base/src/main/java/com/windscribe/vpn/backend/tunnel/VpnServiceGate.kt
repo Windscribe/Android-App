@@ -85,7 +85,7 @@ class VpnServiceGate
          */
         suspend fun ensureRunning(): WindscribeVpnService? {
             live?.let { return it }
-            logger.debug("Starting the Windscribe VPN service.")
+            logger.info("Starting the Windscribe VPN service.")
             val context = appContext.applicationContext
             return try {
                 ContextCompat.startForegroundService(

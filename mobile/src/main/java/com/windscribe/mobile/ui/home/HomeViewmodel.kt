@@ -208,7 +208,7 @@ class HomeViewmodelImpl
                             } else {
                                 0f
                             }
-                        logger.info("Data left: $dataLeft, Angle: $angle Max: ${it.maxData}")
+                        logger.debug("Data left: $dataLeft, Angle: $angle Max: ${it.maxData}")
                         _userState.emit(
                             UserState.Free(
                                 dataLeft.toLabel().replace(" ", "\n"),

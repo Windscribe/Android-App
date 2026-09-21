@@ -67,8 +67,6 @@ class NetworkInfoManager(
                     logger.info("Network changed: ${detail.name} (${detail.type})")
                     reload()
                 } else {
-                    // No network detail available (offline or no network name)
-                    logger.info("Network detail unavailable")
                     _networkInfo.emit(null)
                 }
             }

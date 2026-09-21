@@ -17,6 +17,23 @@ private val IbmPlex =
         Font(com.windscribe.vpn.R.font.ibm_plex_sans_bold, FontWeight.Bold), // w700
     )
 val DmSans = FontFamily(Font(com.windscribe.vpn.R.font.dm_sans))
+private val IbmPlexMono = FontFamily(Font(com.windscribe.vpn.R.font.ibm_plex_mono_regular))
+
+val mono11 =
+    TextStyle(
+        fontFamily = IbmPlexMono,
+        fontWeight = FontWeight.Normal,
+        fontSize = 11.sp,
+        textAlign = TextAlign.Start,
+    )
+val mono12 =
+    TextStyle(
+        fontFamily = IbmPlexMono,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        textAlign = TextAlign.Start,
+    )
 val font9 =
     TextStyle(
         fontSize = 9.sp,

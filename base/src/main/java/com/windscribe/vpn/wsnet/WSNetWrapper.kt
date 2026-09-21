@@ -1,5 +1,6 @@
 package com.windscribe.vpn.wsnet
 
+import com.google.gson.JsonParser
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetAdvancedParameters
@@ -311,18 +312,24 @@ class WSNetWrapper(
      * Output: actual message
      */
     private fun logWsNetMessage(log: String) {
-        try {
-            // BridgeAPI_impl:: lines narrate setter calls with no outcome — four per connectivity
-            // test, and the request they configure is logged on its own.
-            if (!log.contains("6464/latency") && !log.contains("BridgeAPI_impl::")) {
-                val outerMsg = log.substringAfter("\"msg\":\"").substringBeforeLast("\"}")
-                val unescaped = outerMsg.replace("\\\"", "\"")
-                val actualMsg = unescaped.substringAfter("\"msg\": \"").substringBeforeLast("\"")
-                if (actualMsg.isNotEmpty()) {
-                    logger.debug(actualMsg)
-                }
-            }
-        } catch (_: Exception) {
+        if (log.contains("6464/latency") || log.contains("BridgeAPI_impl::")) {
+            return
+        }
+        val (level, message) = parseWsNetLog(log) ?: return
+        // wsnet calls most of its own output info; only a failure is promoted.
+        when (level) {
+            "error" -> logger.error(message)
+            "warn", "warning" -> logger.warn(message)
+            else -> logger.debug(message)
         }
     }
+}
+
+internal fun parseWsNetLog(log: String): Pair<String, String>? {
+    val record = runCatching { JsonParser.parseString(log).asJsonObject }.getOrNull() ?: return "" to log
+    val message = runCatching { record["msg"].asString }.getOrNull() ?: return "" to log
+    if (message.isEmpty()) {
+        return null
+    }
+    return (runCatching { record["lvl"].asString }.getOrNull() ?: "") to message
 }

@@ -228,7 +228,7 @@ abstract class VpnBackend(
         connectivityTestJob?.cancel()
         connectivityTestJob = null
         connectivityFailureHandled = false
-        vpnLogger.info("Starting connectivity test.")
+        vpnLogger.debug("Starting connectivity test.")
         val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500L
         val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
         val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
@@ -262,7 +262,7 @@ abstract class VpnBackend(
                         // Try maxAttempts times
                         while (attemptCount < maxAttempts && !success) {
                             attemptCount++
-                            vpnLogger.info("Connectivity test attempt: $attemptCount/$maxAttempts")
+                            vpnLogger.debug("Connectivity test attempt: $attemptCount/$maxAttempts")
 
                             val result =
                                 result<String> {
@@ -289,7 +289,7 @@ abstract class VpnBackend(
                                         }
                                     } else {
                                         lastError = "Invalid IP address: $userIp"
-                                        vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
+                                        vpnLogger.warn("Failed Attempt: $attemptCount - $lastError")
                                         if (attemptCount < maxAttempts) {
                                             delay(retryDelay.milliseconds)
                                         }
@@ -298,7 +298,7 @@ abstract class VpnBackend(
 
                                 is CallResult.Error -> {
                                     lastError = result.errorMessage
-                                    vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
+                                    vpnLogger.warn("Failed Attempt: $attemptCount - $lastError")
                                     if (attemptCount < maxAttempts) {
                                         delay(retryDelay.milliseconds)
                                     }
@@ -338,7 +338,7 @@ abstract class VpnBackend(
     }
 
     open fun connectivityTestPassed(ip: String) {
-        vpnLogger.info("Connectivity test successful: $ip")
+        vpnLogger.debug("Connectivity test successful: $ip")
         sessionWasEstablished = true
         updateState(VPNState(VPNState.Status.Connected, ip = ip))
         mainScope.launch {

@@ -79,7 +79,7 @@ class WindScribeWorkManager(
     fun onAppStart() {
         if (preferencesHelper.sessionHash == null) {
             // Skips the session refresh and every periodic worker; only the next app start recovers.
-            logger.warn("onAppStart: no session hash, skipping startup work.")
+            logger.debug("onAppStart: no session hash, skipping startup work.")
             return
         }
         // One time
@@ -134,7 +134,7 @@ class WindScribeWorkManager(
 
     fun onAppMovedToForeground() {
         if (preferencesHelper.sessionHash == null) {
-            logger.warn("onAppMovedToForeground: no session hash, skipping session refresh.")
+            logger.debug("onAppMovedToForeground: no session hash, skipping session refresh.")
             return
         }
         WorkManager

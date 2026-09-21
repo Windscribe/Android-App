@@ -72,7 +72,7 @@ class AutoConnectionManager(
                 // Failover is over once something connected, whichever path got there. Left set,
                 // isHandover() holds the TUN for a reconnect nothing is driving.
                 if (vpnState.status == VPNState.Status.Connected && isEnabled) {
-                    logger.debug("Connected; auto connect is no longer driving.")
+                    logger.info("Connected; auto connect is no longer driving.")
                     isEnabled = false
                 }
                 vpnState.protocolInformation?.let { protocolInformation ->
@@ -118,9 +118,9 @@ class AutoConnectionManager(
         listOfProtocols = reloadProtocols()
         updateNextInLineProtocol()
         // reset() runs several times over a startup, usually with the same order.
-        val listLog = listOfProtocols.toString()
+        val listLog = "Protocol order: $listOfProtocols"
         if (listLog != lastProtocolListLog) {
-            logger.info(listLog)
+            logger.debug(listLog)
             lastProtocolListLog = listLog
         }
     }
@@ -401,7 +401,7 @@ class AutoConnectionManager(
                 "Preferred: ${preferredProtocol ?: ""} Manual: ${manualProtocol ?: ""}"
             }
         if (protocolLog.isNotEmpty() && protocolLog != lastProtocolLog) {
-            logger.info(protocolLog)
+            logger.debug(protocolLog)
         }
         lastProtocolLog = protocolLog
         return appSupportedProtocolOrder
@@ -791,7 +791,7 @@ class AutoConnectionManager(
                         }
 
                         override fun onProtocolSelect(protocolInformation: ProtocolInformation) {
-                            logger.debug("User changed protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
+                            logger.info("User changed protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
 
                             if (isEnabled) {
                                 continuation?.let {
