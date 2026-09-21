@@ -36,6 +36,7 @@ import com.windscribe.vpn.workers.ReconnectAfterRefresh
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -76,6 +77,8 @@ class SessionWorker
                     logger.debug("Could not refresh what a connect reads; retrying.")
                     Result.retry()
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 when (e) {
                     is InvalidSessionException -> {
@@ -97,7 +100,11 @@ class SessionWorker
                     }
 
                     else -> {
-                        logger.debug(e.message)
+                        if (preferencesHelper.sessionHash == null) {
+                            logger.debug("Session refresh skipped: no user is signed in.")
+                        } else {
+                            logger.warn("Session refresh failed, retrying: ${e.message}")
+                        }
                         Result.retry()
                     }
                 }
@@ -170,15 +177,15 @@ class SessionWorker
             return try {
                 if (serverListStale) {
                     serverListRepository.update()
-                    logger.debug("Server list is current.")
                 }
                 if (accountChanged) {
                     connectionDataRepository.update()
-                    logger.debug("Server credentials are current.")
                 }
                 true
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                logger.debug("Could not refresh what a connect reads: ${e.message}")
+                logger.warn("Could not refresh what a connect reads: ${e.message}")
                 false
             }
         }

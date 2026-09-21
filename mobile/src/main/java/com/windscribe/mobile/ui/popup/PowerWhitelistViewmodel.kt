@@ -33,7 +33,7 @@ class PowerWhitelistViewmodelImpl
 
         override fun onPermissionResult(granted: Boolean) {
             viewModelScope.launch {
-                logger.info("PowerWhitelist permission result: $granted")
+                logger.debug("PowerWhitelist permission result: $granted")
                 _shouldExit.emit(true)
             }
         }

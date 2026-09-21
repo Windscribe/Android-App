@@ -5,6 +5,7 @@ import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.repository.CallResult
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -22,6 +23,9 @@ object Ext {
     suspend fun <T> result(block: suspend () -> GenericResponseClass<*, *>): CallResult<T> =
         try {
             block().callResult()
+        } catch (e: CancellationException) {
+            // Cancellation is the app stopping the work, not the call failing.
+            throw e
         } catch (e: Exception) {
             CallResult.Error(
                 NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA,

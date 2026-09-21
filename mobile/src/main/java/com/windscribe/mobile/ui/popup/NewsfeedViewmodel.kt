@@ -99,7 +99,7 @@ class NewsfeedViewmodel
             _newsfeedState.value = NewsfeedState.Loading
 
             val newsfeed = repository.getNotifications()
-            logger.info("Loaded notification data successfully...")
+            logger.debug("Loaded notification data successfully...")
 
             var firstItemToOpen = -1
             for (wn in newsfeed) {

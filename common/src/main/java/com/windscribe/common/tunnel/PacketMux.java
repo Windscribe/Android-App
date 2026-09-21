@@ -58,7 +58,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * engine socketpair and closes it on detach; the engine owns the side it is given.
  */
 public final class PacketMux {
-
     private static final String TAG = "PacketMux";
     /** Session lifecycle and hard failures. Per-packet paths stay on {@link #TAG} alone. */
     private static final Logger log = LoggerFactory.getLogger("mux");
@@ -273,7 +272,8 @@ public final class PacketMux {
         Snapshot cur = snapshot.get();
         quiesce(new Snapshot(State.DROP, null, cur.engine, cur.epoch + 1, mtu), "setTun");
         publishAndWake(new Snapshot(cur.state, tun, cur.engine, snapshot.get().epoch + 1, mtu));
-        log.info("TUN replaced, mtu=" + mtu);
+        // WindscribeVpnService and TunnelManager log these at info, with the detail these lack.
+        log.debug("TUN replaced, mtu=" + mtu);
     }
 
     /**
@@ -320,7 +320,7 @@ public final class PacketMux {
         Snapshot cur = snapshot.get();
         publishAndWake(new Snapshot(State.FORWARD, cur.tun, muxSide.getFileDescriptor(),
                 cur.epoch + 1, cur.mtu));
-        log.info("engine attached, forwarding");
+        log.debug("engine attached, forwarding");
         return engineSide;
     }
 
@@ -337,7 +337,7 @@ public final class PacketMux {
         // Safe now: both pumps have acknowledged the epoch and released the descriptor.
         closeQuietly(engineMuxSide);
         engineMuxSide = null;
-        log.info("engine detached, dropping");
+        log.debug("engine detached, dropping");
     }
 
     public State state() {

@@ -35,12 +35,12 @@ class PinIpRecovery(
     }
 
     fun start() {
-        vpnLogger.info("Starting IP pinning recovery monitor")
+        vpnLogger.debug("Starting IP pinning recovery monitor")
         startHandshakeRecoveryListener()
     }
 
     fun stop() {
-        vpnLogger.info("Stopping IP pinning recovery monitor")
+        vpnLogger.debug("Stopping IP pinning recovery monitor")
         handshakeRecoveryJob?.cancel()
         handshakeRecoveryJob = null
         lastHandshakeTimestamp = null

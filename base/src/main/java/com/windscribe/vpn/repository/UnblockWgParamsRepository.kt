@@ -42,7 +42,7 @@ class UnblockWgParamsRepository
         suspend fun update(): Boolean {
             when (val result = api.unblockWgParams().callResult<UnblockWgResponse>()) {
                 is CallResult.Success<UnblockWgResponse> -> {
-                    logger.info("Fetched ${result.data.params.size} unblock wg params")
+                    logger.debug("Fetched ${result.data.params.size} unblock wg params")
                     val savedPreset = preferencesHelper.selectedUnblockWgParam
                     val selected = result.data.params.firstOrNull { it.id == savedPreset }
                     if (selected == null) {
@@ -83,7 +83,6 @@ class UnblockWgParamsRepository
                 }
 
                 is CallResult.Error -> {
-                    logger.info("Fetched Errror {} unblock wg params", result.code)
                     logger.error(
                         "Error while fetching unblock wg params Code:{}, Error:{}",
                         result.code,

@@ -818,7 +818,7 @@ class ConnectionViewmodelImpl
 
                     // Check internet connectivity
                     if (!WindUtilities.isOnline()) {
-                        logger.info("Error: no internet available to connect.")
+                        logger.warn("Cannot connect: the device has no internet.")
                         showToast(com.windscribe.vpn.R.string.no_internet)
                         return@launch
                     }
@@ -857,7 +857,7 @@ class ConnectionViewmodelImpl
                     preferences.isConnectingToStaticIp = false
                     preferences.isConnectingToConfigured = false
                     saveLastLocation(datacenterAndLocation)
-                    logger.debug("Attempting to connect")
+                    logger.info("Attempting to connect")
                     appScope.launch {
                         autoConnectionManager.connectInForeground(ConnectSource.User)
                     }
@@ -906,7 +906,7 @@ class ConnectionViewmodelImpl
                     preferences.isConnectingToStaticIp = true
                     preferences.isConnectingToConfigured = false
                     saveLastLocation(staticRegion)
-                    logger.debug("Attempting to connect..")
+                    logger.info("Attempting to connect to a static IP")
                     appScope.launch {
                         autoConnectionManager.connectInForeground(ConnectSource.User)
                     }

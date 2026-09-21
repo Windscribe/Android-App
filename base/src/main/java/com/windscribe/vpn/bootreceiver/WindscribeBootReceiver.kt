@@ -22,7 +22,7 @@ class WindscribeBootReceiver : BroadcastReceiver() {
             logger.info("Device boot completed, checking auto-start preference")
             appContext.workManager.connectOnBoot(BootWorker.REASON_BOOT)
         } else if (Intent.ACTION_MY_PACKAGE_REPLACED == intent.action) {
-            logger.info("App updated, checking if VPN reconnection needed")
+            logger.debug("App updated, checking if VPN reconnection needed")
             appContext.preference.migrationRequired = true
             appContext.workManager.updateSession()
             // Whether to reconnect is ConnectionPolicy's call, same as for a boot. Deciding it here

@@ -206,14 +206,9 @@ class TrayToDataStoreMigration(
                 return MigrationResult.AlreadyCompleted
             }
 
-            logger.info("Starting Tray to DataStore migration...")
-
             // Locate tray.db file in /data/data/com.windscribe.vpn/databases/
             val trayDbFile = context.getDatabasePath(TRAY_DB_NAME)
-            logger.info("Looking for Tray database at: ${trayDbFile.absolutePath}")
-
             if (!trayDbFile.exists()) {
-                logger.info("No Tray database found (fresh install)")
                 markMigrationComplete()
                 return MigrationResult.NoTrayData
             }
@@ -250,7 +245,6 @@ class TrayToDataStoreMigration(
                     )
 
                 if (cursor.count == 0) {
-                    logger.info("No Tray data to migrate")
                     cursor.close()
                     db.close()
                     markMigrationComplete()

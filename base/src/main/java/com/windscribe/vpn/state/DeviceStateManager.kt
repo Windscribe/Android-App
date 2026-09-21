@@ -165,7 +165,7 @@ class DeviceStateManager
 
             try {
                 connectivityManager.registerDefaultNetworkCallback(networkCallback!!)
-                logger.info("Network callback registered using registerDefaultNetworkCallback()")
+                logger.debug("Network callback registered using registerDefaultNetworkCallback()")
             } catch (e: Exception) {
                 logger.error("Failed to register network callback", e)
             }
@@ -224,7 +224,7 @@ class DeviceStateManager
 
             // Log only if something changed
             if (force || currentOnline != online || currentDetail != detail) {
-                logger.info("Network: online={}, {}", online, detail ?: "no detail")
+                logger.debug("Network: online={}, {}", online, detail ?: "no detail")
             }
         }
 
@@ -255,7 +255,7 @@ class DeviceStateManager
             if (networkName == null) {
                 standDownWithoutName = false
             }
-            logger.info("Whitelisted network set to: $networkName")
+            logger.debug("Whitelisted network set to: $networkName")
             updateWhitelistedNetworkState(_networkDetail.value)
         }
 
@@ -284,7 +284,7 @@ class DeviceStateManager
         /** Records that the user connected on [networkName], or clears it with null. */
         fun setOptedInNetwork(networkName: String?) {
             optedInNetworkName = networkName
-            logger.info("Opted-in network set to: $networkName")
+            logger.debug("Opted-in network set to: $networkName")
             updateOptedInNetworkState(_networkDetail.value)
         }
 
@@ -561,7 +561,7 @@ class DeviceStateManager
                     isOnline.collect { online ->
                         withContext(Dispatchers.Main) {
                             wsNetWrapper.withWSNet { wsNet ->
-                                logger.info("Updated wsnet network status to $online")
+                                logger.debug("Updated wsnet network status to $online")
                                 wsNet.setConnectivityState(online)
                             }
                         }

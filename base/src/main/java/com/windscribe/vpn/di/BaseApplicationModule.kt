@@ -16,7 +16,6 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.SecurePreferences
 import com.windscribe.vpn.apppreference.windscribeDataStore
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
-import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
@@ -875,8 +874,7 @@ open class BaseApplicationModule {
     fun provideLogRepository(
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
-        playIntegrityManager: PlayIntegrityManager,
-    ): LogRepository = LogRepository(preferencesHelper, apiCallManager, playIntegrityManager)
+    ): LogRepository = LogRepository(preferencesHelper, apiCallManager)
 
     @Provides
     @Singleton
