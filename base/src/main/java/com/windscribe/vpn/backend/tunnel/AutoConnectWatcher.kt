@@ -106,8 +106,6 @@ class AutoConnectWatcher
                     // Not the user's doing, so the network is not stood down for it.
                     vpnController.disconnectAsync(SYSTEM_DISCONNECT)
                 }
-
-                else -> logger.debug("Nothing to do for ${networkInfo?.networkName}.")
             }
         }
 

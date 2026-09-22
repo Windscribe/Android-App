@@ -174,7 +174,6 @@ open class WindVpnController
             try {
                 activeConnectionId = connectionId
                 if (VpnService.prepare(appContext) == null) {
-                    logger.debug("VPN Permission available.")
                     vpnBackendHolder.connect(protocolInformation, connectionId)
                 } else {
                     logger.info("Requesting VPN Permission")
@@ -257,7 +256,14 @@ open class WindVpnController
             }
             val selectedNode: Server =
                 if (pinnedNode != null && attempt == 0) pinnedNode else nodes[randomIndex]
-            logger.debug("{}", selectedNode)
+            logger.debug(
+                "Selected node: {} ip={} ip2={} ip3={} health={}",
+                selectedNode.hostname,
+                selectedNode.ip,
+                selectedNode.ip2,
+                selectedNode.ip3,
+                selectedNode.health,
+            )
             lastUsedRandomIndex = randomIndex
             val coordinatesArray = (city.coordinates ?: "").split(",".toRegex()).toTypedArray()
             val ikev2Ip = selectedNode.ip

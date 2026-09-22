@@ -86,7 +86,7 @@ class ProxyDNSManager(
             activePort.set(listenPort.toInt())
             val listenerInfo = staticConfig.replace("5355", listenPort)
             val configData = "$listenerInfo\n$upStreamInfo".encodeToByteArray()
-            logger.debug("Configuring controlD with: $upStreamInfo \nListenPort: $listenPort")
+            logger.debug("Configuring controlD on port $listenPort.")
             FileOutputStream(configFile).use {
                 it.write(configData)
             }
@@ -154,7 +154,6 @@ class ProxyDNSManager(
         controlDJob =
             scope.launch {
                 isRunning.set(true)
-                logger.debug("Started ControlD.")
                 // we are providing config file in home dir instead of UID
                 // Pass device info directly to avoid JNI callbacks from Go goroutines
                 cdLib.startCd(

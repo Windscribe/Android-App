@@ -89,22 +89,30 @@ class OpenVPNBackend
         private val openVpnTunnel = OpenVpnTunnel()
         private val logListener: VpnStatus.LogListener =
             VpnStatus.LogListener { item ->
-                when (item.logLevel) {
-                    // An engine already asked to exit reports on a config it no longer holds.
-                    // Kept at debug rather than dropped, so the line is still in the file.
-                    VpnStatus.LogLevel.ERROR ->
-                        if (disconnecting) openVPNLogger.debug(item.text()) else openVPNLogger.error(item.text())
-                    VpnStatus.LogLevel.WARNING ->
-                        item.text().let { if (isConfigChatter(it)) openVPNLogger.debug(it) else openVPNLogger.warn(it) }
-                    VpnStatus.LogLevel.INFO ->
-                        item.text().let { if (!isCertificateSuccessChatter(it)) openVPNLogger.debug(it) }
-                    else -> {}
+                val text = item.text()
+                if (!isBuildConstantChatter(text)) {
+                    when (item.logLevel) {
+                        // An engine already asked to exit reports on a config it no longer holds.
+                        // Kept at debug rather than dropped, so the line is still in the file.
+                        VpnStatus.LogLevel.ERROR ->
+                            if (disconnecting) openVPNLogger.debug(text) else openVPNLogger.error(text)
+                        VpnStatus.LogLevel.WARNING -> openVPNLogger.warn(text)
+                        VpnStatus.LogLevel.INFO ->
+                            if (!isCertificateSuccessChatter(text)) openVPNLogger.debug(text)
+                        else -> {}
+                    }
                 }
             }
 
-        private fun isConfigChatter(text: String): Boolean =
-            text.startsWith("DEPRECATED: --persist-key option ignored") ||
-                text.startsWith("WARNING: this configuration may cache passwords in memory")
+        /** Fixed for a given build, so the header's version code already carries it. */
+        private fun isBuildConstantChatter(text: String): Boolean =
+            text.startsWith("library versions:") ||
+                text.startsWith("Note: Treating option") ||
+                text.startsWith("Note: --cipher is not set") ||
+                text.startsWith("DEPRECATED: --persist-key option ignored") ||
+                text.startsWith("WARNING: this configuration may cache passwords in memory") ||
+                text.startsWith("WARNING: OpenVPN was configured to add an IPv6 route") ||
+                text.contains("linker: Warning:")
 
         /** The success path: six lines per connect. A failure prints VERIFY ERROR, matched by none. */
         private fun isCertificateSuccessChatter(text: String): Boolean =

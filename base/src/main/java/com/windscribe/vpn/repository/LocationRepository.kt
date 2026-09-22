@@ -77,7 +77,6 @@ class LocationRepository
         }
 
         suspend fun updateLocation(): Int {
-            logger.debug("updating last selected location: ${selectedCity.value}")
             val userStatus =
                 userRepository
                     .get()
