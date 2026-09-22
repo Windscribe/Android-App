@@ -129,7 +129,7 @@ open class WindVpnController
             protocolInformation: ProtocolInformation,
             attempt: Int = 0,
             hostname: String? = null,
-        ): String =
+        ): Pair<String, ProtocolInformation> =
             when (WindUtilities.getSourceTypeBlocking()) {
                 CityLocation -> {
                     createVpnProfileFromCity(
@@ -137,14 +137,14 @@ open class WindVpnController
                         protocolInformation,
                         attempt,
                         hostname,
-                    )
+                    ) to protocolInformation
                 }
 
                 StaticIp -> {
                     createVpnProfileFromStaticIp(
                         preferencesHelper.selectedCity,
                         protocolInformation,
-                    )
+                    ) to protocolInformation
                 }
 
                 else -> {
@@ -197,7 +197,7 @@ open class WindVpnController
             }
         }
 
-        private suspend fun createProfileFromCustomConfig(selectedCity: Int): String {
+        private suspend fun createProfileFromCustomConfig(selectedCity: Int): Pair<String, ProtocolInformation> {
             val configFile = localDbInterface.getConfigFileAsync(selectedCity)
             logger.info("Creating profile from custom config $selectedCity $configFile")
             val profile = vpnProfileCreator.createVpnProfileFromConfig(configFile)
@@ -207,7 +207,7 @@ open class WindVpnController
             }
             localDbInterface.addConfigSync(configFile)
             autoConnectionManager.setSelectedProtocol(profile.second)
-            return profile.first
+            return profile
         }
 
         private var lastUsedRandomIndex = 0
@@ -589,12 +589,12 @@ open class WindVpnController
                     } ?: getProtocolInformationToConnect()
                 // Bounded here because startConnectionJob()'s budget only starts inside
                 // backend.connect(), leaving the API round trips that build the profile untimed.
-                val profileToConnect =
+                val (profileToConnect, profileProtocol) =
                     withTimeout(PROFILE_TIMEOUT_MS) {
                         createVPNProfile(protocolInformation, attempt, hostname)
                     }
                 logger.info("Location: $profileToConnect")
-                launchVPNService(protocolInformation, connectionId)
+                launchVPNService(profileProtocol, connectionId)
             } catch (e: TimeoutCancellationException) {
                 // Scoped to the withTimeout above, so catching a CancellationException here does not
                 // swallow a real cancellation of the enclosing job.
