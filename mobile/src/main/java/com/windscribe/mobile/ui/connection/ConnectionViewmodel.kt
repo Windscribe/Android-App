@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -524,7 +525,7 @@ class ConnectionViewmodelImpl
 
         private fun handleConnectionSoundsState() {
             viewModelScope.launch(Dispatchers.IO) {
-                vpnConnectionStateManager.state.collectLatest {
+                vpnConnectionStateManager.state.drop(1).collectLatest {
                     if (it.status == VPNState.Status.Connecting && preferences.connectedBundleSoundOption == 3) {
                         playSoundFromRaw(com.windscribe.vpn.R.raw.fart_deluxe_loop, loop = true)
                         return@collectLatest
@@ -627,7 +628,7 @@ class ConnectionViewmodelImpl
 
         private fun handleConnectionHapticFeedback() {
             viewModelScope.launch(Dispatchers.IO) {
-                vpnConnectionStateManager.state.collectLatest { state ->
+                vpnConnectionStateManager.state.drop(1).collectLatest { state ->
                     if (state.status == VPNState.Status.Connected || state.status == VPNState.Status.Disconnected) {
                         if (preferences.isHapticFeedbackEnabled) {
                             _shouldPlayHapticFeedback.emit(true)
