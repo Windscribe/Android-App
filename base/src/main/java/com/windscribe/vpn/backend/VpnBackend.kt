@@ -228,7 +228,6 @@ abstract class VpnBackend(
         connectivityTestJob?.cancel()
         connectivityTestJob = null
         connectivityFailureHandled = false
-        vpnLogger.debug("Starting connectivity test.")
         val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500L
         val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
         val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
@@ -262,7 +261,9 @@ abstract class VpnBackend(
                         // Try maxAttempts times
                         while (attemptCount < maxAttempts && !success) {
                             attemptCount++
-                            vpnLogger.debug("Connectivity test attempt: $attemptCount/$maxAttempts")
+                            if (attemptCount > 1) {
+                                vpnLogger.debug("Connectivity test attempt: $attemptCount/$maxAttempts")
+                            }
 
                             val result =
                                 result<String> {

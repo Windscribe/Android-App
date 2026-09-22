@@ -312,10 +312,10 @@ class WSNetWrapper(
      * Output: actual message
      */
     private fun logWsNetMessage(log: String) {
-        if (log.contains("6464/latency") || log.contains("BridgeAPI_impl::")) {
+        val (level, message) = parseWsNetLog(log) ?: return
+        if (isWsNetNoise(message)) {
             return
         }
-        val (level, message) = parseWsNetLog(log) ?: return
         // wsnet calls most of its own output info; only a failure is promoted.
         when (level) {
             "error" -> logger.error(message)
@@ -324,6 +324,12 @@ class WSNetWrapper(
         }
     }
 }
+
+/** Curl requests are kept deliberately: they are the evidence a worker actually ran. */
+internal fun isWsNetNoise(message: String): Boolean =
+    message.contains("6464/latency") ||
+        message.contains("BridgeAPI_impl::") ||
+        message.startsWith("BridgeTokenRequest: token parsed successfully")
 
 internal fun parseWsNetLog(log: String): Pair<String, String>? {
     val record = runCatching { JsonParser.parseString(log).asJsonObject }.getOrNull() ?: return "" to log

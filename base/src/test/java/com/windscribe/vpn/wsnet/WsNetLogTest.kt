@@ -1,7 +1,9 @@
 package com.windscribe.vpn.wsnet
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class WsNetLogTest {
@@ -46,5 +48,25 @@ class WsNetLogTest {
     @Test
     fun `only an empty message is dropped`() {
         assertNull(parseWsNetLog(native("info", "")))
+    }
+
+    @Test
+    fun `curl requests are kept - they are the evidence a worker ran`() {
+        assertFalse(isWsNetNoise("New curl request : https://api.windscribe.com/Session"))
+        assertFalse(isWsNetNoise("New curl request : https://api.windscribe.com/MyIp"))
+        assertFalse(isWsNetNoise("New curl request : https://checkip.windscribe.com/"))
+        assertFalse(isWsNetNoise("Curl request error: SSL connect error"))
+    }
+
+    @Test
+    fun `the bridge token line is dropped, the session token line it duplicates is not`() {
+        assertTrue(isWsNetNoise("BridgeTokenRequest: token parsed successfully"))
+        assertFalse(isWsNetNoise("Successfully received session token for host ''"))
+    }
+
+    @Test
+    fun `the pre-existing suppressions still hold`() {
+        assertTrue(isWsNetNoise("connecting to 10.0.0.1:6464/latency"))
+        assertTrue(isWsNetNoise("BridgeAPI_impl::handleRequest"))
     }
 }

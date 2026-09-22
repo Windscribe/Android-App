@@ -57,8 +57,6 @@ class ReconnectAfterRefresh
 
                 // The drop is still owed an answer, and the refresh above was it.
                 awaitingSession -> connect("the tunnel dropped and the account is fine")
-
-                else -> logger.debug("Nothing to reconnect for.")
             }
         }
 
