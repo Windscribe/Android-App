@@ -542,25 +542,12 @@ class VPNProfileCreator
                 interFaceBuilder.setMtu(mPreferencesHelper.packetSize)
             }
             val dnsDetails = setCustomDNS()
-            when (dnsDetails?.type) {
-                DnsType.Plain -> {
-                    // Use the plain DNS IP directly
-                    interFaceBuilder.parseDnsServers(dnsDetails.ip!!)
-                }
-                DnsType.Proxy -> {
-                    // For DoH/DoT, use the bootstrap IP so DNS queries go to Control-D's servers
-                    // This allows Control-D verification to work properly
-                    val bootstrapIp = dnsDetails.ip
-                    if (!bootstrapIp.isNullOrEmpty()) {
-                        interFaceBuilder.parseDnsServers(bootstrapIp)
-                    } else {
-                        interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
-                    }
-                }
-                else -> {
-                    // Default to config's DNS for tunnel mode or when no custom DNS
-                    interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
-                }
+            if (dnsDetails?.type == DnsType.Plain) {
+                interFaceBuilder.parseDnsServers(dnsDetails.ip!!)
+            } else {
+                // Proxy included: see createWireGuardInterface for why the bootstrap IP must not be
+                // advertised here.
+                interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
             }
             val configWithSettings =
                 try {
@@ -640,20 +627,15 @@ class VPNProfileCreator
             builder.parsePrivateKey(wgRemoteParams.privateKey)
             builder.parseAddresses(wgRemoteParams.address)
             val dnsDetails = setCustomDNS()
-            when (dnsDetails?.type) {
-                DnsType.Plain -> {
-                    // Use the plain DNS IP directly
-                    builder.parseDnsServers(dnsDetails.ip!!)
-                }
-                DnsType.Proxy -> {
-                    // For DoH/DoT, use the bootstrap IP so DNS queries go to Control-D's servers
-                    // This allows Control-D verification to work properly
-                    builder.parseDnsServers(dnsDetails.ip ?: wgRemoteParams.dns)
-                }
-                else -> {
-                    // Default to VPN's DNS for tunnel mode or when no custom DNS
-                    builder.parseDnsServers(wgRemoteParams.dns)
-                }
+            if (dnsDetails?.type == DnsType.Plain) {
+                builder.parseDnsServers(dnsDetails.ip!!)
+            } else {
+                // Proxy included: ctrld does the resolving and ControlDDnsStage reaches it over
+                // loopback, so this address only has to pull queries into the TUN. Never the
+                // upstream's bootstrap IP - that is a public resolver that also answers DoT on 853,
+                // which Android's opportunistic Private DNS validates and then sends every query to
+                // over TCP, unseen by the UDP/53 prefilter that feeds ctrld.
+                builder.parseDnsServers(wgRemoteParams.dns)
             }
             if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
                 builder.setMtu(preferencesHelper.packetSize)
