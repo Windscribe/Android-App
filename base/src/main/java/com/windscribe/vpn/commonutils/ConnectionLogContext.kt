@@ -36,11 +36,11 @@ object ConnectionLogContext {
     private fun shorten(connectionId: UUID?): String = connectionId?.toString()?.substringBefore('-') ?: ""
 }
 
-/** The whole `cid` field, comma and all, so a line outside an attempt carries no empty one. */
+/** The whole `#id` field, leading space and all, so a line outside an attempt carries no empty one. */
 @Keep
 class ConnectionIdConverter : ClassicConverter() {
     override fun convert(event: ILoggingEvent): String {
         val id = ConnectionLogContext.current()
-        return if (id.isEmpty()) "" else ""","cid":"$id""""
+        return if (id.isEmpty()) "" else " #$id"
     }
 }

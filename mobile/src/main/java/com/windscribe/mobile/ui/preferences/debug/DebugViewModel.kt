@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.commonutils.LogLevel
 import com.windscribe.vpn.commonutils.LogRecord
 import com.windscribe.vpn.commonutils.matches
-import com.windscribe.vpn.commonutils.parseLogLine
+import com.windscribe.vpn.commonutils.parseLogLines
 import com.windscribe.vpn.repository.LogRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -72,7 +72,7 @@ class DebugViewModelImpl
         private fun load() {
             _showProgress.value = true
             viewModelScope.launch(Dispatchers.IO) {
-                runCatching { logRepository.getPartialLog().map(::parseLogLine) }
+                runCatching { parseLogLines(logRepository.getPartialLog()) }
                     .onSuccess {
                         _records.emit(it)
                         _showProgress.value = false

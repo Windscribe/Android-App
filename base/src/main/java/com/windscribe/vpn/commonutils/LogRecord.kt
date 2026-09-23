@@ -1,7 +1,5 @@
 package com.windscribe.vpn.commonutils
 
-import com.google.gson.JsonParser
-
 data class LogRecord(
     val time: String = "",
     val date: String = "",
@@ -13,24 +11,45 @@ data class LogRecord(
     val raw: String? = null,
 )
 
-private const val DATE_LENGTH = 10
+/**
+ * One line of the pattern in assets/logback.xml, kept in step by hand:
+ * `2026-09-21 12:54:26.608 warn  [Thread-23] wsnet-wrapper #e52bf6d5 - Curl request failed`
+ */
+private val RECORD =
+    Regex(
+        """(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}\.\d{3}) (\w+) +\[([^\]]*)\] (\S+?)(?: #(\S+))? - (.*)""",
+    )
 
 fun parseLogLine(line: String): LogRecord {
-    val record =
-        runCatching {
-            val json = JsonParser.parseString(line).asJsonObject
-            val stamp = json["tm"].asString
-            LogRecord(
-                date = stamp.take(DATE_LENGTH),
-                time = stamp.drop(DATE_LENGTH + 1),
-                level = json["lvl"].asString,
-                module = json["mod"].asString,
-                thread = json["thr"].asString,
-                connectionId = json["cid"]?.asString,
-                message = json["msg"].asString,
-            )
-        }.getOrNull()
-    return record ?: LogRecord(raw = line)
+    val fields = RECORD.matchEntire(line)?.groupValues ?: return LogRecord(raw = line)
+    return LogRecord(
+        date = fields[1],
+        time = fields[2],
+        level = fields[3],
+        thread = fields[4],
+        module = fields[5],
+        connectionId = fields[6].takeIf { it.isNotEmpty() },
+        message = fields[7],
+    )
+}
+
+/**
+ * A stack trace lands on its own lines after the record it belongs to, so a line that parses as
+ * nothing gets folded back into the record above it. Only a log that never parsed at all - charon's
+ * or wireguard's, which the debug tab shows in place of ours - stays a run of raw lines.
+ */
+fun parseLogLines(lines: List<String>): List<LogRecord> {
+    val records = ArrayList<LogRecord>(lines.size)
+    for (line in lines) {
+        val record = parseLogLine(line)
+        val previous = records.lastOrNull()
+        if (record.raw != null && previous != null && previous.raw == null) {
+            records[records.lastIndex] = previous.copy(message = previous.message + "\n" + line)
+        } else {
+            records.add(record)
+        }
+    }
+    return records
 }
 
 enum class LogLevel(

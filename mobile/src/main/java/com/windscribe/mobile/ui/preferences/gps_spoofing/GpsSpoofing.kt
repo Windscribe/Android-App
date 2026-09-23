@@ -1,8 +1,8 @@
 package com.windscribe.mobile.ui.preferences.gps_spoofing
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.provider.Settings
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -69,7 +69,6 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var devModeOn by remember { mutableStateOf(false) }
     var mockAppSelected by remember { mutableStateOf(false) }
-    var openedSettings by rememberSaveable { mutableStateOf(false) }
     DisposableEffect(lifecycleOwner) {
         val observer =
             LifecycleEventObserver { _, event ->
@@ -77,13 +76,8 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                     mockAppSelected = isAppSelectedInMockLocationList(context)
                     // Being the mock location app already proves dev mode is on, so only check the flag otherwise.
                     devModeOn = mockAppSelected || isDevModeOn(context)
-                    if (currentStep == GpsStep.Setup) {
-                        if (mockAppSelected) {
-                            currentStep = GpsStep.Success
-                        } else if (openedSettings && !devModeOn) {
-                            currentStep = GpsStep.Error
-                        }
-                        openedSettings = false
+                    if (currentStep == GpsStep.Setup && mockAppSelected) {
+                        currentStep = GpsStep.Success
                     }
                 }
             }
@@ -113,7 +107,6 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                     if (mockAppSelected) {
                         currentStep = GpsStep.Success
                     } else {
-                        openedSettings = true
                         val intent =
                             Intent(
                                 if (devModeOn) {
@@ -121,14 +114,11 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                                 } else {
                                     Settings.ACTION_DEVICE_INFO_SETTINGS
                                 },
-                            )
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (intent.resolveActivity(context.packageManager) != null) {
+                            ).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        try {
                             context.startActivity(intent)
-                        } else {
-                            Toast
-                                .makeText(context, "Settings App not found.", Toast.LENGTH_SHORT)
-                                .show()
+                        } catch (_: ActivityNotFoundException) {
+                            currentStep = GpsStep.Error
                         }
                     }
                 },

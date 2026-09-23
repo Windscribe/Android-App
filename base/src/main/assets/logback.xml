@@ -5,7 +5,6 @@
 <configuration>
     <conversionRule conversionWord="lowerLevel" converterClass="com.windscribe.vpn.commonutils.LowerCaseLevelConverter"/>
     <conversionRule conversionWord="cid" converterClass="com.windscribe.vpn.commonutils.ConnectionIdConverter"/>
-    <conversionRule conversionWord="jsonMsg" converterClass="com.windscribe.vpn.commonutils.JsonMessageConverter"/>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- lazy initialization: don't create the file until 1st write -->
         <lazy>false</lazy>
@@ -25,7 +24,7 @@
         </triggeringPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>
-                {"tm":"%d{yyyy-MM-dd HH:mm:ss.SSS}","lvl":"%lowerLevel","mod":"%logger{36}","thr":"%replace(%thread){'DefaultDispatcher-', ''}"%cid,"msg":"%jsonMsg"}%n
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %-5lowerLevel [%replace(%thread){'DefaultDispatcher-', ''}] %logger{36}%cid - %msg%n
             </pattern>
         </encoder>
     </appender>
@@ -35,7 +34,7 @@
     <appender name="LOGCAT" class="ch.qos.logback.classic.android.LogcatAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>
-                {"tm":"%d{yyyy-MM-dd HH:mm:ss.SSS}","lvl":"%lowerLevel","mod":"%logger{36}","thr":"%replace(%thread){'DefaultDispatcher-', ''}"%cid,"msg":"%jsonMsg"}%n
+                %-5lowerLevel [%replace(%thread){'DefaultDispatcher-', ''}] %logger{36}%cid - %msg%n
             </pattern>
         </encoder>
     </appender>
