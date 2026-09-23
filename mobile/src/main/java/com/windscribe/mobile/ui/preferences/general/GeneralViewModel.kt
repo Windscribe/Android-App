@@ -10,12 +10,13 @@ import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val MENU_DISMISS_DELAY_MS = 120L
 
 abstract class GeneralViewModel : ViewModel() {
     abstract val orderByItems: List<DropDownStringItem>
@@ -30,7 +31,6 @@ abstract class GeneralViewModel : ViewModel() {
 
     abstract val selectedLanguage: String
 
-    abstract val reloadApp: SharedFlow<Boolean>
     abstract val isHapticEnabled: StateFlow<Boolean>
 
     abstract fun onHapticToggleButtonClicked()
@@ -54,9 +54,6 @@ class GeneralViewModelImpl
         private val userRepository: UserRepository,
         private val trafficCounter: TrafficCounter,
     ) : GeneralViewModel() {
-        private val _reloadApp = MutableSharedFlow<Boolean>()
-        override val reloadApp: SharedFlow<Boolean> = _reloadApp
-
         override val orderByItems: List<DropDownStringItem>
             get() =
                 with(appContext.localized.resources) {
@@ -84,8 +81,8 @@ class GeneralViewModelImpl
 
         override fun onLanguageItemSelected(item: DropDownStringItem) {
             viewModelScope.launch {
+                delay(MENU_DISMISS_DELAY_MS)
                 appContext.setAppLanguage(item.key)
-                _reloadApp.emit(true)
             }
         }
 
