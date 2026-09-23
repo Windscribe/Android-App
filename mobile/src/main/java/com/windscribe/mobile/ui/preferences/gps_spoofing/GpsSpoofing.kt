@@ -18,9 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,29 +66,38 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel) {
 @Composable
 fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
     val navController = LocalNavController.current
-    var currentStep by remember { mutableStateOf(GpsStep.Start) }
+    var currentStep by rememberSaveable { mutableStateOf(GpsStep.Start) }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var existingApp by remember { mutableStateOf(false) }
-    DisposableEffect(lifecycleOwner, currentStep) {
+    var devModeOn by remember { mutableStateOf(isDevModeOn(context)) }
+    var mockAppSelected by remember { mutableStateOf(false) }
+    var openedSettings by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(currentStep) {
+        if (currentStep == GpsStep.AddToMockSettings) {
+            mockAppSelected = isAppSelectedInMockLocationList(context)
+        }
+    }
+    DisposableEffect(lifecycleOwner) {
         val observer =
             LifecycleEventObserver { _, event ->
-                if (event == Event.ON_RESUME && existingApp) {
-                    existingApp = false
+                if (event == Event.ON_RESUME) {
+                    devModeOn = isDevModeOn(context)
                     when (currentStep) {
                         GpsStep.UnlockDevMode -> {
-                            if (isDevModeOn(context)) {
+                            if (devModeOn) {
+                                openedSettings = false
                                 currentStep = GpsStep.AddToMockSettings
                             }
                         }
 
                         GpsStep.AddToMockSettings -> {
-                            currentStep =
-                                if (isAppSelectedInMockLocationList(context)) {
-                                    GpsStep.Success
-                                } else {
-                                    GpsStep.Error
-                                }
+                            mockAppSelected = isAppSelectedInMockLocationList(context)
+                            if (mockAppSelected) {
+                                currentStep = GpsStep.Success
+                            } else if (openedSettings) {
+                                currentStep = GpsStep.Error
+                            }
+                            openedSettings = false
                         }
 
                         else -> {}
@@ -116,10 +127,10 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                 title = com.windscribe.vpn.R.string.unlock_developer_mode,
                 description = com.windscribe.vpn.R.string.unlock_developer_mode_explain,
                 onAccept = {
-                    if (isDevModeOn(context)) {
+                    if (devModeOn) {
                         currentStep = GpsStep.AddToMockSettings
                     } else {
-                        existingApp = true
+                        openedSettings = true
                         val intent = Intent(Settings.ACTION_SETTINGS)
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (intent.resolveActivity(context.packageManager) != null) {
@@ -131,7 +142,7 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                         }
                     }
                 },
-                action = if (isDevModeOn(context)) com.windscribe.vpn.R.string.next else com.windscribe.vpn.R.string.open_settings,
+                action = if (devModeOn) com.windscribe.vpn.R.string.next else com.windscribe.vpn.R.string.open_settings,
                 onCancel = { navController.popBackStack() },
             )
         }
@@ -142,10 +153,10 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                 title = com.windscribe.vpn.R.string.add_to_mock_location,
                 description = com.windscribe.vpn.R.string.add_to_mock_location_explain,
                 onAccept = {
-                    if (isAppSelectedInMockLocationList(context)) {
+                    if (mockAppSelected) {
                         currentStep = GpsStep.Success
                     } else {
-                        existingApp = true
+                        openedSettings = true
                         val intent = Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (intent.resolveActivity(context.packageManager) != null) {
@@ -161,10 +172,7 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                     }
                 },
                 action =
-                    if (isAppSelectedInMockLocationList(
-                            context,
-                        )
-                    ) {
+                    if (mockAppSelected) {
                         com.windscribe.vpn.R.string.next
                     } else {
                         com.windscribe.vpn.R.string.open_settings
