@@ -84,7 +84,6 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_CUSTOM
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.FeatureExplainer
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isAppSelectedInMockLocationList
-import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isDevModeOn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -304,14 +303,8 @@ fun ConnectionContent(
                     state.gpsSpoofing,
                     explainer = FeatureExplainer.GPS_SPOOFING,
                     onSelect = {
-                        if (state.gpsSpoofing.not() &&
-                            (
-                                !isDevModeOn(context) ||
-                                    !isAppSelectedInMockLocationList(
-                                        context,
-                                    )
-                            )
-                        ) {
+                        // Registering as the mock location app requires dev mode, so it covers both prerequisites.
+                        if (state.gpsSpoofing.not() && !isAppSelectedInMockLocationList(context)) {
                             navController.navigate(Screen.GpsSpoofing.route)
                         } else {
                             actions.onGPSSpoofingToggleClicked()

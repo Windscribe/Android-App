@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,8 +51,7 @@ import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isDevModeOn
 
 private enum class GpsStep {
     Start,
-    UnlockDevMode,
-    AddToMockSettings,
+    Setup,
     Success,
     Error,
 }
@@ -69,38 +67,23 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
     var currentStep by rememberSaveable { mutableStateOf(GpsStep.Start) }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var devModeOn by remember { mutableStateOf(isDevModeOn(context)) }
+    var devModeOn by remember { mutableStateOf(false) }
     var mockAppSelected by remember { mutableStateOf(false) }
     var openedSettings by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(currentStep) {
-        if (currentStep == GpsStep.AddToMockSettings) {
-            mockAppSelected = isAppSelectedInMockLocationList(context)
-        }
-    }
     DisposableEffect(lifecycleOwner) {
         val observer =
             LifecycleEventObserver { _, event ->
                 if (event == Event.ON_RESUME) {
-                    devModeOn = isDevModeOn(context)
-                    when (currentStep) {
-                        GpsStep.UnlockDevMode -> {
-                            if (devModeOn) {
-                                openedSettings = false
-                                currentStep = GpsStep.AddToMockSettings
-                            }
+                    mockAppSelected = isAppSelectedInMockLocationList(context)
+                    // Being the mock location app already proves dev mode is on, so only check the flag otherwise.
+                    devModeOn = mockAppSelected || isDevModeOn(context)
+                    if (currentStep == GpsStep.Setup) {
+                        if (mockAppSelected) {
+                            currentStep = GpsStep.Success
+                        } else if (openedSettings && !devModeOn) {
+                            currentStep = GpsStep.Error
                         }
-
-                        GpsStep.AddToMockSettings -> {
-                            mockAppSelected = isAppSelectedInMockLocationList(context)
-                            if (mockAppSelected) {
-                                currentStep = GpsStep.Success
-                            } else if (openedSettings) {
-                                currentStep = GpsStep.Error
-                            }
-                            openedSettings = false
-                        }
-
-                        else -> {}
+                        openedSettings = false
                     }
                 }
             }
@@ -116,22 +99,29 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                 title = com.windscribe.vpn.R.string.gps_spoofing,
                 description = com.windscribe.vpn.R.string.gps_spoofing_explain,
                 action = com.windscribe.vpn.R.string.let_s_do_it,
-                onAccept = { currentStep = GpsStep.UnlockDevMode },
+                onAccept = { currentStep = GpsStep.Setup },
                 onCancel = { navController.popBackStack() },
             )
         }
 
-        GpsStep.UnlockDevMode -> {
+        GpsStep.Setup -> {
             Dialog(
                 icon = R.drawable.ic_network_security_feature_icon,
-                title = com.windscribe.vpn.R.string.unlock_developer_mode,
-                description = com.windscribe.vpn.R.string.unlock_developer_mode_explain,
+                title = com.windscribe.vpn.R.string.gps_spoofing_setup,
+                description = com.windscribe.vpn.R.string.gps_spoofing_setup_explain,
                 onAccept = {
-                    if (devModeOn) {
-                        currentStep = GpsStep.AddToMockSettings
+                    if (mockAppSelected) {
+                        currentStep = GpsStep.Success
                     } else {
                         openedSettings = true
-                        val intent = Intent(Settings.ACTION_SETTINGS)
+                        val intent =
+                            Intent(
+                                if (devModeOn) {
+                                    Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS
+                                } else {
+                                    Settings.ACTION_DEVICE_INFO_SETTINGS
+                                },
+                            )
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (intent.resolveActivity(context.packageManager) != null) {
                             context.startActivity(intent)
@@ -139,35 +129,6 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
                             Toast
                                 .makeText(context, "Settings App not found.", Toast.LENGTH_SHORT)
                                 .show()
-                        }
-                    }
-                },
-                action = if (devModeOn) com.windscribe.vpn.R.string.next else com.windscribe.vpn.R.string.open_settings,
-                onCancel = { navController.popBackStack() },
-            )
-        }
-
-        GpsStep.AddToMockSettings -> {
-            Dialog(
-                icon = R.drawable.ic_network_security_feature_icon,
-                title = com.windscribe.vpn.R.string.add_to_mock_location,
-                description = com.windscribe.vpn.R.string.add_to_mock_location_explain,
-                onAccept = {
-                    if (mockAppSelected) {
-                        currentStep = GpsStep.Success
-                    } else {
-                        openedSettings = true
-                        val intent = Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (intent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(intent)
-                        } else {
-                            Toast
-                                .makeText(
-                                    context,
-                                    "Developer settings not found.",
-                                    Toast.LENGTH_SHORT,
-                                ).show()
                         }
                     }
                 },
@@ -221,7 +182,7 @@ fun GpsSpoofingContent(onEnableGpsSpoofing: () -> Unit = {}) {
 @Composable
 private fun Dialog(
     icon: Int = R.drawable.ic_network_security_feature_icon,
-    title: Int = com.windscribe.vpn.R.string.unlock_developer_mode,
+    title: Int = com.windscribe.vpn.R.string.gps_spoofing_setup,
     description: Int,
     action: Int = com.windscribe.vpn.R.string.open_settings,
     hideCancel: Boolean = false,
