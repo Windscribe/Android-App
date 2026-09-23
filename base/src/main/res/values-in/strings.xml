@@ -146,12 +146,9 @@
     <string name="rate_message">Apakah Anda menikmati Windscribe? Tentu saja. Beri kami nilai di Play Store, dan kami akan mencintaimu sejak lama.</string>
     <string name="gps_spoofing_explain">Fitur ini mengharuskan Anda untuk mengubah pengaturan android Anda. Silakan ikuti beberapa langkah selanjutnya untuk mengaktifkannya.</string>
     <string name="let_s_do_it">Ayo lakukan</string>
-    <string name="unlock_developer_mode">Buka Opsi Pengembang</string>
-    <string name="unlock_developer_mode_explain">Buka Pengaturan dan cari bagian \"Tentang Telepon\".  Temukan nomor build di dalam \"Info perangkat lunak\" dan ketuk 7 kali.</string>
     <string name="open_settings">Buka Pengaturan</string>
-    <string name="add_to_mock_location">Pilih Aplikasi Lokasi Mock</string>
-    <string name="add_to_mock_location_explain">Setelah tidak terkunci, buka \"Opsi Pengembang\" di Pengaturan.  Di bawah \"Debugging\" pilih Windscribe sebagai \"Aplikasi lokasi tiruan\".</string>
-    <string name="add_to_mock_location_explain_android_12">Setelah tidak terkunci, buka \"Opsi Pengembang\" di Pengaturan.  Di bawah \"Lokasi\" pilih Windscribe sebagai \"Aplikasi lokasi tiruan\".</string>
+    <string name="gps_spoofing_setup">Siapkan GPS Spoofing</string>
+    <string name="gps_spoofing_setup_explain">1. Buka Setelan, cari “Tentang ponsel”, lalu ketuk nomor build 7 kali untuk membuka “Opsi developer”.\n\n2. Di “Opsi developer”, pilih Windscribe sebagai “Aplikasi lokasi tiruan”.</string>
     <string name="you_are_done">Selesai!</string>
     <string name="gps_spoofing_success">Lokasi GPS Anda akan sama dengan lokasi VPN Anda.</string>
     <string name="gps_spoofing_not_set">Tidak dapat mengaktifkan GPS Spoofing</string>

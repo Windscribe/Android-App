@@ -147,12 +147,9 @@
     <string name="rate_message">Απολαμβάνετε το Windscribe? Φυσικά. Δώστε μας μία κριτική και θα σας αγαπάμε ακόμη περισσότερο.</string>
     <string name="gps_spoofing_explain">Αυτή η λειτουργία απαιτεί αλλαγή ρυθμίσεων android. Παρακαλώ ακολουθήστε τα επόμενα βήματα για να την ενεργοποιήσετε.</string>
     <string name="let_s_do_it">Ας το κάνουμε</string>
-    <string name="unlock_developer_mode">Ξεκλειδώστε ρυθμίσεις προγραμματιστών</string>
-    <string name="unlock_developer_mode_explain">Ανοίξτε τις Ρυθμίσεις και βρείτε την ενότητα «Σχετικά με το τηλέφωνο». Βρείτε τον αριθμό κατασκευής στο «Πληροφορίες λογισμικού» και πατήστε τον 7 φορές.</string>
     <string name="open_settings">Ανοίξτε τις ρυθμίσεις</string>
-    <string name="add_to_mock_location">Επιλέξτε εφαρμογή παραπλάνησης τοποθεσίας</string>
-    <string name="add_to_mock_location_explain">Μόλις ξεκλειδωθούν, μεταβείτε στις «Επιλογές προγραμματιστή» στις Ρυθμίσεις. Στην ενότητα «Αποσφαλμάτωση», επιλέξτε το Windscribe ως «Εφαρμογή εικονικής τοποθεσίας».</string>
-    <string name="add_to_mock_location_explain_android_12">Μόλις ξεκλειδωθούν, μεταβείτε στις «Επιλογές προγραμματιστή» στις Ρυθμίσεις. Στην ενότητα «Τοποθεσία», επιλέξτε το Windscribe ως «Εφαρμογή εικονικής τοποθεσίας».</string>
+    <string name="gps_spoofing_setup">Ρύθμιση πλαστογράφησης GPS</string>
+    <string name="gps_spoofing_setup_explain">1. Ανοίξτε τις Ρυθμίσεις, βρείτε το “Σχετικά με το τηλέφωνο” και πατήστε 7 φορές τον αριθμό έκδοσης για να ξεκλειδώσετε τις “Επιλογές για προγραμματιστές”.\n\n2. Στις “Επιλογές για προγραμματιστές”, επιλέξτε το Windscribe ως “Εφαρμογή εικονικής τοποθεσίας”.</string>
     <string name="you_are_done">Είστε έτοιμοι!</string>
     <string name="gps_spoofing_success">Η GPS τοποθεσίας σας θα είναι ίδια με την εικονική σας τοποθεσία.</string>
     <string name="gps_spoofing_not_set">Η παραπλάνηση GPS δεν μπορούσε να ενεργοποιηθεί</string>

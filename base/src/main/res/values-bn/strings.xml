@@ -146,12 +146,9 @@
     <string name="rate_message">আপনি কি Windscribe উপভোগ করছেন? নিশ্চয়ই করছেন। আমাদের প্লে স্টোর এ রেটিং দিন, এবং আমরা আপনাকে দীর্ঘকাল ধরে ভালবাসব।</string>
     <string name="gps_spoofing_explain">এই বৈশিষ্ট্য আপনাকে আপনার অ্যান্ড্রয়েড সেটিংস পরিবর্তন করতে বাধ্য করে। এটি সক্রিয় করতে অনুগ্রহ করে পরবর্তী কয়েকটি ধাপ অনুসরণ করুন।</string>
     <string name="let_s_do_it">চলুন করি</string>
-    <string name="unlock_developer_mode">ডেভেলপার বিকল্পগুলি আনলক করুন</string>
-    <string name="unlock_developer_mode_explain">সেটিংস খুলুন এবং “ফোন সম্পর্কে” বিভাগ খুঁজুন। “সফটওয়্যার তথ্য” এর মধ্যে বিল্ড নম্বরটি খুঁজুন এবং এটি 7 বার ট্যাপ করুন।</string>
     <string name="open_settings">সেটিংস খুলুন</string>
-    <string name="add_to_mock_location">মক লোকেশন অ্যাপ নির্বাচন করুন</string>
-    <string name="add_to_mock_location_explain">একবার আনলক হয়ে গেলে, সেটিংসে “ডেভেলপার বিকল্পগুলি” তে যান। “ডিবাগিং” এর অধীনে Windscribe কে “মক লোকেশন অ্যাপ” হিসেবে নির্বাচন করুন।</string>
-    <string name="add_to_mock_location_explain_android_12">একবার আনলক হয়ে গেলে, সেটিংসে “ডেভেলপার বিকল্পগুলি” তে যান। “লোকেশন” এর অধীনে Windscribe কে “মক লোকেশন অ্যাপ” হিসেবে নির্বাচন করুন।</string>
+    <string name="gps_spoofing_setup">GPS ঠকানো সেট আপ করুন</string>
+    <string name="gps_spoofing_setup_explain">১. সেটিংস খুলুন, “ফোন সম্পর্কে” খুঁজুন এবং “ডেভেলপার বিকল্প” আনলক করতে বিল্ড নম্বরে ৭ বার ট্যাপ করুন।\n\n২. “ডেভেলপার বিকল্প”-এ Windscribe-কে “মক লোকেশন অ্যাপ” হিসেবে বেছে নিন।</string>
     <string name="you_are_done">এই বৈশিষ্ট্যটি সক্রিয় হয়েছে! </string>
     <string name="gps_spoofing_success">আপনার জিপিএস অবস্থান আপনার VPN অবস্থানের সমান হবে।</string>
     <string name="gps_spoofing_not_set">জিপিএস ঠকান সক্রিয় করা যায়নি</string>

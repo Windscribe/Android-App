@@ -146,12 +146,9 @@
     <string name="rate_message">你喜欢风抄写员吗？当然是你。在 Play 商店中给我们评分，我们会爱你很久。</string>
     <string name="gps_spoofing_explain">此功能要求您修改安卓设置。请按照以下几个步骤将其激活。</string>
     <string name="let_s_do_it">让我们去做吧</string>
-    <string name="unlock_developer_mode">解锁开发人员选项</string>
-    <string name="unlock_developer_mode_explain">打开“设置”并查找“关于手机”部分。 在“软件信息”中找到内部版本号，然后点击 7 次。</string>
     <string name="open_settings">打开设置</string>
-    <string name="add_to_mock_location">选择模拟位置应用程序</string>
-    <string name="add_to_mock_location_explain">解锁后，转到“设置”中的“开发人员选项”。 在“调试”下，选择Windscribe作为“模拟位置应用程序”。</string>
-    <string name="add_to_mock_location_explain_android_12">解锁后，转到“设置”中的“开发人员选项”。 在“位置”下，选择Windscribe作为“模拟位置应用程序”。</string>
+    <string name="gps_spoofing_setup">設定 GPS 欺騙</string>
+    <string name="gps_spoofing_setup_explain">1. 開啟「設定」，找到「關於手機」，連續輕觸版本號碼 7 次以解鎖「開發人員選項」。\n\n2. 在「開發人員選項」中，選擇 Windscribe 作為「模擬位置資訊應用程式」。</string>
     <string name="you_are_done">大功告成！</string>
     <string name="gps_spoofing_success">您的 GPS 位置将与您的 VPN 位置相同。</string>
     <string name="gps_spoofing_not_set">无法启用 GPS 欺骗</string>

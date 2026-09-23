@@ -2165,42 +2165,110 @@ def get_translations():
             "vi": "Thanh toán gói đăng ký của bạn cần được xem lại. Mở Google Play để kiểm tra phương thức thanh toán.",
             "zh": "您的订阅付款需要处理。请打开 Google Play 查看您的付款方式。",
             "zh-rTW": "您的訂閱付款需要處理。請開啟 Google Play 查看您的付款方式。"
+        },
+        "gps_spoofing_setup": {
+            "ar": "إعداد انتحال GPS",
+            "bn": "GPS ঠকানো সেট আপ করুন",
+            "de": "GPS-Spoofing einrichten",
+            "el": "Ρύθμιση πλαστογράφησης GPS",
+            "es": "Configurar la suplantación de GPS",
+            "fa": "راه‌اندازی جعل GPS",
+            "fr": "Configurer l’usurpation GPS",
+            "hi": "जीपीएस स्पूफिंग सेट अप करें",
+            "in": "Siapkan GPS Spoofing",
+            "it": "Configura la falsificazione GPS",
+            "ja": "GPSスプーフィングの設定",
+            "ko": "GPS 스푸핑 설정",
+            "pl": "Skonfiguruj fałszowanie GPS",
+            "pt": "Configurar a falsificação de GPS",
+            "pt-rBR": "Configurar a simulação de GPS",
+            "ru": "Настройка GPS-спуфинга",
+            "sk": "Nastavenie GPS falšovania",
+            "tr": "GPS Kimlik Sahtekarlığını Ayarla",
+            "uk": "Налаштування підміни GPS",
+            "ur": "GPS اسپوفنگ سیٹ اپ کریں",
+            "vi": "Thiết lập giả mạo GPS",
+            "zh": "设置 GPS 欺骗",
+            "zh-rTW": "設定 GPS 欺騙"
+        },
+        "gps_spoofing_setup_explain": {
+            "ar": "1. افتح الإعدادات وابحث عن “حول الهاتف”، ثم اضغط على رقم الإصدار 7 مرات لفتح “خيارات المطور”.\\n\\n2. في “خيارات المطور”، اختر Windscribe كـ “تطبيق الموقع الوهمي”.",
+            "bn": "১. সেটিংস খুলুন, “ফোন সম্পর্কে” খুঁজুন এবং “ডেভেলপার বিকল্প” আনলক করতে বিল্ড নম্বরে ৭ বার ট্যাপ করুন।\\n\\n২. “ডেভেলপার বিকল্প”-এ Windscribe-কে “মক লোকেশন অ্যাপ” হিসেবে বেছে নিন।",
+            "de": "1. Öffnen Sie die Einstellungen, suchen Sie „Über das Telefon“ und tippen Sie 7-mal auf die Build-Nummer, um die „Entwickleroptionen“ freizuschalten.\\n\\n2. Wählen Sie in den „Entwickleroptionen“ Windscribe als „App für simulierte Standorte“ aus.",
+            "el": "1. Ανοίξτε τις Ρυθμίσεις, βρείτε το “Σχετικά με το τηλέφωνο” και πατήστε 7 φορές τον αριθμό έκδοσης για να ξεκλειδώσετε τις “Επιλογές για προγραμματιστές”.\\n\\n2. Στις “Επιλογές για προγραμματιστές”, επιλέξτε το Windscribe ως “Εφαρμογή εικονικής τοποθεσίας”.",
+            "es": "1. Abre Ajustes, busca “Acerca del teléfono” y toca 7 veces el número de compilación para desbloquear las “Opciones de desarrollador”.\\n\\n2. En “Opciones de desarrollador”, elige Windscribe como “Aplicación de ubicación simulada”.",
+            "fa": "۱. تنظیمات را باز کنید، “درباره تلفن” را پیدا کنید و ۷ بار روی شماره ساخت ضربه بزنید تا “گزینه‌های برنامه‌نویس” باز شود.\\n\\n۲. در “گزینه‌های برنامه‌نویس”، Windscribe را به‌عنوان “برنامه مکان ساختگی” انتخاب کنید.",
+            "fr": "1. Ouvrez les Paramètres, trouvez « À propos du téléphone » et appuyez 7 fois sur le numéro de build pour déverrouiller les « Options pour les développeurs ».\\n\\n2. Dans les « Options pour les développeurs », choisissez Windscribe comme « Application de position fictive ».",
+            "hi": "1. सेटिंग खोलें, “फ़ोन के बारे में” ढूँढें और “डेवलपर विकल्प” अनलॉक करने के लिए बिल्ड नंबर पर 7 बार टैप करें।\\n\\n2. “डेवलपर विकल्प” में Windscribe को “मॉक लोकेशन ऐप” के रूप में चुनें।",
+            "in": "1. Buka Setelan, cari “Tentang ponsel”, lalu ketuk nomor build 7 kali untuk membuka “Opsi developer”.\\n\\n2. Di “Opsi developer”, pilih Windscribe sebagai “Aplikasi lokasi tiruan”.",
+            "it": "1. Apri Impostazioni, trova “Info sul telefono” e tocca 7 volte il numero build per sbloccare le “Opzioni sviluppatore”.\\n\\n2. In “Opzioni sviluppatore”, scegli Windscribe come “App posizione simulata”.",
+            "ja": "1. 設定を開き、「デバイス情報」でビルド番号を7回タップして「開発者向けオプション」を有効にします。\\n\\n2.「開発者向けオプション」で Windscribe を「疑似位置情報アプリ」に選択します。",
+            "ko": "1. 설정에서 “휴대전화 정보”를 찾아 빌드 번호를 7번 탭하여 “개발자 옵션”을 잠금 해제하세요.\\n\\n2. “개발자 옵션”에서 Windscribe를 “모의 위치 앱”으로 선택하세요.",
+            "pl": "1. Otwórz Ustawienia, znajdź „Informacje o telefonie” i kliknij numer kompilacji 7 razy, aby odblokować „Opcje programistyczne”.\\n\\n2. W „Opcjach programistycznych” wybierz Windscribe jako „Aplikację do pozorowania lokalizacji”.",
+            "pt": "1. Abra as Definições, procure “Acerca do telefone” e toque 7 vezes no número de compilação para desbloquear as “Opções de programador”.\\n\\n2. Nas “Opções de programador”, escolha o Windscribe como “Aplicação de localização fictícia”.",
+            "pt-rBR": "1. Abra as Configurações, encontre “Sobre o telefone” e toque 7 vezes no número da versão para desbloquear as “Opções do desenvolvedor”.\\n\\n2. Em “Opções do desenvolvedor”, escolha o Windscribe como “App de local fictício”.",
+            "ru": "1. Откройте «Настройки», найдите «О телефоне» и нажмите на номер сборки 7 раз, чтобы открыть раздел «Для разработчиков».\\n\\n2. В разделе «Для разработчиков» выберите Windscribe как «Приложение для фиктивных местоположений».",
+            "sk": "1. Otvorte Nastavenia, nájdite „Informácie o telefóne“ a 7-krát ťuknite na číslo zostavy, čím odomknete „Možnosti pre vývojárov“.\\n\\n2. V „Možnostiach pre vývojárov“ vyberte Windscribe ako „Aplikáciu na simuláciu polohy“.",
+            "tr": "1. Ayarlar’ı açın, “Telefon hakkında” bölümünü bulun ve “Geliştirici seçenekleri”ni açmak için yapı numarasına 7 kez dokunun.\\n\\n2. “Geliştirici seçenekleri”nde Windscribe’ı “Sahte konum uygulaması” olarak seçin.",
+            "uk": "1. Відкрийте «Налаштування», знайдіть «Про телефон» і торкніться номера збірки 7 разів, щоб розблокувати «Для розробників».\\n\\n2. У розділі «Для розробників» виберіть Windscribe як «Програму для імітації геоданих».",
+            "ur": "1. ترتیبات کھولیں، “فون کے بارے میں” تلاش کریں اور “ڈویلپر کے اختیارات” کھولنے کے لیے بلڈ نمبر پر 7 بار ٹیپ کریں۔\\n\\n2. “ڈویلپر کے اختیارات” میں Windscribe کو “فرضی مقام ایپ” کے طور پر منتخب کریں۔",
+            "vi": "1. Mở Cài đặt, tìm “Giới thiệu về điện thoại” và nhấn vào số bản dựng 7 lần để mở khóa “Tùy chọn nhà phát triển”.\\n\\n2. Trong “Tùy chọn nhà phát triển”, chọn Windscribe làm “Ứng dụng vị trí mô phỏng”.",
+            "zh": "1. 打开“设置”，找到“关于手机”，连续点按版本号 7 次以解锁“开发者选项”。\\n\\n2. 在“开发者选项”中，选择 Windscribe 作为“模拟位置信息应用”。",
+            "zh-rTW": "1. 開啟「設定」，找到「關於手機」，連續輕觸版本號碼 7 次以解鎖「開發人員選項」。\\n\\n2. 在「開發人員選項」中，選擇 Windscribe 作為「模擬位置資訊應用程式」。"
         }
     }
 
 def main():
-    """Main function to generate real translations"""
-    # Load the current translations file
+    """Turn the missing-string batch into translations.json using the translations above"""
+    batch_file = Path(__file__).parent / 'translation_batch.json'
     translations_file = Path(__file__).parent / 'translations.json'
 
-    if not translations_file.exists():
-        print("❌ translations.json not found!")
+    if not batch_file.exists():
+        print("\u274c translation_batch.json not found!")
         print("   Please run find_missing_translations.py first")
         return
 
-    with open(translations_file, 'r', encoding='utf-8') as f:
-        current_translations = json.load(f)
+    with open(batch_file, 'r', encoding='utf-8') as f:
+        batch = json.load(f)
+    languages = batch.get('languages', batch)
 
-    # Get all real translations
     all_translations = get_translations()
 
-    # Update translations for each language
-    updated_count = 0
-    for lang_code, lang_data in current_translations.items():
+    output = {}
+    translated_count = 0
+    untranslated = []
+
+    for lang_code, lang_data in sorted(languages.items()):
         print(f"Processing {lang_data['language_name']}...")
 
-        for key in lang_data['translations'].keys():
-            if key in all_translations and lang_code in all_translations[key]:
-                # Replace placeholder with real translation
-                lang_data['translations'][key] = all_translations[key][lang_code]
-                updated_count += 1
+        translations = {}
+        for key in lang_data.get('strings_to_translate', {}):
+            value = all_translations.get(key, {}).get(lang_code)
+            if value is None:
+                untranslated.append(f"{lang_code}/{key}")
+            else:
+                translations[key] = value
+                translated_count += 1
 
-    # Save updated translations
+        if translations:
+            output[lang_code] = {
+                'language_name': lang_data['language_name'],
+                'folder': lang_data['folder'],
+                'translations': translations,
+            }
+
     with open(translations_file, 'w', encoding='utf-8') as f:
-        json.dump(current_translations, f, ensure_ascii=False, indent=2)
+        json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✅ Updated {updated_count} translations!")
+    print(f"\n\u2705 Wrote {translated_count} translations for {len(output)} languages!")
     print(f"   Saved to: {translations_file}")
+
+    if untranslated:
+        print(f"\n\u26a0\ufe0f  {len(untranslated)} strings have no translation in get_translations():")
+        for item in untranslated:
+            print(f"   - {item}")
+        print("   Add them to get_translations() in this file, then run again.")
+
     print("\nNext step: Run 'python3 apply_translations.py' to apply these translations")
 
 if __name__ == "__main__":

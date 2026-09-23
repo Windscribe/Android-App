@@ -145,12 +145,9 @@
     <string name="rate_message">کیا آپ Windscribe سے لطف اندوز ہو رہے ہیں؟ یقیناً ہو رہے ہیں۔ Play اسٹور پر ہمیں ریٹ کریں، ہم آپ کو بہت عرصے تک یاد رکھیں گے۔</string>
     <string name="gps_spoofing_explain">اس خصوصیت کے لیے آپ کو اپنی اینڈرائیڈ ترتیبات بدلنا ہوں گی۔ اسے فعال کرنے کے لیے اگلے چند اقدامات پر عمل کریں۔</string>
     <string name="let_s_do_it">چلیں شروع کریں</string>
-    <string name="unlock_developer_mode">ڈویلپر آپشنز کھولیں</string>
-    <string name="unlock_developer_mode_explain">ترتیبات کھولیں اور “فون کے بارے میں” سیکشن تلاش کریں۔ “سافٹ ویئر معلومات” کے اندر بلڈ نمبر ڈھونڈیں اور اس پر 7 بار ٹیپ کریں۔</string>
     <string name="open_settings">ترتیبات کھولیں</string>
-    <string name="add_to_mock_location">فرضی مقام ایپ منتخب کریں</string>
-    <string name="add_to_mock_location_explain">ان لاک ہونے کے بعد، ترتیبات میں “ڈویلپر آپشنز” پر جائیں۔ “ڈیبگنگ” کے تحت Windscribe کو “فرضی مقام ایپ” کے طور پر منتخب کریں۔</string>
-    <string name="add_to_mock_location_explain_android_12">ان لاک ہونے کے بعد، ترتیبات میں “ڈویلپر آپشنز” پر جائیں۔ “مقام” کے تحت Windscribe کو “فرضی مقام ایپ” کے طور پر منتخب کریں۔</string>
+    <string name="gps_spoofing_setup">GPS اسپوفنگ سیٹ اپ کریں</string>
+    <string name="gps_spoofing_setup_explain">1. ترتیبات کھولیں، “فون کے بارے میں” تلاش کریں اور “ڈویلپر کے اختیارات” کھولنے کے لیے بلڈ نمبر پر 7 بار ٹیپ کریں۔\n\n2. “ڈویلپر کے اختیارات” میں Windscribe کو “فرضی مقام ایپ” کے طور پر منتخب کریں۔</string>
     <string name="you_are_done">آپ کا کام ہوگیا!</string>
     <string name="gps_spoofing_success">آپ کا GPS مقام آپ کے VPN مقام جیسا ہی ہوگا۔</string>
     <string name="gps_spoofing_not_set">GPS اسپوفنگ فعال نہیں ہو سکی</string>
