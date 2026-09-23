@@ -146,12 +146,9 @@
     <string name="rate_message">Windscribe\dan hoşlanıyor musunuz? Elbette öylesin. Play Store\da bize puan verin, sizi uzun süre seveceğiz.</string>
     <string name="gps_spoofing_explain">Bu özellik, android ayarlarınızı değiştirmenizi gerektirir. Etkinleştirmek için lütfen sonraki birkaç adımı izleyin.</string>
     <string name="let_s_do_it">Hadi yapalım</string>
-    <string name="unlock_developer_mode">Geliştirici Seçeneklerinin Kilidini Aç</string>
-    <string name="unlock_developer_mode_explain">Ayarlar\ı açın ve \"Telefon Hakkında\" bölümünü arayın.  \"Yazılım bilgisi\" içindeki yapı numarasını bulun ve 7 kez dokunun.</string>
     <string name="open_settings">Ayarlar\ı açın</string>
-    <string name="add_to_mock_location">Sahte Konum Uygulamasını Seçin</string>
-    <string name="add_to_mock_location_explain">Kilidi açıldıktan sonra, Ayarlar\daki \"Geliştirici Seçenekleri\" ne gidin.  \"Hata Ayıklama\" altında, \"Sahte konum uygulaması\" olarak Windscribe\ı seçin.</string>
-    <string name="add_to_mock_location_explain_android_12">Kilidi açıldıktan sonra, Ayarlar\daki \"Geliştirici Seçenekleri\" ne gidin.  \"Konum\" bölümünün altında Windscribe\ı \"Sahte konum uygulaması\" olarak seçin.</string>
+    <string name="gps_spoofing_setup">GPS Kimlik Sahtekarlığını Ayarla</string>
+    <string name="gps_spoofing_setup_explain">1. Ayarlar’ı açın, “Telefon hakkında” bölümünü bulun ve “Geliştirici seçenekleri”ni açmak için yapı numarasına 7 kez dokunun.\n\n2. “Geliştirici seçenekleri”nde Windscribe’ı “Sahte konum uygulaması” olarak seçin.</string>
     <string name="you_are_done">İşiniz bitti!</string>
     <string name="gps_spoofing_success">GPS konumunuz VPN konumunuzla aynı olacaktır.</string>
     <string name="gps_spoofing_not_set">GPS Kimlik Sahtekarlığı etkinleştirilemedi</string>

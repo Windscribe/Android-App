@@ -146,12 +146,9 @@
     <string name="rate_message">क्या आप विंडस्क्राइब का आनंद ले रहे हैं? निश्चित रूप से आप हैं। हमें Play Store में रेट करें, और हम आपको लंबे समय तक प्यार करेंगे।</string>
     <string name="gps_spoofing_explain">इस सुविधा के लिए आपको अपनी Android सेटिंग्स को संशोधित करने की आवश्यकता है। कृपया इसे सक्रिय करने के लिए अगले कुछ चरणों का पालन करें।</string>
     <string name="let_s_do_it">चलो इसे करते हैं</string>
-    <string name="unlock_developer_mode">डेवलपर विकल्प अनलॉक करें</string>
-    <string name="unlock_developer_mode_explain">सेटिंग्स खोलें और \"फोन के बारे में\" अनुभाग देखें।  \"सॉफ़्टवेयर जानकारी\" के अंदर बिल्ड नंबर ढूंढें और इसे 7 बार टैप करें।</string>
     <string name="open_settings">सेटिंग्स खोलें</string>
-    <string name="add_to_mock_location">मॉक लोकेशन ऐप का चयन करें</string>
-    <string name="add_to_mock_location_explain">अनलॉक होने के बाद, सेटिंग्स में \"डेवलपर विकल्प\" पर जाएं।  \"डिबगिंग\" के तहत विंडस्क्राइब को \"मॉक लोकेशन ऐप\" के रूप में चुनें।</string>
-    <string name="add_to_mock_location_explain_android_12">अनलॉक होने के बाद, सेटिंग्स में \"डेवलपर विकल्प\" पर जाएं।  \"स्थान\" के तहत विंडस्क्राइब को \"मॉक लोकेशन ऐप\" के रूप में चुनें।</string>
+    <string name="gps_spoofing_setup">जीपीएस स्पूफिंग सेट अप करें</string>
+    <string name="gps_spoofing_setup_explain">1. सेटिंग खोलें, “फ़ोन के बारे में” ढूँढें और “डेवलपर विकल्प” अनलॉक करने के लिए बिल्ड नंबर पर 7 बार टैप करें।\n\n2. “डेवलपर विकल्प” में Windscribe को “मॉक लोकेशन ऐप” के रूप में चुनें।</string>
     <string name="you_are_done">तुम काम कर चुके हो!</string>
     <string name="gps_spoofing_success">आपका जीपीएस स्थान आपके वीपीएन स्थान के समान होगा।</string>
     <string name="gps_spoofing_not_set">जीपीएस स्पूफिंग सक्षम नहीं कर सका</string>

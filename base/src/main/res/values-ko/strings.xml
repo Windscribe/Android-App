@@ -151,12 +151,9 @@
     <string name="rate_message">Windscribe를 즐기고 계신가요? Play 스토어에서 저희를 평가해 주시면 정말 감사하겠습니다.</string>
     <string name="gps_spoofing_explain">이 기능을 사용하려면 Android 설정을 변경해야 합니다. 다음 단계를 따라 활성화해 주세요.</string>
     <string name="let_s_do_it">시작하기</string>
-    <string name="unlock_developer_mode">개발자 옵션 활성화</string>
-    <string name="unlock_developer_mode_explain">설정을 열고 \"휴대전화 정보\" 섹션을 찾으세요. \"소프트웨어 정보\"에서 빌드 번호를 7번 탭하세요.</string>
     <string name="open_settings">설정 열기</string>
-    <string name="add_to_mock_location">모의 위치 앱 선택</string>
-    <string name="add_to_mock_location_explain">활성화한 후 설정에서 \"개발자 옵션\"으로 이동하세요. \"디버깅\" 항목에서 Windscribe를 \"모의 위치 앱\"으로 선택하세요.</string>
-    <string name="add_to_mock_location_explain_android_12">활성화한 후 설정에서 \"개발자 옵션\"으로 이동하세요. \"위치\" 항목에서 Windscribe를 \"모의 위치 앱\"으로 선택하세요.</string>
+    <string name="gps_spoofing_setup">GPS 스푸핑 설정</string>
+    <string name="gps_spoofing_setup_explain">1. 설정에서 “휴대전화 정보”를 찾아 빌드 번호를 7번 탭하여 “개발자 옵션”을 잠금 해제하세요.\n\n2. “개발자 옵션”에서 Windscribe를 “모의 위치 앱”으로 선택하세요.</string>
     <string name="you_are_done">완료되었습니다.</string>
     <string name="gps_spoofing_success">이제 GPS 위치가 VPN 위치와 동일하게 설정됩니다.</string>
     <string name="gps_spoofing_not_set">GPS 스푸핑을 활성화할 수 없습니다.</string>

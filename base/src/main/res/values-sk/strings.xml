@@ -147,12 +147,9 @@
     <string name="rate_message">Páči sa vám Windscribe? Určite áno. Ohodnoťte nás v Play obchode a budeme vás dlho milovať.</string>
     <string name="gps_spoofing_explain">Táto funkcia vyžaduje úpravu nastavení androidu. Postupujte podľa nasledujúcich krokov na jej aktiváciu.</string>
     <string name="let_s_do_it">Poďme na to</string>
-    <string name="unlock_developer_mode">Odomknúť možnosti vývojára</string>
-    <string name="unlock_developer_mode_explain">Otvorte Nastavenia a vyhľadajte sekciu \"O telefóne\". Nájdite číslo zostavy v \"Informáciách o softvéri\" a ťuknite naň 7-krát.</string>
     <string name="open_settings">Otvoriť nastavenia</string>
-    <string name="add_to_mock_location">Vybrať aplikáciu falošnej polohy</string>
-    <string name="add_to_mock_location_explain">Po odomknutí prejdite do \"Možnosti vývojára\" v Nastaveniach. V časti \"Ladenie\" vyberte Windscribe ako \"Aplikáciu falošnej polohy\".</string>
-    <string name="add_to_mock_location_explain_android_12">Po odomknutí prejdite do \"Možnosti vývojára\" v Nastaveniach. V časti \"Poloha\" vyberte Windscribe ako \"Aplikáciu falošnej polohy\".</string>
+    <string name="gps_spoofing_setup">Nastavenie GPS falšovania</string>
+    <string name="gps_spoofing_setup_explain">1. Otvorte Nastavenia, nájdite „Informácie o telefóne“ a 7-krát ťuknite na číslo zostavy, čím odomknete „Možnosti pre vývojárov“.\n\n2. V „Možnostiach pre vývojárov“ vyberte Windscribe ako „Aplikáciu na simuláciu polohy“.</string>
     <string name="you_are_done">Hotovo!</string>
     <string name="gps_spoofing_success">Vaša GPS poloha bude rovnaká ako vaša VPN poloha.</string>
     <string name="gps_spoofing_not_set">Nepodarilo sa povoliť GPS falšovanie</string>

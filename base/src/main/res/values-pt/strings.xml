@@ -146,12 +146,9 @@
     <string name="rate_message">Está a gostar de Windscribe? Claro que sim. Classifique-nos na Play Store e vamos adorá-lo por muito tempo.</string>
     <string name="gps_spoofing_explain">Este recurso requer que você modifique suas configurações do Android. Por favor, siga os próximos passos para ativá-lo.</string>
     <string name="let_s_do_it">Vamos fazer isso</string>
-    <string name="unlock_developer_mode">Desbloqueie as opções do desenvolvedor</string>
-    <string name="unlock_developer_mode_explain">Abra Configurações e procure a seção \"Sobre o telefone\".  Encontre o número de compilação dentro de \"Informações do software\" e toque nele 7 vezes.</string>
     <string name="open_settings">Abrir Configurações</string>
-    <string name="add_to_mock_location">Selecionar aplicativo de localização simulada</string>
-    <string name="add_to_mock_location_explain">Uma vez desbloqueado, vá para \"Opções do desenvolvedor\" nas configurações.  Em \"Depuração\", escolha Windscribe como um \"Aplicativo de localização fictícia\".</string>
-    <string name="add_to_mock_location_explain_android_12">Uma vez desbloqueado, vá para \"Opções do desenvolvedor\" nas configurações.  Em \"Localização\", escolha Windscribe como um \"Aplicativo de localização fictícia\".</string>
+    <string name="gps_spoofing_setup">Configurar a falsificação de GPS</string>
+    <string name="gps_spoofing_setup_explain">1. Abra as Definições, procure “Acerca do telefone” e toque 7 vezes no número de compilação para desbloquear as “Opções de programador”.\n\n2. Nas “Opções de programador”, escolha o Windscribe como “Aplicação de localização fictícia”.</string>
     <string name="you_are_done">Está feito!</string>
     <string name="gps_spoofing_success">A sua localização GPS será a mesma que a sua localização VPN.</string>
     <string name="gps_spoofing_not_set">Não foi possível ativar o GPS Spoofing</string>

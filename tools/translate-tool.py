@@ -73,12 +73,6 @@ class TranslationManager:
         print("\n🤖 Generating machine translations...")
         print("-"*40)
 
-        # First generate the template
-        if not self.run_command("python3 generate_translations.py"):
-            return False
-
-        # Now do actual machine translation
-        print("\n📝 Getting machine translations...")
         return self.machine_translate()
 
     def machine_translate(self):

@@ -146,12 +146,9 @@
     <string name="rate_message">هل تستمتع ب Windscribe؟ بالتأكيد أنت كذلك. قيمنا في متجر Play ، وسنحبك لفترة طويلة.</string>
     <string name="gps_spoofing_explain">تتطلب هذه الميزة تعديل إعدادات Android الخاصة بك. يرجى اتباع الخطوات القليلة التالية لتنشيطه.</string>
     <string name="let_s_do_it">دعونا نفعل ذلك</string>
-    <string name="unlock_developer_mode">فتح خيارات المطور</string>
-    <string name="unlock_developer_mode_explain">افتح الإعدادات وابحث عن قسم \"حول الهاتف\".  ابحث عن رقم البنية داخل \"معلومات البرنامج\" واضغط عليه 7 مرات.</string>
     <string name="open_settings">افتح الإعدادات</string>
-    <string name="add_to_mock_location">حدد تطبيق الموقع الوهمي</string>
-    <string name="add_to_mock_location_explain">بمجرد إلغاء القفل ، انتقل إلى \"خيارات المطور\" في الإعدادات.  ضمن \"تصحيح الأخطاء\" ، اختر Windscribe ك \"تطبيق موقع وهمي\".</string>
-    <string name="add_to_mock_location_explain_android_12">بمجرد إلغاء القفل ، انتقل إلى \"خيارات المطور\" في الإعدادات.  ضمن \"الموقع\" ، اختر Windscribe ك \"تطبيق موقع وهمي\".</string>
+    <string name="gps_spoofing_setup">إعداد انتحال GPS</string>
+    <string name="gps_spoofing_setup_explain">1. افتح الإعدادات وابحث عن “حول الهاتف”، ثم اضغط على رقم الإصدار 7 مرات لفتح “خيارات المطور”.\n\n2. في “خيارات المطور”، اختر Windscribe كـ “تطبيق الموقع الوهمي”.</string>
     <string name="you_are_done">لقد انتهيت!</string>
     <string name="gps_spoofing_success">سيكون موقع GPS الخاص بك هو نفسه موقع VPN الخاص بك.</string>
     <string name="gps_spoofing_not_set">تعذر تمكين انتحال GPS</string>

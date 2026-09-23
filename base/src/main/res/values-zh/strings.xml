@@ -146,12 +146,9 @@
     <string name="rate_message">你喜欢 Windscribe 吗？请在 Play 商店中给我们评分，我们会爱你很久。</string>
     <string name="gps_spoofing_explain">此功能要求您修改安卓设置。请按照以下几个步骤将其开启。</string>
     <string name="let_s_do_it">让我们去做吧</string>
-    <string name="unlock_developer_mode">解锁开发人员选项</string>
-    <string name="unlock_developer_mode_explain">打开“设置”并查找“关于手机”部分。 在“软件信息”中找到内部版本号，然后点击 7 次。</string>
     <string name="open_settings">打开设置</string>
-    <string name="add_to_mock_location">选择模拟位置应用程序</string>
-    <string name="add_to_mock_location_explain">解锁后，转到“设置”中的“开发人员选项”。 在“调试”下，选择Windscribe作为“模拟位置应用程序”。</string>
-    <string name="add_to_mock_location_explain_android_12">解锁后，转到“设置”中的“开发人员选项”。 在“位置”下，选择Windscribe作为“模拟位置应用程序”。</string>
+    <string name="gps_spoofing_setup">设置 GPS 欺骗</string>
+    <string name="gps_spoofing_setup_explain">1. 打开“设置”，找到“关于手机”，连续点按版本号 7 次以解锁“开发者选项”。\n\n2. 在“开发者选项”中，选择 Windscribe 作为“模拟位置信息应用”。</string>
     <string name="you_are_done">大功告成！</string>
     <string name="gps_spoofing_success">您的 GPS 位置将与您的 VPN 位置相同。</string>
     <string name="gps_spoofing_not_set">无法启用 GPS 欺骗</string>

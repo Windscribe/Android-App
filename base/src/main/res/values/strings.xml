@@ -175,12 +175,9 @@
     <string name="rate_message">Are you enjoying Windscribe? Sure you are. Rate us in the Play Store, and we’ll love you long time.</string>
     <string name="gps_spoofing_explain">This feature requires you to modify your android settings. Please follow the next few steps to activate it.</string>
     <string name="let_s_do_it">Let\'s do it</string>
-    <string name="unlock_developer_mode">Unlock Developer  Options</string>
-    <string name="unlock_developer_mode_explain">Open Settings and look for the “About Phone” section.  Find the build number inside “Software info” and tap  it 7 times.</string>
     <string name="open_settings">Open Settings</string>
-    <string name="add_to_mock_location">Select Mock  Location App</string>
-    <string name="add_to_mock_location_explain">Once unlocked, go to “Developer Options” in the Settings.  Under “Debugging” choose Windscribe as a “Mock location app”.</string>
-    <string name="add_to_mock_location_explain_android_12">Once unlocked, go to “Developer Options” in the Settings.  Under “Location” choose Windscribe as a “Mock location app”.</string>
+    <string name="gps_spoofing_setup">Set Up GPS Spoofing</string>
+    <string name="gps_spoofing_setup_explain">1. Open Settings, find “About Phone” and tap the build number 7 times to unlock “Developer Options”.\n\n2. In “Developer Options”, choose Windscribe as the “Mock location app”.</string>
     <string name="you_are_done">You’re Done!</string>
     <string name="gps_spoofing_success">Your GPS location will be the same as your VPN location.</string>
     <string name="gps_spoofing_not_set">Couldn’t enable GPS Spoofing</string>

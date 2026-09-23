@@ -146,12 +146,9 @@
     <string name="rate_message">ایا از Windscribe لذت می برید؟ البته که هستی. ما را در فروشگاه Play ارزیابی کنید و ما شما را برای مدت طولانی دوست خواهیم داشت.</string>
     <string name="gps_spoofing_explain">این ویژگی مستلزم ان است که تنظیمات Android خود را تغییر دهید. لطفا چند مرحله بعدی را برای فعال کردن ان دنبال کنید.</string>
     <string name="let_s_do_it">بیایید ان را انجام دهیم</string>
-    <string name="unlock_developer_mode">باز کردن گزینه های توسعه</string>
-    <string name="unlock_developer_mode_explain">تنظیمات را باز کنید و بخش \"درباره تلفن\" را جستجو کنید.  شماره ساخت را در داخل \"اطلاعات نرم افزار\" پیدا کنید و ان را 7 بار ضربه بزنید.</string>
     <string name="open_settings">باز کردن تنظیمات</string>
-    <string name="add_to_mock_location">برنامه مکان ساختگی را انتخاب کنید</string>
-    <string name="add_to_mock_location_explain">پس از باز شدن قفل، به \"گزینه های توسعه دهنده\" در تنظیمات بروید.  در بخش اشکال زدایی» Windscribe را به عنوان برنامه مکان ساختگی» انتخاب کنید.</string>
-    <string name="add_to_mock_location_explain_android_12">پس از باز شدن قفل، به \"گزینه های توسعه دهنده\" در تنظیمات بروید.  در زیر مکان» Windscribe را به عنوان برنامه مکان ساختگی» انتخاب کنید.</string>
+    <string name="gps_spoofing_setup">راه‌اندازی جعل GPS</string>
+    <string name="gps_spoofing_setup_explain">۱. تنظیمات را باز کنید، “درباره تلفن” را پیدا کنید و ۷ بار روی شماره ساخت ضربه بزنید تا “گزینه‌های برنامه‌نویس” باز شود.\n\n۲. در “گزینه‌های برنامه‌نویس”، Windscribe را به‌عنوان “برنامه مکان ساختگی” انتخاب کنید.</string>
     <string name="you_are_done">کار تو تمومه!</string>
     <string name="gps_spoofing_success">موقعیت مکانی GPS شما همانند محل VPN شما خواهد بود.</string>
     <string name="gps_spoofing_not_set">امکان جعل جیپیاس وجود ندارد</string>

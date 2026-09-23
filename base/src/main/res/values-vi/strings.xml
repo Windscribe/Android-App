@@ -146,12 +146,9 @@
     <string name="rate_message">Bạn có thích Windscribe không? Chắc chắn bạn là. Đánh giá chúng tôi trong Cửa hàng Play và chúng tôi sẽ yêu bạn lâu dài.</string>
     <string name="gps_spoofing_explain">Tính năng này yêu cầu bạn sửa đổi cài đặt Android của mình. Vui lòng làm theo vài bước tiếp theo để kích hoạt nó.</string>
     <string name="let_s_do_it">Hãy làm điều đó</string>
-    <string name="unlock_developer_mode">Mở khóa các tùy chọn dành cho nhà phát triển</string>
-    <string name="unlock_developer_mode_explain">Mở Cài đặt và tìm phần \"Giới thiệu về điện thoại\".  Tìm số bản dựng bên trong \"Thông tin phần mềm\" và nhấn vào nó 7 lần.</string>
     <string name="open_settings">Mở Cài đặt</string>
-    <string name="add_to_mock_location">Chọn ứng dụng Vị trí giả</string>
-    <string name="add_to_mock_location_explain">Sau khi mở khóa, hãy chuyển đến \"Tùy chọn nhà phát triển\" trong Cài đặt.  Trong phần \"Gỡ lỗi\", hãy chọn Windscribe làm \"Ứng dụng vị trí giả\".</string>
-    <string name="add_to_mock_location_explain_android_12">Sau khi mở khóa, hãy chuyển đến \"Tùy chọn nhà phát triển\" trong Cài đặt.  Trong phần \"Vị trí\", hãy chọn Windscribe làm \"Ứng dụng vị trí giả\".</string>
+    <string name="gps_spoofing_setup">Thiết lập giả mạo GPS</string>
+    <string name="gps_spoofing_setup_explain">1. Mở Cài đặt, tìm “Giới thiệu về điện thoại” và nhấn vào số bản dựng 7 lần để mở khóa “Tùy chọn nhà phát triển”.\n\n2. Trong “Tùy chọn nhà phát triển”, chọn Windscribe làm “Ứng dụng vị trí mô phỏng”.</string>
     <string name="you_are_done">Bạn đã hoàn tất!</string>
     <string name="gps_spoofing_success">Vị trí GPS của bạn sẽ giống với vị trí VPN của bạn.</string>
     <string name="gps_spoofing_not_set">Không thể bật Giả mạo GPS</string>
