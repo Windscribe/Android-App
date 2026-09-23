@@ -6,8 +6,6 @@ import ch.qos.logback.classic.PatternLayout
 import ch.qos.logback.classic.spi.LoggingEvent
 import ch.qos.logback.classic.spi.ThrowableProxy
 import ch.qos.logback.core.CoreConstants
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -16,45 +14,63 @@ import org.junit.Test
 import java.util.UUID
 
 /**
- * The pattern in assets/logback.xml, kept in step by hand. A record has to survive being parsed:
- * everything downstream of applog.txt reads it as one JSON object per line.
+ * The pattern in assets/logback.xml, kept in step by hand. A record has to survive being parsed
+ * back: the debug tab reads applog.txt one line per record, trailing stack trace lines aside.
  */
-private const val PATTERN =
-    """{"tm":"%d{yyyy-MM-dd HH:mm:ss.SSS}","lvl":"%lowerLevel","mod":"%logger{36}",""" +
-        """"thr":"%replace(%thread){'DefaultDispatcher-', ''}"%cid,"msg":"%jsonMsg"}"""
+internal const val PATTERN =
+    """%d{yyyy-MM-dd HH:mm:ss.SSS} %-5lowerLevel [%replace(%thread){'DefaultDispatcher-', ''}] %logger{36}%cid - %msg%n"""
+
+internal fun layout(pattern: String): PatternLayout {
+    val loggerContext =
+        LoggerContext().apply {
+            putObject(
+                CoreConstants.PATTERN_RULE_REGISTRY,
+                mutableMapOf(
+                    "lowerLevel" to LowerCaseLevelConverter::class.java.name,
+                    "cid" to ConnectionIdConverter::class.java.name,
+                ),
+            )
+        }
+    return PatternLayout().apply {
+        context = loggerContext
+        this.pattern = pattern
+        start()
+    }
+}
+
+internal fun event(
+    message: String,
+    throwable: Throwable? = null,
+    logger: String = "vpn",
+    level: Level = Level.DEBUG,
+) = LoggingEvent().apply {
+    loggerName = logger
+    this.level = level
+    this.message = message
+    throwable?.let { setThrowableProxy(ThrowableProxy(it)) }
+}
 
 class LogPatternTest {
     private fun render(
         message: String,
         throwable: Throwable? = null,
-    ): JsonObject {
-        val loggerContext =
-            LoggerContext().apply {
-                putObject(
-                    CoreConstants.PATTERN_RULE_REGISTRY,
-                    mutableMapOf(
-                        "lowerLevel" to LowerCaseLevelConverter::class.java.name,
-                        "cid" to ConnectionIdConverter::class.java.name,
-                        "jsonMsg" to JsonMessageConverter::class.java.name,
-                    ),
-                )
-            }
-        val layout =
-            PatternLayout().apply {
-                context = loggerContext
-                pattern = PATTERN
-                start()
-            }
-        val event =
-            LoggingEvent().apply {
-                loggerName = "vpn"
-                level = Level.DEBUG
-                this.message = message
-                throwable?.let { setThrowableProxy(ThrowableProxy(it)) }
-            }
-        val rendered = layout.doLayout(event)
-        assertEquals("record must be a single line", 1, rendered.lines().count { it.isNotEmpty() })
-        return JsonParser.parseString(rendered).asJsonObject
+    ): List<String> = layout(PATTERN).doLayout(event(message, throwable)).trimEnd('\n').lines()
+
+    @Test
+    fun `a record without a throwable is a single line`() {
+        assertEquals(1, render("New curl request").size)
+    }
+
+    @Test
+    fun `the fields land in the order the parser expects`() {
+        val line = render("New curl request").single()
+        assertTrue(line, line.matches(Regex("""\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} debug +\[.+] vpn - New curl request""")))
+    }
+
+    @Test
+    fun `the level is padded so the columns line up`() {
+        val line = layout(PATTERN).doLayout(event("connecting", level = Level.INFO))
+        assertTrue(line, line.contains("info  ["))
     }
 
     @Test
@@ -63,31 +79,26 @@ class LogPatternTest {
         val original = t.name
         try {
             t.name = "DefaultDispatcher-worker-28"
-            assertEquals("worker-28", render("on a dispatcher")["thr"].asString)
+            assertEquals("worker-28", parseLogLine(render("on a dispatcher").single()).thread)
             t.name = "OpenVPNProcessThread"
-            assertEquals("OpenVPNProcessThread", render("on a native thread")["thr"].asString)
+            assertEquals("OpenVPNProcessThread", parseLogLine(render("on a native thread").single()).thread)
         } finally {
             t.name = original
         }
     }
 
     @Test
-    fun `quotes in a message do not break the record`() {
+    fun `a message is written as it was logged`() {
         val message = """P:WARNING: linker: "/lib/arm64/libovpnexec.so" is not a directory"""
-        assertEquals(message, render(message)["msg"].asString)
+        assertEquals(message, parseLogLine(render(message).single()).message)
     }
 
     @Test
-    fun `backslashes and control characters are escaped`() {
-        val message = "path C:\\tmp\tand\na second line"
-        assertEquals(message, render(message)["msg"].asString)
-    }
-
-    @Test
-    fun `a throwable stays inside the message field`() {
-        val msg = render("connect failed", IllegalStateException("boom"))["msg"].asString
-        assertTrue(msg.startsWith("connect failed\n"))
-        assertTrue(msg.contains("IllegalStateException: boom"))
+    fun `a throwable follows its record as a real stack trace`() {
+        val lines = render("connect failed", IllegalStateException("boom"))
+        assertTrue(lines.first().endsWith(" - connect failed"))
+        assertTrue(lines.size > 2)
+        assertTrue(lines[1].contains("IllegalStateException: boom"))
     }
 
     @Test
@@ -108,7 +119,7 @@ class LogPatternTest {
     fun `the connection id is stamped on every record of an attempt`() {
         try {
             ConnectionLogContext.set(UUID.fromString("e52bf6d5-9947-4972-8474-a2304148ad34"))
-            assertEquals("e52bf6d5", render("connecting")["cid"].asString)
+            assertEquals("e52bf6d5", parseLogLine(render("connecting").single()).connectionId)
         } finally {
             ConnectionLogContext.clear()
         }
@@ -117,10 +128,11 @@ class LogPatternTest {
     @Test
     fun `a line outside an attempt carries no cid field at all`() {
         ConnectionLogContext.clear()
-        val json = render("idle")
-        assertFalse("an empty cid is 9 wasted bytes on every such line", json.has("cid"))
-        // The field is spliced in with its own comma, so dropping it must leave the object intact.
-        assertEquals("idle", json["msg"].asString)
-        assertEquals("vpn", json["mod"].asString)
+        val line = render("idle").single()
+        assertFalse("an empty id is wasted bytes on every such line", line.contains("#"))
+        // The field is spliced in with its own space, so dropping it must leave the line parseable.
+        val record = parseLogLine(line)
+        assertEquals("idle", record.message)
+        assertEquals("vpn", record.module)
     }
 }

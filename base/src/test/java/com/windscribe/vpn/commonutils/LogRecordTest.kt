@@ -1,11 +1,6 @@
 package com.windscribe.vpn.commonutils
 
 import ch.qos.logback.classic.Level
-import ch.qos.logback.classic.LoggerContext
-import ch.qos.logback.classic.PatternLayout
-import ch.qos.logback.classic.spi.LoggingEvent
-import ch.qos.logback.classic.spi.ThrowableProxy
-import ch.qos.logback.core.CoreConstants
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -14,44 +9,18 @@ import org.junit.Test
 import java.util.UUID
 
 class LogRecordTest {
-    private val pattern =
-        """{"tm":"%d{yyyy-MM-dd HH:mm:ss.SSS}","lvl":"%lowerLevel","mod":"%logger{36}",""" +
-            """"thr":"%replace(%thread){'DefaultDispatcher-', ''}"%cid,"msg":"%jsonMsg"}"""
-
     private fun render(
         message: String,
         throwable: Throwable? = null,
-    ): String {
-        val loggerContext =
-            LoggerContext().apply {
-                putObject(
-                    CoreConstants.PATTERN_RULE_REGISTRY,
-                    mutableMapOf(
-                        "lowerLevel" to LowerCaseLevelConverter::class.java.name,
-                        "cid" to ConnectionIdConverter::class.java.name,
-                        "jsonMsg" to JsonMessageConverter::class.java.name,
-                    ),
-                )
-            }
-        val layout =
-            PatternLayout().apply {
-                context = loggerContext
-                this.pattern = this@LogRecordTest.pattern
-                start()
-            }
-        val event =
-            LoggingEvent().apply {
-                loggerName = "wsnet-wrapper"
-                level = Level.WARN
-                this.message = message
-                throwable?.let { setThrowableProxy(ThrowableProxy(it)) }
-            }
-        return layout.doLayout(event)
-    }
+    ): List<String> =
+        layout(PATTERN)
+            .doLayout(event(message, throwable, logger = "wsnet-wrapper", level = Level.WARN))
+            .trimEnd('\n')
+            .lines()
 
     @Test
     fun `a rendered record comes back apart into its fields`() {
-        val record = parseLogLine(render("New curl request"))
+        val record = parseLogLine(render("New curl request").single())
         assertNull(record.raw)
         assertEquals("warn", record.level)
         assertEquals("wsnet-wrapper", record.module)
@@ -62,28 +31,40 @@ class LogRecordTest {
 
     @Test
     fun `the date is split off so rows need only carry the time`() {
-        val record = parseLogLine("""{"tm":"2026-09-21 12:54:25.272","lvl":"debug","mod":"data","thr":"worker-14","msg":"hi"}""")
+        val record = parseLogLine("2026-09-21 12:54:25.272 debug [worker-14] data - hi")
         assertEquals("2026-09-21", record.date)
         assertEquals("12:54:25.272", record.time)
     }
 
     @Test
-    fun `a throwable arrives as the real multi-line trace`() {
-        val message = parseLogLine(render("connect failed", IllegalStateException("boom"))).message
+    fun `a stack trace is folded back into the record it belongs to`() {
+        val records = parseLogLines(render("connect failed", IllegalStateException("boom")))
+        assertEquals("the trace is not a row of its own", 1, records.size)
+        val message = records.single().message
         assertEquals("connect failed", message.lineSequence().first())
-        assertTrue("the escaped newlines are undone", message.lines().size > 2)
+        assertTrue("the trace came along", message.lines().size > 2)
         assertTrue(message.contains("IllegalStateException: boom"))
+    }
+
+    @Test
+    fun `a log of nothing we wrote stays a run of raw lines`() {
+        val charon =
+            listOf(
+                "00[DMN] Starting IKE charon daemon (strongSwan 5.9.14)",
+                "00[LIB] providers loaded by OpenSSL: legacy default",
+            )
+        assertEquals(charon, parseLogLines(charon).map { it.raw })
     }
 
     @Test
     fun `a connection id is picked up only when the line carries one`() {
         try {
             ConnectionLogContext.set(UUID.fromString("e52bf6d5-9947-4972-8474-a2304148ad34"))
-            assertEquals("e52bf6d5", parseLogLine(render("connecting")).connectionId)
+            assertEquals("e52bf6d5", parseLogLine(render("connecting").single()).connectionId)
         } finally {
             ConnectionLogContext.clear()
         }
-        assertNull(parseLogLine(render("idle")).connectionId)
+        assertNull(parseLogLine(render("idle").single()).connectionId)
     }
 
     @Test
@@ -95,7 +76,7 @@ class LogRecordTest {
 
     @Test
     fun `the half record a roll leaves behind is kept whole`() {
-        val truncated = """{"tm":"2026-09-21 12:54:25.272","lvl":"debug","mod":"data","thr":"worke"""
+        val truncated = "2026-09-21 12:54:25.272 debug [worke"
         assertEquals(truncated, parseLogLine(truncated).raw)
     }
 
