@@ -5,7 +5,7 @@ extra["appMinSdk"] = 24
 extra["appTargetSdk"] = 36
 extra["appCompiledSdk"] = 36
 extra["appBuildTool"] = "36.0.0"
-extra["appVersionCode"] = 2368
+extra["appVersionCode"] = 2384
 extra["appVersionName"] = "4.4"
 extra["java"] = "17"
 
