@@ -313,7 +313,15 @@ class AutoConnectionManager(
                     logger.debug("No internet detected. existing.")
                     giveUp()
                 }
-                if (isEnabled) {
+                if (isEnabled && preferencesHelper.isConnectingToConfigured) {
+                    logger.debug("Custom config failed to connect; failover does not apply.")
+                    stop()
+                    connectionResult.error
+                        ?.message
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.let { message -> showErrorDialog(message = message) }
+                    vpnController.get().endSession(ConnectionPolicy.SessionEnd.ConnectFailed)
+                } else if (isEnabled) {
                     // Check if we should show manual mode failure dialog for specific errors
                     val shouldShowManualModeDialog =
                         connectionResult.error?.error in
