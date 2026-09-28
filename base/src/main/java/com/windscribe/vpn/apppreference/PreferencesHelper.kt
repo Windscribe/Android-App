@@ -103,6 +103,7 @@ interface PreferencesHelper {
     var savedUDPPort: String
     var selectedCity: Int
     var selectedIp: String?
+    var selectedNodeId: Int
     var selectedPort: String
     var selectedProtocol: String
     var selectedProtocolType: ProtocolConnectionStatus

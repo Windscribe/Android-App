@@ -13,7 +13,9 @@ class VPNParameters(
     val publicKey: String,
     val ovpnX509: String,
     val supportsV6: Boolean = false,
+    /** Server list node id, 0 when the node has no id (static IP or custom config). */
+    val nodeId: Int = 0,
 ) {
     override fun toString(): String =
-        "VPNParameters(ikev2Ip='$ikev2Ip', udpIp='$udpIp', tcpIp='$tcpIp', stealthIp='$stealthIp', hostName='$hostName', publicKey='$publicKey', ovpnX509='$ovpnX509')"
+        "VPNParameters(ikev2Ip='$ikev2Ip', udpIp='$udpIp', tcpIp='$tcpIp', stealthIp='$stealthIp', hostName='$hostName', publicKey='$publicKey', ovpnX509='$ovpnX509', nodeId=$nodeId)"
 }

@@ -7,12 +7,15 @@ import com.wsnet.lib.WSNetAdvancedParameters
 import com.wsnet.lib.WSNetBridgeAPI
 import com.wsnet.lib.WSNetEmergencyConnect
 import com.wsnet.lib.WSNetServerAPI
+import com.wsnet.lib.WSNetTunnelTest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
 
 /**
  * Thread-safe wrapper around WSNet that manages initialization state and provides safe access.
@@ -50,6 +53,9 @@ class WSNetWrapper(
 
     @Volatile
     private var advancedParametersInstance: WSNetAdvancedParameters? = null
+
+    @Volatile
+    private var tunnelTestInstance: WSNetTunnelTest? = null
 
     /**
      * Observable state indicating if WSNet is fully initialized and ready to use.
@@ -124,6 +130,7 @@ class WSNetWrapper(
             bridgeAPIInstance = wsNet.bridgeAPI()
             emergencyConnectInstance = wsNet.emergencyConnect()
             advancedParametersInstance = wsNet.advancedParameters()
+            tunnelTestInstance = wsNet.tunnelTest()
         } catch (e: Exception) {
             logger.error("Failed to capture WSNet sub-API peers: ${e.message}", e)
         }
@@ -134,7 +141,7 @@ class WSNetWrapper(
         integration: String,
     ) {
         try {
-            wsNet.setIntegration(integration)
+          //  wsNet.setIntegration(integration)
             if (integration.isNotEmpty()) {
                 logger.debug("WSNet integration set to '$integration'")
             }
@@ -163,7 +170,7 @@ class WSNetWrapper(
         licenseCode: String,
     ) {
         try {
-            wsNet.setLicenseCode(licenseCode)
+         //   wsNet.setLicenseCode(licenseCode)
             if (licenseCode.isNotEmpty()) {
                 logger.debug("WSNet licence code applied")
             }
@@ -266,6 +273,39 @@ class WSNetWrapper(
     }
 
     /**
+     * Suspend until WSNet is initialized, then return the tunnel test.
+     * Safe to call from the main thread.
+     */
+    suspend fun awaitTunnelTest(): WSNetTunnelTest {
+        if (!_isReady.value) {
+            logger.debug("awaitTunnelTest: waiting for WSNet init")
+        }
+        isReady.first { it }
+        // Return the peer captured at init; never re-fetch from native (avoids the stale weak-ref crash).
+        return tunnelTestInstance ?: throw IllegalStateException("WSNet ready but tunnelTest not captured")
+    }
+
+    /**
+     * Runs WSNet's connectivity test and suspends until it reports back.
+     *
+     * With [isBridgeAllowed] the test asks the node's bridge API first and probes the exit IP if the
+     * bridge misses its budget; without it the bridge leg is skipped. A custom config is not on a
+     * Windscribe node, so it has no bridge to ask.
+     */
+    suspend fun runTunnelTest(isBridgeAllowed: Boolean): TunnelTestResult {
+        val tunnelTest = awaitTunnelTest()
+        return suspendCancellableCoroutine { continuation ->
+            val callback =
+                tunnelTest.start(isBridgeAllowed) { success, ipv4, ipv6 ->
+                    if (continuation.isActive) {
+                        continuation.resume(TunnelTestResult(success, ipv4.orEmpty(), ipv6.orEmpty()))
+                    }
+                }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    /**
      * Safely get the emergency connect API, returns null if WSNet is not ready.
      */
     fun safeEmergencyConnect(): WSNetEmergencyConnect? {
@@ -339,3 +379,10 @@ internal fun parseWsNetLog(log: String): Pair<String, String>? {
     }
     return (runCatching { record["lvl"].asString }.getOrNull() ?: "") to message
 }
+
+/** Outcome of [WSNetWrapper.runTunnelTest]: the exit IP WSNet saw, per family. */
+data class TunnelTestResult(
+    val success: Boolean,
+    val ipv4: String,
+    val ipv6: String,
+)

@@ -166,6 +166,7 @@ object PreferencesKeyConstants {
     const val SELECTED_PROTOCOL = "selected_protocol"
     const val SELECTED_PORT = "selected_port"
     const val SELECTED_IP = "selected_ip"
+    const val SELECTED_NODE_ID = "selected_node_id"
     const val SELECTED_PROTOCOL_TYPE = "selected_protocol_type"
     const val CURRENT_STATUS_KEY = "rate_dialog_key"
     const val LAST_UPDATE_TIME = "last_time"

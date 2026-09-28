@@ -419,6 +419,10 @@ class DataStorePreferenceHelper(
             }
         set(value) = setStringSync(DataStoreKeys.SELECTED_IP, value)
 
+    override var selectedNodeId: Int
+        get() = runBlocking { getInt(DataStoreKeys.SELECTED_NODE_ID, 0) }
+        set(value) = setIntSync(DataStoreKeys.SELECTED_NODE_ID, value)
+
     override var selectedProtocolType: ProtocolConnectionStatus
         get() =
             runBlocking {

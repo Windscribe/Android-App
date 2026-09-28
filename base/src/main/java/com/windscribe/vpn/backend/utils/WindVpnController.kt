@@ -291,6 +291,7 @@ open class WindVpnController
                     publicKey ?: "",
                     city.ovpnX509 ?: "",
                     selectedNode.ipv6 == 1,
+                    selectedNode.id,
                 )
             when (config.protocol) {
                 PROTO_IKev2 -> {

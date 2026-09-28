@@ -24,6 +24,7 @@ object DataStoreKeys {
     val SELECTED_PROTOCOL = stringPreferencesKey(PreferencesKeyConstants.SELECTED_PROTOCOL)
     val SELECTED_PORT = stringPreferencesKey(PreferencesKeyConstants.SELECTED_PORT)
     val SELECTED_IP = stringPreferencesKey(PreferencesKeyConstants.SELECTED_IP)
+    val SELECTED_NODE_ID = intPreferencesKey(PreferencesKeyConstants.SELECTED_NODE_ID)
     val SELECTED_PROTOCOL_TYPE =
         stringPreferencesKey(PreferencesKeyConstants.SELECTED_PROTOCOL_TYPE)
     val CONNECTION_STATUS = stringPreferencesKey(PreferencesKeyConstants.CONNECTION_STATUS)

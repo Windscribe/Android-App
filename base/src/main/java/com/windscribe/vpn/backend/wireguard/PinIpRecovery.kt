@@ -130,7 +130,7 @@ class PinIpRecovery(
             withContext(Dispatchers.Main) {
                 wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
                     bridgeAPI.setConnectedState(false)
-                    bridgeAPI.setCurrentHost(selectedIp)
+                    bridgeAPI.setCurrentNodeId(preferencesHelper.selectedNodeId)
                     bridgeAPI.setIgnoreSslErrors(false)
                     bridgeAPI.setConnectedState(true)
                 }
