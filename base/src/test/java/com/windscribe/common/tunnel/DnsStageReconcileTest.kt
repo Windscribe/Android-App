@@ -32,17 +32,33 @@ class DnsStageReconcileTest {
             .getDeclaredMethod("reconcileDnsStage", VpnHost::class.java, PacketMux::class.java)
             .apply { isAccessible = true }
 
-    private fun key(): Any? =
+    private val stateField =
         TunnelManager::class.java
-            .getDeclaredField("dnsStageKey")
+            .getDeclaredField("dnsStageState")
             .apply { isAccessible = true }
-            .get(manager)
 
-    private fun setKey(value: Any?) =
-        TunnelManager::class.java
-            .getDeclaredField("dnsStageKey")
+    private val stateClass = Class.forName("com.windscribe.common.tunnel.TunnelManager\$DnsStageState")
+
+    private val stateConstructor =
+        stateClass
+            .getDeclaredConstructor(PacketMux::class.java, Integer::class.java)
             .apply { isAccessible = true }
-            .set(manager, value)
+
+    /** Records [port] as already installed in [into], as a prior connect would have left it. */
+    private fun installed(
+        into: PacketMux?,
+        port: Int?,
+    ) = stateField.set(manager, into?.let { stateConstructor.newInstance(it, port) })
+
+    private fun installedPort(): Any? =
+        stateField.get(manager)?.let {
+            stateClass.getDeclaredMethod("getPort").apply { isAccessible = true }.invoke(it)
+        }
+
+    private fun installedMux(): Any? =
+        stateField.get(manager)?.let {
+            stateClass.getDeclaredMethod("getMux").apply { isAccessible = true }.invoke(it)
+        }
 
     private fun usingProxy(port: Int) {
         every { host.dnsDetails() } returns DNSDetails(type = DnsType.Proxy)
@@ -61,7 +77,7 @@ class DnsStageReconcileTest {
     @Test
     fun `an unchanged decision leaves the stage alone`() {
         usingProxy(port = 5355)
-        setKey(5355)
+        installed(into = mux, port = 5355)
 
         reconcile.invoke(manager, host, mux)
 
@@ -71,7 +87,7 @@ class DnsStageReconcileTest {
     @Test
     fun `a restarted proxy on a new port rebuilds the stage`() {
         usingProxy(port = 41999)
-        setKey(5355)
+        installed(into = mux, port = 5355)
 
         reconcile.invoke(manager, host, mux)
 
@@ -81,7 +97,7 @@ class DnsStageReconcileTest {
     @Test
     fun `turning the proxy off drops the stage`() {
         passingThrough()
-        setKey(5355)
+        installed(into = mux, port = 5355)
 
         reconcile.invoke(manager, host, mux)
 
@@ -91,12 +107,32 @@ class DnsStageReconcileTest {
     @Test
     fun `turning the proxy on wires a stage where there was none`() {
         usingProxy(port = 5355)
-        setKey(null)
+        installed(into = null, port = null)
 
         reconcile.invoke(manager, host, mux)
 
         verify(exactly = 1) { mux.setDnsStage(any()) }
         // Recorded, so the next handover with the same port does not restart it.
-        assert(key() == 5355)
+        assert(installedPort() == 5355)
+        assert(installedMux() === mux)
+    }
+
+    /**
+     * A reconnect inside a live process: beginBlocking builds a fresh mux with no stage while ctrld
+     * keeps running on the port the previous session recorded. Matching on the port alone read that
+     * as "already intercepting" and left every query going straight out the tunnel, so custom DNS
+     * silently stopped applying after the first connect of the process.
+     */
+    @Test
+    fun `a replacement mux is wired even when the proxy kept its port`() {
+        val replacement = mockk<PacketMux>(relaxed = true)
+        usingProxy(port = 5355)
+        installed(into = mux, port = 5355)
+
+        reconcile.invoke(manager, host, replacement)
+
+        verify(exactly = 1) { replacement.setDnsStage(any()) }
+        verify(exactly = 0) { mux.setDnsStage(any()) }
+        assert(installedMux() === replacement)
     }
 }
