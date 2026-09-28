@@ -83,6 +83,7 @@ class TunnelManager(
         mux?.stop()
         mux = null
         closeTun()
+        dnsStageState = null
         host?.setTunReplacementListener(null)
         host = null
         logger.info("host detached")
@@ -360,42 +361,60 @@ class TunnelManager(
         val tun = currentHost.requestTun(tunConfig)
         tunnelUp = true
         val dnsStage = buildDnsStage(currentHost)
-        dnsStageKey = dnsStageKeyFor(currentHost)
         val created = PacketMux(this, dnsStage, currentHost.packetLoggingEnabled())
         try {
             created.start(tun.fileDescriptor, tunConfig.mtu)
         } catch (e: Exception) {
             // A TUN with no mux drains nothing, and the hold this settles into would keep it.
             closeTun()
-            dnsStageKey = null
             throw e
         }
         mux = created
+        dnsStageState = DnsStageState(created, dnsStageKeyFor(currentHost))
         logger.info("tunnel established, dns=${if (dnsStage != null) "ctrld" else "passthrough"}")
         return created
     }
 
-    /** What the live DNS stage was built from, or null when DNS is passing through. */
-    private var dnsStageKey: Int? = null
+    /**
+     * What the live DNS stage was built from, paired with the mux holding it. [port] is null when
+     * DNS is passing through.
+     */
+    private data class DnsStageState(
+        val mux: PacketMux,
+        val port: Int?,
+    )
+
+    /**
+     * The installed DNS stage, or null when nothing is known to be installed.
+     *
+     * The mux is part of the record because the port alone describes a stage inside one specific
+     * mux. [beginBlocking] builds a mux with no stage at all, so a port carried over from the
+     * previous mux would tell [reconcileDnsStage] this one is already intercepting, and DNS would
+     * pass through for the rest of the session. Matching on identity means a swapped mux always
+     * rebuilds, without every site that replaces one having to remember to clear this.
+     */
+    private var dnsStageState: DnsStageState? = null
 
     private fun dnsStageKeyFor(currentHost: VpnHost): Int? =
         if (currentHost.dnsDetails()?.type == DnsType.Proxy) currentHost.controlDPort() else null
 
     /**
-     * Rebuilds the DNS stage when what it was built from changed, without dropping the TUN: mode and
-     * port are per-connect while the mux is per-session. Only on a change; a rebuild restarts it.
+     * Rebuilds the DNS stage when the mux or what the stage was built from changed, without
+     * dropping the TUN: mode and port are per-connect while the mux is per-session. Only on a
+     * change; a rebuild restarts it.
      */
     private fun reconcileDnsStage(
         currentHost: VpnHost,
         activeMux: PacketMux,
     ) {
-        val key = dnsStageKeyFor(currentHost)
-        if (key == dnsStageKey) {
+        val port = dnsStageKeyFor(currentHost)
+        val installed = dnsStageState
+        if (installed != null && installed.mux === activeMux && installed.port == port) {
             return
         }
-        dnsStageKey = key
+        dnsStageState = DnsStageState(activeMux, port)
         activeMux.setDnsStage(buildDnsStage(currentHost))
-        logger.info("DNS interception changed to ${if (key == null) "passthrough" else "ctrld on port $key"}")
+        logger.info("DNS interception changed to ${if (port == null) "passthrough" else "ctrld on port $port"}")
     }
 
     /** Only wired when the session uses the local resolver. The port is read live, not from the profile. */
