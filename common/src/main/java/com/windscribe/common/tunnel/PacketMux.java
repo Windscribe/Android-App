@@ -10,9 +10,6 @@ import static android.system.OsConstants.EBADF;
 import static android.system.OsConstants.ECONNRESET;
 import static android.system.OsConstants.EINTR;
 import static android.system.OsConstants.EPIPE;
-import static android.system.OsConstants.F_GETFL;
-import static android.system.OsConstants.F_SETFL;
-import static android.system.OsConstants.O_NONBLOCK;
 import static android.system.OsConstants.POLLIN;
 import static android.system.OsConstants.SOCK_SEQPACKET;
 
@@ -58,6 +55,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * engine socketpair and closes it on detach; the engine owns the side it is given.
  */
 public final class PacketMux {
+
+    static {
+        System.loadLibrary("wscommon");
+    }
+
     private static final String TAG = "PacketMux";
     /** Session lifecycle and hard failures. Per-packet paths stay on {@link #TAG} alone. */
     private static final Logger log = LoggerFactory.getLogger("mux");
@@ -298,7 +300,7 @@ public final class PacketMux {
             engineSide = ParcelFileDescriptor.dup(rawEngine);
             // Our side only: socketpair() returns two independent open file descriptions, so the
             // engine keeps the blocking end it expects.
-            setNonBlocking(muxSide.getFileDescriptor());
+            setNonBlocking(muxSide);
         } catch (ErrnoException | IOException e) {
             closeQuietly(muxSide);
             closeQuietly(engineSide);
@@ -439,15 +441,26 @@ public final class PacketMux {
     /** A wakeup pipe that cannot park a thread: a blocking one stalls the swap doing the waking. */
     private static ParcelFileDescriptor[] nonBlockingPipe() throws ErrnoException, IOException {
         ParcelFileDescriptor[] pipe = ParcelFileDescriptor.createPipe();
-        setNonBlocking(pipe[0].getFileDescriptor());
-        setNonBlocking(pipe[1].getFileDescriptor());
+        setNonBlocking(pipe[0]);
+        setNonBlocking(pipe[1]);
         return pipe;
     }
 
     /** Non-blocking, so a congested peer costs a dropped packet rather than a parked pump. */
-    private static void setNonBlocking(FileDescriptor fd) throws ErrnoException {
-        Os.fcntlInt(fd, F_SETFL, Os.fcntlInt(fd, F_GETFL, 0) | O_NONBLOCK);
+    private static void setNonBlocking(ParcelFileDescriptor fd) throws ErrnoException {
+        int errno = nativeSetNonBlocking(fd.getFd());
+        if (errno != 0) {
+            throw new ErrnoException("fcntl", errno);
+        }
     }
+
+    /**
+     * Sets O_NONBLOCK through libc. {@code Os.fcntlInt} is public SDK only from API 30, and below
+     * that the hidden-API check denies the call.
+     *
+     * @return errno, or 0 on success.
+     */
+    private static native int nativeSetNonBlocking(int fd);
 
     private void poke(@Nullable FileDescriptor writeEnd) {
         if (writeEnd == null) {

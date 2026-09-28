@@ -12,12 +12,24 @@ kotlin {
 android {
     namespace = "com.windscribe.common"
     compileSdk = rootProject.extra["appCompiledSdk"] as Int
+    ndkVersion = "27.2.12479018"
 
     defaultConfig {
         minSdk = rootProject.extra["appMinSdk"] as Int
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        (project.findProperty("abiFilter") as String?)
+            ?.split(",")
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.let { ndk.abiFilters += it }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path("src/main/cpp/CMakeLists.txt")
+        }
     }
     testOptions {
         targetSdk = rootProject.extra["appTargetSdk"] as Int

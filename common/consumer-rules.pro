@@ -7,3 +7,8 @@
 
 # minidns resolves record types by class name.
 -keep class org.minidns.** { *; }
+
+# PacketMux's O_NONBLOCK helper is resolved by JNI name.
+-keepclasseswithmembernames class com.windscribe.common.tunnel.PacketMux {
+    native <methods>;
+}
