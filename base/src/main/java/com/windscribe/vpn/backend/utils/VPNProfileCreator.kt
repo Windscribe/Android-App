@@ -141,6 +141,7 @@ class VPNProfileCreator
             preferencesHelper.selectedProtocol = config.protocol
             preferencesHelper.selectedPort = config.port
             preferencesHelper.selectedIp = vpnParameters.hostName
+            preferencesHelper.selectedNodeId = vpnParameters.nodeId
 
             // Mtu
             if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
@@ -363,6 +364,7 @@ class VPNProfileCreator
                 }
             }
             preferencesHelper.selectedIp = vpnParameters.hostName
+            preferencesHelper.selectedNodeId = vpnParameters.nodeId
             saveSelectedLocation(lastSelectedLocation)
             saveProfile(profile)
             return "$lastSelectedLocation"
@@ -609,6 +611,7 @@ class VPNProfileCreator
 
                     val content = builder.build().toWgQuickString()
                     preferencesHelper.selectedIp = vpnParameters.hostName
+                    preferencesHelper.selectedNodeId = vpnParameters.nodeId
                     logger.debug(content.withoutWgSecrets())
                     saveSelectedLocation(lastSelectedLocation)
                     saveProfile(WireGuardVpnProfile(content))

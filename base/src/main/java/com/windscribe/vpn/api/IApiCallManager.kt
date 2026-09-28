@@ -39,8 +39,6 @@ interface IApiCallManager {
 
     suspend fun getApiIp(): GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?>
 
-    suspend fun getIp(): GenericResponseClass<String?, ApiErrorResponse?>
-
     suspend fun claimAccount(
         username: String,
         password: String,

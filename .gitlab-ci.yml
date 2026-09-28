@@ -178,7 +178,6 @@ Windscribe core AAR:
         com.windscribe.vpn.serverlist.entity \
         com.windscribe.vpn.backend.CdLib \
         com.windscribe.vpn.commonutils.Ext \
-        com.windscribe.vpn.commonutils.JsonMessageConverter \
         com.windscribe.vpn.commonutils.ConnectionIdConverter \
         com.windscribe.vpn.commonutils.LowerCaseLevelConverter
       do

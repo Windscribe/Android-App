@@ -212,12 +212,11 @@ abstract class VpnBackend(
     }
 
     /**
-     * Tests connectivity after a successful connection, retrying up to three times.
+     * Tests connectivity after a successful connection by running WSNet's tunnel test, which owns its
+     * own budget and retries.
      *
-     * @param initialWaitTime override for the initial delay. WireGuard can pass 0, since the
-     * handshake already confirms the tunnel; TCP and stealth need the wait. Null uses the advance
-     * parameters.
-     * @param pinnedLocation pre-fetched, to avoid a database lookup here.
+     * The bridge leg is allowed only when the tunnel terminates on a Windscribe node; a custom config
+     * has no node bridge, so asking for one costs a session token request that can only fail.
      */
     fun testConnectivity() {
         if (connectivityTestJob?.isActive == true) {
@@ -229,8 +228,6 @@ abstract class VpnBackend(
         connectivityTestJob = null
         connectivityFailureHandled = false
         val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500L
-        val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
-        val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
 
         connectivityTestJob =
             mainScope.launch {
@@ -246,69 +243,33 @@ abstract class VpnBackend(
                             )
                     // 15 seconds total timeout
                     withTimeout(15.seconds) {
-                        // Initial delay before first attempt
+                        // Initial delay before the test
                         delay(startDelay.milliseconds)
                         // Wait for WSNet to be fully initialized before calling bridge API
                         ensureWSNetReady()
-                        configureBridgeAPI(selectedIp)
+                        val isBridgeAllowed = !preferencesHelper.isConnectingToConfigured
+                        if (isBridgeAllowed) {
+                            configureBridgeAPI()
+                        }
                         // Pin IP if available (WireGuard only)
                         val ipPinningFailed = attemptIpPinning(pinnedLocation, selectedIp)
 
-                        var lastError: String?
-                        var attemptCount = 0
-                        var success = false
-
-                        // Try maxAttempts times
-                        while (attemptCount < maxAttempts && !success) {
-                            attemptCount++
-                            if (attemptCount > 1) {
-                                vpnLogger.debug("Connectivity test attempt: $attemptCount/$maxAttempts")
+                        val testResult = wsNetWrapper.runTunnelTest(isBridgeAllowed)
+                        val userIp = testResult.ipv4.takeIf { it.isNotBlank() } ?: testResult.ipv6
+                        if (testResult.success && Util.validIpAddress(userIp)) {
+                            preferencesHelper.userIP = Util.getModifiedIpAddress(userIp.trim())
+                            connectivityTestPassed(userIp)
+                            if (hasPinnedNodeMismatch || ipPinningFailed) {
+                                val title = resourceHelper.getString(R.string.could_not_pin_ip)
+                                val description =
+                                    resourceHelper.getString(R.string.favourite_node_not_available)
+                                appContext.applicationInterface.showPinnedNodeErrorDialog(
+                                    title,
+                                    description,
+                                )
                             }
-
-                            val result =
-                                result<String> {
-                                    apiManager.getIp()
-                                }
-
-                            when (result) {
-                                is CallResult.Success -> {
-                                    val userIp = result.data
-                                    if (Util.validIpAddress(userIp)) {
-                                        val ipAddress = Util.getModifiedIpAddress(userIp.trim())
-                                        preferencesHelper.userIP = ipAddress
-                                        connectivityTestPassed(userIp)
-                                        success = true
-                                        if (hasPinnedNodeMismatch || ipPinningFailed) {
-                                            val title =
-                                                resourceHelper.getString(R.string.could_not_pin_ip)
-                                            val description =
-                                                resourceHelper.getString(R.string.favourite_node_not_available)
-                                            appContext.applicationInterface.showPinnedNodeErrorDialog(
-                                                title,
-                                                description,
-                                            )
-                                        }
-                                    } else {
-                                        lastError = "Invalid IP address: $userIp"
-                                        vpnLogger.warn("Failed Attempt: $attemptCount - $lastError")
-                                        if (attemptCount < maxAttempts) {
-                                            delay(retryDelay.milliseconds)
-                                        }
-                                    }
-                                }
-
-                                is CallResult.Error -> {
-                                    lastError = result.errorMessage
-                                    vpnLogger.warn("Failed Attempt: $attemptCount - $lastError")
-                                    if (attemptCount < maxAttempts) {
-                                        delay(retryDelay.milliseconds)
-                                    }
-                                }
-                            }
-                        }
-
-                        if (!success) {
-                            vpnLogger.error("Connectivity test failed after $attemptCount attempts")
+                        } else {
+                            vpnLogger.error("Connectivity test failed: ipv4=${testResult.ipv4} ipv6=${testResult.ipv6}")
                             failedConnectivityTest()
                         }
                     }
@@ -410,17 +371,14 @@ abstract class VpnBackend(
 
     /**
      * Configures WSNet bridge API for connectivity test.
-     * Sets current host for WireGuard connections and marks connection as active.
+     * Sets current node for the connection and marks connection as active.
+     *
+     * The node id keys the session token WSNet caches, so every protocol reports the node it is
+     * actually on. Only called when the tunnel terminates on a Windscribe node.
      */
-    private fun configureBridgeAPI(selectedIp: String?) {
+    private fun configureBridgeAPI() {
         wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
-            val hostToSet =
-                if (protocolInformation?.protocol == "wg" && !preferencesHelper.isConnectingToConfigured) {
-                    selectedIp ?: ""
-                } else {
-                    ""
-                }
-            bridgeAPI.setCurrentHost(hostToSet)
+            bridgeAPI.setCurrentNodeId(preferencesHelper.selectedNodeId)
             bridgeAPI.setIgnoreSslErrors(false)
             bridgeAPI.setConnectedState(true)
         }
