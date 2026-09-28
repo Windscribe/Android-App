@@ -530,7 +530,7 @@ class ConnectionViewModelImpl
                     val process =
                         Runtime
                             .getRuntime()
-                            .exec("/system/bin/ping -c 2 -s $value -i 0.5 -W 3 -M do checkip.windscribe.com")
+                            .exec("/system/bin/ping -c 2 -s $value -i 0.5 -W 3 -M do windscribe.com")
 
                     val input = process.inputStream.bufferedReader().use { it.readText() }
 
