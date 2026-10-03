@@ -141,7 +141,7 @@ class WSNetWrapper(
         integration: String,
     ) {
         try {
-          //  wsNet.setIntegration(integration)
+            // wsNet.setIntegration(integration)
             if (integration.isNotEmpty()) {
                 logger.debug("WSNet integration set to '$integration'")
             }
@@ -170,7 +170,7 @@ class WSNetWrapper(
         licenseCode: String,
     ) {
         try {
-         //   wsNet.setLicenseCode(licenseCode)
+            // wsNet.setLicenseCode(licenseCode)
             if (licenseCode.isNotEmpty()) {
                 logger.debug("WSNet licence code applied")
             }
