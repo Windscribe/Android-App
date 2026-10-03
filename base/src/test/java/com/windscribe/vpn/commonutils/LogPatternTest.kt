@@ -10,6 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import java.util.UUID
 
@@ -51,6 +52,10 @@ internal fun event(
 }
 
 class LogPatternTest {
+    /** The id is process-wide, so a connect left running by an earlier test would bleed in. */
+    @Before
+    fun clearConnectionId() = ConnectionLogContext.clear()
+
     private fun render(
         message: String,
         throwable: Throwable? = null,

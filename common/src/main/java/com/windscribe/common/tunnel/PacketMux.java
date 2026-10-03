@@ -56,13 +56,19 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class PacketMux {
 
-    static {
-        System.loadLibrary("wscommon");
-    }
-
     private static final String TAG = "PacketMux";
     /** Session lifecycle and hard failures. Per-packet paths stay on {@link #TAG} alone. */
     private static final Logger log = LoggerFactory.getLogger("mux");
+
+    static {
+        try {
+            System.loadLibrary("wscommon");
+        } catch (UnsatisfiedLinkError e) {
+            // Host JVM tests drive the wiring without descriptors; only nativeSetNonBlocking needs
+            // the library, and it still throws if a descriptor path is reached without it.
+            log.warn("wscommon unavailable: {}", e.getMessage());
+        }
+    }
 
     /** Bounded wait for both pumps to release the old descriptors during a swap. */
     private static final long QUIESCE_TIMEOUT_MS = 250;
