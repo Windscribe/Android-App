@@ -23,7 +23,6 @@ import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.wsnet.WSNetWrapper
-import com.wireguard.android.backend.GoBackend
 import de.blinkt.openvpn.core.ConnectionStatus
 import de.blinkt.openvpn.core.LogItem
 import de.blinkt.openvpn.core.VpnStatus
@@ -42,7 +41,6 @@ import javax.inject.Singleton
 class OpenVPNBackend
     @Inject
     constructor(
-        var backend: GoBackend,
         var scope: CoroutineScope,
         var networkInfoManager: NetworkInfoManager,
         vpnStateManager: VPNConnectionStateManager,
