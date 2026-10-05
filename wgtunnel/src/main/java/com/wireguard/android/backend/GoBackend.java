@@ -277,30 +277,39 @@ public final class GoBackend implements Backend {
         return getState(tunnel);
     }
 
+    /**
+     * Resolves every peer endpoint, retrying until one answers or the retries run out. Blocking.
+     *
+     * <p>{@link InetEndpoint#getResolved()} caches for a minute, so calling this ahead of
+     * {@link #setState} leaves the lookup inside the lock a cache hit.
+     *
+     * @throws BackendException if a host never resolved.
+     */
+    public void resolveEndpoints(final Config config) throws Exception {
+        dnsRetry: for (int i = 0; i < DNS_RESOLUTION_RETRIES; ++i) {
+            for (final Peer peer : config.getPeers()) {
+                final InetEndpoint ep = peer.getEndpoint().orElse(null);
+                if (ep == null)
+                    continue;
+                if (ep.getResolved().orElse(null) == null) {
+                    if (i < DNS_RESOLUTION_RETRIES - 1) {
+                        Log.w(TAG, "DNS host \"" + ep.getHost() + "\" failed to resolve; trying again");
+                        Thread.sleep(1000);
+                        continue dnsRetry;
+                    } else
+                        throw new BackendException(Reason.DNS_RESOLUTION_FAILURE, ep.getHost());
+                }
+            }
+            break;
+        }
+    }
+
     private void setStateInternal(final Tunnel tunnel, @Nullable final Config config, final State state,
                                   @Nullable final TunHandle tunHandle)
             throws Exception {
-        // Perform DNS resolution BEFORE acquiring lock to prevent ANR
-        // DNS lookups can be slow and should not block other operations
-        if (state == State.UP && config != null) {
-            dnsRetry: for (int i = 0; i < DNS_RESOLUTION_RETRIES; ++i) {
-                // Pre-resolve IPs so they're cached when building the userspace string
-                for (final Peer peer : config.getPeers()) {
-                    final InetEndpoint ep = peer.getEndpoint().orElse(null);
-                    if (ep == null)
-                        continue;
-                    if (ep.getResolved().orElse(null) == null) {
-                        if (i < DNS_RESOLUTION_RETRIES - 1) {
-                            Log.w(TAG, "DNS host \"" + ep.getHost() + "\" failed to resolve; trying again");
-                            Thread.sleep(1000);
-                            continue dnsRetry;
-                        } else
-                            throw new BackendException(Reason.DNS_RESOLUTION_FAILURE, ep.getHost());
-                    }
-                }
-                break;
-            }
-        }
+        // Off tunnelStateLock: a lookup here would hold it for the whole resolution.
+        if (state == State.UP && config != null)
+            resolveEndpoints(config);
 
         synchronized (tunnelStateLock) {
             setStateInternalLocked(tunnel, config, state, tunHandle);

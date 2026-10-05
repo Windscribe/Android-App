@@ -51,6 +51,18 @@ public final class WireGuardEngine implements VpnEngine {
         return WireGuardEngineProfile.PROTOCOL;
     }
 
+    /**
+     * Resolves the peer endpoints so {@link #start} finds them cached. The slow part of bringing
+     * wg-go up: ten retries a second apart, each with getaddrinfo's own timeout on top.
+     */
+    @Override
+    public void prepare(final EngineProfile profile) throws Exception {
+        if (!(profile instanceof WireGuardEngineProfile)) {
+            throw new IllegalArgumentException("not a WireGuard profile: " + profile.getProtocol());
+        }
+        backend.resolveEndpoints(((WireGuardEngineProfile) profile).getConfig());
+    }
+
     @Override
     public void start(final EngineProfile profile, final VpnHost host,
                       final ParcelFileDescriptor engineFd) throws Exception {

@@ -26,6 +26,14 @@ interface VpnEngine {
     val id: String
 
     /**
+     * Resolves ahead of [start] whatever [start] would otherwise resolve under the tunnel lock.
+     *
+     * Blocking is allowed here. [start] must still work without it.
+     */
+    @Throws(Exception::class)
+    fun prepare(profile: EngineProfile) {}
+
+    /**
      * Brings the protocol up on [engineFd].
      *
      * The engine owns [engineFd] and closes it on [stop]; the mux hands out a `dup` and never
@@ -43,20 +51,20 @@ interface VpnEngine {
     /**
      * Tears the protocol down. Idempotent, and must not touch the TUN, which outlives every engine.
      *
-     * Reached from [android.app.Service.onDestroy], so it runs on the main thread: an engine that
-     * cannot shut down within [STOP_BUDGET_MS] must abandon the attempt rather than wait it out.
+     * Off the main thread, but a reconnect waits behind it: an engine that cannot shut down within
+     * [STOP_BUDGET_MS] must abandon the attempt rather than wait it out.
      */
     fun stop()
 
     /**
      * VPN consent was revoked. Terminal; the whole session is going away.
      *
-     * Runs on the main thread, under the same budget as [stop].
+     * Under the same budget as [stop].
      */
     fun onRevoked()
 
     companion object {
-        /** How long [stop] and [onRevoked] may take before they are stalling the main thread. */
+        /** How long [stop] and [onRevoked] may take before they are holding up the next connect. */
         const val STOP_BUDGET_MS = 1_000L
     }
 }
