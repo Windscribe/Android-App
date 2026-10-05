@@ -43,9 +43,17 @@ class TunnelManager(
 
     private var host: VpnHost? = null
     private var mux: PacketMux? = null
+
+    /** Read off the monitor by [activeEngineId]; written under it. */
+    @Volatile
     private var activeEngine: VpnEngine? = null
 
-    /** A flag, not a descriptor: the host owns every descriptor, and a second reference splits that. */
+    /**
+     * A flag, not a descriptor: the host owns every descriptor, and a second reference splits that.
+     *
+     * Read off the monitor by [hasTunnel]; written under it.
+     */
+    @Volatile
     private var tunnelUp = false
 
     /** Highest TUN generation the packet path has been moved onto. Guarded by this monitor. */
@@ -57,12 +65,18 @@ class TunnelManager(
         }
     private var holdExpiry: ScheduledFuture<*>? = null
 
+    /** Single-threaded: a teardown that outlives its session must not overlap the next. */
+    private val teardownExecutor =
+        Executors.newSingleThreadExecutor { r ->
+            Thread(r, "tun-teardown").apply { isDaemon = true }
+        }
+
     /** True once a session owns a TUN. The TUN outlives every engine within a session. */
     val hasTunnel: Boolean
-        @Synchronized get() = tunnelUp
+        get() = tunnelUp
 
     val activeEngineId: String?
-        @Synchronized get() = activeEngine?.id
+        get() = activeEngine?.id
 
     /** Per-session, not per-engine: the counters survive a handover, so callers work in deltas. */
     @Synchronized
@@ -75,52 +89,77 @@ class TunnelManager(
         logger.info("host attached")
     }
 
-    /** The service is going away. The only place a TUN is closed, and only at the end of a session. */
-    @Synchronized
-    fun detachHost() {
-        cancelHoldWatchdog()
-        stopEngineQuietly(StopReason.Requested)
-        mux?.stop()
-        mux = null
-        closeTun()
-        dnsStageState = null
-        host?.setTunReplacementListener(null)
-        host = null
-        logger.info("host detached")
+    /**
+     * The service is going away. The only place a TUN is closed, and only at the end of a session.
+     *
+     * On the main thread, so only the TUN closes here; the engine and mux stop on
+     * [teardownExecutor]. Deferring the one `close()` would race the next session's establish.
+     *
+     * @param host the detaching service. A later one owns its own session; this must not unhook it.
+     */
+    fun detachHost(host: VpnHost) {
+        val engine: VpnEngine?
+        val sessionMux: PacketMux?
+        synchronized(this) {
+            if (this.host !== host) {
+                logger.warn("a host that is no longer attached asked to detach; leaving the live session alone")
+                return
+            }
+            cancelHoldWatchdog()
+            engine = activeEngine
+            sessionMux = mux
+            activeEngine = null
+            mux = null
+            closeTun()
+            dnsStageState = null
+            host.setTunReplacementListener(null)
+            this.host = null
+        }
+        logger.info("host detached; its engine and mux are stopping off the main thread")
+        teardownExecutor.execute {
+            stopEngine(engine, host, StopReason.Requested)
+            sessionMux?.stop()
+        }
     }
 
     /**
      * Brings [profile] up, reusing the live TUN whenever it can carry [tunConfig].
      *
+     * [VpnEngine.prepare] runs off the monitor: it blocks on DNS, and the main thread takes this
+     * lock on every `onStartCommand`.
+     *
      * @throws IllegalStateException if no host is attached or the protocol has no engine.
      */
-    @Synchronized
     @Throws(Exception::class)
     fun connect(
         profile: EngineProfile,
         tunConfig: TunConfig,
     ) {
-        cancelHoldWatchdog()
-        val currentHost = host ?: throw IllegalStateException("no VpnHost attached")
         val engine =
             enginesByProtocol[profile.protocol]
                 ?: throw IllegalStateException("no engine registered for '${profile.protocol}'")
+        engine.prepare(profile)
 
-        val activeMux = ensureTunnel(currentHost, tunConfig)
+        synchronized(this) {
+            cancelHoldWatchdog()
+            val currentHost = host ?: throw IllegalStateException("no VpnHost attached")
 
-        // Stop first so the engine releases its own descriptor, then detach. The TUN is untouched.
-        stopEngineQuietly(StopReason.Requested)
+            val activeMux = ensureTunnel(currentHost, tunConfig)
 
-        val engineFd = activeMux.attachEngine()
-        activeEngine = engine
-        try {
-            engine.start(profile, currentHost, engineFd)
-            logger.info("engine '${engine.id}' started on the existing TUN")
-        } catch (e: Exception) {
-            activeEngine = null
-            // The engine never took ownership, so the mux side must be released here.
-            activeMux.detachEngine()
-            throw e
+            // Stop first so the engine releases its own descriptor, then detach. The TUN is untouched.
+            stopEngineQuietly(StopReason.Requested)
+
+            val engineFd = activeMux.attachEngine()
+            activeEngine = engine
+            try {
+                engine.start(profile, currentHost, engineFd)
+                logger.info("engine '${engine.id}' started on the existing TUN")
+            } catch (e: Exception) {
+                activeEngine = null
+                // The engine never took ownership, so the mux side must be released here.
+                activeMux.detachEngine()
+                throw e
+            }
         }
     }
 
@@ -187,17 +226,30 @@ class TunnelManager(
         }
     }
 
-    /** VPN consent was revoked. Terminal — the system has already torn the interface down. */
-    @Synchronized
+    /**
+     * VPN consent was revoked. Terminal — the system has already torn the interface down.
+     *
+     * Stops on [teardownExecutor] like [detachHost]. The host stays attached: the service outlives
+     * the revoke to drive the disconnect.
+     */
     fun onRevoked() {
-        cancelHoldWatchdog()
-        activeEngine?.let {
-            runCatching { it.onRevoked() }
+        val engine: VpnEngine?
+        val sessionMux: PacketMux?
+        val revokedHost: VpnHost?
+        synchronized(this) {
+            cancelHoldWatchdog()
+            engine = activeEngine
+            sessionMux = mux
+            revokedHost = host
+            activeEngine = null
+            mux = null
+            closeTun()
         }
-        stopEngineQuietly(StopReason.Revoked)
-        mux?.stop()
-        mux = null
-        closeTun()
+        teardownExecutor.execute {
+            engine?.let { runCatching { it.onRevoked() } }
+            stopEngine(engine, revokedHost, StopReason.Revoked)
+            sessionMux?.stop()
+        }
     }
 
     /**
@@ -431,11 +483,21 @@ class TunnelManager(
     private fun stopEngineQuietly(reason: StopReason) {
         val engine = activeEngine ?: return
         activeEngine = null
+        stopEngine(engine, host, reason)
+    }
+
+    /** Takes no fields, so a teardown can run it against a session already cleared. */
+    private fun stopEngine(
+        engine: VpnEngine?,
+        host: VpnHost?,
+        reason: StopReason,
+    ) {
+        if (engine == null) return
         val startedAt = SystemClock.elapsedRealtime()
         runCatching { engine.stop() }
             .onFailure { logger.warn("engine '${engine.id}' stop failed", it) }
-        // On the main thread, via detachHost() and onRevoked(). An engine stuck in native code
-        // unwinds to one frame, so an ANR report cannot name it; this can.
+        // An engine stuck in native code unwinds to one frame, so an ANR report cannot name it;
+        // this can.
         val took = SystemClock.elapsedRealtime() - startedAt
         if (took > VpnEngine.STOP_BUDGET_MS) {
             logger.error("engine '${engine.id}' took ${took}ms to stop, over its ${VpnEngine.STOP_BUDGET_MS}ms budget")

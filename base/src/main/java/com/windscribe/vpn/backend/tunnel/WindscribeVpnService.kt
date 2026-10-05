@@ -261,7 +261,7 @@ class WindscribeVpnService :
         }
         serviceGate.detach(this)
         autoConnectWatcher.stop()
-        tunnelManager.detachHost()
+        tunnelManager.detachHost(this)
         // detachHost() already releases; this covers a kill the manager never saw.
         releaseTun()
         windNotificationBuilder.cancelNotification(NotificationConstants.SERVICE_NOTIFICATION_ID)

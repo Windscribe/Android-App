@@ -74,7 +74,7 @@ class TunReplacementOrderingTest {
         // The first service runs a session; the singleton manager remembers where it got to.
         replaced(generation = 1)
         replaced(generation = 2)
-        manager.detachHost()
+        manager.detachHost(host)
 
         // Android recreates the service. Generations are process-wide, so its first replacement is
         // 3, not 1 — a per-service counter restarting at zero is what made this a rejection, and the
@@ -94,7 +94,7 @@ class TunReplacementOrderingTest {
     fun `a late notification from a detached service is not applied to its replacement`() {
         val replacementHost = mockk<VpnHost>(relaxed = true)
         val replacementMux = mockk<PacketMux>(relaxed = true)
-        manager.detachHost()
+        manager.detachHost(host)
         manager.attachHost(replacementHost)
         // A live packet path to wrongly move, or this passes for the wrong reason.
         setMux(replacementMux)

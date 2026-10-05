@@ -223,7 +223,7 @@ open class BaseApplicationModule {
     @Singleton
     fun provideTunnelManager(
         app: Windscribe,
-        goBackend: GoBackend,
+        goBackend: Lazy<GoBackend>,
         advanceParameterRepository: AdvanceParameterRepository,
         proxyDNSManager: ProxyDNSManager,
         wireguardBackend: Lazy<WireguardBackend>,
@@ -231,7 +231,7 @@ open class BaseApplicationModule {
         ikev2Backend: Lazy<IKev2VpnBackend>,
     ): TunnelManager {
         val wireGuardEngine =
-            WireGuardEngine(goBackend) { state ->
+            WireGuardEngine(goBackend::get) { state ->
                 wireguardBackend.get().onEngineState(state)
             }
 

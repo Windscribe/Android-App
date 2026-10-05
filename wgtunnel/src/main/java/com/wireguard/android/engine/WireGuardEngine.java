@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 /**
  * WireGuard as a plain object.
@@ -37,18 +38,45 @@ public final class WireGuardEngine implements VpnEngine {
         void onWireGuardState(Tunnel.State state);
     }
 
-    private final GoBackend backend;
+    private final Supplier<GoBackend> backendSupplier;
     private final StateCallback stateCallback;
     @Nullable private EngineTunnel tunnel;
+    @Nullable private GoBackend backend;
 
-    public WireGuardEngine(final GoBackend backend, final StateCallback stateCallback) {
-        this.backend = backend;
+    public WireGuardEngine(final Supplier<GoBackend> backend, final StateCallback stateCallback) {
+        this.backendSupplier = backend;
         this.stateCallback = stateCallback;
+    }
+
+    /** Resolving constructs {@link GoBackend}, which loads libwg-go. Never before a connection. */
+    private synchronized GoBackend backend() {
+        if (backend == null) {
+            backend = backendSupplier.get();
+        }
+        return backend;
+    }
+
+    /** Null until a connection needed it; before that wg-go has nothing to tear down. */
+    @Nullable
+    private synchronized GoBackend resolvedBackend() {
+        return backend;
     }
 
     @Override
     public String getId() {
         return WireGuardEngineProfile.PROTOCOL;
+    }
+
+    /**
+     * Resolves the peer endpoints so {@link #start} finds them cached. The slow part of bringing
+     * wg-go up: ten retries a second apart, each with getaddrinfo's own timeout on top.
+     */
+    @Override
+    public void prepare(final EngineProfile profile) throws Exception {
+        if (!(profile instanceof WireGuardEngineProfile)) {
+            throw new IllegalArgumentException("not a WireGuard profile: " + profile.getProtocol());
+        }
+        backend().resolveEndpoints(((WireGuardEngineProfile) profile).getConfig());
     }
 
     @Override
@@ -64,7 +92,7 @@ public final class WireGuardEngine implements VpnEngine {
         // wg-go takes ownership of what detachTunFd() returns and closes it: detach once, never touch.
         final DetachOnce handoff = new DetachOnce(engineFd, host);
         try {
-            backend.setState(t, Tunnel.State.UP, wgProfile.getConfig(), handoff);
+            backend().setState(t, Tunnel.State.UP, wgProfile.getConfig(), handoff);
         } catch (final Exception e) {
             // If wg-go never took the descriptor we still own it and must not leak it.
             handoff.releaseIfUntaken();
@@ -82,18 +110,21 @@ public final class WireGuardEngine implements VpnEngine {
             return;
         }
         try {
-            backend.setState(t, Tunnel.State.DOWN, null, null);
+            backend().setState(t, Tunnel.State.DOWN, null, null);
         } catch (final Exception e) {
             log.warn("graceful down failed, forcing", e);
-            backend.forceDown();
+            backend().forceDown();
         }
     }
 
     @Override
     public void onRevoked() {
         log.warn("VPN consent revoked");
+        final GoBackend resolved = resolvedBackend();
         tunnel = null;
-        backend.forceDown();
+        if (resolved != null) {
+            resolved.forceDown();
+        }
     }
 
     /**
