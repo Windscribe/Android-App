@@ -26,27 +26,36 @@ import com.windscribe.vpn.constants.NotificationConstants
  * [startForegroundSafely] once injection is done.
  */
 object ForegroundServiceHelper {
+    /** Nothing deletes the channel, so one confirmed existence holds for the process. */
+    @Volatile
+    private var channelReady = false
+
     /**
      * Ensures the notification channel exists. Safe to call multiple times.
      * Must be called from Application.onCreate() so the channel is ready before
      * any service tries to post a foreground notification.
+     *
+     * After the first call this is free: querying it is an IPC to NotificationManagerService, and
+     * [startForegroundImmediately] runs it immediately before the deadline it exists to beat.
      */
     fun ensureNotificationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val manager = context.getSystemService(NotificationManager::class.java)
-            if (manager.getNotificationChannel(NotificationConstants.NOTIFICATION_CHANNEL_ID) == null) {
-                val channel =
-                    NotificationChannel(
-                        NotificationConstants.NOTIFICATION_CHANNEL_ID,
-                        "WindScribe",
-                        NotificationManager.IMPORTANCE_LOW,
-                    ).apply {
-                        description = "VPN connection state and background service notification."
-                        enableLights(true)
-                    }
-                manager.createNotificationChannel(channel)
-            }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || channelReady) {
+            return
         }
+        val manager = context.getSystemService(NotificationManager::class.java)
+        if (manager.getNotificationChannel(NotificationConstants.NOTIFICATION_CHANNEL_ID) == null) {
+            val channel =
+                NotificationChannel(
+                    NotificationConstants.NOTIFICATION_CHANNEL_ID,
+                    "WindScribe",
+                    NotificationManager.IMPORTANCE_LOW,
+                ).apply {
+                    description = "VPN connection state and background service notification."
+                    enableLights(true)
+                }
+            manager.createNotificationChannel(channel)
+        }
+        channelReady = true
     }
 
     /**
