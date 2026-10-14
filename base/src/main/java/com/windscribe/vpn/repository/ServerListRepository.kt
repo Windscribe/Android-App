@@ -101,11 +101,19 @@ class ServerListRepository
          */
         private val updateMutex = Mutex()
 
-        suspend fun update() = updateMutex.withLock { runUpdate() }
+        /**
+         * @param inventory the delta from a session the caller already fetched. Supplying it skips
+         * the fetch below, so the delta that was observed is the delta that gets applied.
+         */
+        suspend fun update(inventory: ServerInventory? = null) = updateMutex.withLock { runUpdate(inventory) }
 
-        private suspend fun runUpdate() {
+        private suspend fun runUpdate(inventory: ServerInventory?) {
             val isFirstLoad = preferenceHelper.serverRevision == 0L
             val migrationRequired = preferenceHelper.migrationRequired
+            logger.debug(
+                "update stored=${preferenceHelper.serverRevision} firstLoad=$isFirstLoad " +
+                    "migrationRequired=$migrationRequired supplied=${inventory != null}",
+            )
             if (isFirstLoad || migrationRequired) {
                 if (isFirstLoad) {
                     logger.debug("V2: First load - fetching locations and full server list")
@@ -124,6 +132,8 @@ class ServerListRepository
                     preferenceHelper.migrationRequired = false
                 }
                 logger.debug("Full update completed successfully")
+            } else if (inventory != null) {
+                updateServersDelta(inventory)
             } else {
                 val backup = preferenceHelper.getBackupParameter()
                 val sessionResult =
