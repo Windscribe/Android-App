@@ -124,8 +124,6 @@ dependencies {
     ksp("androidx.hilt:hilt-compiler:1.3.0")
     // hilt-navigation-compose for hiltViewModel<VM>() in Compose (Phase 5).
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
-    implementation("androidx.test.espresso:espresso-intents:3.7.0")
-    implementation("androidx.test.uiautomator:uiautomator:2.3.0")
     implementation("androidx.core:core-splashscreen:1.2.0")
     implementation("androidx.documentfile:documentfile:1.1.0")
     // Compose

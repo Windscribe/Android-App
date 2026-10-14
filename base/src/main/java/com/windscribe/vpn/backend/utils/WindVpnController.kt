@@ -8,6 +8,7 @@ import android.app.ActivityManager
 import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.net.VpnService
+import com.windscribe.common.tunnel.TunnelManager
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.alert.showRetryDialog
@@ -25,10 +26,14 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.openvpn.WindStunnelUtility
+import com.windscribe.vpn.backend.tunnel.VpnServiceGate
+import com.windscribe.vpn.backend.tunnel.startVpnServiceWatching
 import com.windscribe.vpn.backend.utils.SelectedLocationType.CityLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType.StaticIp
+import com.windscribe.vpn.commonutils.ConnectionLogContext
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
+import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_LICENCE_SUSPENDED
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA
@@ -46,20 +51,56 @@ import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.serverlist.entity.Server
-import com.windscribe.vpn.services.canAccessNetworkName
-import com.windscribe.vpn.services.startAutoConnectService
+import com.windscribe.vpn.state.ConnectionPolicy
+import com.windscribe.vpn.state.ConnectionPolicy.Effect
+import com.windscribe.vpn.state.ConnectionPolicyInputs
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.coroutineContext
+
+/**
+ * Ceiling for building a profile: DB reads plus `createVPNProfile`'s API round trips. Generous
+ * because wsnet retries internally, so the attempt fails predictably rather than at their mercy.
+ */
+private const val PROFILE_TIMEOUT_MS = 30_000L
+
+/**
+ * Who asked for a connection. Connecting records two per-network facts — auto-connect is no longer
+ * held back, and the network is opted in — which app-initiated reconnects must not write.
+ */
+enum class ConnectSource {
+    /** Someone pressed something: the home button, the notification, the tile, a location tap. */
+    User,
+
+    /** The app decided: auto-connect, tunnel recovery, protocol switch, boot, a worker. */
+    App,
+
+    /** Like [App], but not deduplicated against a live session: relocating one is the point. */
+    SessionRefresh,
+}
+
+/** The user pressed disconnect. Stands the network down and ends failover. */
+val USER_DISCONNECT = VPNState.Error(error = VPNState.ErrorType.UserDisconnect)
+
+/** The app or system ended it: nothing to report, no stand-down, and failover carries on. */
+val SYSTEM_DISCONNECT: VPNState.Error? = null
+
+/** Signing out. Terminal: no account is left to lift a blocking hold. */
+val SIGNED_OUT = VPNState.Error(error = VPNState.ErrorType.UserTurnOff)
 
 @Singleton
 open class WindVpnController
@@ -78,6 +119,9 @@ open class WindVpnController
         private val localDbInterface: LocalDbInterface,
         private val deviceStateManager: DeviceStateManager,
         private val excludedIpHolder: ExcludedIpHolder,
+        private val tunnelManager: Lazy<TunnelManager>,
+        private val serviceGate: VpnServiceGate,
+        private val policyInputs: ConnectionPolicyInputs,
     ) {
         private val logger = LoggerFactory.getLogger("vpn")
 
@@ -85,7 +129,7 @@ open class WindVpnController
             protocolInformation: ProtocolInformation,
             attempt: Int = 0,
             hostname: String? = null,
-        ): String =
+        ): Pair<String, ProtocolInformation> =
             when (WindUtilities.getSourceTypeBlocking()) {
                 CityLocation -> {
                     createVpnProfileFromCity(
@@ -93,14 +137,14 @@ open class WindVpnController
                         protocolInformation,
                         attempt,
                         hostname,
-                    )
+                    ) to protocolInformation
                 }
 
                 StaticIp -> {
                     createVpnProfileFromStaticIp(
                         preferencesHelper.selectedCity,
                         protocolInformation,
-                    )
+                    ) to protocolInformation
                 }
 
                 else -> {
@@ -108,16 +152,31 @@ open class WindVpnController
                 }
             }
 
+        /**
+         * Starts the backend for [connectionId] unless something newer took over. The permission
+         * dialog makes that gap arbitrarily long — it can be granted minutes later.
+         */
+        suspend fun connectWithGrantedPermission(
+            protocolInformation: ProtocolInformation,
+            connectionId: UUID,
+        ) {
+            if (connectionId != activeConnectionId) {
+                logger.info("VPN permission granted for an attempt that is no longer current.")
+                return
+            }
+            vpnBackendHolder.connect(protocolInformation, connectionId)
+        }
+
         open suspend fun launchVPNService(
             protocolInformation: ProtocolInformation,
             connectionId: UUID,
         ) {
             try {
+                activeConnectionId = connectionId
                 if (VpnService.prepare(appContext) == null) {
-                    logger.debug("VPN Permission available.")
                     vpnBackendHolder.connect(protocolInformation, connectionId)
                 } else {
-                    logger.debug("Requesting VPN Permission")
+                    logger.info("Requesting VPN Permission")
                     val startIntent = Intent(appContext, VPNPermissionActivity::class.java)
                     startIntent.putExtra("protocolInformation", protocolInformation)
                     startIntent.putExtra("connectionId", connectionId)
@@ -133,11 +192,11 @@ open class WindVpnController
                 }
             } catch (e: Exception) {
                 logger.error("Unexpected Error while checking permission for VPN", e)
-                disconnectAsync()
+                disconnectAsync(SYSTEM_DISCONNECT)
             }
         }
 
-        private suspend fun createProfileFromCustomConfig(selectedCity: Int): String {
+        private suspend fun createProfileFromCustomConfig(selectedCity: Int): Pair<String, ProtocolInformation> {
             val configFile = localDbInterface.getConfigFileAsync(selectedCity)
             logger.info("Creating profile from custom config $selectedCity $configFile")
             val profile = vpnProfileCreator.createVpnProfileFromConfig(configFile)
@@ -147,7 +206,7 @@ open class WindVpnController
             }
             localDbInterface.addConfigSync(configFile)
             autoConnectionManager.setSelectedProtocol(profile.second)
-            return profile.first
+            return profile
         }
 
         private var lastUsedRandomIndex = 0
@@ -197,7 +256,14 @@ open class WindVpnController
             }
             val selectedNode: Server =
                 if (pinnedNode != null && attempt == 0) pinnedNode else nodes[randomIndex]
-            logger.debug("{}", selectedNode)
+            logger.debug(
+                "Selected node: {} ip={} ip2={} ip3={} health={}",
+                selectedNode.hostname,
+                selectedNode.ip,
+                selectedNode.ip2,
+                selectedNode.ip3,
+                selectedNode.health,
+            )
             lastUsedRandomIndex = randomIndex
             val coordinatesArray = (city.coordinates ?: "").split(",".toRegex()).toTypedArray()
             val ikev2Ip = selectedNode.ip
@@ -225,6 +291,7 @@ open class WindVpnController
                     publicKey ?: "",
                     city.ovpnX509 ?: "",
                     selectedNode.ipv6 == 1,
+                    selectedNode.id,
                 )
             when (config.protocol) {
                 PROTO_IKev2 -> {
@@ -309,32 +376,135 @@ open class WindVpnController
             }
         }
 
-        fun connectAsync() {
-            scope.launch {
-                connect()
-            }
+        /** The connect running in the application scope; everything before a backend exists is unowned. */
+        private var connectJob: Job? = null
+
+        /** The attempt a connect is currently building, or null between attempts. */
+        @Volatile
+        private var activeConnectionId: UUID? = null
+
+        fun connectAsync(source: ConnectSource) {
+            connectJob?.cancel()
+            connectJob =
+                scope.launch {
+                    connect(source)
+                }
         }
 
-        fun disconnectAsync(
-            waitForNextProtocol: Boolean = false,
-            reconnecting: Boolean = false,
-        ) {
+        /**
+         * Drops the tunnel but keeps the service, engine first so nothing goes upstream through a
+         * half-dead tunnel. Does not stand the network down: a pause is about now, not the network.
+         */
+        suspend fun pause() {
+            logger.info("Pausing: stopping the engine, then closing the TUN. Traffic will flow in the clear.")
+            disconnect(error = VPNState.Error(error = VPNState.ErrorType.UserPause))
+        }
+
+        /**
+         * Stops everything, watching included: the only way to make the notification go away, and the
+         * only way out of a blocked device. Settles the service itself rather than relying on the
+         * teardown to reach one — a TUN held with no engine has no backend to disconnect, so nothing
+         * in [disconnect] runs, and the block used to stand.
+         */
+        suspend fun turnOff() {
+            logger.info("Turning off: no tunnel, no watcher, no notification.")
+            preferencesHelper.globalUserConnectionPreference = false
+            runCatching { disconnect(error = VPNState.Error(error = VPNState.ErrorType.UserTurnOff)) }
+                .onFailure { logger.error("Teardown failed on the way to turning off.", it) }
+            endSession(ConnectionPolicy.SessionEnd.UserTurnOff)
+        }
+
+        /** Applies a change to Auto-Connect, which nothing observes. Call after writing it. */
+        fun onAutoConnectChanged() {
             scope.launch {
-                disconnect(
-                    waitForNextProtocol,
-                    reconnecting,
-                    error = VPNState.Error(error = VPNState.ErrorType.UserDisconnect),
-                )
+                if (preferencesHelper.autoConnect) {
+                    // Turning it on outranks a stand-down recorded on this network before it.
+                    deviceStateManager.setWhitelistedNetwork(null)
+                }
+                reconcile("Auto-Connect is now ${preferencesHelper.autoConnect}")
             }
         }
 
         /**
-         * Disconnects VPN with custom error (for system-initiated disconnects)
+         * [ConnectionPolicy.ServiceMode.AccountBlocked] is the only mode nothing else clears.
+         *
+         * Expired and banned both land there, and both took away a session the user had asked for,
+         * so recovering gives it back regardless of Auto-Connect — that switch governs connecting on
+         * its own, not restoring what we interrupted.
+         */
+        fun onAccountRecovered() {
+            scope.launch {
+                if (vpnConnectionStateManager.serviceMode.value !is ConnectionPolicy.ServiceMode.AccountBlocked) {
+                    return@launch
+                }
+                logger.info("The account can connect again; clearing the block.")
+                vpnConnectionStateManager.setServiceMode(null)
+                if (preferencesHelper.globalUserConnectionPreference) {
+                    logger.info("Restoring the session the account block interrupted.")
+                    // Through failover, like every other reconnect the session refresh drives.
+                    autoConnectionManager.connectInForeground(ConnectSource.SessionRefresh)
+                    return@launch
+                }
+                reconcile("the account can connect again")
+            }
+        }
+
+        /** Acts on [ConnectionPolicy.reconcile]. @param reason what changed, for the log. */
+        private suspend fun reconcile(reason: String) {
+            when (ConnectionPolicy.reconcile(policyInputs.current())) {
+                Effect.Connect -> {
+                    logger.info("Connecting: $reason, and this network should be secured.")
+                    autoConnectionManager.reset()
+                    connectAsync(ConnectSource.App)
+                }
+
+                Effect.StartWatching -> {
+                    logger.info("Starting the watcher for the next network: $reason.")
+                    appContext.startVpnServiceWatching()
+                }
+
+                // Releases a held TUN as well.
+                Effect.StopService -> {
+                    logger.info("Nothing left for the service to watch for: $reason.")
+                    endSession(ConnectionPolicy.SessionEnd.UserTurnOff)
+                }
+
+                Effect.None -> logger.debug("Nothing to do: $reason.")
+            }
+        }
+
+        /**
+         * Ends a session the orchestrator stopped driving: a held TUN must be resolved once no
+         * reconnect is coming, and the service told, or it lingers on the last published state.
+         */
+        fun endSession(end: ConnectionPolicy.SessionEnd) {
+            scope.launch {
+                // A failover hold is bounded and released when the orchestrator gives up — but
+                // with blocking on, giving up is exactly when traffic must not be let out, so the
+                // TUN is kept and its watchdog cancelled. Inputs read once, so the publish holds.
+                val input = policyInputs.current()
+                if (ConnectionPolicy.shouldBlockOutsideVpn(input, end)) {
+                    if (tunnelManager.get().holdForBlocking()) {
+                        logger.info("No reconnect is coming; holding the TUN to block traffic.")
+                    }
+                } else if (tunnelManager.get().releaseHeldTunnel()) {
+                    logger.info("Released a held TUN: no reconnect is coming.")
+                }
+                serviceGate.current?.endSession(end, input)
+            }
+        }
+
+        /**
+         * Ends the tunnel. **[error] is required, and states who ended it and why.**
+         *
+         * A `UserDisconnect` stands the current network down, changes the notification copy, and
+         * tells `AutoConnectionManager` to abandon failover. Pass [SYSTEM_DISCONNECT] when the app or
+         * system decided, [USER_DISCONNECT] only when the user asked.
          */
         fun disconnectAsync(
+            error: VPNState.Error?,
             waitForNextProtocol: Boolean = false,
             reconnecting: Boolean = false,
-            error: VPNState.Error?,
         ) {
             scope.launch {
                 disconnect(waitForNextProtocol, reconnecting, error)
@@ -345,11 +515,17 @@ open class WindVpnController
          * Connects or reconnect to the VPN
          */
         open suspend fun connect(
+            source: ConnectSource,
             connectionId: UUID = UUID.randomUUID(),
             protocolInformation: ProtocolInformation? = null,
             attempt: Int = 0,
             hostname: String? = null,
         ) {
+            if (isLicenceSuspended) {
+                logger.debug("Licence is suspended. Not connecting.")
+                appContext.applicationInterface.showLicenceSuspendedDialog()
+                return
+            }
             when {
                 // Disconnect from VPN and connect to next selected location.
                 vpnBackendHolder.activeBackend?.active == true -> {
@@ -359,6 +535,7 @@ open class WindVpnController
                         error = VPNState.Error(error = VPNState.ErrorType.UserReconnect),
                     )
                     createProfileAndLaunchService(
+                        source,
                         connectionId,
                         protocolInformation,
                         attempt,
@@ -369,6 +546,7 @@ open class WindVpnController
                 else -> {
                     // Make a fresh connection
                     createProfileAndLaunchService(
+                        source,
                         connectionId,
                         protocolInformation,
                         attempt,
@@ -379,31 +557,66 @@ open class WindVpnController
         }
 
         private suspend fun createProfileAndLaunchService(
+            source: ConnectSource,
             connectionId: UUID = UUID.randomUUID(),
             selectedProtocol: ProtocolInformation? = null,
             attempt: Int = 0,
             hostname: String? = null,
         ) {
             try {
-                logger.debug("Connecting to VPN with connectionId: $connectionId")
-                setLocationToConnect()
+                ConnectionLogContext.set(connectionId)
+                activeConnectionId = connectionId
+                // Debug on purpose: the next line logs this same moment at info.
+                logger.debug("Connecting to VPN.")
                 vpnConnectionStateManager.setState(VPNState(Connecting, connectionId = connectionId))
-                // Clear whitelist - user wants VPN, so enable future auto-connect
-                deviceStateManager.setWhitelistedNetwork(null)
-                val protocolInformation =
-                    selectedProtocol?.let {
-                        autoConnectionManager.setSelectedProtocol(it)
-                        return@let it
-                    } ?: getProtocolInformationToConnect()
-                logger.info("Protocol: $protocolInformation")
+                // Before anything is established: requestTun() applies these to *every* interface
+                // and the blocking one comes first, so loading them later leaves it capturing the
+                // addresses the user excluded. A cached DB read, so it costs nothing here.
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU && preferencesHelper.splitTunnelToggle) {
                     excludedIpHolder.loadCachedIps()
                 } else {
                     excludedIpHolder.clear()
                 }
-                val profileToConnect = createVPNProfile(protocolInformation, attempt, hostname)
+                blockBeforeBuildingProfile()
+                // After the block: an API round trip runs in the clear until the block lands, and
+                // nothing above needs a location.
+                setLocationToConnect()
+                // Only a user connect settles the per-network facts: auto-connect is no longer held
+                // back here, and the opt-in stops Auto-Secure-off tearing this session down. Both
+                // describe what the user wants, so an app-initiated reconnect leaves them alone
+                // rather than undoing a decision the user made or inventing one they did not.
+                if (source == ConnectSource.User) {
+                    deviceStateManager.setWhitelistedNetwork(null)
+                    deviceStateManager.setOptedInNetwork(deviceStateManager.getCurrentNetworkName())
+                }
+                val protocolInformation =
+                    selectedProtocol?.let {
+                        autoConnectionManager.setSelectedProtocol(it)
+                        return@let it
+                    } ?: getProtocolInformationToConnect()
+                // Bounded here because startConnectionJob()'s budget only starts inside
+                // backend.connect(), leaving the API round trips that build the profile untimed.
+                val (profileToConnect, profileProtocol) =
+                    withTimeout(PROFILE_TIMEOUT_MS) {
+                        createVPNProfile(protocolInformation, attempt, hostname)
+                    }
                 logger.info("Location: $profileToConnect")
-                launchVPNService(protocolInformation, connectionId)
+                launchVPNService(profileProtocol, connectionId)
+            } catch (e: TimeoutCancellationException) {
+                // Scoped to the withTimeout above, so catching a CancellationException here does not
+                // swallow a real cancellation of the enclosing job.
+                logger.error("Timed out preparing the connection after ${PROFILE_TIMEOUT_MS}ms.")
+                disconnect(
+                    error =
+                        VPNState.Error(
+                            VPNState.ErrorType.TimeoutError,
+                            "Timed out preparing the connection.",
+                        ),
+                )
+            } catch (e: CancellationException) {
+                // Disconnecting again would re-enter the teardown waiting on this coroutine.
+                logger.debug("Connect preparation was cancelled.")
+                throw e
             } catch (e: Exception) {
                 if (e is InvalidVPNConfigException) {
                     handleVPNError(e.error, connectionId, selectedProtocol)
@@ -412,6 +625,30 @@ open class WindVpnController
                     disconnect()
                 }
             }
+        }
+
+        /**
+         * Blocks before the profile build, starting the service if that is what it takes.
+         *
+         * What follows is up to [PROFILE_TIMEOUT_MS] of API round trips, which would otherwise run
+         * uncovered on a cold start where no service exists yet.
+         *
+         * Only starts the service when it buys something: blocking must be in force and VPN
+         * permission already granted, since without it `establish()` returns null.
+         */
+        private suspend fun blockBeforeBuildingProfile() {
+            serviceGate.current?.let {
+                it.beginBlockingIfRequired()
+                return
+            }
+            if (!ConnectionPolicy.blockingApplies(policyInputs.current())) {
+                return
+            }
+            if (VpnService.prepare(appContext) != null) {
+                logger.debug("No VPN permission yet; the profile build cannot be blocked.")
+                return
+            }
+            serviceGate.ensureRunning()?.beginBlockingIfRequired()
         }
 
         private fun getProtocolInformationToConnect(): ProtocolInformation {
@@ -456,59 +693,64 @@ open class WindVpnController
             logger.debug(
                 "Disconnecting from VPN: Waiting for next protocol: $waitForNextProtocol Reconnecting: $reconnecting Error: ${error?.error}",
             )
+            // Never joins itself: the reconnect path calls this from inside that connect.
+            connectJob?.takeIf { it !== currentCoroutineContext()[Job] }?.let { preparing ->
+                connectJob = null
+                runCatching { preparing.cancelAndJoin() }
+            }
             if (WindStunnelUtility.isStunnelRunning) {
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
-            vpnBackendHolder.disconnect(error)
-
-            // Only whitelist on user-initiated disconnect (not system errors or reconnecting)
+            // Before the teardown, which asks the policy what the service becomes and reads this.
+            // Only a user disconnect stands the network down.
             val isUserDisconnect = error?.error == VPNState.ErrorType.UserDisconnect
             if (!reconnecting && isUserDisconnect) {
-                // Whitelist current network - user doesn't want VPN here, block future auto-connect
-                val networkName = deviceStateManager.getCurrentNetworkName()
-                deviceStateManager.setWhitelistedNetwork(networkName)
-                logger.debug("User disconnected - whitelisted network: $networkName")
+                // Here with the stand-down, not at each call site: one surface missing it left the
+                // same act reconnecting on the next boot.
+                preferencesHelper.globalUserConnectionPreference = false
+                deviceStateManager.standDownCurrentNetwork()
             } else {
-                logger.debug("System disconnect (reconnecting=$reconnecting, error=${error?.error}) - not whitelisting")
+                logger.debug("Not standing the network down (reconnecting=$reconnecting, error=${error?.error})")
             }
 
-            if (vpnConnectionStateManager.state.value.status != Disconnected) {
-                // Force disconnect if state did not change to disconnect
+            // A connect that failed before reaching a backend activated nothing, so runDisconnect
+            // never publishes the terminal state and the UI sits on Connecting.
+            val hadBackend = vpnBackendHolder.activeBackend != null
+            vpnBackendHolder.disconnect(error)
+            if (!hadBackend && vpnConnectionStateManager.state.value.status != Disconnected) {
+                logger.debug("No backend was active; publishing the terminal state directly.")
+                vpnConnectionStateManager.setState(VPNState(Disconnected, error = error), true)
+                // The user's reason, not ConnectFailed: a deliberate stop reported as a failure
+                // leaves the policy watching and blocking.
+                val end =
+                    when (error?.error) {
+                        VPNState.ErrorType.UserPause -> ConnectionPolicy.SessionEnd.UserPause
+                        VPNState.ErrorType.UserTurnOff,
+                        VPNState.ErrorType.Revoked,
+                        -> ConnectionPolicy.SessionEnd.UserTurnOff
+                        VPNState.ErrorType.UserDisconnect -> ConnectionPolicy.SessionEnd.UserDisconnect
+                        else -> ConnectionPolicy.SessionEnd.ConnectFailed
+                    }
+                serviceGate.current?.endSession(end, policyInputs.current())
+            }
+
+            // endSession() publishes what the service settles into; this covers only the reconnect
+            // path, which never reaches it.
+            if (reconnecting && vpnConnectionStateManager.state.value.status != Disconnected) {
                 vpnConnectionStateManager.setState(VPNState(Disconnected, error = error), true)
                 delay(100)
             }
-            checkForReconnect()
-        }
-
-        private fun checkForReconnect() {
-            if (!appContext.canAccessNetworkName()) {
-                return
-            }
-
-            // Check if we should start AutoConnectService
-            scope.launch {
-                val currentNetworkName = deviceStateManager.getCurrentNetworkName()
-                val isWhitelisted = deviceStateManager.isCurrentNetworkWhitelisted.value
-
-                if (currentNetworkName == null) {
-                    logger.debug("No network name available to start auto connect.")
-                    return@launch
-                }
-
-                val networkInfo = localDbInterface.getNetwork(currentNetworkName)
-
-                // Only start AutoConnectService if:
-                // 1. Auto-secure is OFF (service will reconnect when network changes to ON network)
-                // 2. Network is not whitelisted (might need to reconnect on this network)
-                if (networkInfo?.isAutoSecureOn == false || preferencesHelper.autoConnect) {
-                    appContext.preference.globalUserConnectionPreference = true
-                    appContext.startAutoConnectService()
-                    logger.debug("Starting AutoConnectService - auto-secure=${networkInfo?.isAutoSecureOn}, whitelisted=$isWhitelisted")
-                } else {
-                    logger.debug("Not starting AutoConnectService - auto-secure ON and whitelisted (service will start on network change)")
-                }
+            // Not off the Disconnected state, which most call sites emit without a connectionId and
+            // on another dispatcher, landing after the next attempt stamped its own.
+            if (!reconnecting) {
+                activeConnectionId = null
+                ConnectionLogContext.clear()
             }
         }
+
+        /** Always false for plain Windscribe builds; their API never returns this code. */
+        private val isLicenceSuspended: Boolean
+            get() = preferencesHelper.lastSessionErrorCode == ERROR_LICENCE_SUSPENDED
 
         /**
          * @param serviceClass Service class name
@@ -534,7 +776,6 @@ open class WindVpnController
             protocolInformation: ProtocolInformation?,
         ) {
             logger.debug("code: ${error.code} error: ${error.errorMessage}")
-            val context = coroutineContext
             when (error.code) {
                 ERROR_UNABLE_TO_REACH_API, ERROR_UNEXPECTED_API_DATA -> {
                     val message = "Unable to reach the server. Please check your internet connection."
@@ -550,8 +791,23 @@ open class WindVpnController
                 }
 
                 ERROR_WG_KEY_LIMIT_EXCEEDED -> {
+                    // With no screen the dialog is never posted, so neither callback ever runs.
+                    if (appContext.activeActivity == null) {
+                        logger.info("WireGuard key limit reached with no screen to ask on; ending the attempt.")
+                        disconnect(
+                            error =
+                                VPNState.Error(
+                                    error = VPNState.ErrorType.GenericError,
+                                    message = error.errorMessage,
+                                ),
+                        )
+                        return
+                    }
                     showRetryDialog(error.errorMessage, {
-                        CoroutineScope(context).launch {
+                        // Not the connect's scope: it ends when this dialog is posted, and a
+                        // launch on a finished job never runs.
+                        scope.launch {
+                            logger.info("Replacing the oldest WireGuard key and retrying.")
                             vpnProfileCreator.wgForceInit.set(true)
                             val vpnState =
                                 VPNState(
@@ -565,12 +821,17 @@ open class WindVpnController
                             vpnState.protocolInformation = protocolInformation
                             vpnState.connectionId = connectionId
                             vpnConnectionStateManager.setState(vpnState)
+                            // Failover collects that state; an auto-connect has nothing that does.
+                            if (!autoConnectionManager.isFailoverActive) {
+                                connect(ConnectSource.User, protocolInformation = protocolInformation)
+                            }
                         }
                     }, {
                         logger.info("Cancel clicked")
                         preferencesHelper.globalUserConnectionPreference = false
-                        disconnectAsync()
-                    }, title = appContext.getString(R.string.note))
+                        // The user dismissed the wg key-limit dialog, so this one really is theirs.
+                        disconnectAsync(USER_DISCONNECT)
+                    }, title = appContext.localized.getString(R.string.note))
                 }
 
                 ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP, ERROR_WG_UNABLE_TO_GENERATE_PSK -> {
@@ -620,6 +881,20 @@ open class WindVpnController
                             ),
                     )
                 }
+
+                // Any code here means the profile could not be built, recognised or not; without
+                // this the state stays Connecting forever.
+                else -> {
+                    logger.debug("Unhandled profile error ${error.code}; ending the attempt.")
+                    disconnect(
+                        error =
+                            VPNState.Error(
+                                error = VPNState.ErrorType.WireguardApiError,
+                                error.errorMessage,
+                                showError = true,
+                            ),
+                    )
+                }
             }
         }
 
@@ -635,7 +910,7 @@ open class WindVpnController
                             return@collect
                         }
                         if (state.status == Disconnected && connectionAttempt < connectionInfo.size) {
-                            val text = appContext.resources.getString(R.string.connecting)
+                            val text = appContext.localized.resources.getString(R.string.connecting)
                             callback(text)
                             vpnConnectionStateManager.setState(VPNState(status = Connecting))
                             val connectionUUID = UUID.randomUUID()

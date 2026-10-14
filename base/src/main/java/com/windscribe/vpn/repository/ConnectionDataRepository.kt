@@ -10,10 +10,12 @@ import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
+import com.windscribe.vpn.backend.utils.SYSTEM_DISCONNECT
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_GENERATE_CREDENTIALS
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import dagger.Lazy
+import kotlinx.coroutines.CancellationException
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,11 +46,22 @@ class ConnectionDataRepository
                         }
 
                         is CallResult.Error -> {
-                            if (serverConfigResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
+                            // Not for a custom config: these are our credentials, and a tunnel the
+                            // user supplied never used them.
+                            if (serverConfigResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS &&
+                                !preferencesHelper.isConnectingToConfigured
+                            ) {
                                 preferencesHelper.globalUserConnectionPreference = false
-                                appContext.vpnController.disconnectAsync()
+                                // A credential fetch failed server-side. Reporting it as the user's
+                                // doing disabled auto-connect on their network and blamed them.
+                                appContext.vpnController.disconnectAsync(SYSTEM_DISCONNECT)
+                                logger.error(
+                                    "Failed to get server config, disconnected and turned auto connect off: " +
+                                        "${serverConfigResult.errorMessage}",
+                                )
+                            } else {
+                                logger.warn("Failed to get server config: ${serverConfigResult.errorMessage}")
                             }
-                            logger.debug("Failed to get server config: ${serverConfigResult.errorMessage}")
                         }
                     }
 
@@ -63,11 +76,20 @@ class ConnectionDataRepository
                         }
 
                         is CallResult.Error -> {
-                            if (openVpnCredsResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
+                            if (openVpnCredsResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS &&
+                                !preferencesHelper.isConnectingToConfigured
+                            ) {
                                 preferencesHelper.globalUserConnectionPreference = false
-                                appContext.vpnController.disconnectAsync()
+                                // A credential fetch failed server-side. Reporting it as the user's
+                                // doing disabled auto-connect on their network and blamed them.
+                                appContext.vpnController.disconnectAsync(SYSTEM_DISCONNECT)
+                                logger.error(
+                                    "Failed to get OpenVPN credentials, disconnected and turned auto connect off: " +
+                                        "${openVpnCredsResult.errorMessage}",
+                                )
+                            } else {
+                                logger.warn("Failed to get OpenVPN credentials: ${openVpnCredsResult.errorMessage}")
                             }
-                            logger.debug("Failed to get OpenVPN credentials: ${openVpnCredsResult.errorMessage}")
                         }
                     }
 
@@ -82,11 +104,20 @@ class ConnectionDataRepository
                         }
 
                         is CallResult.Error -> {
-                            if (ikev2CredsResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS) {
+                            if (ikev2CredsResult.code == ERROR_UNABLE_TO_GENERATE_CREDENTIALS &&
+                                !preferencesHelper.isConnectingToConfigured
+                            ) {
                                 preferencesHelper.globalUserConnectionPreference = false
-                                appContext.vpnController.disconnectAsync()
+                                // A credential fetch failed server-side. Reporting it as the user's
+                                // doing disabled auto-connect on their network and blamed them.
+                                appContext.vpnController.disconnectAsync(SYSTEM_DISCONNECT)
+                                logger.error(
+                                    "Failed to get IKEv2 credentials, disconnected and turned auto connect off: " +
+                                        "${ikev2CredsResult.errorMessage}",
+                                )
+                            } else {
+                                logger.warn("Failed to get IKEv2 credentials: ${ikev2CredsResult.errorMessage}")
                             }
-                            logger.debug("Failed to get IKEv2 credentials: ${ikev2CredsResult.errorMessage}")
                         }
                     }
 
@@ -103,13 +134,15 @@ class ConnectionDataRepository
                         }
 
                         is CallResult.Error -> {
-                            logger.error("Failed to get port map: ${portMapResult.errorMessage}")
+                            logger.warn("Failed to get port map: ${portMapResult.errorMessage}")
                         }
                     }
 
                     CallResult.Success(Unit)
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
-                    logger.debug("Connection data update error: ${e.message}")
+                    logger.warn("Connection data update error: ${e.message}")
                     CallResult.Error(-1, e.message ?: "Unknown error")
                 }
             return result is CallResult.Success

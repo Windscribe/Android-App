@@ -6,58 +6,71 @@
 package com.wireguard.android.backend;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.os.ParcelFileDescriptor;
-import android.system.OsConstants;
 import android.util.Log;
 
-import com.windscribe.common.DNSDetails;
-import com.windscribe.common.DnsType;
-import com.windscribe.common.VPNTunnelWrapper;
 import com.wireguard.android.backend.BackendException.Reason;
 import com.wireguard.android.backend.Tunnel.State;
 import com.wireguard.android.util.SharedLibraryLoader;
 import com.wireguard.config.Config;
 import com.wireguard.config.InetEndpoint;
-import com.wireguard.config.InetNetwork;
 import com.wireguard.config.Peer;
 import com.wireguard.crypto.Key;
 import com.wireguard.crypto.KeyFormatException;
 import com.wireguard.util.NonNullForAll;
 
-import java.net.InetAddress;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 
 /**
- * Implementation of {@link Backend} that uses the wireguard-go userspace implementation to provide
- * WireGuard tunnels.
+ * Runs wireguard-go over a descriptor it is handed.
+ *
+ * <p>An engine, not a service: the TUN belongs to the one service that owns it for the session —
+ * see docs/architecture/VPN_BACKEND.md §2.
+ *
+ * <p>Its only coupling to a {@code VpnService} is two {@code protect()} calls per session, through
+ * a {@link TunHandle} callback: {@code DisableSomeRoamingForBrokenMobileSemantics()} means the UDP
+ * bind is never rebuilt.
+ *
+ * <p>The {@code customTun} flag threaded Java -> JNI -> Go is what lets wg-go run on a socketpair
+ * instead of a real tun device; the amneziawg-go fork suppresses the tun-specific ioctls behind it.
+ *
+ * <h3>Descriptor ownership</h3>
+ * wg-go <b>takes ownership of and closes</b> the descriptor passed to {@code wgTurnOn}. The caller
+ * must therefore hand over a descriptor it will never touch again — {@link PacketMux} hands out a
+ * dup for exactly this reason.
  */
 @NonNullForAll
 public final class GoBackend implements Backend {
     private static final int DNS_RESOLUTION_RETRIES = 10;
     private static final String TAG = "WireGuard/GoBackend";
-    @Nullable private static AlwaysOnCallback alwaysOnCallback;
-    private static GhettoCompletableFuture<VpnService> vpnService = new GhettoCompletableFuture<>();
     private final Context context;
     @Nullable private Config currentConfig;
     @Nullable private Tunnel currentTunnel;
     private int currentTunnelHandle = -1;
     private final Object tunnelStateLock = new Object();
 
-    private VPNTunnelWrapper tunnelWrapper;
+    /**
+     * Everything wg-go needs from the VPN service, without being able to see one.
+     */
+    public interface TunHandle {
+        /**
+         * The descriptor wg-go should run on. Ownership transfers to wg-go, which closes it, so
+         * this must return a descriptor the caller has already given up.
+         */
+        int detachTunFd();
+
+        /** Marks wg-go's UDP sockets so they bypass the tunnel. Called twice, once per session. */
+        boolean protect(int socketFd);
+
+        /** True when the descriptor is a socketpair rather than a real tun device. */
+        boolean isCustomTun();
+    }
 
     /**
      * Public constructor for GoBackend.
@@ -67,16 +80,9 @@ public final class GoBackend implements Backend {
     public GoBackend(final Context context) {
         SharedLibraryLoader.loadSharedLibrary(context, "wg-go");
         this.context = context;
-    }
-
-    /**
-     * Set a {@link AlwaysOnCallback} to be invoked when {@link VpnService} is started by the
-     * system's Always-On VPN mode.
-     *
-     * @param cb Callback to be invoked
-     */
-    public static void setAlwaysOnCallback(final AlwaysOnCallback cb) {
-        alwaysOnCallback = cb;
+        // The only place the library is loaded. Diagnostics only: a failure must not block a tunnel.
+        if (wgSetCrashOutput() != 0)
+            Log.w(TAG, "Could not install Go crash output");
     }
 
     @Nullable private static native String wgGetConfig(int handle);
@@ -90,6 +96,13 @@ public final class GoBackend implements Backend {
     private static native int wgTurnOn(String ifName, int tunFd, String settings, boolean customTun);
 
     private static native String wgVersion();
+
+    /**
+     * Routes the Go runtime's fatal error line into the process abort message, so it reaches the
+     * tombstone. libwg-go.so links three Go programs on one runtime, so without it every fatal
+     * error reports identically: one frame in runtime.raise, with the reason only in logcat.
+     */
+    private static native int wgSetCrashOutput();
 
     /**
      * Method to get the names of running tunnels.
@@ -187,6 +200,16 @@ public final class GoBackend implements Backend {
     }
 
     /**
+     * Stats for whatever tunnel is up, or null when none is. The orchestrator holds no {@link Tunnel}
+     * of its own to ask with.
+     */
+    @Nullable
+    public Statistics getCurrentStatistics() {
+        final Tunnel tunnel = currentTunnel;
+        return tunnel == null ? null : getStatistics(tunnel);
+    }
+
+    /**
      * Get the version of the underlying wireguard-go library.
      *
      * @return {@link String} value of the version of the wireguard-go library.
@@ -206,8 +229,24 @@ public final class GoBackend implements Backend {
      * @return {@link State} of the tunnel after state changes are applied.
      * @throws Exception Exception raised while changing tunnel state.
      */
+    /**
+     * Not supported. wg-go cannot establish a TUN any more — it must be handed one.
+     * Use {@link #setState(Tunnel, State, Config, TunHandle)}.
+     */
     @Override
-    public State setState(final Tunnel tunnel, State state, @Nullable final Config config) throws Exception {
+    public State setState(final Tunnel tunnel, final State state, @Nullable final Config config) {
+        throw new UnsupportedOperationException(
+                "GoBackend no longer owns a TUN; pass a TunHandle via setState(tunnel, state, config, tunHandle)");
+    }
+
+    /**
+     * Brings the tunnel up on the descriptor supplied by {@code tunHandle}, or takes it down.
+     *
+     * @param tunHandle supplies the descriptor and the protect callback. May be null when taking
+     *                  the tunnel down, since neither is needed then.
+     */
+    public State setState(final Tunnel tunnel, State state, @Nullable final Config config,
+                          @Nullable final TunHandle tunHandle) throws Exception {
         final State originalState = getState(tunnel);
 
         if (state == State.TOGGLE)
@@ -215,164 +254,95 @@ public final class GoBackend implements Backend {
         if (state == originalState && tunnel == currentTunnel && config == currentConfig)
             return originalState;
         if (state == State.UP) {
+            if (tunHandle == null)
+                throw new BackendException(Reason.UNABLE_TO_START_VPN);
             final Config originalConfig = currentConfig;
             final Tunnel originalTunnel = currentTunnel;
-            if (currentTunnel != null)
-                setStateInternal(currentTunnel, null, State.DOWN);
+            if (originalTunnel != null)
+                setStateInternal(originalTunnel, null, State.DOWN, null);
             try {
-                setStateInternal(tunnel, config, state);
+                setStateInternal(tunnel, config, state, tunHandle);
             } catch (final Exception e) {
+                // Rolling back means bringing the previous tunnel up again, which needs a
+                // descriptor. The old one belongs to wg-go and is closed, so the caller has to
+                // re-attach; surface the original failure rather than pretend we recovered.
+                Log.w(TAG, "Tunnel failed to come up; previous config was " + (originalConfig != null));
                 if (originalTunnel != null)
-                    setStateInternal(originalTunnel, originalConfig, State.UP);
+                    originalTunnel.onStateChange(State.DOWN);
                 throw e;
             }
         } else if (state == State.DOWN && tunnel == currentTunnel) {
-            setStateInternal(tunnel, null, State.DOWN);
+            setStateInternal(tunnel, null, State.DOWN, null);
         }
         return getState(tunnel);
     }
 
-    private void setStateInternal(final Tunnel tunnel, @Nullable final Config config, final State state)
-            throws Exception {
-        // Perform DNS resolution BEFORE acquiring lock to prevent ANR
-        // DNS lookups can be slow and should not block other operations
-        if (state == State.UP && config != null) {
-            dnsRetry: for (int i = 0; i < DNS_RESOLUTION_RETRIES; ++i) {
-                // Pre-resolve IPs so they're cached when building the userspace string
-                for (final Peer peer : config.getPeers()) {
-                    final InetEndpoint ep = peer.getEndpoint().orElse(null);
-                    if (ep == null)
-                        continue;
-                    if (ep.getResolved().orElse(null) == null) {
-                        if (i < DNS_RESOLUTION_RETRIES - 1) {
-                            Log.w(TAG, "DNS host \"" + ep.getHost() + "\" failed to resolve; trying again");
-                            Thread.sleep(1000);
-                            continue dnsRetry;
-                        } else
-                            throw new BackendException(Reason.DNS_RESOLUTION_FAILURE, ep.getHost());
-                    }
+    /**
+     * Resolves every peer endpoint, retrying until one answers or the retries run out. Blocking.
+     *
+     * <p>{@link InetEndpoint#getResolved()} caches for a minute, so calling this ahead of
+     * {@link #setState} leaves the lookup inside the lock a cache hit.
+     *
+     * @throws BackendException if a host never resolved.
+     */
+    public void resolveEndpoints(final Config config) throws Exception {
+        dnsRetry: for (int i = 0; i < DNS_RESOLUTION_RETRIES; ++i) {
+            for (final Peer peer : config.getPeers()) {
+                final InetEndpoint ep = peer.getEndpoint().orElse(null);
+                if (ep == null)
+                    continue;
+                if (ep.getResolved().orElse(null) == null) {
+                    if (i < DNS_RESOLUTION_RETRIES - 1) {
+                        Log.w(TAG, "DNS host \"" + ep.getHost() + "\" failed to resolve; trying again");
+                        Thread.sleep(1000);
+                        continue dnsRetry;
+                    } else
+                        throw new BackendException(Reason.DNS_RESOLUTION_FAILURE, ep.getHost());
                 }
-                break;
             }
-        }
-
-        synchronized (tunnelStateLock) {
-            setStateInternalLocked(tunnel, config, state);
+            break;
         }
     }
 
-    private void setStateInternalLocked(final Tunnel tunnel, @Nullable final Config config, final State state)
+    private void setStateInternal(final Tunnel tunnel, @Nullable final Config config, final State state,
+                                  @Nullable final TunHandle tunHandle)
+            throws Exception {
+        // Off tunnelStateLock: a lookup here would hold it for the whole resolution.
+        if (state == State.UP && config != null)
+            resolveEndpoints(config);
+
+        synchronized (tunnelStateLock) {
+            setStateInternalLocked(tunnel, config, state, tunHandle);
+        }
+    }
+
+    private void setStateInternalLocked(final Tunnel tunnel, @Nullable final Config config, final State state,
+                                        @Nullable final TunHandle tunHandle)
             throws Exception {
         Log.i(TAG, "Bringing tunnel " + tunnel.getName() + ' ' + state);
 
         if (state == State.UP) {
             if (config == null)
                 throw new BackendException(Reason.TUNNEL_MISSING_CONFIG);
-
-            if (VpnService.prepare(context) != null)
-                throw new BackendException(Reason.VPN_NOT_AUTHORIZED);
-
-            final VpnService service;
-            if (!vpnService.isDone()) {
-                Log.d(TAG, "Requesting to start VpnService");
-                context.startService(new Intent(context, VpnService.class));
-            }
-
-            try {
-                service = vpnService.get(2, TimeUnit.SECONDS);
-            } catch (final TimeoutException e) {
-                final Exception be = new BackendException(Reason.UNABLE_TO_START_VPN);
-                be.initCause(e);
-                throw be;
-            }
-            service.setOwner(this);
+            if (tunHandle == null)
+                throw new BackendException(Reason.UNABLE_TO_START_VPN);
 
             if (currentTunnelHandle != -1) {
                 Log.w(TAG, "Tunnel already up");
                 return;
             }
 
-            // DNS resolution already completed in setStateInternal() before acquiring lock
-
-            // Build config
+            // DNS resolution already completed in setStateInternal() before acquiring the lock.
             final String goConfig = config.toWgUserspaceString();
 
-            // Create the vpn tunnel with android API
-            final VpnService.Builder builder = service.getBuilder();
-            builder.setSession(tunnel.getName());
+            // No Builder, no establish(): the descriptor arrives ready. Ownership transfers to
+            // wg-go, which closes it, so we never touch it again after this call.
+            final int tunFd = tunHandle.detachTunFd();
+            if (tunFd < 0)
+                throw new BackendException(Reason.TUN_CREATION_ERROR);
 
-            for (final String excludedApplication : config.getInterface().getExcludedApplications())
-                builder.addDisallowedApplication(excludedApplication);
-
-            for (final String includedApplication : config.getInterface().getIncludedApplications())
-                builder.addAllowedApplication(includedApplication);
-
-            // Check if IPv6 is configured by examining interface addresses
-            boolean hasIPv6Address = false;
-            for (final InetNetwork addr : config.getInterface().getAddresses()) {
-                builder.addAddress(addr.getAddress(), addr.getMask());
-                if (addr.getAddress() instanceof java.net.Inet6Address) {
-                    hasIPv6Address = true;
-                }
-            }
-
-            for (final InetAddress addr : config.getInterface().getDnsServers())
-                builder.addDnsServer(addr.getHostAddress());
-
-            for (final String dnsSearchDomain : config.getInterface().getDnsSearchDomains())
-                builder.addSearchDomain(dnsSearchDomain);
-
-            boolean sawDefaultRoute = false;
-            for (final Peer peer : config.getPeers()) {
-                for (final InetNetwork addr : peer.getAllowedIps()) {
-                    if (addr.getMask() == 0)
-                        sawDefaultRoute = true;
-                    // Skip ::/0 route only if IPv6 is not configured
-                    if (!addr.toString().equals("::/0") || hasIPv6Address){
-                        builder.addRoute(addr.getAddress(), addr.getMask());
-                    }
-                }
-            }
-
-            // "Kill-switch" semantics
-            if (!(sawDefaultRoute && config.getPeers().size() == 1)) {
-                builder.allowFamily(OsConstants.AF_INET);
-                builder.allowFamily(OsConstants.AF_INET6);
-            }
-
-            builder.setMtu(config.getInterface().getMtu().orElse(1280));
-
-            service.applyExcludedRoutes(builder);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                builder.setMetered(false);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                service.setUnderlyingNetworks(null);
-
-            builder.setBlocking(true);
-
-            final DNSDetails dnsDetails = service.getDnsDetails();
-            final boolean customTun = dnsDetails != null && dnsDetails.getType() == DnsType.Proxy;
-
-            if (customTun) {
-                ParcelFileDescriptor tun = builder.establish();
-                if (tun == null)
-                    throw new BackendException(Reason.TUN_CREATION_ERROR);
-                // Live port, not dnsDetails.getControlDPort(): that value is snapshotted during
-                // profile creation, before ctrld picks the port it actually listens on.
-                tunnelWrapper = new VPNTunnelWrapper(tun, service, service.getControlDPort(), service.shouldEnablePacketLogging());
-                tunnelWrapper.start();
-                ParcelFileDescriptor wrappedTun = tunnelWrapper.getParcelDescriptor();
-                Log.d(TAG, "Go backend " + wgVersion());
-                currentTunnelHandle = wgTurnOn(tunnel.getName(), wrappedTun.detachFd(), goConfig, true);
-            } else {
-                try (final ParcelFileDescriptor tun = builder.establish()) {
-                    if (tun == null)
-                        throw new BackendException(Reason.TUN_CREATION_ERROR);
-                    Log.d(TAG, "Go backend " + wgVersion());
-                    currentTunnelHandle = wgTurnOn(tunnel.getName(), tun.detachFd(), goConfig, false);
-                }
-            }
+            Log.d(TAG, "Go backend " + wgVersion());
+            currentTunnelHandle = wgTurnOn(tunnel.getName(), tunFd, goConfig, tunHandle.isCustomTun());
 
             if (currentTunnelHandle < 0)
                 throw new BackendException(Reason.GO_ACTIVATION_ERROR_CODE, currentTunnelHandle);
@@ -380,8 +350,10 @@ public final class GoBackend implements Backend {
             currentTunnel = tunnel;
             currentConfig = config;
 
-            service.protect(wgGetSocketV4(currentTunnelHandle));
-            service.protect(wgGetSocketV6(currentTunnelHandle));
+            // Once per session. DisableSomeRoamingForBrokenMobileSemantics() means the UDP bind
+            // is never rebuilt, so these do not need repeating on a roam.
+            tunHandle.protect(wgGetSocketV4(currentTunnelHandle));
+            tunHandle.protect(wgGetSocketV6(currentTunnelHandle));
         } else {
             if (currentTunnelHandle == -1) {
                 Log.w(TAG, "Tunnel already down");
@@ -391,123 +363,32 @@ public final class GoBackend implements Backend {
             currentTunnel = null;
             currentTunnelHandle = -1;
             currentConfig = null;
+            // Nothing else to do. The service is not ours to stop and the TUN is not ours to
+            // close — both outlive this engine by design.
             wgTurnOff(handleToClose);
-            try {
-                vpnService.get(0, TimeUnit.NANOSECONDS).stopSelf();
-            } catch (final TimeoutException ignored) { }
-            if (tunnelWrapper!= null){
-                tunnelWrapper.stop();
-            }
         }
 
         tunnel.onStateChange(state);
     }
 
     /**
-     * Callback for {@link GoBackend} that is invoked when {@link VpnService} is started by the
-     * system's Always-On VPN mode.
+     * Forces the tunnel down without going through {@link #setState}. Used when the session is
+     * ending abruptly — a revoked VPN consent, or the owning service being destroyed — where there
+     * is no point negotiating state.
      */
-    public interface AlwaysOnCallback {
-        void alwaysOnTriggered();
-    }
-
-    // TODO: When we finally drop API 21 and move to API 24, delete this and replace with the ordinary CompletableFuture.
-    private static final class GhettoCompletableFuture<V> {
-        private final LinkedBlockingQueue<V> completion = new LinkedBlockingQueue<>(1);
-        private final FutureTask<V> result = new FutureTask<>(completion::peek);
-
-        public boolean complete(final V value) {
-            final boolean offered = completion.offer(value);
-            if (offered)
-                result.run();
-            return offered;
-        }
-
-        public V get() throws ExecutionException, InterruptedException {
-            return result.get();
-        }
-
-        public V get(final long timeout, final TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
-            return result.get(timeout, unit);
-        }
-
-        public boolean isDone() {
-            return !completion.isEmpty();
-        }
-
-        public GhettoCompletableFuture<V> newIncompleteFuture() {
-            return new GhettoCompletableFuture<>();
-        }
-    }
-
-    /**
-     * {@link android.net.VpnService} implementation for {@link GoBackend}
-     */
-    public static class VpnService extends android.net.VpnService {
-        @Nullable private GoBackend owner;
-
-        @Nullable
-        public DNSDetails getDnsDetails() {
-            return null;
-        }
-
-        /**
-         * Port ctrld is listening on. Subclasses MUST override: the port is chosen at random per
-         * connection, so this placeholder is never the live value.
-         */
-        public int getControlDPort() {
-            return 5355;
-        }
-
-        public boolean shouldEnablePacketLogging() {
-            return false;
-        }
-
-        public Builder getBuilder() {
-            return new Builder();
-        }
-
-        protected void applyExcludedRoutes(Builder builder) {
-        }
-
-        @Override
-        public void onCreate() {
-            vpnService.complete(this);
-            super.onCreate();
-        }
-
-        @Override
-        public void onDestroy() {
-            if (owner != null) {
-                synchronized (owner.tunnelStateLock) {
-                    final Tunnel tunnel = owner.currentTunnel;
-                    if (tunnel != null) {
-                        if (owner.currentTunnelHandle != -1)
-                            wgTurnOff(owner.currentTunnelHandle);
-                        owner.currentTunnel = null;
-                        owner.currentTunnelHandle = -1;
-                        owner.currentConfig = null;
-                        tunnel.onStateChange(State.DOWN);
-                    }
-                }
+    public void forceDown() {
+        synchronized (tunnelStateLock) {
+            final Tunnel tunnel = currentTunnel;
+            if (tunnel == null) {
+                return;
             }
-            vpnService = vpnService.newIncompleteFuture();
-            super.onDestroy();
-        }
-
-        @Override
-        public int onStartCommand(@Nullable final Intent intent, final int flags, final int startId) {
-            vpnService.complete(this);
-            if (intent == null || intent.getComponent() == null || !intent.getComponent().getPackageName().equals(getPackageName())) {
-                Log.d(TAG, "Service started by Always-on VPN feature");
-                if (alwaysOnCallback != null)
-                    alwaysOnCallback.alwaysOnTriggered();
+            if (currentTunnelHandle != -1) {
+                wgTurnOff(currentTunnelHandle);
             }
-            return super.onStartCommand(intent, flags, startId);
-        }
-
-        public void setOwner(final GoBackend owner) {
-            this.owner = owner;
+            currentTunnel = null;
+            currentTunnelHandle = -1;
+            currentConfig = null;
+            tunnel.onStateChange(State.DOWN);
         }
     }
 }

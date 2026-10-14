@@ -5,27 +5,26 @@
 package com.windscribe.vpn.backend.openvpn
 
 import android.content.Intent
-import android.os.Build
-import com.windscribe.vpn.Windscribe
+import com.windscribe.common.tunnel.TunnelManager
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
-import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
+import com.windscribe.vpn.backend.tunnel.VpnServiceGate
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.wsnet.WSNetWrapper
-import com.wireguard.android.backend.GoBackend
 import de.blinkt.openvpn.core.ConnectionStatus
-import de.blinkt.openvpn.core.OpenVPNService
+import de.blinkt.openvpn.core.LogItem
 import de.blinkt.openvpn.core.VpnStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -42,7 +41,6 @@ import javax.inject.Singleton
 class OpenVPNBackend
     @Inject
     constructor(
-        var backend: GoBackend,
         var scope: CoroutineScope,
         var networkInfoManager: NetworkInfoManager,
         vpnStateManager: VPNConnectionStateManager,
@@ -53,6 +51,8 @@ class OpenVPNBackend
         localDbInterface: LocalDbInterface,
         wsNetWrapper: WSNetWrapper,
         resourceHelper: ResourceHelper,
+        private val tunnelManager: TunnelManager,
+        serviceGate: VpnServiceGate,
     ) : VpnBackend(
             scope,
             vpnStateManager,
@@ -63,36 +63,137 @@ class OpenVPNBackend
             localDbInterface,
             wsNetWrapper,
             resourceHelper,
+            serviceGate,
+            proxyDNSManager,
         ),
         VpnStatus.StateListener,
         VpnStatus.ByteCountListener {
         override var active = false
         private var stickyDisconnectEvent = false
         private val openVPNLogger = LoggerFactory.getLogger("openvpn")
-        var service: OpenVPNWrapperService? = null
         private var connectionStateJob: Job? = null
+        private var noReplyJob: Job? = null
+
+        /**
+         * Whether the server has said anything at all on this attempt. Sticky rather than
+         * cancelling [noReplyJob]: one backend serves udp, tcp, stunnel and wstunnel, and the
+         * outgoing native process keeps reporting after the incoming one starts.
+         */
+        private var serverReplied = false
+
+        @Volatile
+        private var lastLoggedStatus: ConnectionStatus? = null
+
         private val openVpnTunnel = OpenVpnTunnel()
         private val logListener: VpnStatus.LogListener =
-            VpnStatus.LogListener {
-                if (it.logLevel == VpnStatus.LogLevel.INFO || it.logLevel == VpnStatus.LogLevel.ERROR) {
-                    openVPNLogger.debug(it.toString())
+            VpnStatus.LogListener { item ->
+                val text = item.text()
+                if (!isBuildConstantChatter(text)) {
+                    when (item.logLevel) {
+                        // An engine already asked to exit reports on a config it no longer holds.
+                        // Kept at debug rather than dropped, so the line is still in the file.
+                        VpnStatus.LogLevel.ERROR ->
+                            if (disconnecting) openVPNLogger.debug(text) else openVPNLogger.error(text)
+                        VpnStatus.LogLevel.WARNING -> openVPNLogger.warn(text)
+                        VpnStatus.LogLevel.INFO ->
+                            if (!isCertificateSuccessChatter(text)) openVPNLogger.debug(text)
+                        else -> {}
+                    }
                 }
             }
 
-        fun serviceCreated(openVPNWrapperService: OpenVPNWrapperService) {
-            vpnLogger.info("OpenVPN service created.")
-            service = openVPNWrapperService
-        }
+        /** Fixed for a given build, so the header's version code already carries it. */
+        private fun isBuildConstantChatter(text: String): Boolean =
+            text.startsWith("library versions:") ||
+                text.startsWith("Note: Treating option") ||
+                text.startsWith("Note: --cipher is not set") ||
+                text.startsWith("DEPRECATED: --persist-key option ignored") ||
+                text.startsWith("WARNING: this configuration may cache passwords in memory") ||
+                text.startsWith("WARNING: OpenVPN was configured to add an IPv6 route") ||
+                text.contains("linker: Warning:")
 
-        fun serviceDestroyed() {
-            vpnLogger.info("OpenVPN service destroyed.")
-            service = null
-        }
+        /** The success path: six lines per connect. A failure prints VERIFY ERROR, matched by none. */
+        private fun isCertificateSuccessChatter(text: String): Boolean =
+            text.startsWith("VERIFY OK:") ||
+                text.startsWith("VERIFY KU OK") ||
+                text.startsWith("VERIFY EKU OK") ||
+                text.startsWith("VERIFY X509NAME OK") ||
+                text.startsWith("Validating certificate extended key usage") ||
+                text.startsWith("++ Certificate has EKU")
+
+        /**
+         * Not [LogItem.toString], which passes a null context and yields "resid 2131951829". Falls
+         * back to it when resource and arguments disagree, rather than throwing on a native thread.
+         */
+        private fun LogItem.text(): String = runCatching { getString(appContext) }.getOrElse { toString() }
 
         fun getTunnel() = openVpnTunnel
 
+        /** OpenVPN's own connection status, reported directly by the engine. */
+        fun onEngineStatus(status: ConnectionStatus) {
+            // Only the log line is dropped: the engine re-reports a level it is already on.
+            if (status != lastLoggedStatus) {
+                lastLoggedStatus = status
+                vpnLogger.debug("OpenVPN state changed: $status")
+            }
+            trackServerReply(status)
+            openVpnTunnel.onConnectionStatusChange(status)?.let { tunnelState ->
+                openVpnTunnel.onStateChange(tunnelState)
+            }
+        }
+
+        /**
+         * Fails the attempt early while the server is still silent, reading the raw status before
+         * [OpenVpnTunnel] folds `WAIT`/`TCP_CONNECT` and `AUTH`/`GET_CONFIG` into one `CONNECTING`.
+         *
+         * Only before the tunnel is up: a mid-session reconnect would lose a working connection.
+         */
+        private fun trackServerReply(status: ConnectionStatus) {
+            when (status) {
+                ConnectionStatus.LEVEL_CONNECTING_NO_SERVER_REPLY_YET -> {
+                    val established =
+                        serverReplied ||
+                            reconnecting ||
+                            stateManager.state.value.status == VPNState.Status.Connected
+                    if (!established && noReplyJob?.isActive != true) {
+                        noReplyJob =
+                            scope.launch {
+                                delay(NO_SERVER_REPLY_WAIT)
+                                // Cleared before the disconnect, so that disconnect()'s own
+                                // cancelNoReplyDeadline() cannot land on the coroutine running it.
+                                noReplyJob = null
+                                vpnLogger.error(
+                                    "No reply from the server in ${NO_SERVER_REPLY_WAIT / 1000}s.",
+                                )
+                                disconnect(
+                                    VPNState.Error(
+                                        VPNState.ErrorType.TimeoutError,
+                                        "connection timeout",
+                                    ),
+                                )
+                            }
+                    }
+                }
+
+                ConnectionStatus.LEVEL_CONNECTING_SERVER_REPLIED,
+                ConnectionStatus.LEVEL_CONNECTED,
+                -> {
+                    serverReplied = true
+                    cancelNoReplyDeadline()
+                }
+
+                else -> Unit
+            }
+        }
+
+        private fun cancelNoReplyDeadline() {
+            noReplyJob?.cancel()
+            noReplyJob = null
+        }
+
         override fun activate() {
             stickyDisconnectEvent = true
+            lastLoggedStatus = null
             vpnLogger.info("Activating OpenVPN backend.")
 
             connectionStateJob =
@@ -107,17 +208,22 @@ class OpenVPNBackend
                             }
 
                             OpenVpnTunnel.State.CONNECTING -> {
-                                if (stateManager.state.value.status == VPNState.Status.Connected) {
+                                if (disconnecting || stateManager.state.value.status == VPNState.Status.Connected) {
                                     return@collectLatest
                                 }
-                                stickyDisconnectEvent = false
+                                // Deliberately does NOT clear stickyDisconnectEvent — see CONNECTED.
                                 updateState(VPNState(Connecting))
                             }
 
                             OpenVpnTunnel.State.CONNECTED -> {
-                                if (stateManager.state.value.status == VPNState.Status.Connected) {
+                                if (disconnecting || stateManager.state.value.status == VPNState.Status.Connected) {
                                     return@collectLatest
                                 }
+                                // Cleared here and nowhere else. One OpenVPNBackend serves udp, tcp,
+                                // stunnel and wstunnel, so the outgoing native process is still dying
+                                // when the next one starts and its LEVEL_NOTCONNECTED lands on the
+                                // live attempt. A DOWN before the tunnel is up is therefore ignored;
+                                // a failed connect is the connectionJob timeout's job.
                                 stickyDisconnectEvent = false
                                 testConnectivity()
                             }
@@ -156,6 +262,7 @@ class OpenVPNBackend
         }
 
         override fun deactivate() {
+            cancelNoReplyDeadline()
             connectionStateJob?.cancel()
             VpnStatus.removeLogListener(logListener)
             VpnStatus.removeStateListener(this)
@@ -172,24 +279,32 @@ class OpenVPNBackend
             this.protocolInformation = protocolInformation
             this.connectionId = connectionId
             vpnLogger.info("Starting Open VPN Service.")
+            serverReplied = false
+            cancelNoReplyDeadline()
             startConnectionJob()
-            scope.launch {
-                try {
-                    proxyDNSManager.startControlDIfRequired()
-                } catch (e: Exception) {
-                    // Fail closed: without a confirmed DNS proxy this connection would leak or
-                    // blackhole every app's DNS. Surface it instead of connecting regardless.
-                    vpnLogger.error("DNS proxy failed to start. Aborting connection.", e)
-                    disconnect(
-                        VPNState.Error(
-                            error = VPNState.ErrorType.GenericError,
-                            message = "DNS proxy failed to start.",
-                            showError = true,
+            launchEngineStart {
+                runConnect("OpenVPN", tunnelManager) {
+                    // OpenVPN's interface config is server-pushed, so nothing is known yet. The
+                    // session holds the live TUN if there is one, and the engine calls
+                    // host.requestTun() from openTun() once the push arrives.
+                    EnginePlan(
+                        OpenVpnEngineProfile(),
+                        provisionalTunConfig(
+                            blackholeAddress = "10.255.255.1",
+                            // Stealth and WStunnel run a local proxy whose upstream socket is created
+                            // AND connected by WSTunnelLib (Go); ProxyTunnelManager can only protect
+                            // it afterwards by polling socketFd(). Excluding our package for the
+                            // negotiation window sidesteps that race. Plain UDP/TCP protect their own
+                            // socket through the management channel before connecting, so they pay
+                            // nothing. See §12.7.6.
+                            excludeSelf =
+                                protocolInformation?.protocol.let {
+                                    it == PreferencesKeyConstants.PROTO_STEALTH ||
+                                        it == PreferencesKeyConstants.PROTO_WS_TUNNEL
+                                },
                         ),
                     )
-                    return@launch
                 }
-                startOpenVPN(null)
             }
         }
 
@@ -198,41 +313,12 @@ class OpenVPNBackend
             if (proxyDNSManager.invalidConfig) {
                 proxyDNSManager.stopControlD()
             }
-            if (active) {
-                vpnLogger.info("Stopping OpenVPN Service.")
-                connectionJob?.cancel()
-                service?.stopVPN()
-                delay(20)
-                service?.close()
-                delay(DISCONNECT_DELAY)
-                deactivate()
-            }
-        }
-
-        private fun startOpenVPN(action: String?) {
-            val ovpnService = Intent(Windscribe.appContext, OpenVPNWrapperService::class.java)
-            if (action != null) {
-                vpnLogger.info("Sending stop event to OpenVPN service")
-                ovpnService.action = action
-            } else {
-                vpnLogger.info("Sending start event to OpenVPN service")
-            }
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    Windscribe.appContext.startForegroundService(ovpnService)
-                } else {
-                    Windscribe.appContext.startService(ovpnService)
-                }
-            } catch (e: Exception) {
-                vpnLogger.error("Failed to start OpenVPN service: ${e.message}")
-                scope.launch {
-                    disconnect(
-                        VPNState.Error(
-                            error = VPNState.ErrorType.GenericError,
-                            message = "Failed to start VPN service: ${e.message}",
-                        ),
-                    )
-                }
+            cancelNoReplyDeadline()
+            connectionJob?.cancel()
+            // Unconditional, as WireGuard and IKEv2 are: runDisconnect is the only thing that
+            // resolves the hold, publishes the terminal state and ends the session.
+            runDisconnect("OpenVPN", tunnelManager, error) {
+                openVpnTunnel.onStateChange(OpenVpnTunnel.State.DOWN)
             }
         }
 
@@ -255,11 +341,17 @@ class OpenVPNBackend
         override fun setConnectedVPN(uuid: String?) {
         }
 
-        fun protect(fd: Int): Boolean = service?.protect(fd) ?: false
+        fun protect(fd: Int): Boolean = serviceGate.current?.protect(fd) == true
 
         override fun handleNetworkChange() {
             if (active) {
-                (service as? OpenVPNService)?.getmDeviceStateReceiver()?.networkStateChange(appContext)
+                engineCore?.getmDeviceStateReceiver()?.networkStateChange(appContext)
             }
         }
+
+        /**
+         * The live engine core, for the one thing that still needs to reach into it: telling
+         * OpenVPN's DeviceStateReceiver that the network moved.
+         */
+        var engineCore: WindscribeOpenVpnService? = null
     }

@@ -70,9 +70,8 @@ class SplashPresenterImpl
                             withContext(Dispatchers.Main) {
                                 when (result) {
                                     is CallResult.Success -> {
-                                        logger.info("Recording app install success. ${result.data}")
-                                        preferencesHelper.isNewApplicationInstance = false
-                                        preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
+                                        logger.info("Recording app install success.")
+                                        preferencesHelper.markInstallRecorded()
                                     }
 
                                     is CallResult.Error -> {

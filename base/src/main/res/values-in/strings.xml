@@ -2,18 +2,18 @@
 <resources>
     <string name="username_empty">Nama pengguna kosong!</string>
     <string name="password_empty">Kata sandi kosong!</string>
-    <string name="enter_username">Silakan masukkan nama pengguna Anda!</string>
-    <string name="enter_password">Silakan masukkan kata sandi Anda!</string>
+    <string name="enter_username">Masukkan nama pengguna</string>
+    <string name="enter_password">Masukkan kata sandi</string>
     <string name="password_too_short">Terlalu pendek!</string>
     <string name="login_credential_error">Ada yang salah dengan nama pengguna atau kata sandi Anda :(</string>
     <string name="sign_out">Keluar</string>
     <string name="username">Nama pengguna</string>
     <string name="password">Kata sandi</string>
     <string name="login_with_username">Tidak ada karakter khusus atau email yang diizinkan di bidang nama pengguna.</string>
-    <string name="weak_password">Kata Sandi Anda harus berisi setidaknya satu huruf besar dan huruf kecil.</string>
-    <string name="small_password">Kata sandi Anda harus minimal 8 karakter.</string>
+    <string name="weak_password">Kata sandi Anda harus memuat setidaknya satu huruf besar dan satu huruf kecil (mis. \"Hello1234\", \"Solyanka\").</string>
+    <string name="small_password">Kata sandi Anda harus minimal 8 karakter (mis. \"Hello1234\", \"Solyanka\").</string>
     <string name="common_password">Kata sandi yang Anda masukkan sering digunakan dan tidak aman.</string>
-    <string name="password_requirement">8 karakter atau lebih dengan setidaknya satu huruf besar dan huruf kecil</string>
+    <string name="password_requirement">8 karakter atau lebih dengan setidaknya satu huruf besar dan satu huruf kecil (mis. \"Hello1234\", \"Solyanka\").</string>
     <string name="failed_network_alert">Anda tampaknya berada di jaringan yang sangat terbatas yang memblokir Windscribe. Silakan gunakan fitur "Emergency Connect" di layar utama lalu coba daftar atau masuk lagi. Jika tidak berhasil, silakan hubungi kami.</string>
     <string name="failed_network_title">Jaringan Restriktif Terdeteksi</string>
     <string name="fa_required_error">Kode 2FA diperlukan</string>
@@ -100,14 +100,14 @@
     <string name="fake_traffic_volume">Volume Lalu Lintas Palsu</string>
     <string name="potential_data_use">Perkiraan Penggunaan Data</string>
     <string name="plan_pro">Pro</string>
-    <string name="a_la_carte_unlimited_plan">Tak Terbatas</string>
+    <string name="a_la_carte_unlimited_plan">Tanpa batas à la carte</string>
     <string name="expiry_date">Tanggal kadaluwarsa</string>
     <string name="reset_date">Tanggal Reset</string>
     <string name="gb_per_month"> GB/Bulan</string>
     <string name="my_account">Rekening</string>
     <string name="cancel">Membatalkan</string>
     <string name="edit_account">Kelola Akun</string>
-    <string name="info">INFORMASI</string>
+    <string name="info">INFO AKUN</string>
     <string name="plan">RENCANA</string>
     <string name="please_login">Silakan login terlebih dahulu untuk terhubung!</string>
     <string name="please_login_to_see_account_details">Daftar atau Masuk untuk melihat detail akun Anda dan menjaga preferensi Anda.</string>
@@ -129,7 +129,7 @@
     <string name="state_assign_ip">Menetapkan alamat IP</string>
     <string name="state_add_routes">Menambahkan rute</string>
     <string name="state_connected">Terhubung</string>
-    <string name="state_disconnected">Lepaskan</string>
+    <string name="state_disconnected">Putuskan</string>
     <string name="state_reconnecting">Menghubungkan kembali</string>
     <string name="state_exiting">Keluar</string>
     <string name="state_noprocess">Tidak berjalan</string>
@@ -146,12 +146,9 @@
     <string name="rate_message">Apakah Anda menikmati Windscribe? Tentu saja. Beri kami nilai di Play Store, dan kami akan mencintaimu sejak lama.</string>
     <string name="gps_spoofing_explain">Fitur ini mengharuskan Anda untuk mengubah pengaturan android Anda. Silakan ikuti beberapa langkah selanjutnya untuk mengaktifkannya.</string>
     <string name="let_s_do_it">Ayo lakukan</string>
-    <string name="unlock_developer_mode">Buka Opsi Pengembang</string>
-    <string name="unlock_developer_mode_explain">Buka Pengaturan dan cari bagian \"Tentang Telepon\".  Temukan nomor build di dalam \"Info perangkat lunak\" dan ketuk 7 kali.</string>
     <string name="open_settings">Buka Pengaturan</string>
-    <string name="add_to_mock_location">Pilih Aplikasi Lokasi Mock</string>
-    <string name="add_to_mock_location_explain">Setelah tidak terkunci, buka \"Opsi Pengembang\" di Pengaturan.  Di bawah \"Debugging\" pilih Windscribe sebagai \"Aplikasi lokasi tiruan\".</string>
-    <string name="add_to_mock_location_explain_android_12">Setelah tidak terkunci, buka \"Opsi Pengembang\" di Pengaturan.  Di bawah \"Lokasi\" pilih Windscribe sebagai \"Aplikasi lokasi tiruan\".</string>
+    <string name="gps_spoofing_setup">Siapkan GPS Spoofing</string>
+    <string name="gps_spoofing_setup_explain">1. Buka Setelan, cari “Tentang ponsel”, lalu ketuk nomor build 7 kali untuk membuka “Opsi developer”.\n\n2. Di “Opsi developer”, pilih Windscribe sebagai “Aplikasi lokasi tiruan”.</string>
     <string name="you_are_done">Selesai!</string>
     <string name="gps_spoofing_success">Lokasi GPS Anda akan sama dengan lokasi VPN Anda.</string>
     <string name="gps_spoofing_not_set">Tidak dapat mengaktifkan GPS Spoofing</string>
@@ -159,7 +156,7 @@
     <string name="add_email">Tambahkan Email</string>
     <string name="unlimited_data">Data Tidak Terbatas</string>
     <string name="preferences">Preferensi</string>
-    <string name="optional">(Opsional)</string>
+    <string name="optional">Opsional</string>
     <string name="get_10_gb">Dapatkan 10GB/ Bulan</string>
     <string name="plans">Rencana</string>
     <string name="pro">Pro</string>
@@ -235,7 +232,7 @@
     <string name="forget_network">Lupakan jaringan</string>
     <string name="network_secured">Aman</string>
     <string name="network_unsecured">Tidak aman</string>
-    <string name="preferred_protocol_description">Pilih protokol default untuk jaringan ini jika Anda mengalami masalah saat menghubungkan</string>
+    <string name="preferred_protocol_description">Windscribe akan selalu menggunakan protokol ini untuk tersambung di jaringan ini. Ini menggantikan preferensi koneksi global.</string>
     <string name="unknown">Jaringan tidak dikenal</string>
     <string name="loading_network_list">Memuat daftar jaringan\nHarap tunggu...</string>
     <string name="no_saved_network_list">Tidak ada daftar jaringan yang disimpan!</string>
@@ -256,7 +253,7 @@
     <string name="knowledge_base">Basis Pengetahuan</string>
     <string name="knowledge_base_description">Semua yang perlu Anda ketahui tentang Windscribe.</string>
     <string name="talk_to_garry">Bicaralah dengan Garry</string>
-    <string name="talk_to_garry_description">Bukan Siri pintar tapi masih bisa menjawab pertanyaan.</string>
+    <string name="talk_to_garry_description">Butuh bantuan? Garry bisa membantu sebagian besar masalah Anda, ajak dia bicara.</string>
     <string name="contact_humans">Hubungi \"manusia\"</string>
     <string name="contact_humans_description">Punya masalah yang tidak bisa diselesaikan Garry? Masalah seperti itu tidak ada.</string>
     <string name="community_support">Dukungan Komunitas</string>
@@ -346,7 +343,7 @@
     <string name="Error">Kesalahan</string>
     <string name="text_account_set_up">Tandatangan</string>
     <string name="xpress_login">Login Malas</string>
-    <string name="scan_lazy_login_qr_code">Pindai kode QR ini dengan ponsel Anda untuk masuk.</string>
+    <string name="scan_lazy_login_qr_code">Pindai kode QR ini</string>
     <string name="web_login_description">Pindai kode QR atau masukkan kode di aplikasi seluler Windscribe di <b>Account → Lazy Login</b>.</string>
     <string name="app_login_manual_entry">Masukkan di aplikasi seluler di <b>Account → Lazy Login</b></string>
     <string name="or">ATAU</string>
@@ -388,9 +385,9 @@ Lokasi terakhir yang dipilih.</string>
     <string name="latency_display_description">Menampilkan latensi sebagai bilah kekuatan sinyal atau dalam milidetik.</string>
     <string name="language_description">Melokalkan Windscribe ke bahasa yang didukung.</string>
     <string name="notification_stats_description">Tampilkan statistik lalu lintas di notifikasi.</string>
-    <string name="location_load_description">Menampilkan beban lokasi sebagai bilah. Semakin pendek bar, semakin rendah beban di lokasi (sehubungan dengan kapasitas total lokasi).</string>
+    <string name="location_load_description">Menampilkan beban sebuah lokasi. Busur lingkaran yang lebih kecil berarti beban (penggunaan) lebih rendah.</string>
     <string name="haptic_feedback_description">Respons fisik (Getaran) terhadap tindakan pengguna</string>
-    <string name="connection_mode_description">Pilih apakah akan membiarkan Windscribe secara otomatis memilih kombinasi protokol / port yang paling optimal untuk pengaturan Anda, atau melakukannya sendiri secara manual.</string>
+    <string name="connection_mode_description">Pilih protokol VPN secara otomatis, atau pilih satu secara manual. CATATAN: \"Protokol Pilihan\" akan menggantikan pengaturan ini.</string>
     <string name="packet_size_description">Pilih apakah akan membiarkan Windscribe memutuskan MTU untuk koneksi Anda, atau mengganti secara manual.</string>
     <string name="allow_lan_description">Pilih apakah akan mengizinkan akses ke sumber daya di jaringan yang sama (seperti server file, printer, kotak media, dll.) saat terhubung ke Windscribe.</string>
     <string name="keep_alive_description">Mengirim paket keepalive NAT secara teratur ke peer-nya untuk menjaga sesi NAT tetap hidup, sehingga peer dapat mengakses perangkat (Hanya IKEv2)</string>
@@ -482,7 +479,7 @@ Lokasi terakhir yang dipilih.</string>
     <string name="anti_censorship">Hindari Sensor</string>
     <string name="anti_censorship_explainer">Hubungkan ke VPN bahkan di lingkungan yang tidak bersahabat</string>
     <string name="auto_connect">Hubungkan Otomatis</string>
-    <string name="auto_connect_explainer">Terhubung ke lokasi yang terakhir digunakan saat aplikasi diluncurkan atau bergabung dengan jaringan.</string>
+    <string name="auto_connect_explainer">Menyambung ke lokasi terakhir Anda di jaringan mana pun yang tidak Anda kecualikan, dan memblokir internet Anda jika tidak dapat tersambung. Pemblokiran hanya terjadi saat koneksi gagal — tidak pernah saat Anda memutus sambungan atau menjeda.</string>
     <string name="save">Simpan</string>
     <string name="clear">Jelas</string>
     <string name="enter_1_key_value_per_line">Masukkan 1 kunci=nilai per baris.</string>
@@ -563,7 +560,7 @@ Lokasi terakhir yang dipilih.</string>
     <string name="power_whitelist_title">Nonaktifkan Optimasi Baterai</string>
     <string name="power_whitelist_summary">Untuk menjaga koneksi stabil, hapus Windscribe dari pengaturan optimasi baterai. Ini akan memastikan layanan tanpa gangguan untuk koneksi IKEv2.</string>
     <string name="never_aks_again_for_permission">Jangan tanya lagi</string>
-    <string name="slide_puzzle_piece_into_place">Geser potongan puzzle kiri ke tempatnya</string>
+    <string name="slide_puzzle_piece_into_place">Geser gambar kiri ke lubang di kanan</string>
     <string name="complete_puzzle_to_continue">Selesaikan puzzle untuk melanjutkan</string>
     <string name="none">Tidak ada</string>
     <string name="free">Gratis</string>
@@ -608,7 +605,7 @@ Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas
     <string name="ipv6_mode_description">Pilih versi IP mana yang akan digunakan untuk koneksi VPN.</string>
     <string name="ip_stack">Tumpukan IP</string>
     <string name="ip_stack_description">Konfigurasi tumpukan IP untuk koneksi VPN.</string>
-    <string name="egress">Egress (WireGuard only)</string>
+    <string name="egress">Keluar (hanya WireGuard)</string>
     <string name="ingress">Masuk</string>
     <string name="ipv4_only">Hanya IPv4</string>
     <string name="manual_connection_mode_failed_title">Mode koneksi manual gagal</string>
@@ -692,4 +689,32 @@ Untuk keamanan maksimal, hindari menggunakan perangkat ini di jaringan yang tida
     <string name="accessibility_status_connecting">Menghubungkan</string>
     <string name="accessibility_status_disconnected">Terputus</string>
 
+    <string name="notification_paused">Dijeda — lalu lintas Anda tidak terlindungi</string>
+    <string name="notification_waiting_for_secured">Menunggu jaringan yang diamankan</string>
+    <string name="notification_stood_down">Sambung otomatis nonaktif untuk jaringan ini</string>
+    <string name="notification_stood_down_on">Sambung otomatis nonaktif untuk %1$s</string>
+    <string name="notification_action_pause">Jeda</string>
+    <string name="notification_action_resume">Lanjutkan</string>
+    <string name="notification_action_connect">Sambungkan</string>
+    <string name="notification_action_turn_off">Matikan</string>
+    <string name="accessibility_status_paused">Dijeda, lalu lintas Anda tidak terlindungi</string>
+    <string name="accessibility_status_blocked">Diblokir, internet Anda mati sampai Anda mematikan Windscribe</string>
+    <string name="notification_account_banned">Akun diblokir — matikan Windscribe untuk memulihkan internet</string>
+    <string name="notification_account_expired">Akun kedaluwarsa — matikan Windscribe untuk memulihkan internet, lalu tingkatkan paket</string>
+    <string name="notification_action_retry">Coba lagi</string>
+    <string name="notification_awaiting_session">Menunggu pembaruan sesi</string>
+    <string name="notification_blocked">Tidak dapat tersambung — lalu lintas diblokir</string>
+    <string name="notification_config_auth_failed">Autentikasi gagal — periksa konfigurasi Anda</string>
+    <string name="notification_failed">Tidak dapat tersambung di jaringan ini</string>
+    <string name="notification_failed_to">Tidak dapat tersambung ke %1$s</string>
+    <string name="notification_no_network">Tidak ada jaringan — tidak ada koneksi yang bisa dipakai</string>
+    <string name="notification_opted_out">Pengamanan otomatis nonaktif untuk jaringan ini</string>
+    <string name="notification_opted_out_on">Pengamanan otomatis nonaktif untuk %1$s</string>
+    <string name="notification_protocol_switch">Menunggu pergantian protokol</string>
+    <string name="notification_reconnecting">Menyambungkan ulang</string>
+    <string name="notification_reconnecting_to">Menyambungkan ulang ke %1$s</string>
+    <string name="manual_enter_code">Atau masukkan kode ini secara manual:</string>
+    <string name="qr_generation_failed">Gagal membuat kode QR</string>
+    <string name="subscription_payment_issue">Masalah pembayaran langganan</string>
+    <string name="subscription_payment_issue_description">Pembayaran langganan Anda perlu diperiksa. Buka Google Play untuk meninjau metode pembayaran Anda.</string>
 </resources>

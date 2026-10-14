@@ -2,7 +2,8 @@ package com.windscribe.vpn.debug
 
 import android.os.Handler
 import android.os.Looper
-import org.slf4j.LoggerFactory
+import android.util.Log
+import com.windscribe.vpn.BuildConfig
 
 /**
  * Watchdog that monitors the main thread for blocking operations.
@@ -18,13 +19,29 @@ class MainThreadWatchdog(
     private val sampleIntervalMs: Long = 50,
     private val delayStartMs: Long = 2000,
 ) {
-    private val logger = LoggerFactory.getLogger("app")
+    /**
+     * logcat, not the app log. This is a development tool, and the app log is what users attach to a
+     * bug report — where a stall trace is noise nobody asked for.
+     */
+    private val tag = "main-thread-watchdog"
     private var watchdogThread: Thread? = null
     private var isRunning = false
 
+    /** Stops one long stall from producing a report every sample interval. */
+    private val quietPeriodMs = 2_000L
+
+    @Volatile
+    private var lastReportAt = 0L
+
     fun start() {
+        // Belt and braces: this holds a thread and posts a 16ms ticker to the main looper, so it
+        // must not run in a shipped build even if some future call site forgets to guard. Note
+        // BuildConfig.DEV is NOT sufficient here - CI builds a signed release with DEV=true.
+        if (!BuildConfig.DEBUG) {
+            return
+        }
         if (isRunning) {
-            logger.warn("Watchdog already running")
+            Log.w(tag, "Watchdog already running")
             return
         }
 
@@ -54,23 +71,27 @@ class MainThreadWatchdog(
                         val hasBlockingAppCode = detectBlockingAppCode(filteredStack)
                         val hasComposeFramework = detectComposeFramework(filteredStack)
 
-                        if (filteredStack.isNotEmpty() && hasBlockingAppCode && !hasComposeFramework) {
+                        // Needs a frame we can act on: ours, or Compose. Anything else is almost
+                        // always the device asleep — the ticker stops running, so the gap grows
+                        // without bound while the main thread's stack is the bare looper. Reporting
+                        // those buried the real stalls 80 to 1 and cost 90% of the log file.
+                        val actionable =
+                            filteredStack.any { it.className.startsWith("com.windscribe") } ||
+                                hasComposeFramework
+                        if (actionable && System.currentTimeMillis() - lastReportAt > quietPeriodMs) {
+                            lastReportAt = System.currentTimeMillis()
                             capturedStackTrace = filteredStack.toTypedArray()
-
-                            val stackTraceString = filteredStack.joinToString("\n") { "  at $it" }
-                            logger.error("Main thread BLOCKED for ${timeSinceLastTick}ms! Stack trace:\n$stackTraceString")
-
-                            // Post crash to main thread
-                            Handler(Looper.getMainLooper()).post {
-                                throw RuntimeException(
-                                    "Main thread blocked for ${timeSinceLastTick}ms!\n" +
-                                        "Stack trace shows what was blocking:\n" +
-                                        capturedStackTrace
-                                            .take(10)
-                                            .joinToString("\n") { "  at $it" },
-                                )
-                            }
-                            break
+                            val kind =
+                                when {
+                                    hasBlockingAppCode -> "blocking app code"
+                                    hasComposeFramework -> "Compose framework"
+                                    else -> "unclassified"
+                                }
+                            Log.w(
+                                tag,
+                                "MAIN THREAD STALLED ~${timeSinceLastTick}ms ($kind):\n" +
+                                    filteredStack.take(12).joinToString("\n") { "  at $it" },
+                            )
                         }
                     }
                 }
@@ -95,14 +116,14 @@ class MainThreadWatchdog(
             ticker.run()
         }, delayStartMs)
 
-        logger.info("MainThreadWatchdog started (threshold: ${thresholdMs}ms)")
+        Log.i(tag, "MainThreadWatchdog started (threshold: ${thresholdMs}ms)")
     }
 
     fun stop() {
         isRunning = false
         watchdogThread?.interrupt()
         watchdogThread = null
-        logger.info("MainThreadWatchdog stopped")
+        Log.i(tag, "MainThreadWatchdog stopped")
     }
 
     private fun filterFrameworkCode(stackTrace: Array<StackTraceElement>): List<StackTraceElement> =

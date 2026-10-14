@@ -4,22 +4,27 @@
 
 <configuration>
     <conversionRule conversionWord="lowerLevel" converterClass="com.windscribe.vpn.commonutils.LowerCaseLevelConverter"/>
+    <conversionRule conversionWord="cid" converterClass="com.windscribe.vpn.commonutils.ConnectionIdConverter"/>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- lazy initialization: don't create the file until 1st write -->
         <lazy>false</lazy>
-        <file>/data/user/0/com.windscribe.vpn/files/applog.txt</file>
+        <file>${DATA_DIR}/applog.txt</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>/data/user/0/com.windscribe.vpn/files/applog.%i.log.zip
-            </fileNamePattern>
+            <!-- DATA_DIR is the host application's files directory, which logback-android resolves
+                 through AppGlobals.getInitialApplication(). Hard-coding our own package broke a
+                 partner build of windscribe-core, and any secondary Android user. -->
+            <fileNamePattern>${DATA_DIR}/applog.%i.log.zip</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>1</maxIndex>
         </rollingPolicy>
         <triggeringPolicy class="com.windscribe.vpn.commonutils.SizeBasedTriggerForLog">
-            <maxFileSize>100KB</maxFileSize>
+            <!-- Ignored: SizeBasedTriggerForLog rolls on DEBUG_FILE_SIZE_LOWER instead. Kept in
+                 step with it so the two do not contradict each other. -->
+            <maxFileSize>1024KB</maxFileSize>
         </triggeringPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>
-                {"tm":"%d{yyyy-MM-dd HH:mm:ss.SSS}","lvl":"%lowerLevel","mod":"%logger{36}","msg":"%msg"}%n
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %-5lowerLevel [%replace(%thread){'DefaultDispatcher-', ''}] %logger{36}%cid - %msg%n
             </pattern>
         </encoder>
     </appender>
@@ -29,7 +34,7 @@
     <appender name="LOGCAT" class="ch.qos.logback.classic.android.LogcatAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>
-                {"tm":"%d{yyyy-MM-dd HH:mm:ss.SSS}","lvl":"%lowerLevel","mod":"%logger{36}","msg":"%msg"}%n
+                %-5lowerLevel [%replace(%thread){'DefaultDispatcher-', ''}] %logger{36}%cid - %msg%n
             </pattern>
         </encoder>
     </appender>

@@ -84,7 +84,12 @@ fun AppConnectButtonContent(
     }
     // Idle is only the state before the first connection update arrives, and it draws the off
     // button, so it is described as disconnected to match what is on screen.
-    val isOff = state is ConnectionUIState.Disconnected || state is ConnectionUIState.Idle
+    // Paused and Blocked have no tunnel, so the button reads and behaves as off.
+    val isOff =
+        state is ConnectionUIState.Disconnected ||
+            state is ConnectionUIState.Paused ||
+            state is ConnectionUIState.Blocked ||
+            state is ConnectionUIState.Idle
     val name = stringResource(com.windscribe.vpn.R.string.accessibility_vpn_connection)
     val actionLabel =
         stringResource(
@@ -100,6 +105,8 @@ fun AppConnectButtonContent(
                     stringResource(com.windscribe.vpn.R.string.accessibility_status_connected)
                 }
 
+            is ConnectionUIState.Paused -> stringResource(com.windscribe.vpn.R.string.accessibility_status_paused)
+            is ConnectionUIState.Blocked -> stringResource(com.windscribe.vpn.R.string.accessibility_status_blocked)
             else -> stringResource(com.windscribe.vpn.R.string.accessibility_status_disconnected)
         }
     Box(

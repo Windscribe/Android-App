@@ -11,6 +11,7 @@ import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.CONNECTION_MODE_AUTO
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_IKev2
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_STEALTH
@@ -20,6 +21,7 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
+import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -140,6 +142,7 @@ class ConnectionViewModelImpl
         val proxyDNSManager: ProxyDNSManager,
         val decoyTrafficController: DecoyTrafficController,
         val portMapRepository: PortMapRepository,
+        val vpnController: WindVpnController,
     ) : ConnectionViewModel() {
         private val _showProgress = MutableStateFlow(false)
         override val showProgress: StateFlow<Boolean> = _showProgress
@@ -191,11 +194,11 @@ class ConnectionViewModelImpl
             MutableStateFlow(
                 listOf(
                     DropDownStringItem(
-                        com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_AUTO,
+                        PreferencesKeyConstants.IPV6_MODE_AUTO,
                         "Auto",
                     ),
                     DropDownStringItem(
-                        com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY,
+                        PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY,
                         "IPv4 Only",
                     ),
                 ),
@@ -203,17 +206,17 @@ class ConnectionViewModelImpl
         override val ipStackEgressModes: StateFlow<List<DropDownStringItem>> = _ipStackEgressModes
 
         // Ingress mode (placeholder - not connected to preferences yet)
-        private val _ipStackIngressMode = MutableStateFlow(com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_AUTO)
+        private val _ipStackIngressMode = MutableStateFlow(PreferencesKeyConstants.IPV6_MODE_AUTO)
         override val ipStackIngressMode: StateFlow<String> = _ipStackIngressMode
         private val _ipStackIngressModes =
             MutableStateFlow(
                 listOf(
                     DropDownStringItem(
-                        com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_AUTO,
+                        PreferencesKeyConstants.IPV6_MODE_AUTO,
                         "Auto",
                     ),
                     DropDownStringItem(
-                        com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY,
+                        PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY,
                         "IPv4 Only",
                     ),
                 ),
@@ -389,6 +392,8 @@ class ConnectionViewModelImpl
             viewModelScope.launch {
                 _autoConnect.emit(!_autoConnect.value)
                 preferencesHelper.autoConnect = _autoConnect.value
+                // Nothing observes the setting, so the switch applies itself.
+                vpnController.onAutoConnectChanged()
             }
         }
 
@@ -525,7 +530,7 @@ class ConnectionViewModelImpl
                     val process =
                         Runtime
                             .getRuntime()
-                            .exec("/system/bin/ping -c 2 -s $value -i 0.5 -W 3 -M do checkip.windscribe.com")
+                            .exec("/system/bin/ping -c 2 -s $value -i 0.5 -W 3 -M do windscribe.com")
 
                     val input = process.inputStream.bufferedReader().use { it.readText() }
 

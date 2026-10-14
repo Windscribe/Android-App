@@ -2,18 +2,18 @@
 <resources>
     <string name="username_empty">Nome utente vuoto!</string>
     <string name="password_empty">Password vuota!</string>
-    <string name="enter_username">Inserisci il tuo nome utente!</string>
-    <string name="enter_password">Inserisci la tua password!</string>
+    <string name="enter_username">Inserisci il nome utente</string>
+    <string name="enter_password">Inserisci la password</string>
     <string name="password_too_short">Troppo breve!</string>
     <string name="login_credential_error">C\'è qualcosa che non va con il tuo nome utente o password :(</string>
     <string name="sign_out">Disconettiti</string>
     <string name="username">Nome utente</string>
     <string name="password">Password</string>
     <string name="login_with_username">Non sono consentiti caratteri speciali o e-mail nel campo del nome utente.</string>
-    <string name="weak_password">La Password deve contenere almeno una maiuscola e una minuscola.</string>
-    <string name="small_password">La password deve contenere almeno 8 caratteri.</string>
+    <string name="weak_password">La password deve contenere almeno una lettera maiuscola e una minuscola (es. \"Hello1234\", \"Solyanka\").</string>
+    <string name="small_password">La password deve contenere almeno 8 caratteri (es. \"Hello1234\", \"Solyanka\").</string>
     <string name="common_password">La password che hai inserito è comunemente usata e non sicura.</string>
-    <string name="password_requirement">8 o più caratteri con almeno una maiuscola e una minuscola</string>
+    <string name="password_requirement">8 o più caratteri con almeno una lettera maiuscola e una minuscola (es. \"Hello1234\", \"Solyanka\").</string>
     <string name="failed_network_alert">Sembra che tu sia su una rete altamente restrittiva che blocca Windscribe. Utilizza la funzione "Connessione di emergenza" nella schermata principale, quindi prova a registrarti o accedere nuovamente. Se non hai successo, contattaci.</string>
     <string name="failed_network_title">Rete restrittiva rilevata</string>
     <string name="fa_required_error">È richiesto il codice 2FA</string>
@@ -100,14 +100,14 @@
     <string name="fake_traffic_volume">Volume di traffico falso</string>
     <string name="potential_data_use">Stima dati utilizzati</string>
     <string name="plan_pro">Pro</string>
-    <string name="a_la_carte_unlimited_plan">Illimitato</string>
+    <string name="a_la_carte_unlimited_plan">Illimitato à la carte</string>
     <string name="expiry_date">Data di scadenza</string>
     <string name="reset_date">Data di ripristino</string>
     <string name="gb_per_month"> GB/Mese</string>
     <string name="my_account">Account</string>
     <string name="cancel">Annulla</string>
     <string name="edit_account">Gestisci account</string>
-    <string name="info">INFORMAZIONI</string>
+    <string name="info">INFO ACCOUNT</string>
     <string name="plan">PIANO</string>
     <string name="please_login">Effettua prima il login per connetterti!</string>
     <string name="please_login_to_see_account_details">Iscriviti o Accedi per visualizzare i dettagli del tuo account e salvaguardare le tue preferenze.</string>
@@ -129,7 +129,7 @@
     <string name="state_assign_ip">Assegnazione di indirizzi IP</string>
     <string name="state_add_routes">Aggiunta di rotte</string>
     <string name="state_connected">Connesso</string>
-    <string name="state_disconnected">Disconnesso</string>
+    <string name="state_disconnected">Disconnetti</string>
     <string name="state_reconnecting">Ricollegamento</string>
     <string name="state_exiting">Uscendo</string>
     <string name="state_noprocess">Non in esecuzione</string>
@@ -146,12 +146,9 @@
     <string name="rate_message">Ti piace Windscribe? Ma certo che si. Valutaci nel Play Store e ti ameremo per molto tempo.</string>
     <string name="gps_spoofing_explain">Questa funzione richiede di modificare le impostazioni di Android. Segui i passaggi successivi per attivarlo.</string>
     <string name="let_s_do_it">Facciamolo</string>
-    <string name="unlock_developer_mode">Sblocca le opzioni sviluppatore</string>
-    <string name="unlock_developer_mode_explain">Apri le Impostazioni e cerca la sezione \"Informazioni sul telefono\".  Trova il numero di build all\interno di \"Informazioni software\" e toccalo 7 volte.</string>
     <string name="open_settings">Apri Impostazioni</string>
-    <string name="add_to_mock_location">Seleziona l\app di localizzazione fittizia</string>
-    <string name="add_to_mock_location_explain">Una volta sbloccato, vai su \"Opzioni sviluppatore\" nelle Impostazioni.  In \"Debug\" scegli Windscribe come \"App di localizzazione fittizia\".</string>
-    <string name="add_to_mock_location_explain_android_12">Una volta sbloccato, vai su \"Opzioni sviluppatore\" nelle Impostazioni.  In \"Posizione\" scegli Windscribe come \"App di localizzazione fittizia\".</string>
+    <string name="gps_spoofing_setup">Configura la falsificazione GPS</string>
+    <string name="gps_spoofing_setup_explain">1. Apri Impostazioni, trova “Info sul telefono” e tocca 7 volte il numero build per sbloccare le “Opzioni sviluppatore”.\n\n2. In “Opzioni sviluppatore”, scegli Windscribe come “App posizione simulata”.</string>
     <string name="you_are_done">Il gioco è fatto!</string>
     <string name="gps_spoofing_success">La tua posizione GPS sarà la stessa della tua posizione VPN.</string>
     <string name="gps_spoofing_not_set">Impossibile abilitare lo spoofing GPS</string>
@@ -159,7 +156,7 @@
     <string name="add_email">Aggiungi e-mail</string>
     <string name="unlimited_data">Dati illimitati</string>
     <string name="preferences">Preferenze</string>
-    <string name="optional">(Facoltativo)</string>
+    <string name="optional">Facoltativo</string>
     <string name="get_10_gb">Ottieni 10 GB / mese</string>
     <string name="plans">Piani</string>
     <string name="pro">Pro</string>
@@ -235,7 +232,7 @@
     <string name="forget_network">Dimentica la rete</string>
     <string name="network_secured">Protetto</string>
     <string name="network_unsecured">Non protetto</string>
-    <string name="preferred_protocol_description">Scegliere un protocollo predefinito per questa rete in caso di problemi di connessione</string>
+    <string name="preferred_protocol_description">Windscribe userà sempre questo protocollo per connettersi a questa rete. Questo ha la priorità sulle preferenze di connessione globali.</string>
     <string name="unknown">Rete sconosciuta</string>
     <string name="loading_network_list">Caricamento elenco reti\nAttendere...</string>
     <string name="no_saved_network_list">Nessun elenco di rete salvato!</string>
@@ -347,7 +344,7 @@
     <string name="Error">Errore</string>
     <string name="text_account_set_up">Registrati</string>
     <string name="xpress_login">Login pigro</string>
-    <string name="scan_lazy_login_qr_code">Scansiona questo codice QR con il telefono per accedere.</string>
+    <string name="scan_lazy_login_qr_code">Scansiona questo codice QR</string>
     <string name="web_login_description">Scansiona il codice QR o inserisci il codice nell\'app mobile Windscribe su <b>Account → Lazy Login</b>.</string>
     <string name="app_login_manual_entry">Inserisci nell\'app mobile su <b>Account → Lazy Login</b></string>
     <string name="or">O</string>
@@ -389,7 +386,7 @@ Ultima posizione scelta.</string>
     <string name="latency_display_description">Mostra la latenza come barre di intensità del segnale o in millisecondi.</string>
     <string name="language_description">Imposta Windscribe nelle lingue supportate.</string>
     <string name="notification_stats_description">Mostra le statistiche sul traffico nella notifica.</string>
-    <string name="location_load_description">Mostra il carico della località come una barra. Più corta è la barra, minore è il carico sulla località (rispetto alla capacità totale della località).</string>
+    <string name="location_load_description">Mostra il carico di una località. Un arco di cerchio più piccolo indica un carico (utilizzo) minore.</string>
     <string name="haptic_feedback_description">Risposte fisiche (vibrazione) alle azioni dell utente</string>
     <string name="connection_mode_description">Scegliere se lasciare che Windscribe scelga automaticamente una combinazione protocollo/porta più ottimale per la tua configurazione o farlo manualmente</string>
     <string name="packet_size_description">Scegli se lasciare che Windscribe decida la MTU per la tua connessione o modificarlo manualmente</string>
@@ -483,7 +480,7 @@ Ultima posizione scelta.</string>
     <string name="anti_censorship">Aggira la censura</string>
     <string name="anti_censorship_explainer">Connettiti alla VPN anche in ambienti ostili</string>
     <string name="auto_connect">Connessione automatica</string>
-    <string name="auto_connect_explainer">Si connette all\'ultima posizione utilizzata quando l\'app viene avviata o si unisce a una rete.</string>
+    <string name="auto_connect_explainer">Si connette alla tua ultima posizione su qualsiasi rete che non hai escluso e blocca la tua connessione a Internet se non riesce a connettersi. Il blocco avviene solo quando la connessione fallisce — mai quando disconnetti o metti in pausa.</string>
     <string name="save">Salva</string>
     <string name="clear">Cancella</string>
     <string name="enter_1_key_value_per_line">Inserisci 1 chiave=valore per riga.</string>
@@ -563,7 +560,7 @@ Ultima posizione scelta.</string>
     <string name="power_whitelist_title">Disabilita l\'ottimizzazione della batteria</string>
     <string name="power_whitelist_summary">Per mantenere una connessione stabile, rimuovere Windscribe dalle impostazioni di ottimizzazione della batteria. Questo garantirà un servizio ininterrotto per le connessioni IKEv2.</string>
     <string name="never_aks_again_for_permission">Non chiedere di nuovo</string>
-    <string name="slide_puzzle_piece_into_place">Fai scorrere il pezzo del puzzle a sinistra al suo posto</string>
+    <string name="slide_puzzle_piece_into_place">Trascina l’immagine di sinistra nello spazio a destra</string>
     <string name="complete_puzzle_to_continue">Completa il puzzle per continuare</string>
     <string name="none">Nessuno</string>
     <string name="free">Gratuito</string>
@@ -608,7 +605,7 @@ I tuoi dati sulla posizione rimangono sul tuo dispositivo e vengono utilizzati e
     <string name="ipv6_mode_description">Scegli quale versione IP utilizzare per le connessioni VPN.</string>
     <string name="ip_stack">Stack IP</string>
     <string name="ip_stack_description">Configura lo stack IP per le connessioni VPN.</string>
-    <string name="egress">Egress (WireGuard only)</string>
+    <string name="egress">Uscita (solo WireGuard)</string>
     <string name="ingress">Ingresso</string>
     <string name="ipv4_only">Solo IPv4</string>
     <string name="manual_connection_mode_failed_title">Modalità di connessione manuale fallita</string>
@@ -692,4 +689,32 @@ Per la massima sicurezza, evita di utilizzare questo dispositivo su reti non aff
     <string name="accessibility_status_connecting">Connessione in corso</string>
     <string name="accessibility_status_disconnected">Disconnesso</string>
 
+    <string name="notification_paused">In pausa — il tuo traffico non è protetto</string>
+    <string name="notification_waiting_for_secured">In attesa di una rete protetta</string>
+    <string name="notification_stood_down">La connessione automatica è disattivata per questa rete</string>
+    <string name="notification_stood_down_on">La connessione automatica è disattivata per %1$s</string>
+    <string name="notification_action_pause">Pausa</string>
+    <string name="notification_action_resume">Riprendi</string>
+    <string name="notification_action_connect">Connetti</string>
+    <string name="notification_action_turn_off">Disattiva</string>
+    <string name="accessibility_status_paused">In pausa, il tuo traffico non è protetto</string>
+    <string name="accessibility_status_blocked">Bloccato, la tua connessione a Internet è disattivata finché non disattivi Windscribe</string>
+    <string name="notification_account_banned">Account bloccato — disattiva Windscribe per ripristinare la connessione</string>
+    <string name="notification_account_expired">Account scaduto — disattiva Windscribe per ripristinare la connessione, poi esegui l’upgrade</string>
+    <string name="notification_action_retry">Riprova</string>
+    <string name="notification_awaiting_session">In attesa dell’aggiornamento della sessione</string>
+    <string name="notification_blocked">Impossibile connettersi — il traffico è bloccato</string>
+    <string name="notification_config_auth_failed">Autenticazione non riuscita — controlla la tua configurazione</string>
+    <string name="notification_failed">Impossibile connettersi su questa rete</string>
+    <string name="notification_failed_to">Impossibile connettersi a %1$s</string>
+    <string name="notification_no_network">Nessuna rete — nessuna connessione disponibile</string>
+    <string name="notification_opted_out">La protezione automatica è disattivata per questa rete</string>
+    <string name="notification_opted_out_on">La protezione automatica è disattivata per %1$s</string>
+    <string name="notification_protocol_switch">In attesa del cambio di protocollo</string>
+    <string name="notification_reconnecting">Riconnessione in corso</string>
+    <string name="notification_reconnecting_to">Riconnessione a %1$s in corso</string>
+    <string name="manual_enter_code">Oppure inserisci questo codice manualmente:</string>
+    <string name="qr_generation_failed">Impossibile generare il codice QR</string>
+    <string name="subscription_payment_issue">Problema con il pagamento dell’abbonamento</string>
+    <string name="subscription_payment_issue_description">Il pagamento del tuo abbonamento richiede attenzione. Apri Google Play per verificare il tuo metodo di pagamento.</string>
 </resources>

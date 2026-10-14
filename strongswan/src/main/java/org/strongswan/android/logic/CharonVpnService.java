@@ -26,6 +26,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -35,6 +36,7 @@ import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
@@ -45,7 +47,9 @@ import android.util.Log;
 
 import com.windscribe.common.DNSDetails;
 import com.windscribe.common.DnsType;
-import com.windscribe.common.VPNTunnelWrapper;
+import com.windscribe.common.tunnel.IpNetwork;
+import com.windscribe.common.tunnel.TunConfig;
+import com.windscribe.common.tunnel.VpnHost;
 
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfile.SelectedAppsHandling;
@@ -86,7 +90,33 @@ import java.util.Objects;
 import java.util.SortedSet;
 
 
-public abstract class CharonVpnService extends VpnService implements Runnable, VpnStateService.VpnStateListener
+/**
+ * The IKEv2 engine.
+ *
+ * <h3>Constraints this class cannot break</h3>
+ * {@code libandroidbridge.so} resolves classes and methods <b>by name</b>, so the following are
+ * non-negotiable without rebuilding the {@code .so} (docs/architecture/VPN_BACKEND.md §2):
+ *
+ * <ul>
+ *   <li><b>C1</b> — the class must stay {@code org.strongswan.android.logic.CharonVpnService} with a
+ *       nested {@code $BuilderAdapter}.</li>
+ *   <li><b>C2</b> — the instance must expose {@code public boolean protect(int)}, hand-written
+ *       below since this class is not a {@code VpnService}. There is no compile-time signal: miss
+ *       it and {@code GetMethodID} fails on threads charon owns, routing IKE/ESP into the tunnel.
+ *       Hence the loud assert rather than a quiet {@code false}.</li>
+ *   <li><b>C3</b> — the instance must remain a {@code Context}, because native constructs
+ *       {@code NetworkManager(Context)} and {@code Scheduler(Context)} from it. Satisfied by
+ *       {@link ContextWrapper}.</li>
+ *   <li><b>C4</b> — {@code BuilderAdapter} keeps its method names and signatures, and
+ *       {@code establish()}/{@code establishNoDns()} return a <b>detached, native-owned</b>
+ *       descriptor — the mux's socketpair, not a TUN.</li>
+ *   <li><b>C5</b> — {@code getAndroidVersion()} / {@code getDeviceString()} keep their signatures.</li>
+ * </ul>
+ *
+ * <p>Charon replaces the TUN mid-session on reauth (twice each), CHILD_SA rekey failure and roam,
+ * so {@code requestTun} is re-entrant and this class calls it many times per connection.
+ */
+public abstract class CharonVpnService extends ContextWrapper implements Runnable, VpnStateService.VpnStateListener
 {
 	private static final String TAG = CharonVpnService.class.getSimpleName();
 	private static final String VPN_SERVICE_ACTION = "android.net.VpnService";
@@ -108,13 +138,51 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	private volatile boolean mIsDisconnecting;
 	private volatile boolean mShowNotification;
 	private BuilderAdapter mBuilderAdapter = new BuilderAdapter();
+
+	public CharonVpnService(Context base)
+	{
+		super(base);
+	}
+
+	/** Everything that requires being the registered VpnService. */
+	private volatile VpnHost mHost;
+
+	/** The mux descriptor. Charon receives detached dups of it; this is our own copy. */
+	private volatile ParcelFileDescriptor mEngineFd;
+
+	public void attachHost(VpnHost host, ParcelFileDescriptor engineFd)
+	{
+		mHost = host;
+		mEngineFd = engineFd;
+	}
+
+	public void detachHost()
+	{
+		mHost = null;
+		mEngineFd = null;
+	}
+
+	/**
+	 * C2. Resolved by name from native and called on threads charon owns, including a roam job that
+	 * re-bypasses all sockets. Hand-written because this class is not a {@code VpnService}.
+	 */
+	public boolean protect(int socket)
+	{
+		VpnHost host = mHost;
+		if (host == null)
+		{
+			// Loud on purpose: a quiet false routes IKE/ESP into the tunnel.
+			Log.e(TAG, "protect(" + socket + ") with no host attached — IKE/ESP would be tunnelled");
+			return false;
+		}
+		return host.protect(socket);
+	}
 	private Handler mHandler;
 	private Handler mBackgroundHandler;
 	private VpnStateService mService;
 	private static final String ISRGX1Sha256Hash = "22B557A27055B33606B6559F37703928D3E4AD79F110B407D04986E1843543D1";
 	private final Object mServiceLock = new Object();
 
-	private VPNTunnelWrapper tunnelWrapper;
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name)
@@ -150,30 +218,17 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	static final int STATE_CERTIFICATE_UNAVAILABLE = 7;
 	static final int STATE_GENERIC_ERROR = 8;
 
-	abstract protected Class<?> getMainActivityClass();
-	abstract protected Notification buildNotification(boolean publicVersion);
-	abstract protected int getNotificationID();
-	abstract protected void applyExcludedRoutes(Builder builder);
 	abstract protected boolean shouldEnablePacketLogging();
 
 	/** Port ctrld is currently listening on. Read live; DNSDetails carries a stale snapshot. */
 	abstract protected int getControlDPort();
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId)
+	/**
+	 * Starts a connection, replacing {@code onStartCommand}. No foreground promotion and no
+	 * Always-on entry: the single {@code WindscribeVpnService} owns both.
+	 */
+	public void startFromIntent(Intent intent)
 	{
-		// CRITICAL: Must call startForeground() immediately when started via startForegroundService()
-		// to avoid ForegroundServiceDidNotStartInTimeException on Android 12+
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !mShowNotification)
-		{
-			try {
-				startSafeForeground(this, getNotificationID(), buildNotification(false), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
-				mShowNotification = true;
-			} catch (Exception e) {
-				Log.e(TAG, "Failed to start foreground", e);
-			}
-		}
-
 		if (intent != null)
 		{
 			VpnProfile profile = null;
@@ -214,17 +269,17 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			}
 			setNextProfile(profile);
 		}
-		return START_NOT_STICKY;
 	}
 
-	@Override
-	public void onCreate()
+	/** Replaces {@code onCreate}. Called by the engine before the first connection. */
+	public void create()
 	{
 		mLogFile = getFilesDir().getAbsolutePath() + File.separator + LOG_FILE;
 		mAppDir = getFilesDir().getAbsolutePath();
 
-		/* handler used to do changes in the main UI thread */
-		mHandler = new Handler();
+		/* Explicitly the main looper: create() runs on whatever thread the orchestrator is on,
+		 * where the no-arg constructor throws. */
+		mHandler = new Handler(Looper.getMainLooper());
 
 		/* handler for background work to avoid blocking main thread */
 		android.os.HandlerThread backgroundThread = new android.os.HandlerThread("CharonVpnServiceBg");
@@ -242,15 +297,17 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 		createNotificationChannel();
 	}
 
-	@Override
-	public void onRevoke()
-	{	/* the system revoked the rights grated with the initial prepare() call.
-		 * called when the user clicks disconnect in the system's VPN dialog */
+	/**
+	 * VPN consent was revoked. A framework callback that only arrives on the registered service, so
+	 * the host fans it out to here.
+	 */
+	public void revoked()
+	{
 		setNextProfile(null);
 	}
 
-	@Override
-	public void onDestroy()
+	/** Replaces {@code onDestroy}. Called by the engine on stop. */
+	public void destroy()
 	{
 		mTerminate = true;
 		setNextProfile(null);
@@ -301,14 +358,15 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 		{
 			mBackgroundHandler.getLooper().quit();
 		}
-		// Stop foreground service
-		if (mShowNotification && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+		// The foreground notification belongs to the single VpnService now, so there is nothing to
+		// stop here. It also must NOT be cancelled on this engine's teardown: the service has to
+		// stay foreground across a protocol handover.
+		if (mShowNotification)
 		{
 			try {
-				stopForeground(true);
 				mShowNotification = false;
 			} catch (Exception e) {
-				Log.e(TAG, "Failed to stop foreground", e);
+				Log.e(TAG, "Failed to clear notification flag", e);
 			}
 		}
 	}
@@ -448,9 +506,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 		// Step 1: Prepare state while holding lock
 		synchronized (this)
 		{
-		   if(tunnelWrapper != null){
-			   tunnelWrapper.stop();
-		   }
+		   /* the packet path is PacketMux's and outlives this engine, so there is nothing to stop */
 			/*
 			if (mNextProfile != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 			{
@@ -499,14 +555,8 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			@Override
 			public void run()
 			{
-				if (!mShowNotification) {
-					mShowNotification = true;
-					startSafeForeground(CharonVpnService.this, getNotificationID(), buildNotification(false), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
-				} else {
-					// Already in foreground, just update the notification
-					NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-					manager.notify(getNotificationID(), buildNotification(false));
-				}
+				// Empty: the single VpnService owns the one persistent notification.
+				mShowNotification = true;
 			}
 		});
 	}
@@ -649,11 +699,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 
 	@Override
 	public void stateChanged() {
-		if (mShowNotification)
-		{
-			NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-			manager.notify(getNotificationID(), buildNotification(false));
-		}
+		/* notification updates are the single service's job, driven by connection state */
 	}
 
 	/**
@@ -970,41 +1016,13 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	public class BuilderAdapter
 	{
 		private VpnProfile mProfile;
-		private VpnService.Builder mBuilder;
 		private BuilderCache mCache;
 		private BuilderCache mEstablishedCache;
-		private PacketDropper mDropper = new PacketDropper();
 
 		public synchronized void setProfile(VpnProfile profile)
 		{
 			mProfile = profile;
-			mBuilder = createBuilder(mProfile.getName());
 			mCache = new BuilderCache(mProfile);
-		}
-
-		private Builder createBuilder(String name)
-		{
-			Builder builder = new Builder();
-			builder.setSession(name);
-
-			/* even though the option displayed in the system dialog says "Configure"
-			 * we just use our main Activity */
-			Context context = getApplicationContext();
-			Intent intent = new Intent(context, getMainActivityClass());
-			PendingIntent pending = null;
-			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-				pending = PendingIntent.getActivity(context, 0, intent,
-						PendingIntent.FLAG_IMMUTABLE);
-			} else {
-				pending = PendingIntent.getActivity(context, 0, intent, 0);
-			}
-			builder.setConfigureIntent(pending);
-
-			/* mark all VPN connections as unmetered (default changed for Android 10) */
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-				builder.setMetered(false);
-			}
-			return builder;
 		}
 
 		public synchronized boolean addAddress(String address, int prefixLength)
@@ -1050,7 +1068,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 		{
 			try
 			{
-				mBuilder.addSearchDomain(domain);
+				mCache.addSearchDomain(domain);
 			}
 			catch (IllegalArgumentException ex)
 			{
@@ -1072,44 +1090,54 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			return true;
 		}
 
+		/**
+		 * Hands charon a descriptor to run on, replacing the TUN only if it has to. Charon takes
+		 * ownership of what it is given, so a fresh dup goes out every time.
+		 */
 		private synchronized ParcelFileDescriptor establishIntern()
 		{
-			ParcelFileDescriptor fd;
+			VpnHost host = mHost;
+			ParcelFileDescriptor mux = mEngineFd;
+			if (host == null || mux == null)
+			{
+				Log.e(TAG, "establish() with no host attached");
+				return null;
+			}
 			try
 			{
-				mCache.applyData(mBuilder);
-				DNSDetails dnsDetails = mProfile.getDnsDetails();
-				if (dnsDetails != null && (dnsDetails.getType() == DnsType.Proxy)){
-					mBuilder.setBlocking(true);
-					fd = mBuilder.establish();
-					tunnelWrapper = new VPNTunnelWrapper(fd, CharonVpnService.this, getControlDPort(), shouldEnablePacketLogging());
-					tunnelWrapper.start();
-					fd = tunnelWrapper.getParcelDescriptor();
-				} else {
-					mBuilder.setBlocking(false);
-					fd = mBuilder.establish();
-				}
-				if (fd != null)
+				TunConfig config = mCache.toTunConfig(mProfile.getName());
+				if (host.tunCovers(config))
 				{
-					closeBlocking();
+					Log.i(TAG, "Live TUN already carries this config; not re-establishing.");
+				}
+				else
+				{
+					host.requestTun(config);
 				}
 			}
 			catch (Exception ex)
 			{
-				if (ex instanceof SecurityException && ex.getMessage().contains("INTERACT_ACROSS_USERS"))
+				if (ex instanceof SecurityException && ex.getMessage() != null
+					&& ex.getMessage().contains("INTERACT_ACROSS_USERS"))
 				{
 					setErrorDisconnect(ErrorState.MULTI_USER_PERMISSION);
 				}
 				ex.printStackTrace();
 				return null;
 			}
-			if (fd == null)
+
+			ParcelFileDescriptor fd;
+			try
 			{
+				fd = ParcelFileDescriptor.dup(mux.getFileDescriptor());
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
 				return null;
 			}
-			/* now that the TUN device is created we don't need the current
-			 * builder anymore, but we might need another when reestablishing */
-			mBuilder = createBuilder(mProfile.getName());
+
+			/* the cache is kept so a reauth can rebuild the same interface without the DNS parts */
 			mEstablishedCache = mCache;
 			mCache = new BuilderCache(mProfile);
 			return fd;
@@ -1121,138 +1149,62 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			return fd != null ? fd.detachFd() : -1;
 		}
 
-		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+		/**
+		 * Asks the host for a default-routed blackhole interface; draining it is
+		 * {@link com.windscribe.common.tunnel.PacketMux}'s DROP state. Its only call site is
+		 * commented out, so this path is unexercised.
+		 */
 		public synchronized void establishBlocking()
 		{
-			/* just choose some arbitrary values to block all traffic (except for what's configured in the profile) */
-			mCache.addAddress("172.16.252.1", 32);
-			mCache.addAddress("fd00::fd02:1", 128);
-			mCache.addRoute("0.0.0.0", 0);
-			mCache.addRoute("::", 0);
-			/* set DNS servers to avoid DNS leak later */
-			mBuilder.addDnsServer("8.8.8.8");
-			mBuilder.addDnsServer("2001:4860:4860::8888");
-			/* use blocking mode to simplify packet dropping */
-			mBuilder.setBlocking(true);
-			ParcelFileDescriptor fd = establishIntern();
-			if (fd != null)
+			VpnHost host = mHost;
+			if (host == null)
 			{
-				mDropper.start(fd);
+				return;
+			}
+			mCache.addAddress("172.16.252.1", 32);
+			mCache.addRoute("0.0.0.0", 0);
+			try
+			{
+				host.requestTun(mCache.toTunConfig(mProfile.getName()));
+				mEstablishedCache = mCache;
+				mCache = new BuilderCache(mProfile);
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
 			}
 		}
 
 		public synchronized void closeBlocking()
 		{
-			mDropper.stop();
+			/* nothing to stop: the mux's DROP state is not a thread we own */
 		}
 
+		/**
+		 * Reauth make-after-break: charon calls this, then {@code establish()} again. Same path as
+		 * {@link #establish()}; a raw {@code Builder} would swap charon onto a TUN the mux is not pumping.
+		 */
 		public synchronized int establishNoDns()
 		{
-			ParcelFileDescriptor fd;
-
-			if (mEstablishedCache == null)
+			VpnHost host = mHost;
+			ParcelFileDescriptor mux = mEngineFd;
+			if (mEstablishedCache == null || host == null || mux == null)
 			{
 				return -1;
 			}
 			try
 			{
-				Builder builder = createBuilder(mProfile.getName());
-				mEstablishedCache.applyData(builder);
-				fd = builder.establish();
+				TunConfig config = mEstablishedCache.toTunConfig(mProfile.getName());
+				if (!host.tunCovers(config))
+				{
+					host.requestTun(config);
+				}
+				return ParcelFileDescriptor.dup(mux.getFileDescriptor()).detachFd();
 			}
 			catch (Exception ex)
 			{
 				ex.printStackTrace();
 				return -1;
-			}
-			if (fd == null)
-			{
-				return -1;
-			}
-			return fd.detachFd();
-		}
-
-		private class PacketDropper implements Runnable
-		{
-			private ParcelFileDescriptor mFd;
-			private Thread mThread;
-
-			public void start(ParcelFileDescriptor fd)
-			{
-				mFd = fd;
-				mThread = new Thread(this);
-				mThread.start();
-			}
-
-			public void stop()
-			{
-				if (mFd != null)
-				{
-					try
-					{
-						mThread.interrupt();
-						mThread.join();
-						mFd.close();
-					}
-					catch (InterruptedException e)
-					{
-						e.printStackTrace();
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
-					mFd = null;
-				}
-			}
-
-			@Override
-			public synchronized void run()
-			{
-				try
-				{
-					FileInputStream plain = new FileInputStream(mFd.getFileDescriptor());
-					ByteBuffer packet = ByteBuffer.allocate(mCache.mMtu);
-					while (true)
-					{
-						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-						{	/* just read and ignore all data, regular read() is not interruptible */
-							int len = plain.getChannel().read(packet);
-							packet.clear();
-							if (len < 0)
-							{
-								break;
-							}
-						}
-						else
-						{	/* this is rather ugly but on older platforms not even the NIO version of read() is interruptible */
-							boolean wait = true;
-							if (plain.available() > 0)
-							{
-								int len = plain.read(packet.array());
-								packet.clear();
-								if (len < 0 || Thread.interrupted())
-								{
-									break;
-								}
-								/* check again right away, there may be another packet */
-								wait = false;
-							}
-							if (wait)
-							{
-								Thread.sleep(250);
-							}
-						}
-					}
-				}
-				catch (ClosedByInterruptException|InterruptedException e)
-				{
-					/* regular interruption */
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
 			}
 		}
 	}
@@ -1271,6 +1223,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 		private final SelectedAppsHandling mAppHandling;
 		private final SortedSet<String> mSelectedApps;
 		private final List<InetAddress> mDnsServers = new ArrayList<>();
+		private final List<String> mSearchDomains = new ArrayList<>();
 		private int mMtu;
 		private boolean mIPv4Seen, mDnsServersConfigured;
 
@@ -1373,6 +1326,11 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			}
 		}
 
+		public void addSearchDomain(String domain)
+		{
+			mSearchDomains.add(domain);
+		}
+
 		public void setMtu(int mtu)
 		{
 			mMtu = mtu;
@@ -1383,16 +1341,23 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			mIPv4Seen = true;
 		}
 
-		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-		public void applyData(VpnService.Builder builder)
+		/**
+		 * Translates charon's cached configuration into a {@link TunConfig}. Faithfulness matters:
+		 * any gratuitous difference is one {@link TunConfig#coversSameInterfaceAs} notices, forcing
+		 * an avoidable re-establish on reauth.
+		 */
+		public TunConfig toTunConfig(String session)
 		{
+			List<IpNetwork> addresses = new ArrayList<>();
+			List<IpNetwork> routes = new ArrayList<>();
+			List<InetAddress> dnsServers = new ArrayList<>(mDnsServers);
+			List<String> allowedApps = new ArrayList<>();
+			List<String> disallowedApps = new ArrayList<>();
+			boolean allowAllFamilies = false;
+
 			for (IPRange address : mAddresses)
 			{
-				builder.addAddress(address.getFrom(), address.getPrefix());
-			}
-			for (InetAddress server : mDnsServers)
-			{
-				builder.addDnsServer(server);
+				addresses.add(new IpNetwork(address.getFrom(), address.getPrefix()));
 			}
 			/* add routes depending on whether split tunneling is allowed or not,
 			 * that is, whether we have to handle and block non-VPN traffic */
@@ -1412,68 +1377,58 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 					ranges.remove(mExcludedSubnets);
 					for (IPRange subnet : ranges.subnets())
 					{
-						try
-						{
-							builder.addRoute(subnet.getFrom(), subnet.getPrefix());
+						if (subnet.getFrom().isMulticastAddress())
+						{	/* some Android versions don't seem to like multicast addresses here */
+							continue;
 						}
-						catch (IllegalArgumentException e)
-						{	/* some Android versions don't seem to like multicast addresses here,
-							 * ignore it for now */
-							if (!subnet.getFrom().isMulticastAddress())
-							{
-								throw e;
-							}
-						}
+						routes.add(new IpNetwork(subnet.getFrom(), subnet.getPrefix()));
 					}
 				}
-				else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+				else
 				{	/* allow traffic that would otherwise be blocked to bypass the VPN */
-					builder.allowFamily(OsConstants.AF_INET);
+					allowAllFamilies = true;
 				}
 			}
 			else if (mIPv4Seen)
 			{	/* only needed if we've seen any addresses.  otherwise, traffic
 				 * is blocked by default (we also install no routes in that case) */
-				builder.addRoute("0.0.0.0", 0);
+				try
+				{
+					routes.add(new IpNetwork(InetAddress.getByName("0.0.0.0"), 0));
+				}
+				catch (UnknownHostException e)
+				{
+					e.printStackTrace();
+				}
 			}
 			/* apply selected applications */
-			if (mSelectedApps.size() > 0 &&
-				Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+			if (mSelectedApps.size() > 0)
 			{
 				switch (mAppHandling)
 				{
 					case SELECTED_APPS_EXCLUDE:
-						for (String app : mSelectedApps)
-						{
-							try
-							{
-								builder.addDisallowedApplication(app);
-							}
-							catch (PackageManager.NameNotFoundException e)
-							{
-								// possible if not configured via GUI or app was uninstalled
-							}
-						}
+						disallowedApps.addAll(mSelectedApps);
 						break;
 					case SELECTED_APPS_ONLY:
-						for (String app : mSelectedApps)
-						{
-							try
-							{
-								builder.addAllowedApplication(app);
-							}
-							catch (PackageManager.NameNotFoundException e)
-							{
-								// possible if not configured via GUI or app was uninstalled
-							}
-						}
+						allowedApps.addAll(mSelectedApps);
 						break;
 					default:
 						break;
 				}
 			}
-			builder.setMtu(mMtu);
-			applyExcludedRoutes(builder);
+
+			/* Excluded routes are not here: they are identical for every protocol and the host
+			 * applies them once while building. */
+			return new TunConfig(
+				session,
+				addresses,
+				routes,
+				dnsServers,
+				new ArrayList<>(mSearchDomains),
+				mMtu,
+				allowedApps,
+				disallowedApps,
+				allowAllFamilies);
 		}
 	}
 

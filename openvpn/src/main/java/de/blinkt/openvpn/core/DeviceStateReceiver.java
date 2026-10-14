@@ -193,9 +193,7 @@ public class DeviceStateReceiver extends BroadcastReceiver implements ByteCountL
             String subtype = networkInfo.getSubtypeName();
             if (subtype == null)
                 subtype = "";
-            String extrainfo = networkInfo.getExtraInfo();
-            if (extrainfo == null)
-                extrainfo = "";
+            String extrainfo = redactNetworkId(networkInfo.getExtraInfo());
 
 			/*
             if(networkInfo.getType()==android.net.ConnectivityManager.TYPE_WIFI) {
@@ -268,6 +266,16 @@ public class DeviceStateReceiver extends BroadcastReceiver implements ByteCountL
 
     }
 
+
+    /**
+     * The Wi-Fi SSID, or the MAC on Ethernet. A digest keeps two networks distinguishable in a log
+     * the user attaches to a ticket without naming either.
+     */
+    private static String redactNetworkId(String extrainfo) {
+        if (extrainfo == null || extrainfo.isEmpty())
+            return "";
+        return "net#" + Integer.toHexString(extrainfo.hashCode());
+    }
 
     public boolean isUserPaused() {
         return userpause == connectState.DISCONNECTED;

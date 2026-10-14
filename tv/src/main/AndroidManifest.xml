@@ -34,8 +34,9 @@
         android:supportsRtl="false"
         android:roundIcon="@mipmap/ws_launcher"
         android:theme="@style/AppTheme.NoActionBar"
+        android:localeConfig="@xml/locales_config"
         tools:ignore="GoogleAppIndexingWarning"
-        tools:targetApi="n">
+        tools:targetApi="33">
         <activity android:name="com.windscribe.tv.moredata.GetMoreDataActivity" />
         <activity
             android:name="com.windscribe.tv.settings.SplitTunnelingHelpActivity"

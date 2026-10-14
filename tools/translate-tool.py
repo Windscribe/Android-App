@@ -32,8 +32,9 @@ class TranslationManager:
         print("3. ✅ Apply translations to XML files")
         print("4. 🚀 Run complete workflow (find → translate → apply)")
         print("5. 📊 Show translation status")
-        print("6. 🧹 Clean temporary files")
-        print("7. ❌ Exit")
+        print("6. 🕰️  Find drifted translations")
+        print("7. 🧹 Clean temporary files")
+        print("8. ❌ Exit")
         print()
 
     def run_command(self, cmd, cwd=None):
@@ -72,12 +73,6 @@ class TranslationManager:
         print("\n🤖 Generating machine translations...")
         print("-"*40)
 
-        # First generate the template
-        if not self.run_command("python3 generate_translations.py"):
-            return False
-
-        # Now do actual machine translation
-        print("\n📝 Getting machine translations...")
         return self.machine_translate()
 
     def machine_translate(self):
@@ -123,6 +118,14 @@ class TranslationManager:
             return self.run_command("python3 fix_translation_escapes.py")
 
         return True
+
+    def find_drifted(self):
+        """Find translations older than the English text they translate"""
+        print("\n🕰️  Finding drifted translations...")
+        print("-"*40)
+        return self.run_command(
+            "python3 find_drifted_translations.py --markdown drifted_translations.md"
+        )
 
     def show_status(self):
         """Show current translation status"""
@@ -224,7 +227,7 @@ class TranslationManager:
             self.print_menu()
 
             try:
-                choice = input("Enter your choice (1-7): ").strip()
+                choice = input("Enter your choice (1-8): ").strip()
 
                 if choice == '1':
                     self.find_missing()
@@ -237,8 +240,10 @@ class TranslationManager:
                 elif choice == '5':
                     self.show_status()
                 elif choice == '6':
-                    self.clean_files()
+                    self.find_drifted()
                 elif choice == '7':
+                    self.clean_files()
+                elif choice == '8':
                     print("\n👋 Goodbye!")
                     break
                 else:
@@ -261,6 +266,7 @@ def main():
     parser.add_argument('--translate', action='store_true', help='Generate machine translations')
     parser.add_argument('--apply', action='store_true', help='Apply translations to XML files')
     parser.add_argument('--status', action='store_true', help='Show translation status')
+    parser.add_argument('--drift', action='store_true', help='Find translations older than their English source')
     parser.add_argument('--clean', action='store_true', help='Clean temporary files')
     parser.add_argument('--all', action='store_true', help='Run complete workflow')
 
@@ -278,6 +284,8 @@ def main():
             manager.apply_translations()
         elif args.status:
             manager.show_status()
+        elif args.drift:
+            manager.find_drifted()
         elif args.clean:
             manager.clean_files()
         elif args.all:

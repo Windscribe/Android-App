@@ -8,12 +8,22 @@ struct go_string {
     long n;
 };
 
+/* Go's `int` is pointer-width. cgo's real prototypes are not visible here, so
+ * these declarations must match GoInt by hand or the callee reads a register the
+ * caller never set. */
+#if defined(__LP64__) || defined(_LP64)
+typedef long long go_int;
+#else
+typedef int go_int;
+#endif
+
 extern void
 StartCd(struct go_string cdUID, struct go_string homeDir, struct go_string upstreamProto,
-        int logLevel, struct go_string logPath, struct go_string hostName,
+        go_int logLevel, struct go_string logPath, struct go_string hostName,
         struct go_string lanIp, struct go_string macAddress);
 
-extern int StopCd(bool restart, int pin);
+/* Go declares pin as int64. */
+extern go_int StopCd(bool restart, long long pin);
 
 extern bool IsCdRunning();
 
@@ -86,7 +96,7 @@ Java_com_windscribe_vpn_backend_CdLib_startCd(JNIEnv *env, jobject thiz, jstring
 JNIEXPORT int JNICALL
 Java_com_windscribe_vpn_backend_CdLib_stopCd(JNIEnv *env, jobject thiz, jboolean isRestart,
                                              jint pin) {
-    return StopCd(isRestart, pin);
+    return (jint)StopCd(isRestart, (long long)pin);
 }
 
 JNIEXPORT jboolean JNICALL

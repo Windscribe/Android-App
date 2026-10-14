@@ -17,39 +17,45 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.constants.NotificationConstants
 
 /**
- * Provides immediate foreground promotion for services BEFORE Dagger injection.
+ * Promotes a service to foreground before Dagger injection.
  *
- * Android enforces a strict timeout (~5s on Android 12+, ~10s on older) between
- * startForegroundService() and startForeground(). Dagger injection can exceed this
- * on slow devices or under memory pressure, causing:
- *   - ForegroundServiceDidNotStartInTimeException (Android 12+)
- *   - "Context.startForegroundService() did not then call Service.startForeground()" (older)
+ * Android allows ~5s between `startForegroundService()` and `startForeground()`, and injection can
+ * exceed that on a slow device, throwing `ForegroundServiceDidNotStartInTimeException`.
  *
- * Call [Service.startForegroundImmediately] as the FIRST line of onCreate(), before
- * any DI or heavy work. The notification will be replaced by the proper one after DI.
+ * Call [Service.startForegroundImmediately] as the first line of `onCreate()`, then
+ * [startForegroundSafely] once injection is done.
  */
 object ForegroundServiceHelper {
+    /** Nothing deletes the channel, so one confirmed existence holds for the process. */
+    @Volatile
+    private var channelReady = false
+
     /**
      * Ensures the notification channel exists. Safe to call multiple times.
      * Must be called from Application.onCreate() so the channel is ready before
      * any service tries to post a foreground notification.
+     *
+     * After the first call this is free: querying it is an IPC to NotificationManagerService, and
+     * [startForegroundImmediately] runs it immediately before the deadline it exists to beat.
      */
     fun ensureNotificationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val manager = context.getSystemService(NotificationManager::class.java)
-            if (manager.getNotificationChannel(NotificationConstants.NOTIFICATION_CHANNEL_ID) == null) {
-                val channel =
-                    NotificationChannel(
-                        NotificationConstants.NOTIFICATION_CHANNEL_ID,
-                        "WindScribe",
-                        NotificationManager.IMPORTANCE_LOW,
-                    ).apply {
-                        description = "VPN connection state and background service notification."
-                        enableLights(true)
-                    }
-                manager.createNotificationChannel(channel)
-            }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || channelReady) {
+            return
         }
+        val manager = context.getSystemService(NotificationManager::class.java)
+        if (manager.getNotificationChannel(NotificationConstants.NOTIFICATION_CHANNEL_ID) == null) {
+            val channel =
+                NotificationChannel(
+                    NotificationConstants.NOTIFICATION_CHANNEL_ID,
+                    "WindScribe",
+                    NotificationManager.IMPORTANCE_LOW,
+                ).apply {
+                    description = "VPN connection state and background service notification."
+                    enableLights(true)
+                }
+            manager.createNotificationChannel(channel)
+        }
+        channelReady = true
     }
 
     /**
@@ -68,13 +74,11 @@ object ForegroundServiceHelper {
 }
 
 /**
- * Immediately promotes this service to foreground with a minimal placeholder notification.
- * Call this as the VERY FIRST line in Service.onCreate(), before Dagger injection.
+ * Promotes this service to foreground with a placeholder notification. Call as the first line of
+ * `onCreate()`, then [startForegroundSafely] once injection is done.
  *
- * After DI completes, call [startForegroundSafely] to replace with the full notification.
- *
- * @param notificationId The notification ID to use (must match the one used in startForegroundSafely)
- * @param serviceType The foreground service type (defaults to FOREGROUND_SERVICE_TYPE_SPECIAL_USE for VPN services)
+ * @param notificationId must match the one passed to [startForegroundSafely].
+ * @param serviceType defaults to `FOREGROUND_SERVICE_TYPE_SPECIAL_USE`.
  */
 fun Service.startForegroundImmediately(
     notificationId: Int,

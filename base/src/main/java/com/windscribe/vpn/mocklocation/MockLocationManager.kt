@@ -104,6 +104,8 @@ class MockLocationManager(
                 applicationContext.contentResolver,
                 Global.DEVELOPMENT_SETTINGS_ENABLED,
                 0,
-            ) != 0
+            ) != 0 ||
+                // Some devices report the flag off; being the mock location app already proves dev mode is on.
+                isAppSelectedInMockLocationList(applicationContext)
     }
 }

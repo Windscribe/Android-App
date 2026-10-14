@@ -35,9 +35,11 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.commonutils.ResourceHelper
+import com.windscribe.vpn.commonutils.labelsByPackage
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -45,6 +47,7 @@ import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.LogRepository
+import com.windscribe.vpn.repository.PortMapRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
@@ -75,9 +78,9 @@ class SettingsPresenterImp
         private val vpnConnectionStateManager: VPNConnectionStateManager,
         private val logRepository: LogRepository,
         private var proxyDNSManager: ProxyDNSManager,
-        private val portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
+        private val portMapRepository: PortMapRepository,
         private val wgParamsRepository: UnblockWgParamsRepository,
-        private val appIconCache: com.windscribe.vpn.cache.AppIconCache,
+        private val appIconCache: AppIconCache,
         private val serverListRepository: ServerListRepository,
     ) : SettingsPresenter,
         InstalledAppsAdapter.InstalledAppListener {
@@ -364,7 +367,7 @@ class SettingsPresenterImp
             if (savedLanguage == selectedLanguage) {
                 logger.info("Language selected is same as saved. No action taken...")
             } else {
-                preferencesHelper.savedLanguage = selectedLanguage
+                appContext.setAppLanguage(selectedLanguage)
                 settingView.reloadApp()
             }
         }
@@ -738,13 +741,14 @@ class SettingsPresenterImp
             val pm = appContext.packageManager
             activityScope.launch(Dispatchers.IO) {
                 try {
-                    val packages = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                    val packages = pm.getInstalledApplications(0)
+                    val labels = pm.labelsByPackage(packages)
                     installedAppList.clear()
                     for (applicationInfo in packages) {
                         val isSystemApp = applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 1
                         val mData =
                             InstalledAppsData(
-                                pm.getApplicationLabel(applicationInfo).toString(),
+                                labels[applicationInfo.packageName] ?: applicationInfo.packageName,
                                 applicationInfo.packageName,
                                 isSystemApp,
                             )

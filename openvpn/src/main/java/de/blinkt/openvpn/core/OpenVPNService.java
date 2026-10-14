@@ -11,6 +11,8 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -18,7 +20,6 @@ import android.content.pm.ShortcutManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.ConnectivityManager;
-import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,17 +40,25 @@ import androidx.annotation.RequiresApi;
 
 import com.windscribe.common.DNSDetails;
 import com.windscribe.common.DnsType;
-import com.windscribe.common.VPNTunnelWrapper;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import de.blinkt.openvpn.LaunchVPN;
+import com.windscribe.common.tunnel.IpNetwork;
+import com.windscribe.common.tunnel.TunConfig;
+import com.windscribe.common.tunnel.VpnHost;
+
 import de.blinkt.openvpn.R;
 import de.blinkt.openvpn.VpnProfile;
 import de.blinkt.openvpn.activities.DisconnectVPN;
@@ -57,7 +66,55 @@ import de.blinkt.openvpn.api.ExternalAppDatabase;
 import de.blinkt.openvpn.core.VpnStatus.ByteCountListener;
 import de.blinkt.openvpn.core.VpnStatus.StateListener;
 
-public abstract class OpenVPNService extends VpnService implements StateListener, Callback, ByteCountListener, IOpenVPNServiceInternal {
+/**
+ * The OpenVPN engine.
+ *
+ * <h3>Why this is a ContextWrapper and not a Service</h3>
+ * The TUN belongs to the one {@code android.net.VpnService}, and engines are plain objects behind
+ * it — see docs/architecture/VPN_BACKEND.md §2. It stays a {@link ContextWrapper} because the file
+ * makes ~44 implicit {@code Context} calls and the management thread passes {@code this} around as
+ * one.
+ *
+ * <p>It has no {@code establish()}, {@code protect()}, {@code onRevoke()}, {@code onBind()} or
+ * notification of its own; the host owns all of them.
+ */
+public abstract class OpenVPNService extends ContextWrapper implements StateListener, Callback, ByteCountListener, IOpenVPNServiceInternal {
+    public OpenVPNService(Context base) {
+        super(base);
+    }
+
+    /** Everything that requires being the registered VpnService. Set before {@link #startConnection}. */
+    @Nullable private VpnHost host;
+
+    /** Mux descriptor handed to native over SCM_RIGHTS. Owned by the engine, dup'd per open. */
+    @Nullable private ParcelFileDescriptor engineFd;
+
+    /** The TunConfig behind the last openTun(), used to answer the reopen question. */
+    @Nullable private TunConfig mLastTunConfig;
+
+    public void attachHost(VpnHost host, ParcelFileDescriptor engineFd) {
+        this.host = host;
+        this.engineFd = engineFd;
+    }
+
+    public void detachHost() {
+        this.host = null;
+        this.engineFd = null;
+    }
+
+    /**
+     * Marks a socket so it bypasses the tunnel. Native reaches this through the management thread
+     * ("protectfd") and {@link IOpenVPNServiceInternal}; a non-establishing component may do it.
+     */
+    public boolean protect(int fd) {
+        VpnHost h = host;
+        if (h == null) {
+            VpnStatus.logError("protect() with no host attached; socket would route into the tunnel");
+            return false;
+        }
+        return h.protect(fd);
+    }
+
     public static final String START_SERVICE = "de.blinkt.openvpn.START_SERVICE";
     public static final String START_SERVICE_STICKY = "de.blinkt.openvpn.START_SERVICE_STICKY";
     public static final String ALWAYS_SHOW_NOTIFICATION = "de.blinkt.openvpn.NOTIFICATION_ALWAYS_VISIBLE";
@@ -97,7 +154,6 @@ public abstract class OpenVPNService extends VpnService implements StateListener
     private OpenVPNManagement mManagement;
     private volatile boolean shouldRollbackConnection = false;
 
-    private VPNTunnelWrapper tunnelWrapper;
     private final IBinder mBinder = new IOpenVPNServiceInternal.Stub() {
 
         @Override
@@ -143,8 +199,6 @@ public abstract class OpenVPNService extends VpnService implements StateListener
 
     // Returns if service should keep running
     protected abstract boolean onProcessRestore();
-
-    protected abstract void applyExcludedRoutes(Builder builder);
 
     protected abstract boolean shouldEnablePacketLogging();
 
@@ -217,19 +271,15 @@ public abstract class OpenVPNService extends VpnService implements StateListener
     }
 
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        String action = intent.getAction();
-        if (action != null && action.equals(START_SERVICE))
-            return mBinder;
-        else
-            return super.onBind(intent);
-    }
-
-    @Override
-    public void onRevoke() {
+    /**
+     * VPN consent was revoked. This is a framework callback that only ever arrives on the registered
+     * service, so it cannot be received here — the host fans it out.
+     */
+    public void revoked() {
         VpnStatus.logError(R.string.permission_revoked);
-        mManagement.stopVPN(false);
+        if (mManagement != null) {
+            mManagement.stopVPN(false);
+        }
         endVpnService();
     }
 
@@ -247,9 +297,8 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         ProfileManager.setConntectedVpnProfileDisconnected(this);
         mOpenVPNThread = null;
         if (!mStarting) {
-            stopForeground(false);
+            // The notification and service lifetime belong to the single VpnService.
             if (!mNotificationAlwaysVisible) {
-                stopSelf();
                 VpnStatus.removeStateListener(this);
             }
         }
@@ -499,109 +548,41 @@ public abstract class OpenVPNService extends VpnService implements StateListener
 
     @Override
     public boolean stopVPN(boolean replaceConnection) throws RemoteException {
-        if (tunnelWrapper != null){
-            tunnelWrapper.stop();
-        }
+        // The packet path belongs to PacketMux, which outlives this engine.
         if (getManagement() != null)
             return getManagement().stopVPN(replaceConnection);
         else
             return false;
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && intent.getBooleanExtra(ALWAYS_SHOW_NOTIFICATION, false))
-            mNotificationAlwaysVisible = true;
-
+    /**
+     * Starts the OpenVPN process for the current profile.
+     *
+     * <p>No process-restart branch, {@code START_STICKY} or always-on entry: those are
+     * {@code WindscribeVpnService}'s. PAUSE/RESUME go through {@link #userPause}.
+     *
+     * @return true if the process was started.
+     */
+    public boolean startConnection() {
         VpnStatus.addStateListener(this);
         VpnStatus.addByteCountListener(this);
 
         guiHandler = new Handler(getMainLooper());
-
-        if (intent == null) {
-            // Process restart
-            boolean shouldStart = onProcessRestore();
-            if (!shouldStart) {
-                stopSelf(startId);
-            }
-            return START_NOT_STICKY;
-        }
-
-        if (PAUSE_VPN.equals(intent.getAction())) {
-            // This value will be picked up by any ongoing startOpenVPN execution in background
-            // thread so that it can be properly rolled back.
-            shouldRollbackConnection = true;
-            try {
-                stopForeground(false);
-                stopVPN(false);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-            return START_NOT_STICKY;
-        }
-
         shouldRollbackConnection = false;
 
-        if (RESUME_VPN.equals(intent.getAction())) {
-            if (mDeviceStateReceiver != null)
-                mDeviceStateReceiver.userPause(false);
-            return START_NOT_STICKY;
-        }
-
-
-        if (START_SERVICE.equals(intent.getAction()))
-            return START_NOT_STICKY;
-        if (START_SERVICE_STICKY.equals(intent.getAction())) {
-            return START_REDELIVER_INTENT;
-        }
-
-        // Always show notification here to avoid problem with startForeground timeout
         VpnStatus.logInfo(R.string.building_configration);
         VpnStatus.updateStateString("VPN_GENERATE_CONFIG", "", R.string.building_configration, ConnectionStatus.LEVEL_START);
-        showNotification(VpnStatus.getLastCleanLogMessage(this),
-                VpnStatus.getLastCleanLogMessage(this), NOTIFICATION_CHANNEL_NEWSTATUS_ID, 0, ConnectionStatus.LEVEL_START, null);
 
-        if (intent != null && intent.hasExtra(getPackageName() + ".profileUUID")) {
-            String profileUUID = intent.getStringExtra(getPackageName() + ".profileUUID");
-            int profileVersion = intent.getIntExtra(getPackageName() + ".profileVersion", 0);
-            // Try for 10s to get current version of the profile
-            mProfile = getProfile();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                updateShortCutUsage(mProfile);
-            }
-
-        } else {
-            /* The intent is null when we are set as always-on or the service has been restarted. */
-            mProfile = getProfile();
-            VpnStatus.logInfo(R.string.service_restarted);
-
-            /* Got no profile, just stop */
-            if (mProfile == null) {
-                Log.d("OpenVPN", "Got no last connected profile on null intent. Assuming always on.");
-                mProfile = ProfileManager.getAlwaysOnVPN(this);
-
-                if (mProfile == null) {
-                    try {
-                        stopVPN(false);
-                        stopForeground(false);
-                        stopSelf(startId);
-                    } catch (RemoteException e) {
-                        Log.d("OpenVPN","Error stopping.."+e.getLocalizedMessage());
-                        e.printStackTrace();
-                    }
-                    return START_NOT_STICKY;
-                }
-            }
-            /* Do the asynchronous keychain certificate stuff */
-            mProfile.checkForRestart(this);
-        }
-
+        mProfile = getProfile();
         if (mProfile == null) {
-            stopSelf(startId);
-            return START_NOT_STICKY;
+            VpnStatus.logError("No OpenVPN profile to connect with.");
+            return false;
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            updateShortCutUsage(mProfile);
+        }
+        mProfile.checkForRestart(this);
 
-        shouldRollbackConnection = false;
         /* start the OpenVPN process itself in a background thread */
         new Thread(new Runnable() {
             @Override
@@ -610,11 +591,9 @@ public abstract class OpenVPNService extends VpnService implements StateListener
             }
         }).start();
 
-
         ProfileManager.setConnectedVpnProfile(this, mProfile);
         VpnStatus.setConnectedVPNProfile(mProfile.getUUIDString());
-
-        return START_STICKY;
+        return true;
     }
 
     private void rollbackConnection() {
@@ -653,7 +632,7 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         String nativeLibraryDirectory = getApplicationInfo().nativeLibraryDir;
         String tmpDir;
         try {
-            tmpDir = getApplication().getCacheDir().getCanonicalPath();
+            tmpDir = getCacheDir().getCanonicalPath();
         } catch (IOException e) {
             e.printStackTrace();
             tmpDir = "/tmp";
@@ -773,22 +752,17 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         return mBinder;
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-    }
-
-    @Override
-    public void onDestroy() {
+    /** Tears the engine down. Called by {@code OpenVpnEngine.stop()}, not by the framework. */
+    public void destroy() {
         try {
             synchronized (mProcessLock) {
                 if (mProcessThread != null) {
                     mManagement.stopVPN(true);
                 }
             }
-            if (mDeviceStateReceiver != null) {
-                this.unregisterReceiver(mDeviceStateReceiver);
-            }
+            // Through unregisterDeviceStateReceiver(), the only path that nulls the field;
+            // otherwise endVpnService() unregisters a second time.
+            unregisterDeviceStateReceiver();
             // Just in case unregister for state
             VpnStatus.removeStateListener(this);
             VpnStatus.flushLog();
@@ -838,168 +812,130 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         } else return ipBytes[0] == 169 && ipBytes[1] == 254;
     }
 
+    /**
+     * Called by the management thread when native asks for a tun device.
+     *
+     * <p>Assembles a protocol-neutral {@link TunConfig} from the pushed values and asks the host,
+     * which re-establishes only if the live interface cannot carry it.
+     *
+     * <p>Native receives the mux's socketpair descriptor, not the TUN. OpenVPN does plain
+     * {@code read()}/{@code write()} on whatever arrives over SCM_RIGHTS.
+     *
+     * <p>A fresh dup each time: {@code sendTunFD()} closes its copy after the SCM_RIGHTS send, and
+     * native may reopen mid-session (OPEN_BEFORE_CLOSE).
+     */
     public ParcelFileDescriptor openTun() {
-
-        //Debug.startMethodTracing(getExternalFilesDir(null).toString() + "/opentun.trace", 40* 1024 * 1024);
-
-        Builder builder = new Builder();
+        VpnHost h = host;
+        ParcelFileDescriptor mux = engineFd;
+        if (h == null || mux == null) {
+            VpnStatus.logError("openTun() with no host attached");
+            return null;
+        }
 
         VpnStatus.logInfo(R.string.last_openvpn_tun_config);
-
-        boolean allowUnsetAF = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !mProfile.mBlockUnusedAddressFamilies;
-        if (allowUnsetAF) {
-            allowAllAFFamilies(builder);
-        }
 
         if (mLocalIP == null && mLocalIPv6 == null) {
             VpnStatus.logError(getString(R.string.opentun_no_ipaddr));
             return null;
         }
 
-        if (mLocalIP != null) {
-            // OpenVPN3 manages excluded local networks by callback
-            if (!VpnProfile.doUseOpenVPN3(this))
-                addLocalNetworksToRoutes();
-            try {
-                builder.addAddress(mLocalIP.mIp, mLocalIP.len);
-            } catch (IllegalArgumentException iae) {
-                VpnStatus.logError(R.string.dns_add_error, mLocalIP, iae.getLocalizedMessage());
-                return null;
-            }
+        TunConfig config;
+        try {
+            config = buildTunConfig();
+        } catch (Exception e) {
+            VpnStatus.logError("Could not assemble tun config: " + e.getMessage());
+            return null;
         }
 
-        /*if (mLocalIPv6 != null) {
-            String[] ipv6parts = mLocalIPv6.split("/");
-            try {
-                builder.addAddress(ipv6parts[0], Integer.parseInt(ipv6parts[1]));
-            } catch (IllegalArgumentException iae) {
-                VpnStatus.logError(R.string.ip_add_error, mLocalIPv6, iae.getLocalizedMessage());
-                return null;
-            }
+        // Reset the accumulated push state exactly as before, so the next reopen starts clean.
+        mLastTunCfg = getTunConfigString();
+        mLastTunConfig = config;
+        mDnslist.clear();
+        mRoutes.clear();
+        mRoutesv6.clear();
+        mLocalIP = null;
+        mLocalIPv6 = null;
+        mDomain = null;
 
-        }*/
-        if (mProfile.mOverrideDNS){
+        try {
+            if (h.tunCovers(config)) {
+                VpnStatus.logInfo("Live TUN already carries this config; not re-establishing.");
+            } else {
+                h.requestTun(config);
+            }
+            // Native gets a dup; the engine keeps the original for the life of the connection.
+            return ParcelFileDescriptor.dup(mux.getFileDescriptor());
+        } catch (Exception e) {
+            if (e instanceof SecurityException && e.getMessage() != null
+                    && e.getMessage().contains("INTERACT_ACROSS_USERS")) {
+                VpnStatus.updateStateString("MULTI_USER_PERMISSION", "", R.string.state_user_vpn_permission, ConnectionStatus.LEVEL_MULTI_USER_PERMISSION);
+            }
+            VpnStatus.logError(R.string.tun_open_error);
+            VpnStatus.logError("Error" + e.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Translates the pushed OpenVPN configuration into a {@link TunConfig}.
+     *
+     * <p>Faithfulness matters more than tidiness: any gratuitous difference is one
+     * {@link TunConfig#coversSameInterfaceAs} notices, forcing an avoidable re-establish. Excluded
+     * routes are absent because the host applies them once while building.
+     */
+    private TunConfig buildTunConfig() throws java.net.UnknownHostException {
+        List<IpNetwork> addresses = new ArrayList<>();
+        List<IpNetwork> routes = new ArrayList<>();
+        List<InetAddress> dnsServers = new ArrayList<>();
+        List<String> allowedApps = new ArrayList<>();
+        List<String> disallowedApps = new ArrayList<>();
+
+        if (mLocalIP != null) {
+            if (!VpnProfile.doUseOpenVPN3(this))
+                addLocalNetworksToRoutes();
+            addresses.add(new IpNetwork(InetAddress.getByName(mLocalIP.mIp), mLocalIP.len));
+        }
+        if (mLocalIPv6 != null) {
+            String[] ipv6parts = mLocalIPv6.split("/");
+            addresses.add(new IpNetwork(InetAddress.getByName(ipv6parts[0]), Integer.parseInt(ipv6parts[1])));
+        }
+
+        // Exclusive: the server pushes its own DNS and openvpn reports both back.
+        if (mProfile.mOverrideDNS && !TextUtils.isEmpty(mProfile.mDNS1)) {
             try {
-                builder.addDnsServer(mProfile.mDNS1);
-            } catch (IllegalArgumentException iae) {
-                VpnStatus.logError(R.string.dns_add_error, mProfile.mDNS2, iae.getLocalizedMessage());
+                dnsServers.add(InetAddress.getByName(mProfile.mDNS1));
+            } catch (Exception e) {
+                VpnStatus.logError(R.string.dns_add_error, mProfile.mDNS1, e.getLocalizedMessage());
             }
         } else {
             for (String dns : mDnslist) {
                 try {
-                    builder.addDnsServer(dns);
-                } catch (IllegalArgumentException iae) {
-                    VpnStatus.logError(R.string.dns_add_error, dns, iae.getLocalizedMessage());
+                    dnsServers.add(InetAddress.getByName(dns));
+                } catch (Exception e) {
+                    VpnStatus.logError(R.string.dns_add_error, dns, e.getLocalizedMessage());
                 }
             }
         }
-        String release = Build.VERSION.RELEASE;
-        if ((Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT && !release.startsWith("4.4.3")
-                && !release.startsWith("4.4.4") && !release.startsWith("4.4.5") && !release.startsWith("4.4.6"))
-                && mMtu < 1280) {
-            VpnStatus.logInfo(String.format(Locale.US, "Forcing MTU to 1280 instead of %d to workaround Android Bug #70916", mMtu));
-            builder.setMtu(1280);
-        } else {
-            builder.setMtu(mMtu);
-        }
 
-        Collection<IpAddress> positiveIPv4Routes = mRoutes.getPositiveIPList();
-        // Collection<IpAddress> positiveIPv6Routes = mRoutesv6.getPositiveIPList();
-
-        if ("samsung".equals(Build.BRAND) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mDnslist.size() >= 1) {
-            // Check if the first DNS Server is in the VPN range
+        Collection<NetworkSpace.IpAddress> positiveIPv4Routes = mRoutes.getPositiveIPList();
+        NetworkSpace.IpAddress multicastRange = new NetworkSpace.IpAddress(new CIDRIP("224.0.0.0", 3), true);
+        for (NetworkSpace.IpAddress route : positiveIPv4Routes) {
             try {
-                IpAddress dnsServer = new IpAddress(new CIDRIP(mDnslist.get(0), 32), true);
-                boolean dnsIncluded = false;
-                for (IpAddress net : positiveIPv4Routes) {
-                    if (net.containsNet(dnsServer)) {
-                        dnsIncluded = true;
-                    }
-                }
-                if (!dnsIncluded) {
-                    String samsungwarning = String.format("Warning Samsung Android 5.0+ devices ignore DNS servers outside the VPN range. To enable DNS resolution a route to your DNS Server (%s) has been added.", mDnslist.get(0));
-                    VpnStatus.logWarning(samsungwarning);
-                    positiveIPv4Routes.add(dnsServer);
+                if (multicastRange.containsNet(route)) {
+                    VpnStatus.logDebug(R.string.ip_not_cidr, route.getIPv4Address(), route.networkMask, "multicast");
+                } else {
+                    routes.add(new IpNetwork(InetAddress.getByName(route.getIPv4Address()), route.networkMask));
                 }
             } catch (Exception e) {
-                // If it looks like IPv6 ignore error
-                if (!mDnslist.get(0).contains(":"))
-                    VpnStatus.logError("Error parsing DNS Server IP: " + mDnslist.get(0));
+                VpnStatus.logError("Route rejected " + route + " " + e.getLocalizedMessage());
             }
         }
+        addSamsungDnsRoute(positiveIPv4Routes, dnsServers, routes);
 
-        IpAddress multicastRange = new IpAddress(new CIDRIP("224.0.0.0", 3), true);
+        // Unfloored: the user's packet size arrives as mMtu.
+        int mtu = mMtu;
 
-        for (IpAddress route : positiveIPv4Routes) {
-            try {
-
-                if (multicastRange.containsNet(route))
-                    VpnStatus.logDebug(R.string.ignore_multicast_route, route.toString());
-                else
-                    builder.addRoute(route.getIPv4Address(), route.networkMask);
-            } catch (IllegalArgumentException ia) {
-                VpnStatus.logError(getString(R.string.route_rejected) + route + " " + ia.getLocalizedMessage());
-            }
-        }
-
-//        for (IpAddress route6 : positiveIPv6Routes) {
-//            try {
-//                builder.addRoute(route6.getIPv6Address(), route6.networkMask);
-//            } catch (IllegalArgumentException ia) {
-//                VpnStatus.logError(getString(R.string.route_rejected) + route6 + " " + ia.getLocalizedMessage());
-//            }
-//        }
-
-
-        if (mDomain != null)
-            builder.addSearchDomain(mDomain);
-
-        String ipv4info;
-        String ipv6info;
-        if (allowUnsetAF) {
-            ipv4info = "(not set, allowed)";
-            ipv6info = "(not set, allowed)";
-        } else {
-            ipv4info = "(not set)";
-            ipv6info = "(not set)";
-        }
-
-        int ipv4len;
-        if (mLocalIP!=null) {
-            ipv4len=mLocalIP.len;
-            ipv4info=mLocalIP.mIp;
-        } else {
-            ipv4len = -1;
-        }
-
-        if (mLocalIPv6!=null)
-        {
-            ipv6info = mLocalIPv6;
-        }
-
-        if ((!mRoutes.getNetworks(false).isEmpty() || !mRoutesv6.getNetworks(false).isEmpty()) && isLockdownEnabledCompat())
-        {
-            VpnStatus.logInfo("VPN lockdown enabled (do not allow apps to bypass VPN) enabled. Route exclusion will not allow apps to bypass VPN (e.g. bypass VPN for local networks)");
-        }
-
-        VpnStatus.logInfo(R.string.local_ip_info, ipv4info, ipv4len, ipv6info, mMtu);
-        VpnStatus.logInfo(R.string.dns_server_info, TextUtils.join(", ", mDnslist), mDomain);
-        VpnStatus.logInfo(R.string.routes_info_incl, TextUtils.join(", ", mRoutes.getNetworks(true)), TextUtils.join(", ", mRoutesv6.getNetworks(true)));
-        VpnStatus.logInfo(R.string.routes_info_excl, TextUtils.join(", ", mRoutes.getNetworks(false)), TextUtils.join(", ", mRoutesv6.getNetworks(false)));
-        VpnStatus.logDebug(R.string.routes_debug, TextUtils.join(", ", positiveIPv4Routes));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setAllowedVpnPackages(builder);
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            // VPN always uses the default network
-            builder.setUnderlyingNetworks(null);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Setting this false, will cause the VPN to inherit the underlying network metered
-            // value
-            builder.setMetered(false);
-        }
+        collectAllowedVpnPackages(allowedApps, disallowedApps);
 
         String session = mProfile.mName;
         if (mLocalIP != null && mLocalIPv6 != null)
@@ -1009,70 +945,66 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         else
             session = getString(R.string.session_ipv4string, session, mLocalIPv6);
 
-        builder.setSession(session);
-
-        // No DNS Server, log a warning
-        if (mDnslist.size() == 0)
+        if (dnsServers.isEmpty())
             VpnStatus.logInfo(R.string.warn_no_dns);
 
-        mLastTunCfg = getTunConfigString();
+        boolean allowUnsetAF = !mProfile.mBlockUnusedAddressFamilies;
 
-        // Reset information
-        mDnslist.clear();
-        mRoutes.clear();
-        mRoutesv6.clear();
-        mLocalIP = null;
-        mLocalIPv6 = null;
-        mDomain = null;
-
-        builder.setConfigureIntent(getGraphPendingIntent());
-
-        applyExcludedRoutes(builder);
-
-        try {
-            //Debug.stopMethodTracing();
-            ParcelFileDescriptor tun;
-            DNSDetails dnsDetails = mProfile.getDnsDetails();
-            if (dnsDetails != null && (dnsDetails.getType() == DnsType.Proxy)){
-                builder.setBlocking(true);
-                tun = builder.establish();
-                tunnelWrapper = new VPNTunnelWrapper(tun, this, getControlDPort(), shouldEnablePacketLogging());
-                tunnelWrapper.start();
-                tun = tunnelWrapper.getParcelDescriptor();
-            } else {
-                tun = builder.establish();
-            }
-            if (tun == null)
-                throw new NullPointerException("Android establish() method returned null (Really broken network configuration?)");
-            return tun;
-        } catch (Exception e) {
-            if (e instanceof SecurityException && e.getMessage().contains("INTERACT_ACROSS_USERS")) {
-                VpnStatus.updateStateString("MULTI_USER_PERMISSION", "", R.string.state_user_vpn_permission, ConnectionStatus.LEVEL_MULTI_USER_PERMISSION);
-            }
-            VpnStatus.logError(R.string.tun_open_error);
-            VpnStatus.logError("Error" + e.getLocalizedMessage());
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                VpnStatus.logError(R.string.tun_error_helpful);
-            }
-            return null;
+        List<String> searchDomains = new ArrayList<>();
+        if (mDomain != null) {
+            searchDomains.add(mDomain);
         }
 
+        return new TunConfig(
+                session,
+                addresses,
+                routes,
+                dnsServers,
+                searchDomains,
+                mtu,
+                allowedApps,
+                disallowedApps,
+                allowUnsetAF);
     }
 
     private boolean isLockdownEnabledCompat() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return isLockdownEnabled();
-        } else {
-            /* We cannot determine this, return false */
-            return false;
-        }
-
+        VpnHost h = host;
+        return h != null && h.isSystemLockdownEnabled();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void allowAllAFFamilies(Builder builder) {
-        builder.allowFamily(OsConstants.AF_INET);
-        builder.allowFamily(OsConstants.AF_INET6);
+    /**
+     * Samsung ignores a DNS server no route covers and uses the network's own instead, so it needs
+     * a host route. Appends to {@code routes} in place.
+     */
+    private void addSamsungDnsRoute(Collection<NetworkSpace.IpAddress> positiveRoutes,
+                                    List<InetAddress> dnsServers, List<IpNetwork> routes) {
+        if (!"samsung".equals(Build.BRAND) || dnsServers.isEmpty()) {
+            return;
+        }
+        InetAddress resolver = dnsServers.get(0);
+        if (!(resolver instanceof Inet4Address)) {
+            return;
+        }
+        String ip = resolver.getHostAddress();
+        try {
+            NetworkSpace.IpAddress asNetwork = new NetworkSpace.IpAddress(new CIDRIP(ip, 32), true);
+            for (NetworkSpace.IpAddress route : positiveRoutes) {
+                if (route.containsNet(asNetwork)) {
+                    return;
+                }
+            }
+            if (mProfile.mAllowLocalLAN && isPrivateIPAddress(ip)) {
+                // LAN bypass put it off the routes; a tunnel route would make it unreachable.
+                VpnStatus.logWarning("Samsung ignores DNS servers outside the VPN's routes, and " + ip
+                        + " is on the bypassed LAN. Turn LAN bypass off to use it.");
+                return;
+            }
+            VpnStatus.logWarning("Samsung ignores DNS servers outside the VPN's routes; adding a route to "
+                    + ip + " so it resolves.");
+            routes.add(new IpNetwork(resolver, 32));
+        } catch (Exception e) {
+            VpnStatus.logError("Could not add the Samsung DNS route for " + ip + ": " + e.getLocalizedMessage());
+        }
     }
 
     private void addLocalNetworksToRoutes() {
@@ -1104,52 +1036,43 @@ public abstract class OpenVPNService extends VpnService implements StateListener
     }
 
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void setAllowedVpnPackages(Builder builder) {
+    /**
+     * Resolves the profile's app rules into the two lists {@link TunConfig} carries. Entries that no
+     * longer resolve are dropped, and an empty allow-list gets ourselves, so the interface is never
+     * created with nothing routed through it.
+     */
+    private void collectAllowedVpnPackages(List<String> allowedApps, List<String> disallowedApps) {
         boolean profileUsesOrBot = false;
-
         for (Connection c : mProfile.mConnections) {
             if (c.mProxyType == Connection.ProxyType.ORBOT)
                 profileUsesOrBot = true;
         }
-
         if (profileUsesOrBot)
             VpnStatus.logDebug("VPN Profile uses at least one server entry with Orbot. Setting up VPN so that OrBot is not redirected over VPN.");
-
 
         boolean atLeastOneAllowedApp = false;
 
         if (mProfile.mAllowedAppsVpnAreDisallowed && profileUsesOrBot) {
-            try {
-                builder.addDisallowedApplication(ORBOT_PACKAGE_NAME);
-            } catch (PackageManager.NameNotFoundException e) {
-                VpnStatus.logDebug("Orbot not installed?");
-            }
+            disallowedApps.add(ORBOT_PACKAGE_NAME);
         }
 
-        for (String pkg : mProfile.mAllowedAppsVpn) {
-            try {
-                if (mProfile.mAllowedAppsVpnAreDisallowed) {
-                    builder.addDisallowedApplication(pkg);
-                } else {
-                    if (!(profileUsesOrBot && pkg.equals(ORBOT_PACKAGE_NAME))) {
-                        builder.addAllowedApplication(pkg);
-                        atLeastOneAllowedApp = true;
-                    }
-                }
-            } catch (PackageManager.NameNotFoundException e) {
+        for (String pkg : new ArrayList<>(mProfile.mAllowedAppsVpn)) {
+            if (!packageExists(pkg)) {
                 mProfile.mAllowedAppsVpn.remove(pkg);
                 VpnStatus.logInfo(R.string.app_no_longer_exists, pkg);
+                continue;
+            }
+            if (mProfile.mAllowedAppsVpnAreDisallowed) {
+                disallowedApps.add(pkg);
+            } else if (!(profileUsesOrBot && pkg.equals(ORBOT_PACKAGE_NAME))) {
+                allowedApps.add(pkg);
+                atLeastOneAllowedApp = true;
             }
         }
 
         if (!mProfile.mAllowedAppsVpnAreDisallowed && !atLeastOneAllowedApp) {
             VpnStatus.logDebug(R.string.no_allowed_app, getPackageName());
-            try {
-                builder.addAllowedApplication(getPackageName());
-            } catch (PackageManager.NameNotFoundException e) {
-                VpnStatus.logError("This should not happen: " + e.getLocalizedMessage());
-            }
+            allowedApps.add(getPackageName());
         }
 
         if (mProfile.mAllowedAppsVpnAreDisallowed) {
@@ -1157,10 +1080,14 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         } else {
             VpnStatus.logDebug(R.string.allowed_vpn_apps_info, TextUtils.join(", ", mProfile.mAllowedAppsVpn));
         }
+    }
 
-        if (mProfile.mAllowAppVpnBypass) {
-            builder.allowBypass();
-            VpnStatus.logDebug("Apps may bypass VPN");
+    private boolean packageExists(String pkg) {
+        try {
+            getPackageManager().getPackageInfo(pkg, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
         }
     }
 
@@ -1366,8 +1293,32 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         return mManagement;
     }
 
+    /**
+     * Answers native's PERSIST_TUN question on every reconnect.
+     *
+     * <p>The host's live TUN is consulted first: the interface belongs to the session and may have
+     * been established by another protocol, so {@code mLastTunCfg} cannot answer for it (§5.2). If
+     * the live one already carries what was pushed, there is nothing to reopen.
+     */
     public String getTunReopenStatus() {
         String currentConfiguration = getTunConfigString();
+        VpnHost h = host;
+        if (h != null) {
+            // buildTunConfig() adds this network's prefixes to mRoutes, and only openTun() clears
+            // them. NOACTION skips openTun, so the probe is rolled back.
+            TreeSet<NetworkSpace.IpAddress> routesBeforeProbe = mRoutes.snapshot();
+            try {
+                TunConfig pushed = buildTunConfig();
+                if (h.tunCovers(pushed)) {
+                    return "NOACTION";
+                }
+            } catch (Exception e) {
+                // Fall through to the string comparison below rather than guessing.
+                VpnStatus.logDebug("Could not evaluate pushed tun config: " + e.getMessage());
+            } finally {
+                mRoutes.restore(routesBeforeProbe);
+            }
+        }
         if (currentConfiguration.equals(mLastTunCfg)) {
             return "NOACTION";
         } else {

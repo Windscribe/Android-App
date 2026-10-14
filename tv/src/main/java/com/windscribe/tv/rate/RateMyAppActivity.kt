@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.base.BaseActivity
-import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.databinding.ActivityRateMyAppBinding
 import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.RateDialogConstants.PLAY_STORE_URL
@@ -29,7 +28,6 @@ class RateMyAppActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         presenter.bind(this, lifecycleScope)
-        applyAppLocale()
         binding = ActivityRateMyAppBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupUI()

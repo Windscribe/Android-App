@@ -4,15 +4,12 @@
 
 package com.windscribe.vpn.state
 
-import android.os.Build
-import com.windscribe.vpn.R
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connected
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
-import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.commonutils.ConnectionLogContext
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.wsnet.WSNetWrapper
 import dagger.Lazy
@@ -41,10 +38,38 @@ class VPNConnectionStateManager(
     private val _events = MutableStateFlow(VPNState(Disconnected))
     val state: StateFlow<VPNState> = _events
 
+    private val _serviceMode = MutableStateFlow<ConnectionPolicy.ServiceMode?>(null)
+
+    /**
+     * What the service is doing while there is no tunnel — paused, or watching — and null otherwise.
+     *
+     * A second flow rather than a field on [VPNState]: both are written at nearly the same moment on
+     * a disconnect, and the backend's carries a connectionId so it does not dedupe against the
+     * service's. On one field, whichever landed second would win.
+     */
+    val serviceMode: StateFlow<ConnectionPolicy.ServiceMode?> = _serviceMode
+
+    fun setServiceMode(mode: ConnectionPolicy.ServiceMode?) {
+        _serviceMode.value = mode
+    }
+
     private val _connectionCount = MutableSharedFlow<Int>(preferencesHelper.getConnectionCount())
     val connectionCount: SharedFlow<Int> = _connectionCount
 
+    /** "Has a decision been made?". Callers asking "is there a tunnel?" want [isTunnelUp]. */
     fun isVPNActive(): Boolean = state.value.status != Disconnected
+
+    /** True only while a tunnel exists or is being built. */
+    fun isTunnelUp(): Boolean =
+        when (state.value.status) {
+            Connected,
+            VPNState.Status.Connecting,
+            VPNState.Status.Disconnecting,
+            VPNState.Status.ProtocolSwitch,
+            -> true
+
+            else -> false
+        }
 
     fun isVPNConnected(): Boolean = state.value.status == Connected
 
@@ -52,6 +77,10 @@ class VPNConnectionStateManager(
         newState: VPNState,
         force: Boolean = false,
     ) {
+        // Clearing here rather than at each call site is what stops a stale Paused surviving a connect.
+        if (newState.status != Disconnected) {
+            _serviceMode.value = null
+        }
         scope.launch {
             if (AppLifeCycleObserver.isInForeground.not() && newState.status == Disconnected) {
                 preferencesHelper.isReconnecting = false
@@ -69,7 +98,11 @@ class VPNConnectionStateManager(
         scope.launch(Dispatchers.IO) {
             state.collectLatest {
                 if (start.getAndSet(true)) {
-                    logger.info("VPN state changed to ${it.status}")
+                    // Named only when it is not the attempt the line is already stamped with: such a
+                    // state came from a superseded engine that is only now dying, and nothing else
+                    // in the log tells the two apart.
+                    val attempt = ConnectionLogContext.differing(it.connectionId)?.let { id -> " from attempt $id" } ?: ""
+                    logger.info("VPN state changed to ${it.status}$attempt (error=${it.error?.error})")
                     wsNetWrapper.withWSNet { wsNet ->
                         wsNet.setIsConnectedToVpnState(isVPNConnected())
                         if (!isVPNConnected()) {
@@ -77,19 +110,8 @@ class VPNConnectionStateManager(
                         }
                     }
                 } else {
-                    val logFile =
-                        Windscribe.appContext.resources.getString(
-                            R.string.log_file_header,
-                            Build.VERSION.SDK_INT,
-                            Build.BRAND,
-                            Build.DEVICE,
-                            Build.MODEL,
-                            Build.MANUFACTURER,
-                            Build.VERSION.RELEASE,
-                            WindUtilities.getVersionCode(),
-                        )
-                    logger.info(logFile)
-                    logger.info("VPN state initialized with ${it.status}")
+                    // Nothing logged: the first emission is always the Disconnected the flow was
+                    // constructed with, and "Application startup finished." already marks the process.
                     if (autoConnectionManager.listOfProtocols.isEmpty()) {
                         autoConnectionManager.reset()
                     }

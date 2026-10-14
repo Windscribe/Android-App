@@ -9,6 +9,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
+import com.windscribe.vpn.backend.utils.SYSTEM_DISCONNECT
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.billing.GooglePlaySubscriptionUrl
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,7 +41,8 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
                     logger.info("Received Account expired notification, scheduling service task...")
                     with(vpnController) {
                         scope.launch {
-                            disconnectAsync()
+                            // A server-side account expiry, pushed to us. Not the user's doing.
+                            disconnectAsync(SYSTEM_DISCONNECT)
                             appContext.workManager.updateSession()
                         }
                     }

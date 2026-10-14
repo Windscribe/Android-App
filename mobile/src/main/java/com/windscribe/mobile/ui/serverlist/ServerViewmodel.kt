@@ -11,6 +11,7 @@ import com.windscribe.vpn.repository.FavouriteWithCity
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
+import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
@@ -152,7 +153,7 @@ class ServerViewModelImpl
         private val localDbInterface: LocalDbInterface,
         private val preferencesHelper: PreferencesHelper,
         private val latencyRepository: LatencyRepository,
-        private val userRepository: com.windscribe.vpn.repository.UserRepository,
+        private val userRepository: UserRepository,
     ) : ServerViewModel() {
         private val _serverListState = MutableStateFlow<ListState<ServerListItem>>(ListState.Loading)
         override val serverListState: StateFlow<ListState<ServerListItem>> = _serverListState

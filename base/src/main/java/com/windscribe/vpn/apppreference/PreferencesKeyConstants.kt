@@ -42,6 +42,9 @@ object PreferencesKeyConstants {
     const val USER_NAME = "user_name"
     const val BEST_LOCATION_IP_2 = "best_location_ip_2"
     const val DEBUG_LOG_FILE_NAME = "/applog.txt"
+
+    /** Dictated by the fileNamePattern in logback.xml; changing one without the other loses it. */
+    const val DEBUG_LOG_ROLLED_FILE_NAME = "/applog.1.log.zip"
     const val LOCATION_HASH = "loc_hash"
     const val ALC_LIST = "alc_list"
     const val VPN_DISCONNECTED = "disconnected"
@@ -72,6 +75,9 @@ object PreferencesKeyConstants {
     const val SPLIT_TUNNEL_TOGGLE = "tunnel_toggle"
     const val SHOW_SYSTEM_APPS = "show_system_apps"
     const val AUTO_START_ON_BOOT = "auto_start_boot"
+
+    /** Set once the stored language has been handed to the platform per-app locale. */
+    const val APP_LOCALE_MIGRATED = "app_locale_migrated"
     const val INSTALLED_APPS_DATA = "installed_app_data"
     const val LAST_CONNECTION_USING_SPLIT = "last_connection_using_split"
     const val NOTIFICATION_STAT = "notification_stat"
@@ -160,6 +166,7 @@ object PreferencesKeyConstants {
     const val SELECTED_PROTOCOL = "selected_protocol"
     const val SELECTED_PORT = "selected_port"
     const val SELECTED_IP = "selected_ip"
+    const val SELECTED_NODE_ID = "selected_node_id"
     const val SELECTED_PROTOCOL_TYPE = "selected_protocol_type"
     const val CURRENT_STATUS_KEY = "rate_dialog_key"
     const val LAST_UPDATE_TIME = "last_time"
@@ -176,4 +183,12 @@ object PreferencesKeyConstants {
     const val EXTRA_TLS_PADDING = "extra_tls_padding"
     const val TLS_SERVER_NAME = "tlsServerName"
     const val ENCRYPTION_WARNING_ACKNOWLEDGED = "encryption_warning_acknowledged"
+
+    // Non Windscribe
+    const val ESET_LICENCE_CODE = "licence_code"
+    const val ESET_SERVER_LIST_ORDER = "server_list_order"
+    const val ESET_THEME_MODE = "theme_mode"
+    const val ESET_LAST_SESSION_ERROR_CODE = "last_session_error_code"
+    const val ESET_DEFAULT_SERVER_LIST_ORDER = "Geography"
+    const val ESET_DEFAULT_THEME_MODE = "Dark"
 }

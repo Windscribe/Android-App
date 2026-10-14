@@ -39,6 +39,24 @@ class ThreadSafeList<T> : MutableList<T> {
         synchronized(lock) { list.clear() }
     }
 
+    /**
+     * Sorts in place, under the lock.
+     *
+     * A member rather than the stdlib extension because the extension cannot work here: it routes
+     * through `java.util.List.sort`, which writes the sorted result back via [listIterator], and
+     * this class hands out iterators over a *copy* so the write lands in a throwaway list. The
+     * extension therefore compiles, runs and does nothing. A member wins overload resolution for a
+     * receiver typed as [ThreadSafeList], so callers get this instead.
+     */
+    fun <R : Comparable<R>> sortBy(selector: (T) -> R?) {
+        synchronized(lock) { list.sortBy(selector) }
+    }
+
+    /** In-place sort under the lock. See [sortBy] for why the stdlib extension cannot be used. */
+    fun sortWith(comparator: Comparator<in T>) {
+        synchronized(lock) { list.sortWith(comparator) }
+    }
+
     override fun listIterator(): MutableListIterator<T> = synchronized(lock) { list.toMutableList().listIterator() }
 
     override fun listIterator(index: Int): MutableListIterator<T> = synchronized(lock) { list.toMutableList().listIterator(index) }

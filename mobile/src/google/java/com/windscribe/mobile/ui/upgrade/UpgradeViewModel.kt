@@ -42,6 +42,7 @@ import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.BillingConstants.PLAY_STORE_UPDATE
 import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM_NULL
+import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserDataState
@@ -219,7 +220,7 @@ class UpgradeViewModel
                 onBillingSetupSuccessful()
             }
             collect(googleBillingManager.onBillingSetupFailure) { code ->
-                logger.info("Billing client set up failure...")
+                logger.warn("Billing client set up failure...")
                 showBillingError(getBillingErrorMessage(code))
             }
             collect(googleBillingManager.onProductConsumeSuccess) { purchase ->
@@ -769,10 +770,10 @@ class UpgradeViewModel
         private fun string(
             resId: Int,
             vararg args: Any,
-        ): String = appContext.resources.getString(resId, *args)
+        ): String = appContext.localized.resources.getString(resId, *args)
 
         private fun websiteLink(path: String): String =
-            com.windscribe.vpn.constants.NetworkKeyConstants
+            NetworkKeyConstants
                 .getWebsiteLink(path)
 
         override fun onCleared() {
@@ -786,7 +787,7 @@ class UpgradeViewModel
         // endregion
 
         companion object {
-            private val TERMS_PATH = com.windscribe.vpn.constants.NetworkKeyConstants.URL_TERMS
-            private val PRIVACY_PATH = com.windscribe.vpn.constants.NetworkKeyConstants.URL_PRIVACY
+            private val TERMS_PATH = NetworkKeyConstants.URL_TERMS
+            private val PRIVACY_PATH = NetworkKeyConstants.URL_PRIVACY
         }
     }

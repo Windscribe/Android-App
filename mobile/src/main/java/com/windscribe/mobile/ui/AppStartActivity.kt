@@ -35,7 +35,6 @@ import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DARK_THEME
 import com.windscribe.vpn.billing.GooglePlaySubscriptionUrl
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Locale
 
 @AndroidEntryPoint
 class AppStartActivity : AppCompatActivity() {
@@ -202,11 +201,9 @@ class AppStartActivity : AppCompatActivity() {
         }
     }
 
+    /** Only the font scale is overridden here; AppCompat applies the app locale itself. */
     override fun attachBaseContext(newBase: Context) {
-        val newLocale = appContext.getSavedLocale()
-        Locale.setDefault(newLocale)
         val config = Configuration(newBase.resources.configuration)
-        config.setLocale(newLocale)
         config.fontScale = 1.0f
         super.attachBaseContext(newBase.createConfigurationContext(config))
     }

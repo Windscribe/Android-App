@@ -3,24 +3,15 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<!--
+  GoBackend$VpnService is gone. wg-go is an engine now, not a service, and the only
+  android.net.VpnService in the app is WindscribeVpnService in :base. Collapsing these
+  declarations is the point: four separate services used to claim the android.net.VpnService
+  action, so which one the system handed Always-on VPN was manifest-merge-order dependent.
+  See docs/architecture/VPN_BACKEND.md §2.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
-    <application>
-        <service
-            android:foregroundServiceType="specialUse"
-            android:name="com.wireguard.android.backend.GoBackend$VpnService"
-            android:permission="android.permission.BIND_VPN_SERVICE"
-            tools:ignore="ForegroundServicePermission"
-            android:exported="false">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="WireGuard native VPN service - maintains encrypted WireGuard VPN tunnel for user privacy and security" />
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
-    </application>
 </manifest>

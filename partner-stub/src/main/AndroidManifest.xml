@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nothing of its own. The fused AAR contributes the VPN service, the permissions and the
+  providers, which is the point: a partner writes UI and inherits the rest.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:label="Partner stub" />
+</manifest>

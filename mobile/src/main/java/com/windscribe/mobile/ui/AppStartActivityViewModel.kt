@@ -3,6 +3,7 @@ package com.windscribe.mobile.ui
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
@@ -44,7 +45,7 @@ abstract class AppStartActivityViewModel : ViewModel() {
     abstract val showEncryptionWarning: StateFlow<Boolean>
 
     /**
-     * A nav route the host activity wants the [com.windscribe.mobile.ui.nav.NavigationStack] to
+     * A nav route the host activity wants the [NavigationStack] to
      * open once it is composed — used for deep links arriving via intent (e.g. a promo push routes
      * to the Upgrade screen). The stack navigates then calls [clearPendingDeepLink].
      */
@@ -131,8 +132,7 @@ class AppStartActivityViewModelImpl
                         when (result) {
                             is CallResult.Success -> {
                                 logger.info("App install recorded successfully.")
-                                preferencesHelper.isNewApplicationInstance = false
-                                preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
+                                preferencesHelper.markInstallRecorded()
                             }
 
                             is CallResult.Error -> {

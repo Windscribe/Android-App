@@ -86,7 +86,7 @@ class ProxyDNSManager(
             activePort.set(listenPort.toInt())
             val listenerInfo = staticConfig.replace("5355", listenPort)
             val configData = "$listenerInfo\n$upStreamInfo".encodeToByteArray()
-            logger.debug("Configuring controlD with: $upStreamInfo \nListenPort: $listenPort")
+            logger.debug("Configuring controlD on port $listenPort.")
             FileOutputStream(configFile).use {
                 it.write(configData)
             }
@@ -98,19 +98,16 @@ class ProxyDNSManager(
      * Picks a free port for ctrld's listener, which binds UDP (and TCP) on 127.0.0.1 per
      * config.toml.
      *
-     * The port is chosen at random rather than scanned upwards from a fixed 5355. Any app on the
-     * device can bind a loopback port, and whichever process holds this one receives every app's
-     * DNS while the tunnel is up; a predictable port lets an attacker simply bind it at boot and
-     * wait. Drawing from a large range means it has to guess and then also win the race below,
-     * and covering the range would take more sockets than an app's descriptor limit allows.
+     * Random rather than scanned upwards from a fixed port. Whichever process holds this port
+     * receives every app's DNS while the tunnel is up, so a predictable one could be bound at boot
+     * and waited on; a large range forces a guess and then the race below.
      *
-     * Both protocols are probed, on the loopback address specifically: a TCP-only probe on the
-     * wildcard address would report a port free whose UDP side is already held. SO_REUSEADDR is
-     * disabled so the kernel cannot grant a bind to a port already in use.
+     * Both protocols are probed on loopback specifically, since a TCP-only probe on the wildcard
+     * address reports a port free whose UDP side is held. SO_REUSEADDR is disabled so the kernel
+     * cannot grant a bind to a port already in use.
      *
-     * A gap remains between this probe and ctrld's own bind - the sockets must be released for
-     * ctrld to take them - so this narrows the window rather than closing it. Closing it needs
-     * ctrld to accept an already-bound socket.
+     * A gap remains between this probe and ctrld's own bind, which needs the sockets released.
+     * Closing it would need ctrld to accept an already-bound socket.
      */
     private fun findAvailablePort(): String? {
         val loopback = InetAddress.getByName("127.0.0.1")
@@ -157,7 +154,6 @@ class ProxyDNSManager(
         controlDJob =
             scope.launch {
                 isRunning.set(true)
-                logger.debug("Started ControlD.")
                 // we are providing config file in home dir instead of UID
                 // Pass device info directly to avoid JNI callbacks from Go goroutines
                 cdLib.startCd(
@@ -179,19 +175,13 @@ class ProxyDNSManager(
     /**
      * Waits until ctrld has taken its listen port, and fails the connection if it never does.
      *
-     * This is a bind test, not a DNS query, and deliberately so: while the VPN is still connecting
-     * ctrld cannot reach its upstream resolver, so a real query would time out even though ctrld is
-     * running and correctly bound. Attempting the bind ourselves needs no DNS traffic and no
-     * working tunnel - if the bind is refused the port is held, if it succeeds nothing is there.
+     * A bind test, not a DNS query: while the VPN is still connecting ctrld cannot reach its
+     * upstream resolver, so a real query would time out even though ctrld is correctly bound. A bind
+     * needs no DNS traffic and no working tunnel — refused means the port is held.
      *
-     * The previous implementation could not fail: DatagramSocket.connect() on UDP exchanges no
-     * packets, so it always succeeded and the check reduced to cdLib.isCdRunning().
-     *
-     * This establishes only that the port is occupied, NOT that ctrld is what occupies it - a local
-     * app that won the race for the port reads the same. That distinction cannot be made from here;
-     * it needs ctrld to adopt a socket this process owns. So this guards against "nothing is
-     * listening" and "something non-DNS is listening", not against a deliberate local hijacker.
-     * See [findAvailablePort].
+     * This establishes only that the port is occupied, not that ctrld is what occupies it. A local
+     * app that won the race reads the same. Guards against nothing listening, not against a
+     * deliberate local hijacker. See [findAvailablePort].
      */
     private suspend fun waitForControlDReady() {
         val port = activePort.get()

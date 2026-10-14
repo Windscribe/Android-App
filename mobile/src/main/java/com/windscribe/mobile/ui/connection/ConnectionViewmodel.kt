@@ -19,8 +19,10 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.backend.utils.ConnectSource
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType
+import com.windscribe.vpn.backend.utils.USER_DISCONNECT
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.ResourceHelper
@@ -41,6 +43,7 @@ import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.DatacenterStatus
 import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.state.ConnectionPolicy
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,6 +55,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -115,6 +119,21 @@ sealed class NetworkInfoState {
     object Unknown : NetworkInfoState()
 }
 
+/** Why traffic is being held, for the copy the screen shows next to the way out. */
+enum class BlockReason {
+    AccountExpired,
+    AccountBanned,
+
+    /** Waiting on the server to say whether the location or the account killed the tunnel. */
+    AwaitingSession,
+
+    /** A config the user supplied was rejected by its own server. */
+    ConfigAuthFailed,
+
+    /** Every protocol was tried and none came up. */
+    ConnectFailed,
+}
+
 sealed class ConnectionUIState {
     abstract val locationInfo: LocationInfoState?
     abstract val protocolInfo: ProtocolInformation?
@@ -133,6 +152,23 @@ sealed class ConnectionUIState {
     data class Disconnected(
         override val protocolInfo: ProtocolInformation,
         override val locationInfo: LocationInfoState,
+    ) : ConnectionUIState()
+
+    /** No tunnel, traffic in the clear, one tap from being back. Must not read as [Disconnected]. */
+    data class Paused(
+        override val protocolInfo: ProtocolInformation,
+        override val locationInfo: LocationInfoState,
+    ) : ConnectionUIState()
+
+    /**
+     * No tunnel and the device has no internet, because we are holding it. Never [Disconnected]: the
+     * user cannot browse, cannot pay, and nothing they tap will help until the block is released, so
+     * the screen has to say so and offer [ConnectionViewmodel.onTurnOffClick].
+     */
+    data class Blocked(
+        override val protocolInfo: ProtocolInformation,
+        override val locationInfo: LocationInfoState,
+        val reason: BlockReason,
     ) : ConnectionUIState()
 
     object Idle : ConnectionUIState() {
@@ -157,6 +193,9 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val newFeedCount: StateFlow<Int>
 
     abstract fun onConnectButtonClick()
+
+    /** Releases a [ConnectionUIState.Blocked] hold. The only action that works from that state. */
+    abstract fun onTurnOffClick()
 
     abstract fun onCityClick(
         city: Datacenter,
@@ -408,12 +447,13 @@ class ConnectionViewmodelImpl
         private fun fetchConnectionState() {
             viewModelScope.launch(Dispatchers.IO) {
                 combine(
-                    vpnConnectionStateManager.state,
+                    // Paired with the state so a mode change re-renders on its own.
+                    vpnConnectionStateManager.state.combine(vpnConnectionStateManager.serviceMode, ::Pair),
                     autoConnectionManager.connectedProtocol,
                     autoConnectionManager.nextInLineProtocol,
                     serverListRepository.customRegions,
                     serverListRepository.customCities,
-                ) { state, connectedProtocol, nextInLineProtocol, _, _ ->
+                ) { (state, serviceMode), connectedProtocol, nextInLineProtocol, _, _ ->
                     val protocolInfo =
                         when (state.status) {
                             VPNState.Status.Connected, VPNState.Status.Connecting -> connectedProtocol
@@ -437,9 +477,22 @@ class ConnectionViewmodelImpl
                             )
                         }
 
+                        // Paused, blocked and plain disconnected all report Disconnected, so the
+                        // service mode is the only thing that separates them.
                         VPNState.Status.Disconnected -> {
-                            handleError(state)
-                            ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                            val blockReason = blockReasonFor(serviceMode)
+                            when {
+                                serviceMode is ConnectionPolicy.ServiceMode.Paused ->
+                                    ConnectionUIState.Paused(protocolInfo, locationInfo)
+
+                                blockReason != null ->
+                                    ConnectionUIState.Blocked(protocolInfo, locationInfo, blockReason)
+
+                                else -> {
+                                    handleError(state)
+                                    ConnectionUIState.Disconnected(protocolInfo, locationInfo)
+                                }
+                            }
                         }
 
                         else -> {
@@ -472,7 +525,7 @@ class ConnectionViewmodelImpl
 
         private fun handleConnectionSoundsState() {
             viewModelScope.launch(Dispatchers.IO) {
-                vpnConnectionStateManager.state.collectLatest {
+                vpnConnectionStateManager.state.drop(1).collectLatest {
                     if (it.status == VPNState.Status.Connecting && preferences.connectedBundleSoundOption == 3) {
                         playSoundFromRaw(com.windscribe.vpn.R.raw.fart_deluxe_loop, loop = true)
                         return@collectLatest
@@ -575,7 +628,7 @@ class ConnectionViewmodelImpl
 
         private fun handleConnectionHapticFeedback() {
             viewModelScope.launch(Dispatchers.IO) {
-                vpnConnectionStateManager.state.collectLatest { state ->
+                vpnConnectionStateManager.state.drop(1).collectLatest { state ->
                     if (state.status == VPNState.Status.Connected || state.status == VPNState.Status.Disconnected) {
                         if (preferences.isHapticFeedbackEnabled) {
                             _shouldPlayHapticFeedback.emit(true)
@@ -651,12 +704,44 @@ class ConnectionViewmodelImpl
             }
         }
 
+        /** Null unless the service is holding traffic, in which case it says why. */
+        private fun blockReasonFor(serviceMode: ConnectionPolicy.ServiceMode?): BlockReason? =
+            when (serviceMode) {
+                is ConnectionPolicy.ServiceMode.AccountBlocked ->
+                    if (serviceMode.status == User.AccountStatus.Banned) {
+                        BlockReason.AccountBanned
+                    } else {
+                        BlockReason.AccountExpired
+                    }
+
+                is ConnectionPolicy.ServiceMode.AwaitingSession -> BlockReason.AwaitingSession
+                is ConnectionPolicy.ServiceMode.AuthFailed -> BlockReason.ConfigAuthFailed
+                // Only this one knows whether it actually held the interface.
+                is ConnectionPolicy.ServiceMode.Failed -> BlockReason.ConnectFailed.takeIf { serviceMode.blocking }
+                else -> null
+            }
+
+        override fun onTurnOffClick() {
+            appScope.launch { vpnController.turnOff() }
+        }
+
         override fun onConnectButtonClick() {
             val currentState = connectionUIState.value
+            // We are the reason there is no internet, so the button gives it back. Before the
+            // location check below, which returns early and would make the button do nothing at all.
+            if (currentState is ConnectionUIState.Blocked) {
+                logger.debug("Connect tapped while blocked; releasing the block.")
+                onTurnOffClick()
+                return
+            }
             val selectedLocation = lastLocationState.value ?: return
-            if (currentState !is ConnectionUIState.Disconnected) {
+            // Paused belongs with Disconnected: there is no tunnel to drop, so the button connects.
+            val isOff =
+                currentState is ConnectionUIState.Disconnected ||
+                    currentState is ConnectionUIState.Paused
+            if (!isOff) {
                 preferences.globalUserConnectionPreference = false
-                vpnController.disconnectAsync()
+                vpnController.disconnectAsync(USER_DISCONNECT)
                 return
             }
             val locationSource = WindUtilities.getSourceTypeBlocking()
@@ -734,7 +819,7 @@ class ConnectionViewmodelImpl
 
                     // Check internet connectivity
                     if (!WindUtilities.isOnline()) {
-                        logger.info("Error: no internet available to connect.")
+                        logger.warn("Cannot connect: the device has no internet.")
                         showToast(com.windscribe.vpn.R.string.no_internet)
                         return@launch
                     }
@@ -773,9 +858,9 @@ class ConnectionViewmodelImpl
                     preferences.isConnectingToStaticIp = false
                     preferences.isConnectingToConfigured = false
                     saveLastLocation(datacenterAndLocation)
-                    logger.debug("Attempting to connect")
+                    logger.info("Attempting to connect")
                     appScope.launch {
-                        autoConnectionManager.connectInForeground()
+                        autoConnectionManager.connectInForeground(ConnectSource.User)
                     }
                 } catch (_: Exception) {
                     showToast("Unable to find selected location in database. Update server list.")
@@ -822,9 +907,9 @@ class ConnectionViewmodelImpl
                     preferences.isConnectingToStaticIp = true
                     preferences.isConnectingToConfigured = false
                     saveLastLocation(staticRegion)
-                    logger.debug("Attempting to connect..")
+                    logger.info("Attempting to connect to a static IP")
                     appScope.launch {
-                        autoConnectionManager.connectInForeground()
+                        autoConnectionManager.connectInForeground(ConnectSource.User)
                     }
                 } catch (e: Exception) {
                     showToast("Unable to find selected location in database. Update server list.")
@@ -860,7 +945,7 @@ class ConnectionViewmodelImpl
                         _goto.emit(HomeGoto.EditCustomConfig(config.primaryKey, true))
                         return@launch
                     } else {
-                        vpnController.connectAsync()
+                        vpnController.connectAsync(ConnectSource.User)
                     }
                 } catch (e: Exception) {
                     showToast("Unable to find selected location in database. Update server list.")
@@ -874,7 +959,7 @@ class ConnectionViewmodelImpl
             } else {
                 appScope.launch {
                     preferences.globalUserConnectionPreference = true
-                    autoConnectionManager.changeProtocolInForeground()
+                    autoConnectionManager.changeProtocolInForeground(ConnectSource.User)
                 }
             }
         }

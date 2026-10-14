@@ -136,6 +136,29 @@
     <string name="state_add_routes">Adding routes</string>
     <string name="state_connected">Connected</string>
     <string name="state_disconnected">Disconnect</string>
+    <!-- Ongoing VPN notification: the states the service can sit in with no tunnel, and the actions each offers. -->
+    <string name="notification_protocol_switch">Waiting for protocol switch</string>
+    <string name="notification_reconnecting_to">Reconnecting to %1$s</string>
+    <string name="notification_reconnecting">Reconnecting</string>
+    <string name="notification_opted_out">Auto-secure is off for this network</string>
+    <string name="notification_opted_out_on">Auto-secure is off for %1$s</string>
+    <string name="notification_awaiting_session">Awaiting session update</string>
+    <string name="notification_config_auth_failed">Authentication failed — check your config</string>
+    <string name="notification_account_expired">Account expired — turn off Windscribe to restore internet, then upgrade</string>
+    <string name="notification_account_banned">Account banned — turn off Windscribe to restore internet</string>
+    <string name="notification_no_network">No network — nothing to connect over</string>
+    <string name="notification_paused">Paused — your traffic is not protected</string>
+    <string name="notification_waiting_for_secured">Not connected — will connect automatically</string>
+    <string name="notification_stood_down">Auto-connect is off for this network</string>
+    <string name="notification_stood_down_on">Auto-connect is off for %1$s</string>
+    <string name="notification_action_pause">Pause</string>
+    <string name="notification_action_resume">Resume</string>
+    <string name="notification_action_connect">Connect</string>
+    <string name="notification_action_turn_off">Turn off</string>
+    <string name="notification_action_retry">Retry</string>
+    <string name="notification_failed_to">Couldn\'t connect to %1$s</string>
+    <string name="notification_failed">Couldn\'t connect on this network</string>
+    <string name="notification_blocked">Couldn\'t connect — traffic is blocked</string>
     <string name="state_reconnecting">Reconnecting</string>
     <string name="state_exiting">Exiting</string>
     <string name="state_noprocess">Not running</string>
@@ -152,12 +175,9 @@
     <string name="rate_message">Are you enjoying Windscribe? Sure you are. Rate us in the Play Store, and we’ll love you long time.</string>
     <string name="gps_spoofing_explain">This feature requires you to modify your android settings. Please follow the next few steps to activate it.</string>
     <string name="let_s_do_it">Let\'s do it</string>
-    <string name="unlock_developer_mode">Unlock Developer  Options</string>
-    <string name="unlock_developer_mode_explain">Open Settings and look for the “About Phone” section.  Find the build number inside “Software info” and tap  it 7 times.</string>
     <string name="open_settings">Open Settings</string>
-    <string name="add_to_mock_location">Select Mock  Location App</string>
-    <string name="add_to_mock_location_explain">Once unlocked, go to “Developer Options” in the Settings.  Under “Debugging” choose Windscribe as a “Mock location app”.</string>
-    <string name="add_to_mock_location_explain_android_12">Once unlocked, go to “Developer Options” in the Settings.  Under “Location” choose Windscribe as a “Mock location app”.</string>
+    <string name="gps_spoofing_setup">Set Up GPS Spoofing</string>
+    <string name="gps_spoofing_setup_explain">1. Open Settings, find “About Phone” and tap the build number 7 times to unlock “Developer Options”.\n\n2. In “Developer Options”, choose Windscribe as the “Mock location app”.</string>
     <string name="you_are_done">You’re Done!</string>
     <string name="gps_spoofing_success">Your GPS location will be the same as your VPN location.</string>
     <string name="gps_spoofing_not_set">Couldn’t enable GPS Spoofing</string>
@@ -332,7 +352,7 @@
     <string name="add_your_email_address">Add your email address in case you forget your password. We’ll even give you 10GB for it.</string>
     <string name="locations">locations</string>
     <string name="notifications">Notifications</string>
-    <string name="support">Support</string>a
+    <string name="support">Support</string>
     <string name="support_content">Go to the address above on your phone or computer for all support related inquiries.</string>
     <string name="add_email_title">Add Email</string>
     <string name="upgradeNoData">Looks like you’re out of precious privacy</string>
@@ -543,7 +563,7 @@ last chosen location.</string>
     <string name="ip_stack_egress">IP Stack - Egress</string>
     <string name="ipv4_only">IPv4 Only</string>
     <string name="auto_connect">Auto-Connect</string>
-    <string name="auto_connect_explainer">Connects to last used location when the app launches or joins a network.</string>
+    <string name="auto_connect_explainer">Connects to your last location on any network you haven\'t excluded, and blocks your internet if it can\'t connect. Only a failed connection blocks — disconnecting or pausing never does.</string>
     <string name="save">Save</string>
     <string name="clear">Clear</string>
     <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
@@ -635,6 +655,8 @@ last chosen location.</string>
     <string name="accessibility_status_connected_split_routing">Connected, split tunneling on</string>
     <string name="accessibility_status_connecting">Connecting</string>
     <string name="accessibility_status_disconnected">Disconnected</string>
+    <string name="accessibility_status_paused">Paused, your traffic is not protected</string>
+    <string name="accessibility_status_blocked">Blocked, your internet is off until you turn Windscribe off</string>
     <string name="none">None</string>
     <string name="free">Free</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>

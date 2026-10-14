@@ -1,9 +1,11 @@
 package com.windscribe.vpn.backend
 
+import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@Keep
 class CdLib {
     private val deviceInfo = AndroidDeviceIdentityImpl()
 

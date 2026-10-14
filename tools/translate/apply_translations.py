@@ -1,83 +1,62 @@
 #!/usr/bin/env python3
 
-import xml.etree.ElementTree as ET
-import os
 import json
+import re
 import sys
 from pathlib import Path
-import html
+
+STRING_NAME_RE = re.compile(r'<string\s+name="([^"]+)"')
+INDENT_RE = re.compile(r'^([ \t]*)<string\s', re.M)
+# Anything already written as an entity is left alone; apostrophes belong to fix_translation_escapes.py.
+BARE_AMPERSAND_RE = re.compile(r'&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)')
 
 def escape_xml(text):
-    """Properly escape text for XML."""
+    """Escape the characters that would break XML."""
     if not text:
         return ""
-    # Escape basic XML entities
-    text = text.replace('&', '&amp;')
+    text = BARE_AMPERSAND_RE.sub('&amp;', text)
     text = text.replace('<', '&lt;')
     text = text.replace('>', '&gt;')
-    text = text.replace('"', '&quot;')
-    text = text.replace("'", '&apos;')
     return text
 
 def add_translations_to_file(file_path, translations_dict):
-    """Add missing translations to a strings.xml file."""
+    """Insert missing translations before </resources>, leaving the rest of the file untouched."""
     try:
-        # Parse the XML file
-        tree = ET.parse(file_path)
-        root = tree.getroot()
+        content = Path(file_path).read_text(encoding='utf-8')
 
-        # Get existing keys to avoid duplicates
-        existing_keys = set()
-        for string_elem in root.findall('string'):
-            key = string_elem.get('name')
-            if key:
-                existing_keys.add(key)
+        existing_keys = set(STRING_NAME_RE.findall(content))
+        new_strings = {
+            key: value
+            for key, value in sorted(translations_dict.items())
+            if key not in existing_keys
+        }
 
-        # Count additions
-        added_count = 0
+        if not new_strings:
+            print(f"  \u2139\ufe0f  No new translations needed for {Path(file_path).name}")
+            return 0
 
-        # Find the position before </resources>
-        # We'll add new strings at the end, before the closing tag
+        closing = content.rfind('</resources>')
+        if closing == -1:
+            print(f"  \u274c No </resources> in {Path(file_path).name}, skipping")
+            return 0
 
-        # Add each missing translation
-        for key, value in sorted(translations_dict.items()):
-            if key not in existing_keys:
-                # Create new string element
-                new_elem = ET.Element('string')
-                new_elem.set('name', key)
-                new_elem.text = value
-                root.append(new_elem)
-                added_count += 1
+        indent_match = INDENT_RE.search(content)
+        indent = indent_match.group(1) if indent_match else '    '
 
-        if added_count > 0:
-            # Format and write the XML
-            ET.indent(tree, space="    ")
+        block = "".join(
+            f'{indent}<string name="{key}">{escape_xml(value)}</string>\n'
+            for key, value in new_strings.items()
+        )
+        if not content[:closing].endswith('\n'):
+            block = '\n' + block
 
-            # Write to file with XML declaration
-            tree.write(file_path, encoding='utf-8', xml_declaration=True)
+        Path(file_path).write_text(content[:closing] + block + content[closing:], encoding='utf-8')
 
-            # Fix the file to have proper formatting
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-
-            # Fix XML declaration
-            content = content.replace("<?xml version='1.0' encoding='utf-8'?>",
-                                    '<?xml version="1.0" encoding="utf-8"?>')
-
-            # Ensure proper spacing
-            content = content.replace('</resources>', '\n</resources>')
-
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(content)
-
-            print(f"  ✅ Added {added_count} translations to {file_path.name}")
-        else:
-            print(f"  ℹ️  No new translations needed for {file_path.name}")
-
-        return added_count
+        print(f"  \u2705 Added {len(new_strings)} translations to {Path(file_path).name}")
+        return len(new_strings)
 
     except Exception as e:
-        print(f"  ❌ Error updating {file_path}: {e}")
+        print(f"  \u274c Error updating {file_path}: {e}")
         return 0
 
 def apply_translations_from_json(translations_file='translations.json'):

@@ -14,6 +14,7 @@ extern int wgGetSocketV4(int handle);
 extern int wgGetSocketV6(int handle);
 extern char *wgGetConfig(int handle);
 extern char *wgVersion();
+extern int wgSetCrashOutput();
 
 JNIEXPORT jint JNICALL Java_com_wireguard_android_backend_GoBackend_wgTurnOn(JNIEnv *env, jclass c, jstring ifname, jint tun_fd, jstring settings, jboolean customTun)
 {
@@ -57,6 +58,11 @@ JNIEXPORT jstring JNICALL Java_com_wireguard_android_backend_GoBackend_wgGetConf
 	ret = (*env)->NewStringUTF(env, config);
 	free(config);
 	return ret;
+}
+
+JNIEXPORT jint JNICALL Java_com_wireguard_android_backend_GoBackend_wgSetCrashOutput(JNIEnv *env, jclass c)
+{
+	return wgSetCrashOutput();
 }
 
 JNIEXPORT jstring JNICALL Java_com_wireguard_android_backend_GoBackend_wgVersion(JNIEnv *env, jclass c)

@@ -222,6 +222,16 @@ public class NetworkSpace {
         mIpAddresses.clear();
     }
 
+    /** A copy of the entries, for a caller that builds a config without committing to it. */
+    TreeSet<IpAddress> snapshot() {
+        return new TreeSet<IpAddress>(mIpAddresses);
+    }
+
+    /** Puts back a {@link #snapshot}. */
+    void restore(TreeSet<IpAddress> snapshot) {
+        mIpAddresses = snapshot;
+    }
+
 
     void addIP(CIDRIP cidrIp, boolean include) {
 

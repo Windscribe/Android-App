@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.preferences.general
 
 import PreferencesNavBar
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -23,7 +21,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.DropDownItemView
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.SwitchItemView
@@ -49,21 +46,14 @@ class GeneralActions(
 )
 
 /**
- * Stateful entry point. Owns the [GeneralViewModel], collects its flows and wires the
- * reload-app side effect, then delegates rendering to [GeneralContent].
+ * Stateful entry point. Owns the [GeneralViewModel] and collects its flows, then delegates
+ * rendering to [GeneralContent].
  */
 @Composable
 fun GeneralScreen(viewModel: GeneralViewModel = hiltViewModel<GeneralViewModelImpl>()) {
-    val activity = LocalActivity.current as? AppStartActivity
-    val reloadAppState = viewModel.reloadApp.collectAsState(initial = false)
     val isHapticEnabled by viewModel.isHapticEnabled.collectAsState()
     val isNotificationStatEnabled by viewModel.isNotificationStatEnabled.collectAsState()
     val isLocationLoadEnabled by viewModel.isLocationLoadEnabled.collectAsState()
-    LaunchedEffect(reloadAppState.value) {
-        if (reloadAppState.value) {
-            activity?.recreate()
-        }
-    }
     GeneralContent(
         orderByItems = viewModel.orderByItems,
         selectedOrderBy = viewModel.selectedOrderBy,

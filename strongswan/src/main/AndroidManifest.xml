@@ -7,18 +7,17 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application>
-        <service
-            android:name=".logic.CharonVpnService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse"
-            android:permission="android.permission.BIND_VPN_SERVICE">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="StrongSwan IKEv2 VPN service - maintains encrypted IPSec VPN tunnel connection for user privacy and security" />
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
+        <!--
+          The .logic.CharonVpnService declaration that used to sit here is gone. That class is no
+          longer a Service at all - it is the IKEv2 engine, a plain object behind PacketMux - and it
+          used to claim the android.net.VpnService action, which made Always-on VPN targeting depend
+          on manifest merge order. The only VpnService in the app is now WindscribeVpnService in
+          :base. See docs/architecture/VPN_BACKEND.md §2.
+
+          Note the CLASS NAME org.strongswan.android.logic.CharonVpnService is still load-bearing:
+          libandroidbridge.so resolves it by name (constraint C1, §5.3). Only the manifest
+          declaration is removed, never the class.
+        -->
         <service
             android:name="org.strongswan.android.logic.VpnStateService"
             android:exported="false" />
