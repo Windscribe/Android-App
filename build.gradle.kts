@@ -5,8 +5,8 @@ extra["appMinSdk"] = 24
 extra["appTargetSdk"] = 36
 extra["appCompiledSdk"] = 36
 extra["appBuildTool"] = "36.0.0"
-extra["appVersionCode"] = 2360
-extra["appVersionName"] = "4.3"
+extra["appVersionCode"] = 2384
+extra["appVersionName"] = "4.4"
 extra["java"] = "17"
 
 buildscript {
@@ -40,6 +40,15 @@ allprojects {
         mavenCentral()
         maven { url = uri("https://maven.google.com") }
         maven { url = uri("https://jitpack.io") }
+        // wsnet has to resolve as a module rather than a file dependency: AGP refuses to
+        // package a library that has a direct local .aar file dependency. Declared for
+        // every project because :base exposes wsnet on its consumers' runtime classpath.
+        flatDir {
+            dirs("$rootDir/base/src/main/libs")
+            // flatDir carries no metadata or checksums, so it stays confined to the one artifact
+            // it exists for rather than standing as a candidate for every coordinate.
+            content { includeModule("", "wsnet") }
+        }
     }
 }
 

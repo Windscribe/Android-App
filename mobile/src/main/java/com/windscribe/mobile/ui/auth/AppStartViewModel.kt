@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.SsoResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.backend.VPNState.Status.Connected
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.installer.AppInstallerDetector
@@ -63,7 +64,7 @@ class AppStartViewModelImpl
         private val googleSignInManager: GoogleSignInManager,
         private val firebaseManager: FirebaseManager,
         private val userRepository: UserRepository,
-        private val playIntegrityManager: com.windscribe.vpn.backend.PlayIntegrityManager,
+        private val playIntegrityManager: PlayIntegrityManager,
         private val appInstallerDetector: AppInstallerDetector,
     ) : AppStartViewModel() {
         private val _isConnected = MutableStateFlow(false)

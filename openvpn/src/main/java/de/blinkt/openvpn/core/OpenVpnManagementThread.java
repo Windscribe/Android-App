@@ -53,9 +53,25 @@ public class OpenVpnManagementThread implements Runnable, OpenVPNManagement {
     private pauseReason lastPauseReason = pauseReason.noNetwork;
     private PausedStateCallback mPauseCallback;
     private boolean mShuttingDown;
+    /** Releases hold below the minimum gap, so it is not sent too soon after the last one. */
+    private static final long HOLD_RELEASE_MIN_GAP_MS = 5000;
+    /** How long to hold off when releases come faster than that. Was an inline Thread.sleep. */
+    private static final long HOLD_RELEASE_BACKOFF_MS = 3000;
+
     private Runnable mResumeHoldRunnable = () -> {
         if (shouldBeRunning()) {
             releaseHoldCmd();
+        }
+    };
+
+    /**
+     * The backed-off release. Re-checks rather than assuming: three seconds is long enough for the
+     * tunnel to have been stopped, or the hold to have been released by another path, and sending
+     * management commands after either would be wrong.
+     */
+    private final Runnable mDelayedHoldRelease = () -> {
+        if (mWaitingForRelease && shouldBeRunning()) {
+            sendHoldRelease();
         }
     };
     private Runnable orbotStatusTimeOutRunnable = new Runnable() {
@@ -426,15 +442,26 @@ public class OpenVpnManagementThread implements Runnable, OpenVPNManagement {
         }
     }
 
+    /**
+     * Releases the hold, backing off when releases come too fast.
+     *
+     * Posted, not slept. {@link #mResumeHandler} runs on the main looper, so a blocking backoff here
+     * freezes the UI for its whole duration on every retry against an unreachable server —
+     * {@link #releaseHold()} is public and reached from other threads too.
+     *
+     * Same backoff, scheduled instead of slept.
+     */
     private void releaseHoldCmd() {
         mResumeHandler.removeCallbacks(mResumeHoldRunnable);
-        if ((System.currentTimeMillis() - mLastHoldRelease) < 5000) {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException ignored) {
-            }
-
+        mResumeHandler.removeCallbacks(mDelayedHoldRelease);
+        if ((System.currentTimeMillis() - mLastHoldRelease) < HOLD_RELEASE_MIN_GAP_MS) {
+            mResumeHandler.postDelayed(mDelayedHoldRelease, HOLD_RELEASE_BACKOFF_MS);
+            return;
         }
+        sendHoldRelease();
+    }
+
+    private void sendHoldRelease() {
         mWaitingForRelease = false;
         mLastHoldRelease = System.currentTimeMillis();
         managmentCommand("hold release\n");
@@ -761,6 +788,7 @@ public class OpenVpnManagementThread implements Runnable, OpenVPNManagement {
 
     public void signalusr1() {
         mResumeHandler.removeCallbacks(mResumeHoldRunnable);
+        mResumeHandler.removeCallbacks(mDelayedHoldRelease);
         if (!mWaitingForRelease)
             managmentCommand("signal SIGUSR1\n");
         else

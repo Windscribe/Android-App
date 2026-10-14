@@ -3,28 +3,25 @@
  */
 package com.windscribe.vpn.cache
 
-import android.app.ActivityManager
-import android.content.Context
-import android.content.pm.PackageManager
+import android.content.ComponentCallbacks2
+import android.content.res.Configuration
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.util.DisplayMetrics
 import android.util.LruCache
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.scale
+import androidx.core.graphics.drawable.toBitmap
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * LRU cache for app icons with background preloading
- * Optimizes memory usage by downsampling icons to 32dp x 32dp
- * Shared between mobile and TV modules for consistent performance
+ * App icons for the split tunnel lists, decoded on demand and keyed by the size they are drawn at.
+ *
+ * Only those two screens read this, and neither is opened often, so nothing is loaded ahead of a
+ * request and the cache is bounded and evictable rather than sized off the heap limit.
  */
 @Singleton
 class AppIconCache
@@ -32,93 +29,96 @@ class AppIconCache
     constructor() {
         private val logger = LoggerFactory.getLogger("app_icon_cache")
 
-        // Calculate cache size as 1/8th of available memory
-        private val maxMemory =
-            (appContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
-                .memoryClass * 1024 * 1024 / 8
-
-        private val iconCache: LruCache<String, Bitmap> =
-            object : LruCache<String, Bitmap>(maxMemory) {
+        private val cache =
+            object : LruCache<String, Bitmap>(MAX_BYTES) {
                 override fun sizeOf(
                     key: String,
-                    bitmap: Bitmap,
-                ): Int = bitmap.byteCount
+                    value: Bitmap,
+                ): Int = value.byteCount
             }
 
-        // Target icon size in pixels (32dp)
-        private val iconSizePx = (32 * appContext.resources.displayMetrics.density).toInt()
-
-        /**
-         * Preload all installed app icons in the background
-         * Processes icons in chunks of 100 for better performance
-         */
-        fun preloadIcons(scope: CoroutineScope) {
-            scope.launch(Dispatchers.IO) {
-                try {
-                    val pm = appContext.packageManager
-                    val packages = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-
-                    logger.info("Preloading ${packages.size} app icons...")
-
-                    // Process in chunks to avoid blocking
-                    packages.chunked(100).forEach { chunk ->
-                        chunk.forEach { appInfo ->
-                            try {
-                                if (iconCache.get(appInfo.packageName) == null) {
-                                    val drawable = pm.getApplicationIcon(appInfo)
-                                    val bitmap = drawableToBitmap(drawable, iconSizePx, iconSizePx)
-                                    iconCache.put(appInfo.packageName, bitmap)
-                                }
-                            } catch (e: Exception) {
-                                logger.debug("Error loading icon for ${appInfo.packageName}: ${e.message}")
-                            }
+        init {
+            appContext.registerComponentCallbacks(
+                object : ComponentCallbacks2 {
+                    override fun onTrimMemory(level: Int) {
+                        if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+                            cache.evictAll()
                         }
                     }
 
-                    logger.info("Icon preloading completed. Cache size: ${iconCache.size()}")
-                } catch (e: Exception) {
-                    logger.error("Error during icon preloading: ${e.message}")
-                }
+                    override fun onConfigurationChanged(newConfig: Configuration) {}
+
+                    @Deprecated("Required by ComponentCallbacks.")
+                    override fun onLowMemory() {
+                        cache.evictAll()
+                    }
+                },
+            )
+        }
+
+        /** What is already decoded. Lets a bound view show a cached icon without a frame of placeholder. */
+        fun cached(
+            packageName: String,
+            sizePx: Int,
+        ): Bitmap? = cache.get(key(packageName, sizePx))
+
+        suspend fun icon(
+            packageName: String,
+            sizePx: Int,
+        ): Bitmap? {
+            val key = key(packageName, sizePx)
+            cache.get(key)?.let { return it }
+            return withContext(Dispatchers.IO) {
+                val drawable = drawableFor(packageName, sizePx) ?: return@withContext null
+                runCatching { drawable.toBitmap(sizePx, sizePx) }
+                    .onSuccess { cache.put(key, it) }
+                    .onFailure { logger.debug("Could not render the icon for $packageName: ${it.message}") }
+                    .getOrNull()
             }
         }
 
         /**
-         * Get icon bitmap for a package, loading and caching if needed
+         * `getApplicationIcon` decodes at the display's own density, which for a 24 dp target is
+         * several times the pixels drawn, so the variant closest to the target is asked for instead.
          */
-        fun getIcon(packageName: String): Bitmap? {
-            // Check cache first
-            iconCache.get(packageName)?.let { return it }
-
-            // Load from PackageManager if not cached
-            return try {
-                val pm = appContext.packageManager
-                val drawable = pm.getApplicationIcon(packageName)
-                val bitmap = drawableToBitmap(drawable, iconSizePx, iconSizePx)
-                iconCache.put(packageName, bitmap)
-                bitmap
-            } catch (e: Exception) {
-                logger.debug("Error loading icon for $packageName: ${e.message}")
-                null
+        private fun drawableFor(
+            packageName: String,
+            sizePx: Int,
+        ): Drawable? {
+            val pm = appContext.packageManager
+            val info = runCatching { pm.getApplicationInfo(packageName, 0) }.getOrNull() ?: return null
+            if (info.icon != 0) {
+                runCatching {
+                    pm
+                        .getResourcesForApplication(info)
+                        .getDrawableForDensity(info.icon, densityFor(sizePx), null)
+                }.getOrNull()?.let { return it }
             }
+            return runCatching { pm.getApplicationIcon(info) }.getOrNull() ?: pm.defaultActivityIcon
         }
 
-        /**
-         * Convert drawable to bitmap with specified dimensions
-         * Downsamples to reduce memory usage
-         */
-        private fun drawableToBitmap(
-            drawable: Drawable,
-            width: Int,
-            height: Int,
-        ): Bitmap {
-            if (drawable is BitmapDrawable && drawable.bitmap != null) {
-                return drawable.bitmap.scale(width, height)
-            }
+        /** Launcher icons are authored at [LAUNCHER_ICON_DP], so this is the bucket that covers [sizePx]. */
+        private fun densityFor(sizePx: Int): Int {
+            val wanted = sizePx * DisplayMetrics.DENSITY_DEFAULT / LAUNCHER_ICON_DP
+            return BUCKETS.firstOrNull { it >= wanted } ?: DisplayMetrics.DENSITY_XXXHIGH
+        }
 
-            val bitmap = createBitmap(width, height)
-            val canvas = Canvas(bitmap)
-            drawable.setBounds(0, 0, canvas.width, canvas.height)
-            drawable.draw(canvas)
-            return bitmap
+        private fun key(
+            packageName: String,
+            sizePx: Int,
+        ) = "$packageName@$sizePx"
+
+        companion object {
+            private const val MAX_BYTES = 4 * 1024 * 1024
+            private const val LAUNCHER_ICON_DP = 48
+            private val BUCKETS =
+                intArrayOf(
+                    DisplayMetrics.DENSITY_LOW,
+                    DisplayMetrics.DENSITY_MEDIUM,
+                    DisplayMetrics.DENSITY_HIGH,
+                    DisplayMetrics.DENSITY_XHIGH,
+                    DisplayMetrics.DENSITY_XXHIGH,
+                    DisplayMetrics.DENSITY_XXXHIGH,
+                )
         }
     }

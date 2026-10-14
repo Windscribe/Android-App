@@ -3,6 +3,7 @@ package com.windscribe.mobile.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.backend.utils.USER_DISCONNECT
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -85,7 +86,7 @@ class EmergencyConnectViewModal
         fun disconnect() {
             scope.launch {
                 connectingJob?.cancel()
-                windVpnController.disconnectAsync()
+                windVpnController.disconnectAsync(USER_DISCONNECT)
             }
         }
 

@@ -2,9 +2,18 @@
 #include <string.h>
 #include <stdbool.h>
 struct go_string { const char *str; long n; };
+
+/* Go's `int` is pointer-width. cgo's real prototypes are not visible here, so
+ * these declarations must match GoInt by hand or the callee reads a register the
+ * caller never set. */
+#if defined(__LP64__) || defined(_LP64)
+typedef long long go_int;
+#else
+typedef int go_int;
+#endif
 extern void Initialise(bool development, struct go_string logPath);
-extern bool StartProxy(struct go_string listenAddress, struct go_string remoteAddress, int tunnelType, long mtu , bool extraPadding, struct go_string tlsServerName);
-extern int GetPrimaryListenerSocketFd();
+extern bool StartProxy(struct go_string listenAddress, struct go_string remoteAddress, go_int tunnelType, go_int mtu, bool extraPadding, struct go_string tlsServerName);
+extern go_int GetPrimaryListenerSocketFd();
 extern void Stop();
 
 JNIEXPORT void JNICALL
@@ -26,7 +35,7 @@ Java_com_windscribe_vpn_backend_openvpn_WSTunnelLib_stop(JNIEnv* env, jobject th
 
 JNIEXPORT int JNICALL
 Java_com_windscribe_vpn_backend_openvpn_WSTunnelLib_socketFd(JNIEnv* env, jobject thiz) {
-    return GetPrimaryListenerSocketFd();
+    return (jint)GetPrimaryListenerSocketFd();
 }
 
 JNIEXPORT void JNICALL
@@ -49,7 +58,7 @@ Java_com_windscribe_vpn_backend_openvpn_WSTunnelLib_startProxy(JNIEnv* env, jobj
             .str = tls_server_name_str,
             .n = tls_server_name_size
     };
-    StartProxy(listen_go_str, remote_go_str, tunnelType, mtu, extraPadding, sni_go_str);
+    StartProxy(listen_go_str, remote_go_str, (go_int)tunnelType, (go_int)mtu, extraPadding, sni_go_str);
     (*env)->ReleaseStringUTFChars(env, listenAddress, listen_str);
     (*env)->ReleaseStringUTFChars(env, remoteAddress, remote_str);
     (*env)->ReleaseStringUTFChars(env, tlsServerName, tls_server_name_str);

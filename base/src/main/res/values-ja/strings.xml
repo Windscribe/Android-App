@@ -2,15 +2,15 @@
 <resources>
     <string name="username_empty">空のユーザー名!</string>
     <string name="password_empty">空のパスワード!</string>
-    <string name="enter_username">ユーザー名を入力してください!</string>
-    <string name="enter_password">パスワードを入力してください!</string>
+    <string name="enter_username">ユーザー名を入力</string>
+    <string name="enter_password">パスワードを入力</string>
     <string name="password_too_short">短すぎます!</string>
     <string name="login_credential_error">ユーザー名またはパスワードに問題があります:(</string>
     <string name="sign_out">サインアウト</string>
     <string name="username">ユーザー名</string>
     <string name="password">パスワード</string>
     <string name="login_with_username">ユーザー名フィールドに特殊文字や電子メールは使用できません。</string>
-    <string name="weak_password">パスワードには、少なくとも1つの大文字と小文字を含める必要があります。</string>
+    <string name="weak_password">パスワードには大文字と小文字をそれぞれ1文字以上含めてください（例：「Hello1234」「Solyanka」）。</string>
     <string name="small_password">パスワードは 8文字以上にする必要があります。</string>
     <string name="common_password">入力したパスワードは一般的に使用されており、安全ではありません。</string>
     <string name="password_requirement">8文字以上、少なくとも 1つの大文字と小文字を含む</string>
@@ -100,14 +100,14 @@
     <string name="fake_traffic_volume">偽のトラフィック量</string>
     <string name="potential_data_use">推定データ使用量</string>
     <string name="plan_pro">プロ</string>
-    <string name="a_la_carte_unlimited_plan">無制限の</string>
+    <string name="a_la_carte_unlimited_plan">アラカルト無制限</string>
     <string name="expiry_date">有効期限</string>
     <string name="reset_date">リセット日</string>
     <string name="gb_per_month">GB/月</string>
     <string name="my_account">アカウント</string>
     <string name="cancel">キャンセル</string>
     <string name="edit_account">アカウントの管理</string>
-    <string name="info">info</string>
+    <string name="info">アカウント情報</string>
     <string name="plan">プラン</string>
     <string name="please_login">最初にログインして接続してください!</string>
     <string name="please_login_to_see_account_details">サインアップまたはログインして、アカウントの詳細を表示し、設定を保護します。</string>
@@ -129,7 +129,7 @@
     <string name="state_assign_ip">IPアドレスの割り当て</string>
     <string name="state_add_routes">ルートの追加</string>
     <string name="state_connected">接続</string>
-    <string name="state_disconnected">切断する</string>
+    <string name="state_disconnected">切断</string>
     <string name="state_reconnecting">再接続</string>
     <string name="state_exiting">終了</string>
     <string name="state_noprocess">実行されていない</string>
@@ -146,12 +146,9 @@
     <string name="rate_message">Windscribeを楽しんでいますか?確かにそうです。Playストアで私たちを評価してください、そして私たちはあなたを長い間愛します。</string>
     <string name="gps_spoofing_explain">この機能を使用するには、アンドロイドの設定を変更する必要があります。次のいくつかの手順に従ってアクティブ化してください。</string>
     <string name="let_s_do_it">やってみましょう</string>
-    <string name="unlock_developer_mode">開発者向けオプションのロックを解除する</string>
-    <string name="unlock_developer_mode_explain">[設定]を開き、[電話について]セクションを探します。 「ソフトウェア情報」内のビルド番号を見つけて、7回タップします。</string>
     <string name="open_settings">設定を開く</string>
-    <string name="add_to_mock_location">モックロケーションアプリを選択</string>
-    <string name="add_to_mock_location_explain">ロックが解除されたら、[設定]の[開発者向けオプション]に移動します。 [デバッグ] で [Windscribe] を [モック ロケーション アプリ] として選択します。</string>
-    <string name="add_to_mock_location_explain_android_12">ロックが解除されたら、[設定]の[開発者向けオプション]に移動します。 [場所]で[Windscribe]を[モック位置情報アプリ]として選択します。</string>
+    <string name="gps_spoofing_setup">GPSスプーフィングの設定</string>
+    <string name="gps_spoofing_setup_explain">1. 設定を開き、「デバイス情報」でビルド番号を7回タップして「開発者向けオプション」を有効にします。\n\n2.「開発者向けオプション」で Windscribe を「疑似位置情報アプリ」に選択します。</string>
     <string name="you_are_done">これで完了です。</string>
     <string name="gps_spoofing_success">GPSの位置はVPNの場所と同じになります。</string>
     <string name="gps_spoofing_not_set">GPSスプーフィングを有効にできませんでした</string>
@@ -159,7 +156,7 @@
     <string name="add_email">メールアドレスを追加</string>
     <string name="unlimited_data">無制限のデータ</string>
     <string name="preferences">設定</string>
-    <string name="optional">(オプション)</string>
+    <string name="optional">任意</string>
     <string name="get_10_gb">10GB/月を取得</string>
     <string name="plans">計画</string>
     <string name="pro">プロ</string>
@@ -235,7 +232,7 @@
     <string name="forget_network">ネットワークを忘れる</string>
     <string name="network_secured">確保</string>
     <string name="network_unsecured">無担保</string>
-    <string name="preferred_protocol_description">接続に問題がある場合は、このネットワークのデフォルトプロトコルを選択してください</string>
+    <string name="preferred_protocol_description">Windscribe はこのネットワークでは常にこのプロトコルで接続します。全体の接続設定より優先されます。</string>
     <string name="unknown">不明なネットワーク</string>
     <string name="loading_network_list">ネットワーク リストを読み込んでいます\nお待ちください...</string>
     <string name="no_saved_network_list">保存されたネットワークリストはありません!</string>
@@ -346,7 +343,7 @@
     <string name="Error">エラー</string>
     <string name="text_account_set_up">サインアップ</string>
     <string name="xpress_login">レイジーログイン</string>
-    <string name="scan_lazy_login_qr_code">スマートフォンでこのQRコードをスキャンしてログインしてください。</string>
+    <string name="scan_lazy_login_qr_code">この QR コードをスキャン</string>
     <string name="web_login_description"><b>Account → Lazy Login</b>でWindscribeモバイルアプリのQRコードをスキャンするか、コードを入力してください。</string>
     <string name="app_login_manual_entry"><b>Account → Lazy Login</b>でモバイルアプリに入力してください</string>
     <string name="or">又は</string>
@@ -388,9 +385,9 @@
     <string name="latency_display_description">遅延を信号強度バーまたはミリ秒単位で表示します。</string>
     <string name="language_description">Windscribe をサポートされている言語にローカライズします。</string>
     <string name="notification_stats_description">通知にトラフィック統計を表示します。</string>
-    <string name="location_load_description">ロケーション負荷をバーとして表示します。バーが短いほど、ロケーションへの負荷は少なくなります(ロケーションの総容量に対して)。</string>
+    <string name="location_load_description">ロケーションの負荷を表示します。円弧が小さいほど負荷（使用率）は低くなります。</string>
     <string name="haptic_feedback_description">操作に合わせて振動します</string>
-    <string name="connection_mode_description">Windscribeにセットアップに最適なプロトコル/ポートの組み合わせを自動的に選択させるか、手動で選択するかを選択します。</string>
+    <string name="connection_mode_description">VPN プロトコルを自動で選ぶか、手動で選択します。注意：「優先プロトコル」がこの設定より優先されます。</string>
     <string name="packet_size_description">接続のMTUをWindscribeに決定させるか、手動で上書きするかを選択します。</string>
     <string name="allow_lan_description">Windscribeに接続しているときに、同じネットワーク上のリソース(ファイルサーバー、プリンター、メディアボックスなど)へのアクセスを許可するかどうかを選択します。</string>
     <string name="keep_alive_description">NAT キープアライブ パケットを定期的にピアに送信して NAT セッションを維持し、ピアがデバイスにアクセスできるようにします(IKEv2 のみ)。</string>
@@ -457,7 +454,7 @@
     <string name="feedback">フィードバック</string>
     <string name="custom">習慣</string>
     <string name="flags">国旗</string>
-    <string name="bars">bars</string>
+    <string name="bars">バー</string>
     <string name="ms">ms</string>
     <string name="geography">国名順</string>
     <string name="alphabet">アルファベット順</string>
@@ -482,7 +479,7 @@
     <string name="anti_censorship">検閲の回避</string>
     <string name="anti_censorship_explainer">過酷な環境でもVPNに接続します</string>
     <string name="auto_connect">自動接続</string>
-    <string name="auto_connect_explainer">アプリの起動時またはネットワークへの参加時に、最後に使用した場所に接続します。</string>
+    <string name="auto_connect_explainer">除外していないすべてのネットワークで、最後に使用した場所に接続します。接続できない場合はインターネットを遮断します。遮断されるのは接続に失敗したときだけで、自分で切断または一時停止した場合は遮断されません。</string>
     <string name="save">保存</string>
     <string name="clear">クリア</string>
     <string name="enter_1_key_value_per_line">1 行に 1 つの key=value を入力します。</string>
@@ -563,7 +560,7 @@
     <string name="power_whitelist_title">バッテリー最適化を無効にする</string>
     <string name="power_whitelist_summary">安定した接続を維持するために、バッテリー最適化設定からWindscribeを削除してください。これにより、IKEv2接続の中断のないサービスが保証されます。</string>
     <string name="never_aks_again_for_permission">二度と聞かない</string>
-    <string name="slide_puzzle_piece_into_place">左側のパズルピースをスライドして所定の位置に配置します</string>
+    <string name="slide_puzzle_piece_into_place">左の画像を右のくぼみにスライドしてください</string>
     <string name="complete_puzzle_to_continue">続行するにはパズルを完成させます</string>
     <string name="none">なし</string>
     <string name="free">無料</string>
@@ -608,7 +605,7 @@
     <string name="ipv6_mode_description">VPN接続に使用するIPバージョンを選択してください。</string>
     <string name="ip_stack">IPスタック</string>
     <string name="ip_stack_description">VPN接続用のIPスタックを構成します。</string>
-    <string name="egress">Egress (WireGuard only)</string>
+    <string name="egress">出力（WireGuard のみ）</string>
     <string name="ingress">イングレス</string>
     <string name="ipv4_only">IPv4のみ</string>
     <string name="manual_connection_mode_failed_title">手動接続モードが失敗しました</string>
@@ -692,4 +689,32 @@
     <string name="accessibility_status_connecting">接続中</string>
     <string name="accessibility_status_disconnected">切断されました</string>
 
+    <string name="notification_paused">一時停止中 — 通信は保護されていません</string>
+    <string name="notification_waiting_for_secured">保護対象のネットワークを待機中</string>
+    <string name="notification_stood_down">このネットワークでは自動接続がオフです</string>
+    <string name="notification_stood_down_on">%1$s では自動接続がオフです</string>
+    <string name="notification_action_pause">一時停止</string>
+    <string name="notification_action_resume">再開</string>
+    <string name="notification_action_connect">接続</string>
+    <string name="notification_action_turn_off">オフにする</string>
+    <string name="accessibility_status_paused">一時停止中、通信は保護されていません</string>
+    <string name="accessibility_status_blocked">遮断中、Windscribe をオフにするまでインターネットは使えません</string>
+    <string name="notification_account_banned">アカウントが停止されました — インターネットに戻るには Windscribe をオフにしてください</string>
+    <string name="notification_account_expired">アカウントの有効期限が切れました — インターネットに戻るには Windscribe をオフにしてからアップグレードしてください</string>
+    <string name="notification_action_retry">再試行</string>
+    <string name="notification_awaiting_session">セッションの更新を待機中</string>
+    <string name="notification_blocked">接続できませんでした — 通信は遮断されています</string>
+    <string name="notification_config_auth_failed">認証に失敗しました — 設定ファイルを確認してください</string>
+    <string name="notification_failed">このネットワークでは接続できませんでした</string>
+    <string name="notification_failed_to">%1$s に接続できませんでした</string>
+    <string name="notification_no_network">ネットワークがありません — 接続できる回線がありません</string>
+    <string name="notification_opted_out">このネットワークでは自動保護がオフです</string>
+    <string name="notification_opted_out_on">%1$s では自動保護がオフです</string>
+    <string name="notification_protocol_switch">プロトコルの切り替えを待機中</string>
+    <string name="notification_reconnecting">再接続中</string>
+    <string name="notification_reconnecting_to">%1$s に再接続中</string>
+    <string name="manual_enter_code">または、このコードを手動で入力してください:</string>
+    <string name="qr_generation_failed">QR コードを生成できませんでした</string>
+    <string name="subscription_payment_issue">サブスクリプションのお支払いに問題があります</string>
+    <string name="subscription_payment_issue_description">サブスクリプションのお支払いに確認が必要です。Google Play を開いてお支払い方法をご確認ください。</string>
 </resources>

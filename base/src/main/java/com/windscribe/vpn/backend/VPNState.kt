@@ -28,6 +28,11 @@ class VPNState(
     enum class ErrorType {
         UserReconnect,
         UserDisconnect,
+        UserPause,
+        UserTurnOff,
+
+        /** VPN consent was revoked. Terminal: nothing can connect without it. */
+        Revoked,
         AuthenticationError,
         WireguardAuthenticationError,
         GenericError,

@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 /**
- * Simple tunnel state tracker for IKEv2, similar to WireGuardTunnel.
+ * Simple tunnel state tracker for IKEv2.
  * Uses StateFlow pattern to emit connection state changes from CharonVpnService.
  */
 class IKev2Tunnel {

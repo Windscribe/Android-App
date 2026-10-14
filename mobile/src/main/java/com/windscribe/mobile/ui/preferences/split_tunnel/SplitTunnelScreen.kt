@@ -27,14 +27,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -44,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.windscribe.mobile.ui.common.CustomDropDown
@@ -363,6 +369,43 @@ private fun AppsTitle() {
     )
 }
 
+/**
+ * Decoded off the main thread when the row is bound, so opening the screen does not wait on 500
+ * package lookups. The load is cancelled when the row scrolls away.
+ *
+ * The holder is keyed on the package so a reused row drops the icon of the app it held before,
+ * rather than keeping it and never asking for the new one.
+ */
+@Composable
+private fun AppIcon(
+    packageName: String,
+    cache: AppIconCache?,
+    size: Dp,
+) {
+    val sizePx = with(LocalDensity.current) { size.roundToPx() }
+    var bitmap by
+        remember(packageName, sizePx, cache) {
+            mutableStateOf(cache?.cached(packageName, sizePx))
+        }
+    LaunchedEffect(packageName, sizePx, cache) {
+        if (bitmap == null) {
+            bitmap = cache?.icon(packageName, sizePx)
+        }
+    }
+    val loaded = bitmap
+    if (loaded != null) {
+        Image(
+            painter = BitmapPainter(loaded.asImageBitmap()),
+            contentDescription = null,
+            modifier = Modifier.size(size),
+        )
+    } else {
+        // Holds the row's shape until the icon arrives. `painterResource` cannot take the platform
+        // default icon: it is an adaptive icon, which it rejects.
+        Spacer(modifier = Modifier.size(size))
+    }
+}
+
 @Composable
 private fun Apps(
     apps: List<InstalledAppsData>,
@@ -391,20 +434,7 @@ private fun Apps(
                         .clickable { onAppSelected(app) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                val iconBitmap = appIconCache?.getIcon(app.packageName)
-                if (iconBitmap != null) {
-                    Image(
-                        painter = BitmapPainter(iconBitmap.asImageBitmap()),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(android.R.drawable.sym_def_app_icon),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
+                AppIcon(app.packageName, appIconCache, 24.dp)
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = app.appName,
@@ -446,7 +476,6 @@ private class SplitTunnelStateProvider : PreviewParameterProvider<SplitTunnelSta
                 SplitTunnelState(
                     isSplitTunnelEnabled = true,
                     filteredApps = listOf(chrome, discord, telegram),
-                    appIconCache = AppIconCache(),
                 ),
             )
         }

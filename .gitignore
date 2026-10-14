@@ -19,6 +19,7 @@
 /wstunnel/.cxx/
 /wstunnel/build/
 /wgtunnel/.cxx/
+/common/.cxx/
 /wgtunnel/build/
 /baselineprofile/build/
 
@@ -34,3 +35,7 @@ maestro/.env
 
 # Maestro test reports
 /maestro-reports/
+
+# Kotlin compiler session/error scratch dir
+.kotlin/
+/partner-stub/build

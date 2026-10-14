@@ -7,26 +7,32 @@ import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.windscribe.common.tunnel.TunnelManager
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.apppreference.DataStorePreferenceHelper
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.SecurePreferences
 import com.windscribe.vpn.apppreference.windscribeDataStore
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
-import com.windscribe.vpn.backend.PlayIntegrityManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
+import com.windscribe.vpn.backend.ikev2.IKev2Engine
+import com.windscribe.vpn.backend.ikev2.IKev2EngineProfile
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
+import com.windscribe.vpn.backend.ikev2.WindscribeCharonEngineCore
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
+import com.windscribe.vpn.backend.openvpn.OpenVpnEngine
+import com.windscribe.vpn.backend.openvpn.OpenVpnEngineProfile
 import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager
+import com.windscribe.vpn.backend.tunnel.VpnServiceGate
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.wireguard.WgLogger
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
-import com.windscribe.vpn.backend.wireguard.WireguardContextWrapper
 import com.windscribe.vpn.billing.PurchaseManager
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
@@ -55,6 +61,7 @@ import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.LogRepository
 import com.windscribe.vpn.repository.NotificationRepository
+import com.windscribe.vpn.repository.PortMapRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
@@ -69,9 +76,11 @@ import com.windscribe.vpn.serverlist.dao.LocationDao
 import com.windscribe.vpn.serverlist.dao.PingTimeDao
 import com.windscribe.vpn.serverlist.dao.ServerDao
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao
+import com.windscribe.vpn.services.ping.Pinger
 import com.windscribe.vpn.services.review.WindscribeReviewManagerImpl
 import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.state.AppLifeCycleObserver
+import com.windscribe.vpn.state.ConnectionPolicyInputs
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -81,6 +90,8 @@ import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.windscribe.vpn.wsnet.WSNetWrapper
 import com.wireguard.android.backend.GoBackend
+import com.wireguard.android.engine.WireGuardEngine
+import com.wireguard.android.engine.WireGuardEngineProfile
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
@@ -136,7 +147,7 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
         vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
-        pinger: com.windscribe.vpn.services.ping.Pinger,
+        pinger: Pinger,
         deviceStateManager: DeviceStateManager,
     ): LatencyRepository =
         LatencyRepository(
@@ -199,7 +210,66 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideGoBackend(app: Windscribe): GoBackend = GoBackend(WireguardContextWrapper(app.applicationContext))
+    fun provideGoBackend(app: Windscribe): GoBackend = GoBackend(app.applicationContext)
+
+    /**
+     * The engine registry, keyed by protocol.
+     *
+     * Every engine here is a plain object. None of them is a `VpnService`, none of them owns a TUN,
+     * and swapping between them never touches the interface — see
+     * docs/architecture/VPN_BACKEND.md §2.
+     */
+    @Provides
+    @Singleton
+    fun provideTunnelManager(
+        app: Windscribe,
+        goBackend: Lazy<GoBackend>,
+        advanceParameterRepository: AdvanceParameterRepository,
+        proxyDNSManager: ProxyDNSManager,
+        wireguardBackend: Lazy<WireguardBackend>,
+        openVpnBackend: Lazy<OpenVPNBackend>,
+        ikev2Backend: Lazy<IKev2VpnBackend>,
+    ): TunnelManager {
+        val wireGuardEngine =
+            WireGuardEngine(goBackend::get) { state ->
+                wireguardBackend.get().onEngineState(state)
+            }
+
+        val openVpnEngine =
+            OpenVpnEngine(
+                serviceFactory = { onStatus ->
+                    com.windscribe.vpn.backend.openvpn
+                        .WindscribeOpenVpnService(
+                            app.applicationContext,
+                            advanceParameterRepository,
+                            proxyDNSManager,
+                            onStatus,
+                        ).also { openVpnBackend.get().engineCore = it }
+                },
+                onStatus = { status -> openVpnBackend.get().onEngineStatus(status) },
+            )
+
+        // Exactly one charon per process: initializeCharon installs process-global signal handlers
+        // and a singleton charonservice, so the core is built once here and reused for every
+        // connection rather than recreated per attach.
+        val charonCore =
+            WindscribeCharonEngineCore(
+                app.applicationContext,
+                advanceParameterRepository,
+                proxyDNSManager,
+                onStatus = { status -> ikev2Backend.get().onCharonStatus(status) },
+                onTunnelDown = { ikev2Backend.get().onTunnelDown() },
+            )
+        val ikev2Engine = IKev2Engine(charonCore)
+
+        return TunnelManager(
+            mapOf(
+                WireGuardEngineProfile.PROTOCOL to wireGuardEngine,
+                OpenVpnEngineProfile.PROTOCOL to openVpnEngine,
+                IKev2EngineProfile.PROTOCOL to ikev2Engine,
+            ),
+        )
+    }
 
     @Provides
     @Singleton
@@ -301,7 +371,7 @@ open class BaseApplicationModule {
         securePreferences: SecurePreferences,
         scope: CoroutineScope,
     ): PreferencesHelper =
-        com.windscribe.vpn.apppreference.DataStorePreferenceHelper(
+        DataStorePreferenceHelper(
             dataStore,
             securePreferences,
             scope,
@@ -327,7 +397,7 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
         userRepository: Lazy<UserRepository>,
-        pinger: com.windscribe.vpn.services.ping.Pinger,
+        pinger: Pinger,
     ): LocationRepository =
         LocationRepository(
             scope,
@@ -339,7 +409,7 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providePinger(): com.windscribe.vpn.services.ping.Pinger =
+    fun providePinger(): Pinger =
         com.windscribe.vpn.services.ping
             .IcmpPinger()
 
@@ -497,6 +567,8 @@ open class BaseApplicationModule {
         trafficCounter: TrafficCounter,
         serverListRepository: ServerListRepository,
         preferencesHelper: PreferencesHelper,
+        deviceStateManager: DeviceStateManager,
+        serviceGate: VpnServiceGate,
     ): WindNotificationBuilder =
         WindNotificationBuilder(
             notificationManager,
@@ -506,6 +578,8 @@ open class BaseApplicationModule {
             scope,
             serverListRepository,
             preferencesHelper,
+            deviceStateManager,
+            serviceGate,
         )
 
     @Provides
@@ -544,7 +618,6 @@ open class BaseApplicationModule {
         vpnConnectionStateManager: VPNConnectionStateManager,
         proxyDNSManager: ProxyDNSManager,
         wsNetWrapper: WSNetWrapper,
-        deviceStateManager: DeviceStateManager,
     ): AppLifeCycleObserver =
         AppLifeCycleObserver(
             workManager,
@@ -552,7 +625,6 @@ open class BaseApplicationModule {
             vpnConnectionStateManager,
             proxyDNSManager,
             wsNetWrapper,
-            deviceStateManager,
         )
 
     @Provides
@@ -589,6 +661,7 @@ open class BaseApplicationModule {
         connectionDataRepository: ConnectionDataRepository,
         apiManager: IApiCallManager,
         preferencesHelper: PreferencesHelper,
+        logRepository: Lazy<LogRepository>,
     ): AutoConnectionManager =
         AutoConnectionManager(
             scope,
@@ -599,6 +672,27 @@ open class BaseApplicationModule {
             localDbInterface,
             apiManager,
             preferencesHelper,
+            logRepository,
+        )
+
+    @Provides
+    @Singleton
+    fun providesConnectionPolicyInputs(
+        preferencesHelper: PreferencesHelper,
+        deviceStateManager: DeviceStateManager,
+        vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
+        userRepository: Lazy<UserRepository>,
+        localDbInterface: LocalDbInterface,
+        serviceGate: VpnServiceGate,
+    ): ConnectionPolicyInputs =
+        ConnectionPolicyInputs(
+            Windscribe.appContext,
+            preferencesHelper,
+            deviceStateManager,
+            vpnConnectionStateManager,
+            userRepository,
+            localDbInterface,
+            serviceGate,
         )
 
     @Provides
@@ -708,7 +802,6 @@ open class BaseApplicationModule {
         networkInfoManager: NetworkInfoManager,
         autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
-        vpnController: WindVpnController,
     ): ShortcutStateManager =
         ShortcutStateManager(
             scope,
@@ -716,7 +809,6 @@ open class BaseApplicationModule {
             autoConnectionManager,
             networkInfoManager,
             preferencesHelper,
-            vpnController,
         )
 
     @Provides
@@ -734,7 +826,7 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesWSNetWrapper(): WSNetWrapper = WSNetWrapper()
+    fun providesWSNetWrapper(preferencesHelper: PreferencesHelper): WSNetWrapper = WSNetWrapper(preferencesHelper)
 
     @Provides
     @Singleton
@@ -773,7 +865,7 @@ open class BaseApplicationModule {
     fun providePortMapRepository(
         apiCallManager: IApiCallManager,
         preferencesHelper: PreferencesHelper,
-    ): com.windscribe.vpn.repository.PortMapRepository =
+    ): PortMapRepository =
         com.windscribe.vpn.repository
             .PortMapRepository(apiCallManager, preferencesHelper)
 
@@ -782,8 +874,7 @@ open class BaseApplicationModule {
     fun provideLogRepository(
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
-        playIntegrityManager: PlayIntegrityManager,
-    ): LogRepository = LogRepository(preferencesHelper, apiCallManager, playIntegrityManager)
+    ): LogRepository = LogRepository(preferencesHelper, apiCallManager)
 
     @Provides
     @Singleton

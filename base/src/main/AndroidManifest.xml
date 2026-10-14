@@ -24,15 +24,19 @@
         android:name="android.hardware.location.gps"
         android:required="false" />
 
+    <!--
+        No android:label here. This module is fused into windscribe-core for partner apps, and a
+        library that contributes application@label collides with the host's own: the merge fails
+        unless every consumer adds tools:replace. Branding belongs to whoever is being branded, so
+        each app declares its own.
+    -->
     <application
         android:extractNativeLibs="true"
         android:fullBackupContent="false"
         android:hardwareAccelerated="true"
         android:supportsRtl="false"
         tools:ignore="GoogleAppIndexingWarning"
-        tools:replace="android:label"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:label="@string/app_name"
         tools:targetApi="q">
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -55,22 +59,29 @@
             </intent-filter>
         </receiver>
 
+        <!--
+          The single VpnService. It owns the TUN for a whole session; protocol engines are plain
+          objects behind it and are swapped without the interface ever being torn down.
+
+          This is the ONLY declaration claiming the android.net.VpnService action, which is the
+          point: six VpnServices used to reach the merged manifest and five claimed that action, so
+          which one the system handed Always-on VPN was manifest-merge-order dependent.
+          See docs/architecture/VPN_BACKEND.md §2.
+        -->
         <service
             android:foregroundServiceType="specialUse"
-            android:name=".backend.wireguard.WireGuardWrapperService"
+            android:name=".backend.tunnel.WindscribeVpnService"
             android:exported="true"
             android:permission="android.permission.BIND_VPN_SERVICE"
             tools:ignore="ForegroundServicePermission">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="WireGuard VPN protocol service - maintains encrypted VPN tunnel connection for user privacy and security" />
+                android:value="VPN tunnel service - maintains the encrypted VPN tunnel connection for user privacy and security" />
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-        <service
-            android:name=".services.DisconnectService"
-            android:exported="false" />
+        <!-- DisconnectService is gone: the single service handles ACTION_DISCONNECT itself. -->
         <service
             android:name=".services.VpnTileService"
             android:icon="@drawable/ic_tile_connect"
@@ -82,35 +93,15 @@
             </intent-filter>
         </service>
 
-        <service
-            android:foregroundServiceType="specialUse"
-            android:name="com.windscribe.vpn.backend.openvpn.OpenVPNWrapperService"
-            android:exported="true"
-            android:permission="android.permission.BIND_VPN_SERVICE"
-            tools:ignore="ForegroundServicePermission">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="OpenVPN protocol service - maintains encrypted VPN tunnel connection for user privacy and security" />
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
-        <service
-            android:foregroundServiceType="specialUse"
-            android:name="com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper"
-            android:permission="android.permission.BIND_VPN_SERVICE">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="IKEv2 VPN protocol service - maintains encrypted VPN tunnel connection for user privacy and security" />
-        </service>
-        <service
-            android:foregroundServiceType="specialUse"
-            android:name=".services.AutoConnectService"
-            android:enabled="true">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Auto-connect service - automatically connects VPN on network changes to protect user privacy on unsecured networks" />
-        </service>
+        <!-- OpenVPNWrapperService is gone: OpenVPN is an engine now, not a service. -->
+        <!-- CharonVpnServiceWrapper is gone: IKEv2 is an engine now, not a service. -->
+        <!--
+          AutoConnectService is gone. It existed only because no VPN service was alive while
+          disconnected, so something else had to watch the network - which meant a handover between
+          two foreground services and two notification ids. WindscribeVpnService now stays alive and
+          idle (no TUN established, so no VPN network and no key icon) and owns the watching itself.
+          See docs/architecture/VPN_BACKEND.md §2.
+        -->
     </application>
 
 </manifest>

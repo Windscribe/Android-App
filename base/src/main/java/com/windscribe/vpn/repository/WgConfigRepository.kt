@@ -309,9 +309,7 @@ class WgConfigRepository
                 serverPublicKey = serverPublicKey,
                 address = connectConfig.address,
                 dns = connectConfig.dns,
-            ).also { params ->
-                logger.debug("Assembled remote WireGuard parameters: {}", params)
-            }.let { CallResult.Success(it) }
+            ).let { CallResult.Success(it) }
         }
 
         companion object {

@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
-import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.utils.ConnectSource
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
 import dagger.Lazy
@@ -18,23 +18,43 @@ class ShortcutStateManager(
     private var autoConnectionManager: AutoConnectionManager,
     private var networkInfoManager: NetworkInfoManager,
     private val preferencesHelper: PreferencesHelper,
-    private val windVpnController: WindVpnController,
 ) {
     private var logger = LoggerFactory.getLogger("shortcut")
     private var initilized = false
 
-    fun connect() {
+    /**
+     * Connects from outside the app — the notification, the quick tile, a shortcut, or the system
+     * starting the service for Always-on.
+     *
+     * Goes through [AutoConnectionManager.connectInForeground] so these get the same protocol
+     * failover a tap inside the app does. It advances without the dialog when there is no Activity.
+     */
+    fun connect(source: ConnectSource) {
         if (initilized) {
-            preferencesHelper.globalUserConnectionPreference = true
-            logger.debug("Connecting from shortcut.")
-            windVpnController.connectAsync()
+            startConnect(source)
         } else {
-            load {
-                preferencesHelper.globalUserConnectionPreference = true
-                logger.debug("Connecting from shortcut.")
-                windVpnController.connectAsync()
-            }
+            load { startConnect(source) }
         }
+    }
+
+    /**
+     * [connect], but suspends until the bootstrap has finished and the attempt has been dispatched —
+     * for BootWorker, where returning early lets the process go with the cold start unfinished.
+     *
+     * @return false when nothing was dispatched: no cached session, or an account that cannot connect.
+     */
+    suspend fun connectNow(source: ConnectSource): Boolean {
+        if (!initilized && !loadNow()) {
+            return false
+        }
+        startConnect(source)
+        return true
+    }
+
+    private fun startConnect(source: ConnectSource) {
+        preferencesHelper.globalUserConnectionPreference = true
+        logger.debug("Connecting from shortcut ($source).")
+        scope.launch { autoConnectionManager.connectInForeground(source) }
     }
 
     private suspend fun getUserSession(): UserSessionResponse {
@@ -43,28 +63,36 @@ class ShortcutStateManager(
     }
 
     fun load(callback: () -> Unit) {
-        val userRepository = userRepository.get()
         scope.launch {
-            logger.debug("Loading user info.")
-            kotlin
-                .runCatching {
-                    getUserSession()
-                }.onSuccess {
-                    userRepository.reload(it) { user ->
-                        if (user.accountStatus == User.AccountStatus.Okay) {
-                            logger.debug("Loading network info.")
-                            networkInfoManager.reload()
-                            logger.debug("Loading connection info.")
-                            autoConnectionManager.reset()
-                            initilized = true
-                            callback()
-                        } else {
-                            logger.debug("Account status is ${user.accountStatus}.")
-                        }
-                    }
-                }.onFailure {
-                    logger.debug("Unable to load user info.")
-                }
+            if (loadNow()) {
+                callback()
+            }
         }
+    }
+
+    /** @return whether the app is ready to connect. */
+    private suspend fun loadNow(): Boolean {
+        logger.debug("Loading user info.")
+        val session =
+            runCatching { getUserSession() }.getOrElse {
+                logger.debug("Unable to load user info.")
+                return false
+            }
+        var ready = false
+        userRepository.get().reloadNow(session) { user ->
+            if (user.accountStatus == User.AccountStatus.Okay ||
+                preferencesHelper.isConnectingToConfigured
+            ) {
+                logger.debug("Loading network info.")
+                networkInfoManager.reload()
+                logger.debug("Loading connection info.")
+                autoConnectionManager.reset()
+                initilized = true
+                ready = true
+            } else {
+                logger.debug("Account status is ${user.accountStatus}.")
+            }
+        }
+        return ready
     }
 }

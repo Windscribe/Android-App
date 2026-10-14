@@ -260,7 +260,7 @@ public class LogItem implements Parcelable {
                 } else {
                     String str = String.format(Locale.ENGLISH, "Log (no context) resid %d", mRessourceId);
                     if (mArgs != null)
-                        str += join("|", mArgs);
+                        str += ": " + join("|", mArgs);
 
                     return str;
                 }

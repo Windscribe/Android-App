@@ -79,17 +79,6 @@ open class ApiCallManager
             }
         }
 
-        override suspend fun getIp(): GenericResponseClass<String?, ApiErrorResponse?> {
-            val api = wsNetWrapper.awaitServerAPI()
-            return suspendCancellableCoroutine { continuation ->
-                val callback =
-                    api.pingTest(5000) { code, json ->
-                        buildResponse(continuation, code, json, String::class.java)
-                    }
-                continuation.invokeOnCancellation { callback.cancel() }
-            }
-        }
-
         override suspend fun getApiIp(): GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?> {
             val api = wsNetWrapper.awaitServerAPI()
             return suspendCancellableCoroutine { continuation ->
@@ -309,6 +298,17 @@ open class ApiCallManager
                         buildResponse(continuation, code, json, UserLoginResponse::class.java)
                     }
                 continuation.invokeOnCancellation { callback.cancel() }
+            }
+        }
+
+        override suspend fun loginWithCode(licenseCode: String): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?> {
+            val api = wsNetWrapper.awaitServerAPI()
+            return suspendCancellableCoroutine { continuation ->
+//                val callback =
+//                    api.loginWithLicense(licenseCode) { code, json ->
+//                        buildResponse(continuation, code, json, UserLoginResponse::class.java)
+//                    }
+//                continuation.invokeOnCancellation { callback.cancel() }
             }
         }
 

@@ -1,15 +1,20 @@
 package com.windscribe.vpn.repository
 
+import androidx.annotation.Keep
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.exceptions.ApiFailure
 import java.io.Serializable
 
+/** [Keep] on each: the annotation does not reach nested classes, and `Ext.result` reflects over both. */
+@Keep
 sealed class CallResult<out T> : Serializable {
+    @Keep
     data class Error(
         val code: Int = -1,
         val errorMessage: String = "Unexpected error.",
     ) : CallResult<Nothing>()
 
+    @Keep
     data class Success<out R>(
         val data: R,
     ) : CallResult<R>()

@@ -14,13 +14,16 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.Util
+import com.windscribe.vpn.backend.utils.SIGNED_OUT
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -70,13 +73,40 @@ class UserRepository(
         reload()
     }
 
+    /** Fire and forget. A caller whose lifetime depends on this finishing wants [reloadNow]. */
     fun reload(
         response: UserSessionResponse? = null,
         callback: (suspend (user: User) -> Unit)? = null,
     ) {
+        launchReload(response, callback)
+    }
+
+    /**
+     * [reload], but suspends until it and its [callback] have finished — for a `CoroutineWorker`,
+     * whose process may be released the moment `doWork` returns. Runs on the same scope, so only the
+     * waiting differs.
+     */
+    suspend fun reloadNow(
+        response: UserSessionResponse? = null,
+        callback: (suspend (user: User) -> Unit)? = null,
+    ) {
+        val job = launchReload(response, callback)
+        try {
+            job.join()
+        } catch (e: CancellationException) {
+            // The application scope is out of the caller's cancellation reach.
+            job.cancel()
+            throw e
+        }
+    }
+
+    private fun launchReload(
+        response: UserSessionResponse?,
+        callback: (suspend (user: User) -> Unit)?,
+    ): Job {
         // No explicit Dispatchers.IO — applicationScope already runs on IO in production,
         // and tests need the scope's dispatcher so advanceUntilIdle drains the launch.
-        scope.launch {
+        return scope.launch {
             response?.let {
                 preferenceHelper.getSession = Gson().toJson(it)
                 val newUser = User(it)
@@ -138,7 +168,8 @@ class UserRepository(
         scope
             .launch {
                 if (appContext.vpnConnectionStateManager.isVPNActive()) {
-                    vpnController.disconnectAsync()
+                    // Not SYSTEM_DISCONNECT: blocking would hold the TUN with no account to lift it.
+                    vpnController.disconnectAsync(SIGNED_OUT)
                 }
                 googleSignInManager.signOut {
                     logger.debug("Signed out from Google.")
@@ -147,7 +178,7 @@ class UserRepository(
                 WorkManager.getInstance(appContext).cancelAllWork()
                 scope.launch {
                     try {
-                        logger.debug("Deleting user session.")
+                        logger.info("Deleting user session.")
                         var attempts = 0
                         val maxAttempts = 3
                         var success = false
@@ -226,19 +257,15 @@ class UserRepository(
         }
         val configId = sessionResponse.serverInventory?.amneziaWgConfigId
         if (configId.isNullOrEmpty()) {
-            // No recommendation - remains in Auto mode but effectively disabled
-            logger.info("Auto mode: No server recommendation for Protocol Tweaks")
+            return
+        }
+        val params = unblockWgParamsRepository.unblockWgParams.value
+        val matchingPreset = params.firstOrNull { it.id == configId }
+        if (matchingPreset != null) {
+            logger.info("Auto mode: Selecting preset ID: ${matchingPreset.id}, title: ${matchingPreset.title}")
+            unblockWgParamsRepository.setSelectedUnblockWgParam(matchingPreset.id)
         } else {
-            // Server recommends a config - try to find and select it by ID
-            val params = unblockWgParamsRepository.unblockWgParams.value
-            val matchingPreset = params.firstOrNull { it.id == configId }
-
-            if (matchingPreset != null) {
-                logger.info("Auto mode: Selecting preset ID: ${matchingPreset.id}, title: ${matchingPreset.title}")
-                unblockWgParamsRepository.setSelectedUnblockWgParam(matchingPreset.id)
-            } else {
-                logger.warn("Auto mode: Server recommended config_id '$configId' not found in presets")
-            }
+            logger.warn("Auto mode: Server recommended config_id '$configId' not found in presets")
         }
     }
 
@@ -313,7 +340,8 @@ class UserRepository(
                 emit(UserDataState.Loading("Getting server list"))
                 serverListRepository.update()
                 if (appContext.vpnConnectionStateManager.isVPNActive()) {
-                    vpnController.disconnectAsync()
+                    // Not SYSTEM_DISCONNECT: blocking would hold the TUN with no account to lift it.
+                    vpnController.disconnectAsync(SIGNED_OUT)
                 }
                 Util.removeLastSelectedLocation()
                 workManager.onAppStart()

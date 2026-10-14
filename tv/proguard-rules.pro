@@ -17,11 +17,6 @@
 # Dagger
 -dontwarn com.google.errorprone.annotations.**
 
-# Strongswan
--keep public class org.strongswan.android.** {
-  public protected private *;
-}
-
 # Gson
 -keepattributes Signature
 -keepattributes *Annotation*
@@ -51,43 +46,8 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
 
-#Logger
--keep class ch.qos.** { *; }
--keep class ch.qos.logback.classic.db.SQLBuilder
--keep class org.slf4j.** { *; }
--keepattributes *Annotation*
--dontwarn ch.qos.logback.core.net.*
-
 #Lifecycle
 -keep class androidx.lifecycle.** {*;}
--keep class com.scapix.** { *; }
--keep class com.wsnet.** { *; }
--keep class com.windscribe.vpn.backend.CdLib { *; }
-# Keep classes from pcap4j-core
--keep class org.pcap4j.** { *; }
-# Keep classes from pcap4j-packetfactory-static
--keep class org.pcap4j.packet.factory.** { *; }
-# Keep classes from minidns-client
--keep class org.minidns.** { *; }
-
-# IPAddress (inet.ipaddr) — its static initializer builds a ResourceBundle name via
-# HostIdentifierException.class.getPackage().getName(). R8's repackaging/flattening can
-# move these classes to the root package, making getPackage() return null -> NPE in
-# <clinit> (ExceptionInInitializerError) on release builds only. Keep the package intact
-# and preserve the IPAddressResources bundle so the lookup succeeds.
--keep class inet.ipaddr.** { *; }
--keeppackagenames inet.ipaddr.**
--keepclassmembers class inet.ipaddr.** { *; }
-
--keep class com.windscribe.vpn.commonutils.LowerCaseLevelConverter { *; }
-
-# Keep Ext.result function and CallResult classes for reflection
--keep class com.windscribe.vpn.commonutils.Ext { *; }
--keep class com.windscribe.vpn.repository.CallResult { *; }
--keep class com.windscribe.vpn.repository.CallResult$* { *; }
--keep class com.windscribe.vpn.api.response.GenericResponseClass { *; }
--keep class com.windscribe.vpn.serverlist.entity.** { *; }
--keep class com.windscribe.vpn.api.response.** { *; }
 
 # Fire OS (API 22) compatibility - Prevent VerifyError with AutofillManager
 # AutofillManager was added in API 26 but Fire OS runs on API 22
@@ -101,3 +61,5 @@
 # Keep Material Design components
 -keep class com.google.android.material.** { *; }
 -keepclassmembers class com.google.android.material.** { *; }
+
+# inet.ipaddr and the :base reflection keeps now travel with the module, in base/consumer-rules.pro.

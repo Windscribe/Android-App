@@ -1,0 +1,13 @@
+v4.4(Mobile)
+* Rebuilt the VPN engine: one connection now swaps protocols without tearing down your tunnel.
+* Auto-Connect explained and enforced: if it can't connect it blocks your internet until you turn Windscribe off. Disconnecting or pausing never blocks.
+* Start on boot is honoured when Auto-Connect is off.
+* WireGuard now spots a dead tunnel on its own and reconnects.
+* The app follows the language you set for it in Android settings, and more of the app is translated.
+* New log viewer: search and filter your logs before sending them to support.
+* Faster, lighter app list in Split Tunneling.
+* Fixed custom configs connecting on the wrong protocol and showing a false "all protocols failed".
+* Fixed custom DNS not being applied.
+* Fixed GPS Spoofing setup getting stuck and not updating when you come back from Settings.
+* Fixed the screen flickering when you change language.
+* Removed test-only components from the release build.

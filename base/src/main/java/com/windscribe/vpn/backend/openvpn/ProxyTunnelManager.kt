@@ -5,6 +5,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.isProtocolTweaksEnabled
 import com.windscribe.vpn.commonutils.Ext.maskMiddle
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -77,10 +78,25 @@ class ProxyTunnelManager(
         }
     }
 
+    /**
+     * Stops the proxy without waiting for it.
+     *
+     * `tunnelLib.stop()` blocks until the Go `startProxy` goroutine returns, which for a WSTunnel
+     * proxy that never established takes ~90s. It is called inside the connect path's `withTimeout`,
+     * which cannot interrupt a blocking native call.
+     *
+     * A stopgap, not a fix: the next start still serialises on [proxyJob]'s `join()`, so a slow stop
+     * delays the proxy replacing it. The connect fails quickly rather than hanging. The real fix is
+     * for `WSTunnelLib.stop()` to return promptly.
+     */
     fun stopProxyTunnel() {
         logger.debug("Stopping proxy.")
         protectJob?.cancel()
-        tunnelLib.stop()
+        scope.launch(Dispatchers.IO) {
+            runCatching { tunnelLib.stop() }
+                .onFailure { logger.debug("Proxy stop failed: ${it.message}") }
+            logger.debug("Proxy stop returned.")
+        }
     }
 
     companion object {

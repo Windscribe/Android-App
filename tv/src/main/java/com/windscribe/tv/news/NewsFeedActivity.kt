@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.windscribe.tv.R
 import com.windscribe.tv.adapter.NewsFeedAdapter
 import com.windscribe.tv.base.BaseActivity
-import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.customview.CustomDialog
 import com.windscribe.tv.databinding.ActivityNewsFeedBinding
 import com.windscribe.tv.upgrade.UpgradeActivity
@@ -47,7 +46,6 @@ class NewsFeedActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         presenter.bind(this, lifecycleScope)
-        applyAppLocale()
         binding = ActivityNewsFeedBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupUI()

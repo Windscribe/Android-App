@@ -12,6 +12,7 @@ import com.google.gson.Gson
 import com.windscribe.common.DNSDetails
 import com.windscribe.common.DnsType
 import com.windscribe.common.getDNSDetails
+import com.windscribe.common.tunnel.TunConfig
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -101,55 +102,32 @@ class VPNProfileCreator
             return PROXY_TUNNEL_PORT
         }
 
+        /**
+         * The allowed-IP set for LAN bypass: every public IPv4 prefix, plus the IPv6 default route
+         * and the tunnel's own DNS range, which sits inside 10/8 and so has to be routed back in.
+         *
+         * The v4 half is [TunConfig.PUBLIC_ROUTES_V4], shared with the blocking TUN. Held as strings
+         * because both consumers want strings — WireGuard's `parseAllowedIPs` and IKEv2's
+         * `includedSubnets`.
+         */
         private val publicIpV4Array =
-            arrayOf(
-                "0.0.0.0/5",
-                "8.0.0.0/7",
-                "11.0.0.0/8",
-                "12.0.0.0/6",
-                "16.0.0.0/4",
-                "32.0.0.0/3",
-                "64.0.0.0/2",
-                "128.0.0.0/3",
-                "160.0.0.0/5",
-                "168.0.0.0/6",
-                "172.0.0.0/12",
-                "172.32.0.0/11",
-                "172.64.0.0/10",
-                "172.128.0.0/9",
-                "173.0.0.0/8",
-                "174.0.0.0/7",
-                "176.0.0.0/4",
-                "192.0.0.0/9",
-                "192.128.0.0/11",
-                "192.160.0.0/13",
-                "192.169.0.0/16",
-                "192.170.0.0/15",
-                "192.172.0.0/14",
-                "192.176.0.0/12",
-                "192.192.0.0/10",
-                "193.0.0.0/8",
-                "194.0.0.0/7",
-                "196.0.0.0/6",
-                "200.0.0.0/5",
-                "208.0.0.0/4",
-                "::0/0",
-                "10.255.255.0/24",
-            )
+            (
+                TunConfig.PUBLIC_ROUTES_V4.map { it.toString() } +
+                    listOf("::0/0", "10.255.255.0/24")
+            ).toTypedArray()
 
         fun createIkEV2Profile(
             location: LastSelectedLocation,
             vpnParameters: VPNParameters,
             config: ProtocolInformation,
         ): String {
-            logger.info("creating IKEv2 Profile.")
+            logger.info("Creating IKEv2 profile.")
             // Vpn profile
             val profile = VpnProfile()
             profile.id = 1
             profile.uuid = UUID.randomUUID()
             profile.name = vpnParameters.hostName
-            // Changing it to use altered ip instead of hostname.
-            // profile.gateway = vpnParameters.hostName
+            // The IP, not the hostname, so the gateway is not resolved again here.
             profile.gateway = vpnParameters.ikev2Ip
             profile.espProposal = "aes256gcm16-sha256-ecp384"
             profile.ikeProposal = "aes256gcm16-sha256-ecp384"
@@ -163,6 +141,7 @@ class VPNProfileCreator
             preferencesHelper.selectedProtocol = config.protocol
             preferencesHelper.selectedPort = config.port
             preferencesHelper.selectedIp = vpnParameters.hostName
+            preferencesHelper.selectedNodeId = vpnParameters.nodeId
 
             // Mtu
             if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
@@ -219,7 +198,7 @@ class VPNProfileCreator
             vpnParameters: VPNParameters,
             protocolInformation: ProtocolInformation,
         ): String {
-            logger.info("Creating open vpn profile.")
+            logger.info("Creating OpenVPN profile.")
             // Create a new profile
             val profile = de.blinkt.openvpn.VpnProfile("Windscribe")
             profile.mUsePull = true
@@ -370,16 +349,6 @@ class VPNProfileCreator
                         false,
                     )
                 }
-                // Old stunnel setup
-
-            /*if (WindStunnelUtility.isStunnelRunning) {
-                WindStunnelUtility.stopLocalTunFromAppContext(appContext)
-            }
-            preferencesHelper.selectedPort = protocolInformation.port
-            if (proxyIp != null) {
-                WindUtilities.writeStunnelConfig(appContext, proxyIp, protocolInformation.port)
-                WindStunnelUtility.startLocalTun()
-            }*/
             } else if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
                 if (proxyTunnelManager.running) {
                     proxyTunnelManager.stopProxyTunnel()
@@ -395,6 +364,7 @@ class VPNProfileCreator
                 }
             }
             preferencesHelper.selectedIp = vpnParameters.hostName
+            preferencesHelper.selectedNodeId = vpnParameters.nodeId
             saveSelectedLocation(lastSelectedLocation)
             saveProfile(profile)
             return "$lastSelectedLocation"
@@ -574,25 +544,12 @@ class VPNProfileCreator
                 interFaceBuilder.setMtu(mPreferencesHelper.packetSize)
             }
             val dnsDetails = setCustomDNS()
-            when (dnsDetails?.type) {
-                DnsType.Plain -> {
-                    // Use the plain DNS IP directly
-                    interFaceBuilder.parseDnsServers(dnsDetails.ip!!)
-                }
-                DnsType.Proxy -> {
-                    // For DoH/DoT, use the bootstrap IP so DNS queries go to Control-D's servers
-                    // This allows Control-D verification to work properly
-                    val bootstrapIp = dnsDetails.ip
-                    if (!bootstrapIp.isNullOrEmpty()) {
-                        interFaceBuilder.parseDnsServers(bootstrapIp)
-                    } else {
-                        interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
-                    }
-                }
-                else -> {
-                    // Default to config's DNS for tunnel mode or when no custom DNS
-                    interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
-                }
+            if (dnsDetails?.type == DnsType.Plain) {
+                interFaceBuilder.parseDnsServers(dnsDetails.ip!!)
+            } else {
+                // Proxy included: see createWireGuardInterface for why the bootstrap IP must not be
+                // advertised here.
+                interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
             }
             val configWithSettings =
                 try {
@@ -654,6 +611,7 @@ class VPNProfileCreator
 
                     val content = builder.build().toWgQuickString()
                     preferencesHelper.selectedIp = vpnParameters.hostName
+                    preferencesHelper.selectedNodeId = vpnParameters.nodeId
                     logger.debug(content.withoutWgSecrets())
                     saveSelectedLocation(lastSelectedLocation)
                     saveProfile(WireGuardVpnProfile(content))
@@ -672,20 +630,15 @@ class VPNProfileCreator
             builder.parsePrivateKey(wgRemoteParams.privateKey)
             builder.parseAddresses(wgRemoteParams.address)
             val dnsDetails = setCustomDNS()
-            when (dnsDetails?.type) {
-                DnsType.Plain -> {
-                    // Use the plain DNS IP directly
-                    builder.parseDnsServers(dnsDetails.ip!!)
-                }
-                DnsType.Proxy -> {
-                    // For DoH/DoT, use the bootstrap IP so DNS queries go to Control-D's servers
-                    // This allows Control-D verification to work properly
-                    builder.parseDnsServers(dnsDetails.ip ?: wgRemoteParams.dns)
-                }
-                else -> {
-                    // Default to VPN's DNS for tunnel mode or when no custom DNS
-                    builder.parseDnsServers(wgRemoteParams.dns)
-                }
+            if (dnsDetails?.type == DnsType.Plain) {
+                builder.parseDnsServers(dnsDetails.ip!!)
+            } else {
+                // Proxy included: ctrld does the resolving and ControlDDnsStage reaches it over
+                // loopback, so this address only has to pull queries into the TUN. Never the
+                // upstream's bootstrap IP - that is a public resolver that also answers DoT on 853,
+                // which Android's opportunistic Private DNS validates and then sends every query to
+                // over TCP, unseen by the UDP/53 prefilter that feeds ctrld.
+                builder.parseDnsServers(wgRemoteParams.dns)
             }
             if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
                 builder.setMtu(preferencesHelper.packetSize)

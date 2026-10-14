@@ -44,6 +44,8 @@ object WindUtilities {
             if (profileFile.exists()) {
                 profileFile.delete()
             }
+            // The in-memory copy mirrors this file, so it has to go with it.
+            Util.clearProfileCache()
 
             val locationFile = File(context.filesDir, Util.LAST_SELECTED_LOCATION)
             if (locationFile.exists()) {
@@ -59,6 +61,8 @@ object WindUtilities {
         }
 
     fun getSourceTypeBlocking(): SelectedLocationType {
+        // Named "Blocking" for a reason: both reads below are runBlocking over DataStore.
+        MainThreadWatch.warnIfMainThread("getSourceTypeBlocking")
         val isConnectingToStatic = appContext.preference.isConnectingToStaticIp
         val isConnectingToConfigured = appContext.preference.isConnectingToConfigured
 

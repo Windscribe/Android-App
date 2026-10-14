@@ -105,7 +105,7 @@
     <string name="fake_traffic_volume">가짜 트래픽 볼륨</string>
     <string name="potential_data_use">예상 데이터 사용량</string>
     <string name="plan_pro">Pro</string>
-    <string name="a_la_carte_unlimited_plan">무제한</string>
+    <string name="a_la_carte_unlimited_plan">알라카르트 무제한</string>
     <string name="expiry_date">만료일</string>
     <string name="reset_date">리셋일</string>
     <string name="gb_per_month"> GB/월</string>
@@ -151,12 +151,9 @@
     <string name="rate_message">Windscribe를 즐기고 계신가요? Play 스토어에서 저희를 평가해 주시면 정말 감사하겠습니다.</string>
     <string name="gps_spoofing_explain">이 기능을 사용하려면 Android 설정을 변경해야 합니다. 다음 단계를 따라 활성화해 주세요.</string>
     <string name="let_s_do_it">시작하기</string>
-    <string name="unlock_developer_mode">개발자 옵션 활성화</string>
-    <string name="unlock_developer_mode_explain">설정을 열고 \"휴대전화 정보\" 섹션을 찾으세요. \"소프트웨어 정보\"에서 빌드 번호를 7번 탭하세요.</string>
     <string name="open_settings">설정 열기</string>
-    <string name="add_to_mock_location">모의 위치 앱 선택</string>
-    <string name="add_to_mock_location_explain">활성화한 후 설정에서 \"개발자 옵션\"으로 이동하세요. \"디버깅\" 항목에서 Windscribe를 \"모의 위치 앱\"으로 선택하세요.</string>
-    <string name="add_to_mock_location_explain_android_12">활성화한 후 설정에서 \"개발자 옵션\"으로 이동하세요. \"위치\" 항목에서 Windscribe를 \"모의 위치 앱\"으로 선택하세요.</string>
+    <string name="gps_spoofing_setup">GPS 스푸핑 설정</string>
+    <string name="gps_spoofing_setup_explain">1. 설정에서 “휴대전화 정보”를 찾아 빌드 번호를 7번 탭하여 “개발자 옵션”을 잠금 해제하세요.\n\n2. “개발자 옵션”에서 Windscribe를 “모의 위치 앱”으로 선택하세요.</string>
     <string name="you_are_done">완료되었습니다.</string>
     <string name="gps_spoofing_success">이제 GPS 위치가 VPN 위치와 동일하게 설정됩니다.</string>
     <string name="gps_spoofing_not_set">GPS 스푸핑을 활성화할 수 없습니다.</string>
@@ -359,7 +356,7 @@
     <string name="note">참고</string>
     <string name="text_account_set_up">가입하기</string>
     <string name="xpress_login">간편 로그인</string>
-    <string name="scan_lazy_login_qr_code">휴대폰으로 이 QR 코드를 스캔하여 로그인하세요.</string>
+    <string name="scan_lazy_login_qr_code">이 QR 코드를 스캔하세요</string>
     <string name="web_login_description">QR 코드를 스캔하거나 <b>Account → Lazy Login</b>의 Windscribe 모바일 앱에서 코드를 입력하세요.</string>
     <string name="app_login_manual_entry"><b>Account → Lazy Login</b>의 모바일 앱에서 입력하세요</string>
     <string name="or">또는</string>
@@ -513,7 +510,7 @@
     <string name="alternate">대체</string>
     <string name="amnezia_preset">구성</string>
     <string name="amnezia_preset_description">검열 우회를 위한 사전 설정 구성을 선택하세요.</string>
-    <string name="amnezia_preset_russian_quick">Russian Quick (No Junk)</string>
+    <string name="amnezia_preset_russian_quick">러시아 퀵 (정크 없음)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
     <string name="tls_server_name">사용자 정의 SNI 도메인</string>
     <string name="tls_server_name_description">이 설정은 Stealth 및 Wstunnel 프로토콜에만 적용됩니다</string>
@@ -522,12 +519,12 @@
     <string name="ipv6_mode_description">VPN 연결에 사용할 IP 버전을 선택하세요.</string>
     <string name="ip_stack">IP 스택</string>
     <string name="ip_stack_description">VPN 연결용 IP 스택을 구성합니다.</string>
-    <string name="egress">Egress (WireGuard only)</string>
+    <string name="egress">송신 (WireGuard 전용)</string>
     <string name="ingress">수신</string>
     <string name="ip_stack_egress">IP 스택 - 송신</string>
     <string name="ipv4_only">IPv4만</string>
     <string name="auto_connect">자동 연결</string>
-    <string name="auto_connect_explainer">앱이 시작되거나 네트워크에 연결될 때 마지막으로 사용한 위치에 연결합니다.</string>
+    <string name="auto_connect_explainer">제외하지 않은 모든 네트워크에서 마지막 위치로 연결하며, 연결할 수 없으면 인터넷을 차단합니다. 차단은 연결에 실패했을 때만 발생하며, 직접 연결을 끊거나 일시 중지한 경우에는 차단되지 않습니다.</string>
     <string name="save">저장</string>
     <string name="clear">지우기</string>
     <string name="enter_1_key_value_per_line">한 줄에 하나씩 key=value 형식으로 입력하세요.</string>
@@ -669,4 +666,32 @@
     <string name="accessibility_status_connecting">연결 중</string>
     <string name="accessibility_status_disconnected">연결 해제됨</string>
 
+    <string name="notification_paused">일시 중지됨 — 트래픽이 보호되지 않습니다</string>
+    <string name="notification_waiting_for_secured">보안된 네트워크를 기다리는 중</string>
+    <string name="notification_stood_down">이 네트워크에서는 자동 연결이 꺼져 있습니다</string>
+    <string name="notification_stood_down_on">%1$s에서는 자동 연결이 꺼져 있습니다</string>
+    <string name="notification_action_pause">일시 중지</string>
+    <string name="notification_action_resume">다시 시작</string>
+    <string name="notification_action_connect">연결</string>
+    <string name="notification_action_turn_off">끄기</string>
+    <string name="accessibility_status_paused">일시 중지됨, 트래픽이 보호되지 않습니다</string>
+    <string name="accessibility_status_blocked">차단됨, Windscribe를 끌 때까지 인터넷이 꺼져 있습니다</string>
+    <string name="notification_account_banned">계정이 차단됨 — 인터넷을 복구하려면 Windscribe를 끄세요</string>
+    <string name="notification_account_expired">계정이 만료됨 — 인터넷을 복구하려면 Windscribe를 끈 다음 업그레이드하세요</string>
+    <string name="notification_action_retry">다시 시도</string>
+    <string name="notification_awaiting_session">세션 업데이트를 기다리는 중</string>
+    <string name="notification_blocked">연결할 수 없음 — 트래픽이 차단되었습니다</string>
+    <string name="notification_config_auth_failed">인증 실패 — 구성 파일을 확인하세요</string>
+    <string name="notification_failed">이 네트워크에서 연결할 수 없습니다</string>
+    <string name="notification_failed_to">%1$s에 연결할 수 없습니다</string>
+    <string name="notification_no_network">네트워크 없음 — 연결할 회선이 없습니다</string>
+    <string name="notification_opted_out">이 네트워크에서는 자동 보호가 꺼져 있습니다</string>
+    <string name="notification_opted_out_on">%1$s에서는 자동 보호가 꺼져 있습니다</string>
+    <string name="notification_protocol_switch">프로토콜 전환을 기다리는 중</string>
+    <string name="notification_reconnecting">다시 연결 중</string>
+    <string name="notification_reconnecting_to">%1$s에 다시 연결 중</string>
+    <string name="manual_enter_code">또는 이 코드를 직접 입력하세요:</string>
+    <string name="qr_generation_failed">QR 코드를 생성하지 못했습니다</string>
+    <string name="subscription_payment_issue">구독 결제 문제</string>
+    <string name="subscription_payment_issue_description">구독 결제를 확인해야 합니다. Google Play를 열어 결제 수단을 검토하세요.</string>
 </resources>

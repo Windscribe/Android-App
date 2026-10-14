@@ -14,12 +14,16 @@ import com.windscribe.tv.sort.ByLatency
 import com.windscribe.tv.sort.ByRegionName
 import com.windscribe.tv.windscribe.WindscribeView.ConnectionStateAnimationListener
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
+import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.backend.utils.ConnectSource
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
+import com.windscribe.vpn.backend.utils.SYSTEM_DISCONNECT
+import com.windscribe.vpn.backend.utils.USER_DISCONNECT
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.Ext.toLabel
 import com.windscribe.vpn.commonutils.FlagIconResource
@@ -227,7 +231,7 @@ class WindscribePresenterImpl
                             val userSessionString = preferencesHelper.getSession
                             com.google.gson
                                 .Gson()
-                                .fromJson(userSessionString, com.windscribe.vpn.api.response.UserSessionResponse::class.java)
+                                .fromJson(userSessionString, UserSessionResponse::class.java)
                         }
 
                     if (!isUserEligibleForRatingApp(userSessionResponse)) {
@@ -261,7 +265,7 @@ class WindscribePresenterImpl
             }
         }
 
-        private fun isUserEligibleForRatingApp(userSessionResponse: com.windscribe.vpn.api.response.UserSessionResponse): Boolean {
+        private fun isUserEligibleForRatingApp(userSessionResponse: UserSessionResponse): Boolean {
             val user = User(userSessionResponse)
             val dataUsed = user.dataUsed.toDouble() / (1024 * 1024)
             return dataUsed >= 50.0 && hasMinimumLoginTime() && lastShownDays()
@@ -368,7 +372,7 @@ class WindscribePresenterImpl
             preferencesHelper.isReconnecting = false
             preferencesHelper.globalUserConnectionPreference = false
             logger.info("Stopping established vpn connection for disconnect intent...")
-            activityScope.launch { vpnController.disconnectAsync() }
+            activityScope.launch { vpnController.disconnectAsync(USER_DISCONNECT) }
         }
 
         override fun onHotStart() {
@@ -634,7 +638,7 @@ class WindscribePresenterImpl
                 Util.saveSelectedLocation(it)
                 locationRepository.setSelectedCity(it.cityId)
             }
-            vpnController.connectAsync()
+            vpnController.connectAsync(ConnectSource.User)
         }
 
         private fun attemptConnectionUsingIp(
@@ -658,7 +662,7 @@ class WindscribePresenterImpl
                     locationRepository.setSelectedCity(it.cityId)
                 }
                 activityScope.launch {
-                    autoConnectionManager.connectInForeground()
+                    autoConnectionManager.connectInForeground(ConnectSource.User)
                 }
             } else {
                 logger.info("User not connected to any network.")
@@ -750,7 +754,7 @@ class WindscribePresenterImpl
             activityScope.launch {
                 preferencesHelper.globalUserConnectionPreference = false
                 preferencesHelper.isReconnecting = false
-                vpnController.disconnectAsync()
+                vpnController.disconnectAsync(USER_DISCONNECT)
             }
         }
 
@@ -758,7 +762,7 @@ class WindscribePresenterImpl
             if (selectedLocation != null) {
                 preferencesHelper.globalUserConnectionPreference = true
                 activityScope.launch {
-                    autoConnectionManager.connectInForeground()
+                    autoConnectionManager.connectInForeground(ConnectSource.User)
                 }
             } else {
                 logger.info("Selected location is null!")
@@ -790,9 +794,11 @@ class WindscribePresenterImpl
                 User.AccountStatus.Okay -> {}
 
                 User.AccountStatus.Banned -> {
-                    if (vpnConnectionStateManager.isVPNActive()) {
+                    // The account stopped this, not the user: USER_DISCONNECT would clear the
+                    // standing intent and whitelist the network. A custom config is exempt.
+                    if (vpnConnectionStateManager.isVPNActive() && !preferencesHelper.isConnectingToConfigured) {
                         activityScope
-                            .launch { vpnController.disconnectAsync() }
+                            .launch { vpnController.disconnectAsync(SYSTEM_DISCONNECT) }
                     }
                     windscribeView.setupAccountStatusBanned()
                 }
@@ -805,9 +811,9 @@ class WindscribePresenterImpl
                             .setPreviousAccountStatus(user.userName, user.accountStatusToInt)
                         if (user.accountStatus == User.AccountStatus.Expired) {
                             setUserStatus(user)
-                            if (vpnConnectionStateManager.isVPNActive()) {
+                            if (vpnConnectionStateManager.isVPNActive() && !preferencesHelper.isConnectingToConfigured) {
                                 activityScope
-                                    .launch { vpnController.disconnectAsync() }
+                                    .launch { vpnController.disconnectAsync(SYSTEM_DISCONNECT) }
                             }
                             windscribeView.setupAccountStatusExpired()
                         }

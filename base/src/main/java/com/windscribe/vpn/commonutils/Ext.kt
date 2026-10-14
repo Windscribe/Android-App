@@ -1,15 +1,18 @@
 package com.windscribe.vpn.commonutils
 
+import androidx.annotation.Keep
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.repository.CallResult
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import java.util.Locale
 
+@Keep
 object Ext {
     /**
      * Wraps a suspend API call to catch exceptions (like WindScribeException from checkSession)
@@ -20,6 +23,9 @@ object Ext {
     suspend fun <T> result(block: suspend () -> GenericResponseClass<*, *>): CallResult<T> =
         try {
             block().callResult()
+        } catch (e: CancellationException) {
+            // Cancellation is the app stopping the work, not the call failing.
+            throw e
         } catch (e: Exception) {
             CallResult.Error(
                 NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA,

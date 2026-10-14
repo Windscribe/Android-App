@@ -1,6 +1,8 @@
 package com.windscribe.vpn.repository
 
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.serverlist.entity.Datacenter
@@ -74,7 +76,7 @@ class LocationRepositoryTest {
 
     @After
     fun tearDown() {
-        unmockkObject(com.windscribe.vpn.commonutils.WindUtilities)
+        unmockkObject(WindUtilities)
     }
 
     private fun TestScope.buildRepo(): LocationRepository = LocationRepository(this, preferences, db, userRepositoryLazy, pinger)
@@ -314,10 +316,10 @@ class LocationRepositoryTest {
             // getAlternativeLocation calls WindUtilities.deleteProfile(appContext).
             // appContext is a lateinit on Windscribe.Companion; we set it to a mock so
             // argument evaluation doesn't throw, then stub the suspend call itself.
-            com.windscribe.vpn.Windscribe.appContext = mockk(relaxed = true)
-            mockkObject(com.windscribe.vpn.commonutils.WindUtilities)
+            Windscribe.appContext = mockk(relaxed = true)
+            mockkObject(WindUtilities)
             coEvery {
-                com.windscribe.vpn.commonutils.WindUtilities
+                WindUtilities
                     .deleteProfile(any())
             } returns true
 

@@ -12,21 +12,25 @@ import com.windscribe.vpn.api.response.ServerData
 import com.windscribe.vpn.api.response.ServerInventory
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
-import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.ConnectionDataRepository
+import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.workers.ReconnectAfterRefresh
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -40,10 +44,13 @@ class SessionWorkerForceDisconnectTest {
     private lateinit var apiCallManager: IApiCallManager
     private lateinit var workManager: WindScribeWorkManager
     private lateinit var localDb: LocalDbInterface
-    private lateinit var locationRepository: LocationRepository
+    private lateinit var serverListRepository: ServerListRepository
+    private lateinit var connectionDataRepository: ConnectionDataRepository
+    private lateinit var reconnectAfterRefresh: ReconnectAfterRefresh
     private lateinit var wgConfigRepository: WgConfigRepository
     private lateinit var vpnController: WindVpnController
     private lateinit var vpnStateManager: VPNConnectionStateManager
+    private lateinit var autoConnectionManager: AutoConnectionManager
 
     @Before
     fun setUp() {
@@ -54,10 +61,13 @@ class SessionWorkerForceDisconnectTest {
         apiCallManager = mockk(relaxed = true)
         workManager = mockk(relaxed = true)
         localDb = mockk(relaxed = true)
-        locationRepository = mockk(relaxed = true)
+        serverListRepository = mockk(relaxed = true)
+        connectionDataRepository = mockk(relaxed = true)
+        reconnectAfterRefresh = mockk(relaxed = true)
         wgConfigRepository = mockk(relaxed = true)
         vpnController = mockk(relaxed = true)
         vpnStateManager = mockk(relaxed = true)
+        autoConnectionManager = mockk(relaxed = true)
         every { vpnStateManager.state } returns MutableStateFlow(VPNState(VPNState.Status.Disconnected))
     }
 
@@ -82,7 +92,7 @@ class SessionWorkerForceDisconnectTest {
             serverInventory = inventory
         }
 
-    private fun buildWorker(): SessionWorker =
+    private fun TestScope.buildWorker(): SessionWorker =
         SessionWorker(
             context,
             workerParameters,
@@ -91,10 +101,12 @@ class SessionWorkerForceDisconnectTest {
             apiCallManager,
             workManager,
             localDb,
-            locationRepository,
+            serverListRepository,
+            connectionDataRepository,
             wgConfigRepository,
             vpnController,
             vpnStateManager,
+            reconnectAfterRefresh,
         )
 
     private fun arrangeSession(response: UserSessionResponse) {
@@ -102,16 +114,13 @@ class SessionWorkerForceDisconnectTest {
         every { userRepository.whatChanged(response) } returns listOf(false, false, false, false, false)
         coEvery { apiCallManager.getSessionGeneric(null, any()) } returns GenericResponseClass(response, null)
         coEvery { localDb.getAllStaticRegions() } returns emptyList()
-        every { userRepository.reload(response, any()) } answers {
-            val callback = secondArg<(suspend (User) -> Unit)?>()
-            runBlocking {
-                callback?.invoke(User(response))
-            }
+        coEvery { userRepository.reloadNow(response, any()) } coAnswers {
+            secondArg<(suspend (User) -> Unit)?>()?.invoke(User(response))
         }
     }
 
     @Test
-    fun `pending force disconnect delta schedules server list refresh`() =
+    fun `pending force disconnect delta refreshes the server list before reconnecting`() =
         runTest {
             val response =
                 session(
@@ -127,11 +136,55 @@ class SessionWorkerForceDisconnectTest {
             val result = buildWorker().doWork()
 
             assertNotNull(result.outputData.getString("data"))
-            verify(exactly = 1) { workManager.updateServerList() }
+            coVerifyOrder {
+                serverListRepository.update()
+                reconnectAfterRefresh.run()
+            }
+        }
+
+    /** The refresh is the answer a waiting tunnel is owed, whether or not anything was stale. */
+    @Test
+    fun `a session with nothing stale still answers a waiting tunnel`() =
+        runTest {
+            val response =
+                session(
+                    ServerInventory(
+                        action = ServerInventory.ACTION_DELTA,
+                        enabled = emptyList(),
+                        disabled = emptyList(),
+                        revision = 43,
+                    ),
+                )
+            arrangeSession(response)
+
+            buildWorker().doWork()
+
+            coVerify(exactly = 1) { reconnectAfterRefresh.run() }
+            coVerify(exactly = 0) { serverListRepository.update() }
         }
 
     @Test
-    fun `empty delta does not schedule server list refresh`() =
+    fun `a failed refresh reconnects nothing`() =
+        runTest {
+            val response =
+                session(
+                    ServerInventory(
+                        action = ServerInventory.ACTION_DELTA,
+                        enabled = listOf(node(forceDisconnect = 1)),
+                        disabled = emptyList(),
+                        revision = 43,
+                    ),
+                )
+            arrangeSession(response)
+            coEvery { serverListRepository.update() } throws IllegalStateException("no network")
+
+            buildWorker().doWork()
+
+            coVerify(exactly = 0) { reconnectAfterRefresh.run() }
+        }
+
+    @Test
+    fun `empty delta refreshes nothing`() =
         runTest {
             val response =
                 session(
@@ -147,6 +200,6 @@ class SessionWorkerForceDisconnectTest {
             val result = buildWorker().doWork()
 
             assertNotNull(result.outputData.getString("data"))
-            verify(exactly = 0) { workManager.updateServerList() }
+            coVerify(exactly = 0) { serverListRepository.update() }
         }
 }

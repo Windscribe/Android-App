@@ -58,7 +58,7 @@ class LocationRepository
         }
 
         private suspend fun getAlternativeLocation(): Int {
-            logger.debug("Location is not valid anymore looking for alternatives")
+            logger.info("Location is not valid anymore looking for alternatives")
             WindUtilities.deleteProfile(appContext)
             preferencesHelper.isConnectingToConfigured = false
             preferencesHelper.isConnectingToStaticIp = false
@@ -77,7 +77,6 @@ class LocationRepository
         }
 
         suspend fun updateLocation(): Int {
-            logger.debug("updating last selected location: ${selectedCity.value}")
             val userStatus =
                 userRepository
                     .get()

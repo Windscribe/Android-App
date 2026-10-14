@@ -43,19 +43,17 @@
             android:theme="@style/blinkt.dialog" />
 
 
-        <service
-            android:name=".core.OpenVPNService"
-            android:exported="true"
-            android:permission="android.permission.BIND_VPN_SERVICE"
-            android:foregroundServiceType="specialUse"
-            android:process=":openvpn">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="OpenVPN native service - maintains encrypted OpenVPN tunnel connection for user privacy and security" />
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
+        <!--
+          The de.blinkt.openvpn.core.OpenVPNService declaration that used to sit here is gone.
+          It was already dead - the class is ABSTRACT, so the system could never instantiate it -
+          yet it claimed the android.net.VpnService action and asked for a :openvpn process, which
+          made Always-on VPN targeting depend on manifest merge order (§1.2). OpenVPN is now an
+          engine, not a service at all; the only VpnService in the app is WindscribeVpnService.
+
+          Everything below is dead code kept for now: all exported="false", none reachable from
+          :base / :mobile / :tv, and the ones that bind OpenVPNService as a Service can no longer
+          work. Removal is WS0 cleanup.
+        -->
         <service
             android:name=".api.ExternalOpenVPNService"
             android:process=":openvpn"

@@ -56,7 +56,7 @@ class SecurePreferences(
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
                 )
             _encryptionAvailable.value = true
-            logger.info("Encrypted storage initialized successfully")
+            logger.debug("Encrypted storage initialized successfully")
             prefs
         } catch (e: GeneralSecurityException) {
             _encryptionAvailable.value = false

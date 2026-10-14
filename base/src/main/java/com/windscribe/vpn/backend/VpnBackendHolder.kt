@@ -14,11 +14,8 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
-import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
-import de.blinkt.openvpn.VpnProfile
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -36,62 +33,48 @@ class VpnBackendHolder(
     private val vpnLogger = LoggerFactory.getLogger("vpn")
 
     /**
-     @return VpnBackend Based on selected protocol and existing vpn profile.
+     * Routes a protocol to the backend that serves it.
+     *
+     * The caller's [ProtocolInformation] decides. Whether a usable profile exists is the backend's
+     * problem, reported through connection state rather than by returning null here.
      */
-    private fun getBackend(): VpnBackend? {
-        return when (preferenceHelper.selectedProtocol) {
-            PROTO_UDP, PROTO_TCP, PROTO_STEALTH, PROTO_WS_TUNNEL -> {
-                if (Util.getProfile<VpnProfile>() != null) {
-                    return openVPNBackend
-                }
-                return null
-            }
-
-            PROTO_IKev2 -> {
-                if (Util.getProfile<org.strongswan.android.data.VpnProfile>() != null) {
-                    return iKev2VpnBackend
-                }
-                return null
-            }
-
-            PROTO_WIRE_GUARD -> {
-                if (Util.getProfile<WireGuardVpnProfile>() != null) {
-                    return wireguardBackend
-                }
-                return null
-            }
-
+    private fun backendFor(protocol: String): VpnBackend? =
+        when (protocol) {
+            PROTO_UDP, PROTO_TCP, PROTO_STEALTH, PROTO_WS_TUNNEL -> openVPNBackend
+            PROTO_IKev2 -> iKev2VpnBackend
+            PROTO_WIRE_GUARD -> wireguardBackend
             else -> {
+                vpnLogger.error("No backend serves protocol '$protocol'.")
                 null
             }
         }
-    }
 
     fun connect(
         protocolInformation: ProtocolInformation,
         connectionId: UUID,
     ) {
         scope.launch {
-            val active: Boolean = activeBackend?.active == true
-            if (active) {
-                vpnLogger.debug("Active VPN backend found.")
-                delay(100)
-            }
-            activeBackend = getBackend()
+            // No delay before activating: one service outlives every engine, so there is no
+            // teardown for the next connect to race.
+            activeBackend = backendFor(protocolInformation.protocol)
             activeBackend?.let {
                 it.activate()
                 it.connect(protocolInformation, connectionId)
-            } ?: kotlin.run {
-                // Unexpected state.
-                delay(500)
-                vpnLogger.debug("Could not find vpn backend matching the current vpn profile.")
             }
         }
     }
 
     suspend fun disconnect(error: VPNState.Error? = null) {
-        activeBackend?.disconnect(error) ?: kotlin.run {
-            vpnLogger.debug("VPN backend not found.")
+        val backend =
+            activeBackend ?: run {
+                vpnLogger.debug("VPN backend not found.")
+                return
+            }
+        try {
+            backend.disconnect(error)
+        } finally {
+            // Left set, callers read it as a backend still carrying traffic.
+            activeBackend = null
         }
     }
 }

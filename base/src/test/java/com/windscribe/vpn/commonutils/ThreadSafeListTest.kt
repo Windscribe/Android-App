@@ -155,4 +155,29 @@ class ThreadSafeListTest {
         assertEquals(threadCount * perThread, list.size)
         assertEquals(threadCount * perThread, list.toSet().size)
     }
+
+    /**
+     * Regression: sortBy routed through the stdlib extension, which writes its result back via
+     * listIterator() — and this class hands out iterators over a copy, so the sort silently did
+     * nothing. Callers got an unsorted list and no error.
+     */
+    @Test
+    fun `sortBy actually reorders the list`() {
+        val list = ThreadSafeList<Int>()
+        listOf(3, 1, 2).forEach { list.add(it) }
+
+        list.sortBy { it }
+
+        assertEquals(listOf(1, 2, 3), list.toList())
+    }
+
+    @Test
+    fun `sortWith actually reorders the list`() {
+        val list = ThreadSafeList<String>()
+        listOf("ccc", "a", "bb").forEach { list.add(it) }
+
+        list.sortWith(compareBy { it.length })
+
+        assertEquals(listOf("a", "bb", "ccc"), list.toList())
+    }
 }

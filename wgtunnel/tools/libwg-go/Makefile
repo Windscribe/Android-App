@@ -21,12 +21,16 @@ export GOARCH := $(NDK_GO_ARCH_MAP_$(ANDROID_ARCH_NAME))
 export GOOS := android
 export CGO_ENABLED := 1
 
-GO_VERSION := 1.24.2
+# Must match the `go` directive in go.mod. If it is lower, cmd/go silently
+# switches to an unpatched toolchain from the proxy and the boottime patch below
+# stops reaching the binary; GOTOOLCHAIN=local makes that a build error instead.
+GO_VERSION := 1.25.12
 GO_PLATFORM := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(NDK_GO_ARCH_MAP_$(shell uname -m))
 GO_TARBALL := go$(GO_VERSION).$(GO_PLATFORM).tar.gz
-GO_HASH_darwin-amd64 := 238d9c065d09ff6af229d2e3b8b5e85e688318d69f4006fb85a96e41c216ea83
-GO_HASH_darwin-arm64 := b70f8b3c5b4ccb0ad4ffa5ee91cd38075df20fdbd953a1daedd47f50fbcff47a
-GO_HASH_linux-amd64 := 68097bd680839cbc9d464a0edce4f7c333975e27a90246890e9f1078c7e702ad
+GO_HASH_darwin-amd64 := 00a2e743b82bccec03c51c4b0f7e46d5fec52184075fd6c5183c3bb39ae9fb00
+GO_HASH_darwin-arm64 := fa2c88bbcf64bd3b2aef355f026cfec6d3a4a01c132f999c8f8c964eb767164f
+GO_HASH_linux-amd64 := 234828b7a89e0e303d2556310ee549fbcf253d28de937bac3da13d6294262ac1
+export GOTOOLCHAIN := local
 
 default: $(DESTDIR)/libwg-go.so
 
@@ -45,9 +49,11 @@ $(BUILDDIR)/go-$(GO_VERSION)/.prepared: $(GRADLE_USER_HOME)/caches/golang/$(GO_T
 	tar -C "$(dir $@)" --strip-components=1 -xzf "$^" && \
 	patch -p1 -f -N -r- -d "$(dir $@)" < goruntime-boottime-over-monotonic.diff && \
 	touch "$@"'
-# Strip debug symbols and DWARF information to reduce binary size
-# Using -s -w flags for smaller binary
-LD_FLAGS := -s -w \
+# -w drops DWARF. -s is omitted deliberately: it also drops the ELF symbol table,
+# without which a crash here is an unresolvable address and the SYMBOL_TABLE
+# upload in mobile/ and tv/ has nothing to extract. The packaged .so is stripped
+# by AGP anyway.
+LD_FLAGS := -w \
   -X github.com/Control-D-Inc/ctrld/cmd/cli.version=$(CD_TAG) \
   -X github.com/Control-D-Inc/ctrld/cmd/cli.commit=$(CD_COMMIT) \
   -X golang.zx2c4.com/wireguard/ipc.socketDirectory=/data/data/$(ANDROID_PACKAGE_NAME)/cache/wireguard \
@@ -55,7 +61,8 @@ LD_FLAGS := -s -w \
 # Set PATH for build
 $(DESTDIR)/libwg-go.so: export PATH := $(BUILDDIR)/go-$(GO_VERSION)/bin/:$(PATH)
 # Build rule
-$(DESTDIR)/libwg-go.so: $(BUILDDIR)/go-$(GO_VERSION)/.prepared go.mod
+# Sources listed so a source-only edit does not leave the old library in place.
+$(DESTDIR)/libwg-go.so: $(BUILDDIR)/go-$(GO_VERSION)/.prepared go.mod go.sum $(wildcard *.go) $(wildcard *.c)
 	go build -tags linux -ldflags='$(LD_FLAGS)' -v -trimpath -buildvcs=false -o "$@" -buildmode c-shared
 
 .DELETE_ON_ERROR:

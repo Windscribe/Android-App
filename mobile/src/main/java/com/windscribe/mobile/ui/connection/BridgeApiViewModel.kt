@@ -13,6 +13,7 @@ import com.windscribe.vpn.repository.BridgeApiRepository
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.RepositoryState
 import com.windscribe.vpn.serverlist.entity.Favourite
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -94,7 +95,7 @@ class BridgeApiViewModelImpl
             viewModelScope.launch(Dispatchers.IO) {
                 ipRepository.state.collect { state ->
                     when (state) {
-                        is com.windscribe.vpn.repository.RepositoryState.Success -> {
+                        is RepositoryState.Success -> {
                             _ipState.emit(state.data)
                         }
 
@@ -224,7 +225,7 @@ class BridgeApiViewModelImpl
                         }
                         val nodeIp = preferences.selectedIp
                         localdb.addToFavouritesAsync(Favourite(datacenterAndLocation.datacenter.id, ip, nodeIp))
-                        logger.info("Pin IP request successful: ${result.data} $ip with nodeIp: $nodeIp")
+                        logger.info("Pin IP request successful: $ip with nodeIp: $nodeIp")
                         _favouriteIconAnimation.value = _favouriteIconAnimation.value + 1
                         true
                     } catch (e: Exception) {

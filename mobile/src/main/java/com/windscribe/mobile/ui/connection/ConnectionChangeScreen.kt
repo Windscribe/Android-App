@@ -71,7 +71,14 @@ fun ConnectionChangeScreen(
                 delay(1000)
                 countdown--
             }
-            val nextUpProtocol = appStartActivityViewModel.protocolInformationList?.firstOrNull()
+            // The protocol AutoConnectionManager marked, not whatever sits at index 0. Taking the
+            // first element meant the countdown always selected the list's first entry — wg — while
+            // the dialog displayed the real NextUp, so failover looped on the protocol that had just
+            // failed. TV already selects by type; this matches it.
+            val nextUpProtocol =
+                appStartActivityViewModel.protocolInformationList?.find {
+                    it.type == ProtocolConnectionStatus.NextUp
+                } ?: appStartActivityViewModel.protocolInformationList?.firstOrNull()
             if (nextUpProtocol != null && !isNavigating) {
                 isNavigating = true
                 appStartActivityViewModel.autoConnectionModeCallback?.onProtocolSelect(nextUpProtocol)

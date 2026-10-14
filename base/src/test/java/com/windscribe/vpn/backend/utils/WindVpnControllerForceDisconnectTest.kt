@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.backend.utils
 
+import com.windscribe.common.tunnel.TunnelManager
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_IKev2
@@ -11,6 +12,7 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VpnBackendHolder
+import com.windscribe.vpn.backend.tunnel.VpnServiceGate
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
@@ -20,10 +22,12 @@ import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.Server
+import com.windscribe.vpn.state.ConnectionPolicyInputs
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -53,6 +57,9 @@ class WindVpnControllerForceDisconnectTest {
     private lateinit var localDb: LocalDbInterface
     private lateinit var deviceStateManager: DeviceStateManager
     private lateinit var excludedIpHolder: ExcludedIpHolder
+    private lateinit var tunnelManagerLazy: Lazy<TunnelManager>
+    private lateinit var serviceGate: VpnServiceGate
+    private lateinit var policyInputs: ConnectionPolicyInputs
 
     @Before
     fun setUp() {
@@ -72,6 +79,12 @@ class WindVpnControllerForceDisconnectTest {
         localDb = mockk(relaxed = true)
         deviceStateManager = mockk(relaxed = true)
         excludedIpHolder = mockk(relaxed = true)
+        tunnelManagerLazy =
+            mockk {
+                every { get() } returns mockk(relaxed = true)
+            }
+        serviceGate = mockk(relaxed = true)
+        policyInputs = mockk(relaxed = true)
 
         Windscribe.appContext = mockk(relaxed = true)
         mockkObject(WindUtilities)
@@ -116,11 +129,28 @@ class WindVpnControllerForceDisconnectTest {
             localDb,
             deviceStateManager,
             excludedIpHolder,
+            tunnelManagerLazy,
+            serviceGate,
+            policyInputs,
         ) {
             override suspend fun launchVPNService(
                 protocolInformation: ProtocolInformation,
                 connectionId: UUID,
             ) = Unit
+        }
+
+    /**
+     * The permission dialog can sit open for as long as the user leaves it, so the attempt that
+     * asked for it may be long gone by the time they grant it.
+     */
+    @Test
+    fun `a permission grant for an abandoned attempt does not start a backend`() =
+        runTest {
+            val controller = controller()
+
+            controller.connectWithGrantedPermission(mockk(relaxed = true), UUID.randomUUID())
+
+            coVerify(exactly = 0) { vpnBackendHolder.connect(any(), any()) }
         }
 
     @Test
@@ -158,7 +188,7 @@ class WindVpnControllerForceDisconnectTest {
                 )
             } returns "Seattle - Cobain"
 
-            controller().connect(protocolInformation = protocol)
+            controller().connect(ConnectSource.User, protocolInformation = protocol)
 
             assertEquals("eligible.example", selectedParameters.captured.hostName)
         }

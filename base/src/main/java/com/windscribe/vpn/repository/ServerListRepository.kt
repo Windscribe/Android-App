@@ -30,6 +30,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.slf4j.LoggerFactory
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -93,7 +95,15 @@ class ServerListRepository
             loadCustomLocationsJson()
         }
 
-        suspend fun update() {
+        /**
+         * Serialized because nothing upstream bounds it: five call sites plus the workers. Held across
+         * the whole body so the second caller re-reads the flags and takes the cheap branch.
+         */
+        private val updateMutex = Mutex()
+
+        suspend fun update() = updateMutex.withLock { runUpdate() }
+
+        private suspend fun runUpdate() {
             val isFirstLoad = preferenceHelper.serverRevision == 0L
             val migrationRequired = preferenceHelper.migrationRequired
             if (isFirstLoad || migrationRequired) {

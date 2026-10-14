@@ -335,7 +335,7 @@ class UpgradeActivity :
             presenter.onBillingSetupSuccessful()
         }
         googleBillingManager.onBillingSetupFailure.collectOnStart { code ->
-            logger.info("Billing client set up failure...")
+            logger.warn("Billing client set up failure...")
             presenter.onBillingSetupFailed(code)
         }
         googleBillingManager.onProductConsumeSuccess.collectOnStart { purchase ->

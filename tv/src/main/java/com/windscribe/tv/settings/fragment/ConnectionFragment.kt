@@ -21,6 +21,7 @@ import com.windscribe.tv.databinding.FragmentConnectionBinding
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.serverlist.customviews.State
 import com.windscribe.tv.settings.SettingActivity
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.BOOT_ALLOW
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DISABLED_MODE
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.EXCLUSIVE_MODE
@@ -278,13 +279,13 @@ class ConnectionFragment : Fragment() {
         }
 
         binding.protocolTweaksAuto.setOnClickListener {
-            listener?.onProtocolTweaksModeSelected(com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO)
+            listener?.onProtocolTweaksModeSelected(PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO)
         }
         binding.protocolTweaksManual.setOnClickListener {
-            listener?.onProtocolTweaksModeSelected(com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL)
+            listener?.onProtocolTweaksModeSelected(PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL)
         }
         binding.protocolTweaksDisabled.setOnClickListener {
-            listener?.onProtocolTweaksModeSelected(com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED)
+            listener?.onProtocolTweaksModeSelected(PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED)
         }
 
         binding.extraTlsPaddingOn.setOnClickListener {
@@ -348,7 +349,7 @@ class ConnectionFragment : Fragment() {
 
     fun setProtocolTweaksMode(mode: String) {
         when (mode) {
-            com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO -> {
+            PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO -> {
                 binding.protocolTweaksAuto.setState(State.MenuButtonState.Selected)
                 binding.protocolTweaksManual.setState(State.MenuButtonState.NotSelected)
                 binding.protocolTweaksDisabled.setState(State.MenuButtonState.NotSelected)
@@ -356,14 +357,14 @@ class ConnectionFragment : Fragment() {
                 binding.protocolTweaksPresetView.visibility = View.GONE
             }
 
-            com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL -> {
+            PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL -> {
                 binding.protocolTweaksManual.setState(State.MenuButtonState.Selected)
                 binding.protocolTweaksAuto.setState(State.MenuButtonState.NotSelected)
                 binding.protocolTweaksDisabled.setState(State.MenuButtonState.NotSelected)
                 binding.protocolTweaksPresetView.visibility = View.VISIBLE
             }
 
-            com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED -> {
+            PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED -> {
                 binding.protocolTweaksDisabled.setState(State.MenuButtonState.Selected)
                 binding.protocolTweaksAuto.setState(State.MenuButtonState.NotSelected)
                 binding.protocolTweaksManual.setState(State.MenuButtonState.NotSelected)
@@ -385,19 +386,19 @@ class ConnectionFragment : Fragment() {
 
     fun setServerRoutingMode(mode: String) {
         when (mode) {
-            com.windscribe.vpn.apppreference.PreferencesKeyConstants.SERVER_ROUTING_AUTO -> {
+            PreferencesKeyConstants.SERVER_ROUTING_AUTO -> {
                 binding.serverRoutingAuto.setState(State.MenuButtonState.Selected)
                 binding.serverRoutingRegular.setState(State.MenuButtonState.NotSelected)
                 binding.serverRoutingAlternate.setState(State.MenuButtonState.NotSelected)
             }
 
-            com.windscribe.vpn.apppreference.PreferencesKeyConstants.SERVER_ROUTING_REGULAR -> {
+            PreferencesKeyConstants.SERVER_ROUTING_REGULAR -> {
                 binding.serverRoutingRegular.setState(State.MenuButtonState.Selected)
                 binding.serverRoutingAuto.setState(State.MenuButtonState.NotSelected)
                 binding.serverRoutingAlternate.setState(State.MenuButtonState.NotSelected)
             }
 
-            com.windscribe.vpn.apppreference.PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE -> {
+            PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE -> {
                 binding.serverRoutingAlternate.setState(State.MenuButtonState.Selected)
                 binding.serverRoutingAuto.setState(State.MenuButtonState.NotSelected)
                 binding.serverRoutingRegular.setState(State.MenuButtonState.NotSelected)
@@ -406,7 +407,7 @@ class ConnectionFragment : Fragment() {
     }
 
     fun setIpStackEgressMode(mode: String) {
-        if (mode == com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_AUTO) {
+        if (mode == PreferencesKeyConstants.IPV6_MODE_AUTO) {
             binding.ipStackEgressAuto.setState(State.MenuButtonState.Selected)
             binding.ipStackEgressIpv4Only.setState(State.MenuButtonState.NotSelected)
         } else {

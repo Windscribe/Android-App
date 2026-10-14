@@ -1,16 +1,21 @@
 package com.windscribe.vpn.wsnet
 
+import com.google.gson.JsonParser
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetAdvancedParameters
 import com.wsnet.lib.WSNetBridgeAPI
 import com.wsnet.lib.WSNetEmergencyConnect
 import com.wsnet.lib.WSNetServerAPI
+import com.wsnet.lib.WSNetTunnelTest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
 
 /**
  * Thread-safe wrapper around WSNet that manages initialization state and provides safe access.
@@ -21,7 +26,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  * - Use safe accessors (safeBridgeAPI, safeAdvancedParameters, etc.) which return null if not ready
  * - All methods are thread-safe
  */
-class WSNetWrapper {
+class WSNetWrapper(
+    private val preferencesHelper: PreferencesHelper,
+) {
     private val logger = LoggerFactory.getLogger("wsnet-wrapper")
     private val initialized = AtomicBoolean(false)
     private val _isReady = MutableStateFlow(false)
@@ -47,6 +54,9 @@ class WSNetWrapper {
     @Volatile
     private var advancedParametersInstance: WSNetAdvancedParameters? = null
 
+    @Volatile
+    private var tunnelTestInstance: WSNetTunnelTest? = null
+
     /**
      * Observable state indicating if WSNet is fully initialized and ready to use.
      * Safe to collect from any thread.
@@ -68,6 +78,7 @@ class WSNetWrapper {
         persistentSettings: String?,
         ignoreTestDomains: Boolean,
         amneziaWgVersion: String,
+        integration: String,
     ): Boolean {
         if (initialized.get()) {
             logger.warn("WSNet already initialized")
@@ -94,6 +105,8 @@ class WSNetWrapper {
             wsNetInstance = wsNet
             // Capture all sub-API peers before marking ready, so accessors never re-fetch them. See captureSubApis().
             captureSubApis(wsNet)
+            applyIntegration(wsNet, integration)
+            applyLicenseCode(wsNet, preferencesHelper.licenceCode ?: "")
             initialized.set(true)
             updateReadyState()
             logger.debug("WSNet initialized successfully")
@@ -117,9 +130,79 @@ class WSNetWrapper {
             bridgeAPIInstance = wsNet.bridgeAPI()
             emergencyConnectInstance = wsNet.emergencyConnect()
             advancedParametersInstance = wsNet.advancedParameters()
+            tunnelTestInstance = wsNet.tunnelTest()
         } catch (e: Exception) {
             logger.error("Failed to capture WSNet sub-API peers: ${e.message}", e)
         }
+    }
+
+    private fun applyIntegration(
+        wsNet: WSNet,
+        integration: String,
+    ) {
+        try {
+            // wsNet.setIntegration(integration)
+            if (integration.isNotEmpty()) {
+                logger.debug("WSNet integration set to '$integration'")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to set WSNet integration '$integration': ${e.message}", e)
+        }
+    }
+
+    /**
+     * Set the API integration wsnet identifies as. Empty for plain Windscribe builds, "eset" for the
+     * whitelabel build. Normally applied by initialize(); call this only to change it afterwards.
+     * Returns true if it was applied.
+     */
+    fun setIntegration(integration: String): Boolean {
+        val wsNet = getInstance()
+        if (wsNet == null) {
+            logger.warn("setIntegration ignored: WSNet not ready")
+            return false
+        }
+        applyIntegration(wsNet, integration)
+        return true
+    }
+
+    private fun applyLicenseCode(
+        wsNet: WSNet,
+        licenseCode: String,
+    ) {
+        try {
+            // wsNet.setLicenseCode(licenseCode)
+            if (licenseCode.isNotEmpty()) {
+                logger.debug("WSNet licence code applied")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to set WSNet licence code: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Set the licence code wsnet activates with, and persist it so initialize() restores it on the
+     * next launch. Called from the UI side once the user enters a code; must be set before
+     * loginWithCode(). Returns true if it was applied to the live WSNet instance; the code is
+     * persisted either way.
+     */
+    fun setLicenseCode(licenseCode: String): Boolean {
+        preferencesHelper.licenceCode = licenseCode
+        val wsNet = getInstance()
+        if (wsNet == null) {
+            logger.warn("setLicenseCode: WSNet not ready, stored for next initialize()")
+            return false
+        }
+        applyLicenseCode(wsNet, licenseCode)
+        return true
+    }
+
+    /**
+     * Suspend until WSNet is initialized, then set the licence code. Safe to call from the main
+     * thread; prefer this over setLicenseCode() when the code is available before init finishes.
+     */
+    suspend fun awaitAndSetLicenseCode(licenseCode: String): Boolean {
+        isReady.first { it }
+        return setLicenseCode(licenseCode)
     }
 
     /**
@@ -190,6 +273,39 @@ class WSNetWrapper {
     }
 
     /**
+     * Suspend until WSNet is initialized, then return the tunnel test.
+     * Safe to call from the main thread.
+     */
+    suspend fun awaitTunnelTest(): WSNetTunnelTest {
+        if (!_isReady.value) {
+            logger.debug("awaitTunnelTest: waiting for WSNet init")
+        }
+        isReady.first { it }
+        // Return the peer captured at init; never re-fetch from native (avoids the stale weak-ref crash).
+        return tunnelTestInstance ?: throw IllegalStateException("WSNet ready but tunnelTest not captured")
+    }
+
+    /**
+     * Runs WSNet's connectivity test and suspends until it reports back.
+     *
+     * With [isBridgeAllowed] the test asks the node's bridge API first and probes the exit IP if the
+     * bridge misses its budget; without it the bridge leg is skipped. A custom config is not on a
+     * Windscribe node, so it has no bridge to ask.
+     */
+    suspend fun runTunnelTest(isBridgeAllowed: Boolean): TunnelTestResult {
+        val tunnelTest = awaitTunnelTest()
+        return suspendCancellableCoroutine { continuation ->
+            val callback =
+                tunnelTest.start(isBridgeAllowed) { success, ipv4, ipv6 ->
+                    if (continuation.isActive) {
+                        continuation.resume(TunnelTestResult(success, ipv4.orEmpty(), ipv6.orEmpty()))
+                    }
+                }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    /**
      * Safely get the emergency connect API, returns null if WSNet is not ready.
      */
     fun safeEmergencyConnect(): WSNetEmergencyConnect? {
@@ -236,16 +352,37 @@ class WSNetWrapper {
      * Output: actual message
      */
     private fun logWsNetMessage(log: String) {
-        try {
-            if (!log.contains("6464/latency")) {
-                val outerMsg = log.substringAfter("\"msg\":\"").substringBeforeLast("\"}")
-                val unescaped = outerMsg.replace("\\\"", "\"")
-                val actualMsg = unescaped.substringAfter("\"msg\": \"").substringBeforeLast("\"")
-                if (actualMsg.isNotEmpty()) {
-                    logger.debug(actualMsg)
-                }
-            }
-        } catch (_: Exception) {
+        val (level, message) = parseWsNetLog(log) ?: return
+        if (isWsNetNoise(message)) {
+            return
+        }
+        // wsnet calls most of its own output info; only a failure is promoted.
+        when (level) {
+            "error" -> logger.error(message)
+            "warn", "warning" -> logger.warn(message)
+            else -> logger.debug(message)
         }
     }
 }
+
+/** Curl requests are kept deliberately: they are the evidence a worker actually ran. */
+internal fun isWsNetNoise(message: String): Boolean =
+    message.contains("6464/latency") ||
+        message.contains("BridgeAPI_impl::") ||
+        message.startsWith("BridgeTokenRequest: token parsed successfully")
+
+internal fun parseWsNetLog(log: String): Pair<String, String>? {
+    val record = runCatching { JsonParser.parseString(log).asJsonObject }.getOrNull() ?: return "" to log
+    val message = runCatching { record["msg"].asString }.getOrNull() ?: return "" to log
+    if (message.isEmpty()) {
+        return null
+    }
+    return (runCatching { record["lvl"].asString }.getOrNull() ?: "") to message
+}
+
+/** Outcome of [WSNetWrapper.runTunnelTest]: the exit IP WSNet saw, per family. */
+data class TunnelTestResult(
+    val success: Boolean,
+    val ipv4: String,
+    val ipv6: String,
+)

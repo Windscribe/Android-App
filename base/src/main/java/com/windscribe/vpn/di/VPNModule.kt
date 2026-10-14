@@ -1,8 +1,10 @@
 package com.windscribe.vpn.di
 
+import com.windscribe.common.tunnel.TunnelManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VpnBackendHolder
+import com.windscribe.vpn.backend.tunnel.VpnServiceGate
 import com.windscribe.vpn.backend.utils.ExcludedIpHolder
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -11,6 +13,7 @@ import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.WgConfigRepository
+import com.windscribe.vpn.state.ConnectionPolicyInputs
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
@@ -40,6 +43,9 @@ class VPNModule {
         preferencesHelper: PreferencesHelper,
         deviceStateManager: DeviceStateManager,
         excludedIpHolder: ExcludedIpHolder,
+        tunnelManager: Lazy<TunnelManager>,
+        serviceGate: VpnServiceGate,
+        policyInputs: ConnectionPolicyInputs,
     ): WindVpnController =
         WindVpnController(
             coroutineScope,
@@ -55,5 +61,8 @@ class VPNModule {
             localDbInterface,
             deviceStateManager,
             excludedIpHolder,
+            tunnelManager,
+            serviceGate,
+            policyInputs,
         )
 }

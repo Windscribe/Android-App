@@ -146,13 +146,13 @@
         <item>日本語</item>
         <item>한국어</item>
         <item>Polski</item>
-<!--        <item>Português (Brasil)</item>-->
+        <item>Português (Brasil)</item>
         <item>Português (Portugal)</item>
         <item>Pусский</item>
         <item>Slovenčina</item>
         <item>Türkçe</item>
         <item>Українська</item>
-<!--        <item>اردو</item>-->
+        <item>اردو</item>
         <item>Tiếng Việt</item>
         <item>中文</item>
         <item>中文(台灣)</item>
@@ -173,13 +173,13 @@
         <item>ja</item>
         <item>ko</item>
         <item>pl</item>
+        <item>pt-BR</item>
         <item>pt</item>
-<!--        <item>pt-BR</item>-->
         <item>ru</item>
         <item>sk</item>
         <item>tr</item>
         <item>uk</item>
-<!--        <item>ur</item>-->
+        <item>ur</item>
         <item>vi</item>
         <item>zh</item>
         <item>zh-TW</item>

@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -656,6 +657,8 @@ private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
         when (connectionUIState) {
             is ConnectionUIState.Connected -> "connection_status_connected"
             is ConnectionUIState.Connecting -> "connection_status_connecting"
+            is ConnectionUIState.Paused -> "connection_status_paused"
+            is ConnectionUIState.Blocked -> "connection_status_blocked"
             else -> "connection_status_disconnected"
         }
     Box(
@@ -666,7 +669,8 @@ private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
                     width = 1.dp,
                     color = containerColor.copy(alpha = 0.10f),
                     shape = RoundedCornerShape(size = 34.dp),
-                ).width(39.dp)
+                    // A minimum, not a fixed width: PAUSED does not fit the 39dp ON/OFF pill.
+                ).widthIn(min = 39.dp)
                 .height(21.dp)
                 .background(
                     color = containerColor.copy(alpha = 0.10f),
@@ -685,6 +689,26 @@ private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
 
             is ConnectionUIState.Connecting -> {
                 Dots(modifier = Modifier.align(Alignment.Center))
+            }
+
+            // Not OFF: the device has no internet and only Turn off restores it.
+            is ConnectionUIState.Blocked -> {
+                Text(
+                    text = "BLOCKED",
+                    style = font12.copy(fontWeight = FontWeight.SemiBold),
+                    color = containerColor,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
+
+            // Paused is not OFF: the user chose it and can resume from it.
+            is ConnectionUIState.Paused -> {
+                Text(
+                    text = "PAUSED",
+                    style = font12.copy(fontWeight = FontWeight.SemiBold),
+                    color = containerColor,
+                    modifier = Modifier.align(Alignment.Center),
+                )
             }
 
             else -> {

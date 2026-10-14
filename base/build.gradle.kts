@@ -5,6 +5,11 @@ plugins {
 }
 apply(from = "$rootDir/config/config.gradle")
 
+// Published artifact name: windscribe-core-<flavor>-<buildType>.aar
+base {
+    archivesName.set("windscribe-core")
+}
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
@@ -29,11 +34,17 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
-        viewBinding = true
+        // No view binding here: nothing in :base (or its consumers) references a generated
+        // binding class, and the androidx.databinding:viewbinding dependency it pulls in is
+        // rejected by the fused library plugin that builds the windscribe-core AAR.
         buildConfig = true
     }
     defaultConfig {
         minSdk = rootProject.extra["appMinSdk"] as Int
+        // Exported to every consumer, the fused windscribe-core AAR included. An app's own rules do
+        // not travel with the library, so anything this module owns that R8 cannot see referenced
+        // has to be declared here.
+        consumerProguardFiles("consumer-rules.pro")
     }
     testOptions {
         targetSdk = rootProject.extra["appTargetSdk"] as Int
@@ -42,6 +53,13 @@ android {
         getByName("androidTest").assets.srcDirs("$projectDir/schemas")
         maybeCreate("fdroid").jniLibs.srcDirs("/frdroid/src/libs", "libs")
         maybeCreate("google").jniLibs.srcDirs("/google/src/libs", "libs")
+        // `whitelabel` ships the same feature set as `fdroid` for now, so it compiles that
+        // flavor's sources. Move a file into src/whitelabel/java to diverge from it.
+        maybeCreate("whitelabel").apply {
+            java.srcDirs("src/fdroid/java")
+            kotlin.srcDirs("src/fdroid/java")
+            jniLibs.srcDirs("/whitelabel/src/libs", "libs")
+        }
     }
     packaging {
         jniLibs {
@@ -65,12 +83,23 @@ android {
         create("fdroid") {
             dimension = "dim"
             buildConfigField("String", "CLOUD_PROJECT_NUMBER", "\"\"")
+            // Plain Windscribe build: no partner integration.
+            buildConfigField("String", "INTEGRATION", "\"\"")
+        }
+        // Distributed as the self-contained windscribe-core AAR that a partner UI sits on.
+        create("whitelabel") {
+            dimension = "dim"
+            buildConfigField("String", "CLOUD_PROJECT_NUMBER", "\"\"")
+            // Tells wsnet to talk to the API as the ESET integration (licence-code activation).
+            buildConfigField("String", "INTEGRATION", "\"eset\"")
         }
         create("google") {
             dimension = "dim"
             // Play Integrity API cloud project number
             val cloudProjectNumber = System.getenv("CLOUD_PROJECT_NUMBER") ?: ""
             buildConfigField("String", "CLOUD_PROJECT_NUMBER", "\"${cloudProjectNumber}\"")
+            // Plain Windscribe build: no partner integration.
+            buildConfigField("String", "INTEGRATION", "\"\"")
         }
     }
 }
@@ -130,10 +159,10 @@ dependencies {
     // Google only dependencies
     "googleApi"("com.google.firebase:firebase-messaging:${libs.versions.firebase.get()}")
     "googleApi"(files("$projectDir/src/google/libs/in-app-purchasing-2.0.76.jar"))
-    implementation(files("$projectDir/src/main/libs/wsnet.aar"))
+    implementation(group = "", name = "wsnet", ext = "aar")
     "googleApi"("com.android.billingclient:billing:9.0.0")
     "googleApi"("com.google.android.gms:play-services-appset:16.0.2")
     "googleApi"("com.google.android.play:review-ktx:2.0.2")
     "googleApi"("com.google.android.gms:play-services-auth:21.4.0")
-    "googleApi"("com.google.android.play:integrity:1.6.0")
+    "googleApi"("com.google.android.play:integrity:1.4.0")
 }
