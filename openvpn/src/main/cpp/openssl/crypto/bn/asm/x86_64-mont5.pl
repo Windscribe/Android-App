@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2011-2025 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2011-2026 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -48,13 +48,15 @@ open OUT,"| \"$^X\" \"$xlate\" $flavour \"$output\""
 *STDOUT=*OUT;
 
 if (`$ENV{CC} -Wa,-v -c -o /dev/null -x assembler /dev/null 2>&1`
-		=~ /GNU assembler version ([2-9]\.[0-9]+)/) {
-	$addx = ($1>=2.23);
+		=~ /GNU assembler version ([0-9]+)\.([0-9]+)/) {
+	my $ver = $1 + $2/100.0;	# 3.1->3.01, 3.10->3.10
+	$addx = ($ver >= 2.23);
 }
 
 if (!$addx && $win64 && ($flavour =~ /nasm/ || $ENV{ASM} =~ /nasm/) &&
-	    `nasm -v 2>&1` =~ /NASM version ([2-9]\.[0-9]+)/) {
-	$addx = ($1>=2.10);
+	    `nasm -v 2>&1` =~ /NASM version ([0-9]+)\.([0-9]+)/) {
+	my $ver = $1 + $2/100.0;	# 3.1->3.01, 3.10->3.10
+	$addx = ($ver >= 2.10);
 }
 
 if (!$addx && $win64 && ($flavour =~ /masm/ || $ENV{ASM} =~ /ml64/) &&
@@ -65,6 +67,13 @@ if (!$addx && $win64 && ($flavour =~ /masm/ || $ENV{ASM} =~ /ml64/) &&
 if (!$addx && `$ENV{CC} -v 2>&1` =~ /((?:clang|LLVM) version|.*based on LLVM) ([0-9]+)\.([0-9]+)/) {
 	my $ver = $2 + $3/100.0;	# 3.1->3.01, 3.10->3.10
 	$addx = ($ver>=3.03);
+}
+
+if (!$addx && `$ENV{CC} -x c /dev/null -dM -E|grep __clang_major__`
+	=~ /#define __clang_major__.([0-9]+)/) {
+	if ($1) {
+		$addx = ($1>=11); #icx started with clang 11
+	}
 }
 
 # int bn_mul_mont_gather5(

@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2016-2025 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2016-2026 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -49,12 +49,12 @@ for (@ARGV) { $xmm=1 if (/-DOPENSSL_IA32_SSE2/); }
 
 $ymm=1 if ($xmm &&
 		`$ENV{CC} -Wa,-v -c -o /dev/null -x assembler /dev/null 2>&1`
-			=~ /GNU assembler version ([2-9]\.[0-9]+)/ &&
-		($gasver=$1)>=2.19);	# first version supporting AVX
+			=~ /GNU assembler version ([0-9]+)\.([0-9]+)/ &&
+		($gasver = $1 + $2/100.0) >= 2.19);	# first version supporting AVX
 
 $ymm=1 if ($xmm && !$ymm && $ARGV[0] eq "win32n" &&
-		`nasm -v 2>&1` =~ /NASM version ([2-9]\.[0-9]+)/ &&
-		$1>=2.03);	# first version supporting AVX
+		`nasm -v 2>&1` =~ /NASM version ([0-9]+)\.([0-9]+)/ &&
+		$1 + $2/100.0 >= 2.03);	# first version supporting AVX
 
 $ymm=1 if ($xmm && !$ymm && $ARGV[0] eq "win32" &&
 		`ml 2>&1` =~ /Version ([0-9]+)\./ &&
@@ -63,6 +63,10 @@ $ymm=1 if ($xmm && !$ymm && $ARGV[0] eq "win32" &&
 $ymm=1 if ($xmm && !$ymm &&
 		`$ENV{CC} -v 2>&1` =~ /((?:clang|LLVM) version|based on LLVM) ([0-9]+\.[0-9]+)/ &&
 		$2>=3.0);	# first version supporting AVX
+
+$ymm=1 if ($xmm && !$ymm &&
+		`$ENV{CC} -x c /dev/null -dM -E|grep __clang_major__` =~ /#define __clang_major__.([0-9]+)/ &&
+		$1>=11); #icx started with clang 11
 
 $a="eax";
 ($b,$b_)=("ebx","ebp");

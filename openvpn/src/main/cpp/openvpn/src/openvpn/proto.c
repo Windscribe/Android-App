@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -70,7 +70,7 @@ is_ipv_X(int tunnel_type, struct buffer *buf, int ip_ver)
         if (proto == htons(OPENVPN_ETH_P_8021Q))
         {
             const struct openvpn_8021qhdr *evh;
-            if (BLEN(buf) < (sizeof(struct openvpn_ethhdr) + sizeof(struct openvpn_iphdr)))
+            if (BLEN(buf) < sizeof(struct openvpn_8021qhdr) + sizeof(struct openvpn_iphdr))
             {
                 return false;
             }

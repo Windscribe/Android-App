@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -79,6 +79,11 @@ struct http_proxy_options *init_http_proxy_options_once(struct http_proxy_option
 struct http_proxy_info *http_proxy_new(const struct http_proxy_options *o);
 
 void http_proxy_close(struct http_proxy_info *hp);
+
+bool proxy_recv_char(uint8_t *c, const char *name, socket_descriptor_t sd,
+                     struct timeval *timeout, volatile int *signal_received);
+
+bool proxy_send(socket_descriptor_t sd, const void *buf, size_t buf_len);
 
 bool establish_http_proxy_passthru(struct http_proxy_info *p,
                                    socket_descriptor_t sd, /* already open to proxy */

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -44,11 +44,6 @@ struct ta_iow_flags
     unsigned int tun;
     unsigned int sock;
 };
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
 
 struct multi_instance *
 multi_create_instance_tcp(struct multi_context *m, struct link_socket *sock)
@@ -124,10 +119,6 @@ multi_tcp_instance_specific_init(struct multi_context *m, struct multi_instance 
     }
     return true;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 void
 multi_tcp_instance_specific_free(struct multi_instance *mi)

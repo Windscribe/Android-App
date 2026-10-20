@@ -552,6 +552,7 @@ set(crypto_srcs
         crypto/rc2/rc2_skey.c
         crypto/rc2/rc2cfb64.c
         crypto/rc2/rc2ofb64.c
+        crypto/rbtree/rbtree.c
         crypto/rc4/rc4_enc.c
         crypto/rc4/rc4_skey.c
         crypto/rsa/rsa_ameth.c
@@ -778,7 +779,7 @@ elseif (${ANDROID_ABI} STREQUAL "arm64-v8a")
             )
 elseif (${ANDROID_ABI} STREQUAL "x86")
     set(crypto_srcs ${crypto_srcs}
-            crypto/aes/aes_x86core.c
+            crypto/aes/aes_core.c
             crypto/aes/asm/aesni-x86.S
             crypto/aes/asm/vpaes-x86.S
             crypto/bf/asm/bf-586.S
@@ -1121,7 +1122,6 @@ elseif (${ANDROID_ABI} STREQUAL "arm64-v8a")
             )
 elseif (${ANDROID_ABI} STREQUAL "x86")
     target_compile_definitions(crypto PRIVATE
-            -DAES_ASM
             -DDES_ASM
             -DECP_NISTZ256_ASM
             -DGHASH_ASM
@@ -1199,7 +1199,7 @@ set(ssl_srcs
         ssl/quic/quic_record_util.c
         ssl/quic/quic_rstream.c
         ssl/quic/quic_rx_depack.c
-        ssl/quic/quic_sf_list.c
+        ssl/quic/quic_strm_reas.c
         ssl/quic/quic_srt_gen.c
         ssl/quic/quic_srtm.c
         ssl/quic/quic_sstream.c

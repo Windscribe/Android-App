@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2012-2025 Heiko Hund <heiko.hund@sophos.com>
+ *  Copyright (C) 2012-2026 Heiko Hund <heiko.hund@sophos.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -33,6 +33,7 @@
 #include <shellapi.h>
 #include <mstcpip.h>
 #include <inttypes.h>
+#include <malloc.h>
 
 #include <versionhelpers.h>
 
@@ -208,6 +209,7 @@ ResetOverlapped(LPOVERLAPPED overlapped)
 typedef enum
 {
     peek,
+    peek_timed,
     read,
     write
 } async_op_t;
@@ -260,7 +262,7 @@ AsyncPipeOp(async_op_t op, HANDLE pipe, LPVOID buffer, DWORD size, DWORD count, 
         goto out;
     }
 
-    if (op == peek)
+    if (op == peek || op == peek_timed)
     {
         PeekNamedPipe(pipe, NULL, 0, NULL, &bytes, NULL);
     }
@@ -279,6 +281,12 @@ static DWORD
 PeekNamedPipeAsync(HANDLE pipe, DWORD count, LPHANDLE events)
 {
     return AsyncPipeOp(peek, pipe, NULL, 0, count, events);
+}
+
+static DWORD
+PeekNamedPipeAsyncTimed(HANDLE pipe, DWORD count, LPHANDLE events)
+{
+    return AsyncPipeOp(peek_timed, pipe, NULL, 0, count, events);
 }
 
 static DWORD
@@ -437,18 +445,18 @@ GetStartupData(HANDLE pipe, STARTUP_DATA *sud)
     WCHAR *data = NULL;
     DWORD bytes, read;
 
-    bytes = PeekNamedPipeAsync(pipe, 1, &exit_event);
+    bytes = PeekNamedPipeAsyncTimed(pipe, 1, &exit_event);
     if (bytes == 0)
     {
-        MsgToEventLog(M_SYSERR, L"PeekNamedPipeAsync failed");
-        ReturnLastError(pipe, L"PeekNamedPipeAsync");
+        MsgToEventLog(M_ERR, L"Timeout waiting for startup data");
+        ReturnError(pipe, ERROR_STARTUP_DATA, L"GetStartupData (timeout)", 1, &exit_event);
         goto err;
     }
 
     size = bytes / sizeof(*data);
-    if (size == 0)
+    if ((size == 0) || (size > 4096)) /* our startup data is 1024 wchars at the moment */
     {
-        MsgToEventLog(M_SYSERR, L"malformed startup data: 1 byte received");
+        MsgToEventLog(M_SYSERR, L"malformed startup data: %lu bytes received", size);
         ReturnError(pipe, ERROR_STARTUP_DATA, L"GetStartupData", 1, &exit_event);
         goto err;
     }
@@ -734,9 +742,8 @@ BlockDNSErrHandler(DWORD err, const char *msg)
 
     err_str = L"Unknown Win32 Error";
 
-    if (FormatMessage(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM
-                          | FORMAT_MESSAGE_ARGUMENT_ARRAY,
-                      NULL, err, 0, buf, sizeof(buf), NULL))
+    if (FormatMessageW(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM,
+                       NULL, err, 0, buf, _countof(buf), NULL))
     {
         err_str = buf;
     }
@@ -752,7 +759,7 @@ CmpAny(LPVOID item, LPVOID any)
 }
 
 static DWORD
-DeleteWfpBlock(const wfp_block_message_t *msg, undo_lists_t *lists)
+DeleteWfpBlock(undo_lists_t *lists)
 {
     DWORD err = 0;
     wfp_block_data_t *block_data = RemoveListItem(&(*lists)[wfp_block], CmpAny, NULL);
@@ -762,11 +769,11 @@ DeleteWfpBlock(const wfp_block_message_t *msg, undo_lists_t *lists)
         err = delete_wfp_block_filters(block_data->engine);
         if (block_data->metric_v4 >= 0)
         {
-            set_interface_metric(msg->iface.index, AF_INET, block_data->metric_v4);
+            set_interface_metric(block_data->index, AF_INET, block_data->metric_v4);
         }
         if (block_data->metric_v6 >= 0)
         {
-            set_interface_metric(msg->iface.index, AF_INET6, block_data->metric_v6);
+            set_interface_metric(block_data->index, AF_INET6, block_data->metric_v6);
         }
         free(block_data);
     }
@@ -829,7 +836,7 @@ AddWfpBlock(const wfp_block_message_t *msg, undo_lists_t *lists)
             if (err)
             {
                 /* delete the filters, remove undo item and free interface data */
-                DeleteWfpBlock(msg, lists);
+                DeleteWfpBlock(lists);
                 engine = NULL;
             }
         }
@@ -854,7 +861,7 @@ HandleWfpBlockMessage(const wfp_block_message_t *msg, undo_lists_t *lists)
     }
     else
     {
-        return DeleteWfpBlock(msg, lists);
+        return DeleteWfpBlock(lists);
     }
 }
 
@@ -995,16 +1002,16 @@ HandleRegisterDNSMessage(void)
 }
 
 /**
- * Run the command: netsh interface ip $action wins $if_name [static] $addr
+ * Run the command: netsh interface ip $action wins $if_index [static] $addr
  * @param  action      "delete", "add" or "set"
- * @param  if_name     "name_of_interface"
+ * @param  if_index    index of the interface to modify WINS for
  * @param  addr        IPv4 address as a string
  *
  * If addr is null and action = "delete" all addresses are deleted.
  * if action = "set" then "static" is added before $addr
  */
 static DWORD
-netsh_wins_cmd(const wchar_t *action, const wchar_t *if_name, const wchar_t *addr)
+netsh_wins_cmd(const wchar_t *action, int if_index, const wchar_t *addr)
 {
     DWORD err = 0;
     int timeout = 30000; /* in msec */
@@ -1030,10 +1037,10 @@ netsh_wins_cmd(const wchar_t *action, const wchar_t *if_name, const wchar_t *add
     /* cmd template:
      * netsh interface ip $action wins $if_name $static $addr
      */
-    const wchar_t *fmt = L"netsh interface ip %ls wins \"%ls\" %ls %ls";
+    const wchar_t *fmt = L"netsh interface ip %ls wins %d %ls %ls";
 
     /* max cmdline length in wchars -- include room for worst case and some */
-    size_t ncmdline = wcslen(fmt) + wcslen(if_name) + wcslen(action) + wcslen(addr)
+    size_t ncmdline = wcslen(fmt) + 11 /*if_index*/ + wcslen(action) + wcslen(addr)
                       + wcslen(addr_static) + 32 + 1;
     cmdline = malloc(ncmdline * sizeof(wchar_t));
     if (!cmdline)
@@ -1042,19 +1049,13 @@ netsh_wins_cmd(const wchar_t *action, const wchar_t *if_name, const wchar_t *add
         goto out;
     }
 
-    swprintf(cmdline, ncmdline, fmt, action, if_name, addr_static, addr);
+    swprintf(cmdline, ncmdline, fmt, action, if_index, addr_static, addr);
 
     err = ExecCommand(argv0, cmdline, timeout);
 
 out:
     free(cmdline);
     return err;
-}
-
-static BOOL
-CmpWString(LPVOID item, LPVOID str)
-{
-    return (wcscmp(item, str) == 0) ? TRUE : FALSE;
 }
 
 /**
@@ -1071,6 +1072,7 @@ ApplyGpolSettings32(void)
     publish_fn_t RtlPublishWnfStateData;
     const DWORD WNF_GPOL_SYSTEM_CHANGES_HI = 0x0D891E2A;
     const DWORD WNF_GPOL_SYSTEM_CHANGES_LO = 0xA3BC0875;
+    BOOL ret = FALSE;
 
     HMODULE ntdll = LoadLibraryA("ntdll.dll");
     if (ntdll == NULL)
@@ -1081,16 +1083,19 @@ ApplyGpolSettings32(void)
     RtlPublishWnfStateData = (publish_fn_t)GetProcAddress(ntdll, "RtlPublishWnfStateData");
     if (RtlPublishWnfStateData == NULL)
     {
-        return FALSE;
+        goto cleanup;
     }
 
     if (RtlPublishWnfStateData(WNF_GPOL_SYSTEM_CHANGES_LO, WNF_GPOL_SYSTEM_CHANGES_HI, 0, 0, 0, 0)
         != ERROR_SUCCESS)
     {
-        return FALSE;
+        goto cleanup;
     }
 
-    return TRUE;
+    ret = TRUE;
+cleanup:
+    FreeLibrary(ntdll);
+    return ret;
 }
 
 /**
@@ -1106,6 +1111,7 @@ ApplyGpolSettings64(void)
                                      unsigned int Length, INT64 ExplicitScope);
     publish_fn_t RtlPublishWnfStateData;
     const INT64 WNF_GPOL_SYSTEM_CHANGES = 0x0D891E2AA3BC0875;
+    BOOL ret = FALSE;
 
     HMODULE ntdll = LoadLibraryA("ntdll.dll");
     if (ntdll == NULL)
@@ -1116,15 +1122,18 @@ ApplyGpolSettings64(void)
     RtlPublishWnfStateData = (publish_fn_t)GetProcAddress(ntdll, "RtlPublishWnfStateData");
     if (RtlPublishWnfStateData == NULL)
     {
-        return FALSE;
+        goto cleanup;
     }
 
     if (RtlPublishWnfStateData(WNF_GPOL_SYSTEM_CHANGES, 0, 0, 0, 0) != ERROR_SUCCESS)
     {
-        return FALSE;
+        goto cleanup;
     }
 
-    return TRUE;
+    ret = TRUE;
+cleanup:
+    FreeLibrary(ntdll);
+    return ret;
 }
 
 /**
@@ -1215,19 +1224,25 @@ InterfaceIdString(PCSTR itf_name, PWSTR str, size_t len)
     err = InterfaceLuid(itf_name, &luid);
     if (err)
     {
-        MsgToEventLog(M_ERR, L"%S: failed to convert itf alias '%s'", __func__, itf_name);
+        PWSTR wide_name = utf8to16(itf_name);
+        MsgToEventLog(M_ERR, L"%S: failed to convert itf alias '%s'", __func__, wide_name);
+        free(wide_name);
         goto out;
     }
     err = ConvertInterfaceLuidToGuid(&luid, &guid);
     if (err)
     {
-        MsgToEventLog(M_ERR, L"%S: Failed to convert itf '%s' LUID", __func__, itf_name);
+        PWSTR wide_name = utf8to16(itf_name);
+        MsgToEventLog(M_ERR, L"%S: Failed to convert itf '%s' LUID", __func__, wide_name);
+        free(wide_name);
         goto out;
     }
 
     if (StringFromIID(&guid, &iid_str) != S_OK)
     {
-        MsgToEventLog(M_ERR, L"%S: Failed to convert itf '%s' IID", __func__, itf_name);
+        PWSTR wide_name = utf8to16(itf_name);
+        MsgToEventLog(M_ERR, L"%S: Failed to convert itf '%s' IID", __func__, wide_name);
+        free(wide_name);
         err = ERROR_OUTOFMEMORY;
         goto out;
     }
@@ -1383,10 +1398,20 @@ InitialSearchListExists(HKEY key)
     return TRUE;
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
+/**
+ * Return correct size for registry value to set for string
+ *
+ */
+static DWORD
+RegWStringSize(PCWSTR string)
+{
+    size_t length = (wcslen(string) + 1) * sizeof(wchar_t);
+    if (length > UINT_MAX)
+    {
+        length = UINT_MAX;
+    }
+    return (DWORD)length;
+}
 
 /**
  * Prepare DNS domain "SearchList" registry value, so additional
@@ -1413,7 +1438,7 @@ StoreInitialDnsSearchList(HKEY key, PCWSTR list)
         return TRUE;
     }
 
-    DWORD size = (wcslen(list) + 1) * sizeof(*list);
+    DWORD size = RegWStringSize(list);
     LSTATUS err = RegSetValueExW(key, L"InitialSearchList", 0, REG_SZ, (PBYTE)list, size);
     if (err)
     {
@@ -1425,24 +1450,149 @@ StoreInitialDnsSearchList(HKEY key, PCWSTR list)
 }
 
 /**
- * Append domain suffixes to an existing search list
+ * Append a comma-separated list of domains to another comma-separated
+ * list, in place. No deduplication: if a domain in @p add is already
+ * present in @p list it is appended again.
+ *
+ * @param  list      mutable wide string holding the current list (must
+ *                   be NUL-terminated). Modified on success.
+ * @param  list_cap  capacity of @p list in wide characters, including
+ *                   the NUL terminator.
+ * @param  add       comma-separated list of domains to append.
+ *
+ * @return TRUE on success, FALSE if appending would exceed @p list_cap
+ *         (in which case @p list is left unchanged).
+ */
+static BOOL
+AppendSearchList(PWSTR list, size_t list_cap, PCWSTR add)
+{
+    size_t list_len = wcslen(list);
+    size_t add_len = wcslen(add);
+    if (add_len == 0)
+    {
+        return TRUE;
+    }
+
+    size_t sep_len = (list_len > 0) ? 1 : 0;
+    if (list_len + sep_len + add_len + 1 > list_cap)
+    {
+        return FALSE;
+    }
+
+    if (sep_len)
+    {
+        list[list_len++] = L',';
+    }
+    wmemcpy(list + list_len, add, add_len + 1);
+    return TRUE;
+}
+
+/**
+ * Remove tokens from a comma-separated search list with multiset
+ * semantics: for each comma-separated token in @p remove, splice the
+ * last remaining matching token out of @p list. Comparison is on full
+ * tokens (case-sensitive). Empty tokens in @p remove are skipped.
+ *
+ * Removal targets the last occurrence to mirror AppendSearchList, which
+ * always appends. This keeps any pre-existing prefix intact, so once
+ * every pushed domain has been removed the list can again match the
+ * stored initial snapshot and trigger a full reset.
+ *
+ * Concretely, if a domain appears K times in @p list and L times in
+ * @p remove, min(K, L) instances are removed. That is the property that
+ * lets multiple VPN sessions, or a VPN and a pre-existing user entry,
+ * share a domain without one side's disconnect deleting the other
+ * side's claim on it.
+ *
+ * @param  list    mutable wide string holding the current list.
+ *                 Modified in place.
+ * @param  remove  comma-separated list of tokens to delete.
+ *
+ * @return number of tokens actually removed from @p list.
+ */
+static size_t
+RemoveSearchListTokens(PWSTR list, PCWSTR remove)
+{
+    size_t removed = 0;
+    PCWSTR domain = remove;
+    while (*domain)
+    {
+        PCWSTR comma = wcschr(domain, L',');
+        size_t domain_len = comma ? (size_t)(comma - domain) : wcslen(domain);
+        if (domain_len > 0)
+        {
+            /* Find the last token in @p list that exactly equals @p domain. */
+            PWSTR match = NULL;
+            PWSTR match_end = NULL;
+            for (PWSTR p = list; *p;)
+            {
+                PWSTR tok_end = wcschr(p, L',');
+                size_t tok_len = tok_end ? (size_t)(tok_end - p) : wcslen(p);
+                if (tok_len == domain_len && wcsncmp(p, domain, domain_len) == 0)
+                {
+                    match = p;
+                    match_end = tok_end;
+                }
+                if (!tok_end)
+                {
+                    break;
+                }
+                p = tok_end + 1;
+            }
+            if (match)
+            {
+                /* Splice the token out, eating its leading comma if it has
+                 * one, otherwise its trailing comma. */
+                PWSTR cut_start, cut_end;
+                if (match == list)
+                {
+                    cut_start = match;
+                    cut_end = match_end ? match_end + 1 : match + domain_len;
+                }
+                else
+                {
+                    cut_start = match - 1;
+                    cut_end = match + domain_len;
+                }
+                wmemmove(cut_start, cut_end, wcslen(cut_end) + 1);
+                removed++;
+            }
+        }
+        if (!comma)
+        {
+            break;
+        }
+        domain = comma + 1;
+    }
+    return removed;
+}
+
+/**
+ * Append domain suffixes to an existing search list.
+ *
+ * Pushed domains are always appended -- including ones that already
+ * appear in the list. Paired with the multiset-aware
+ * RemoveDnsSearchDomains, this lets overlapping VPN sessions (or VPN
+ * vs. pre-existing user entries) refcount their entries naturally:
+ * each Add records one occurrence, each Remove consumes one.
  *
  * @param  key          HKEY the list is stored at
- * @param  have_list    BOOL to indicate if a search list already exists
- * @param  domains      domain suffixes as comma separated string
+ * @param  have_list    BOOL indicating whether the key already has a
+ *                      non-empty SearchList value
+ * @param  domains      domain suffixes to append, comma-separated
  *
- * @return BOOL to indicate success or failure
+ * @return BOOL indicating success or failure
  */
 static BOOL
 AddDnsSearchDomains(HKEY key, BOOL have_list, PCWSTR domains)
 {
-    LSTATUS err;
     WCHAR list[2048] = { 0 };
-    DWORD size = sizeof(list);
 
     if (have_list)
     {
-        err = RegGetValueW(key, NULL, L"SearchList", RRF_RT_REG_SZ, NULL, list, &size);
+        DWORD size = sizeof(list);
+        LSTATUS err =
+            RegGetValueW(key, NULL, L"SearchList", RRF_RT_REG_SZ, NULL, list, &size);
         if (err)
         {
             MsgToEventLog(M_SYSERR, L"%S: could not get SearchList from registry (%lu)", __func__,
@@ -1454,28 +1604,16 @@ AddDnsSearchDomains(HKEY key, BOOL have_list, PCWSTR domains)
         {
             return FALSE;
         }
-
-        size_t listlen = (size / sizeof(list[0])) - 1; /* returned size is in bytes */
-        size_t domlen = wcslen(domains);
-        if (listlen + domlen + 2 > _countof(list))
-        {
-            MsgToEventLog(M_SYSERR, L"%S: not enough space in list for search domains (len=%lu)",
-                          __func__, domlen);
-            return FALSE;
-        }
-
-        /* Append to end of the search list */
-        PWSTR pos = list + listlen;
-        *pos = ',';
-        wcsncpy(pos + 1, domains, domlen + 1);
     }
-    else
+
+    if (!AppendSearchList(list, _countof(list), domains))
     {
-        wcsncpy(list, domains, wcslen(domains) + 1);
+        MsgToEventLog(M_SYSERR, L"%S: not enough space in list for search domains", __func__);
+        return FALSE;
     }
 
-    size = (wcslen(list) + 1) * sizeof(list[0]);
-    err = RegSetValueExW(key, L"SearchList", 0, REG_SZ, (PBYTE)list, size);
+    DWORD size = RegWStringSize(list);
+    LSTATUS err = RegSetValueExW(key, L"SearchList", 0, REG_SZ, (PBYTE)list, size);
     if (err)
     {
         MsgToEventLog(M_SYSERR, L"%S: could not set SearchList to registry (%lu)", __func__, err);
@@ -1515,7 +1653,7 @@ ResetDnsSearchDomains(HKEY key)
         goto out;
     }
 
-    size = (wcslen(list) + 1) * sizeof(list[0]);
+    size = RegWStringSize(list);
     err = RegSetValueExW(key, L"SearchList", 0, REG_SZ, (PBYTE)list, size);
     if (err)
     {
@@ -1531,62 +1669,59 @@ out:
 }
 
 /**
- * Remove domain suffixes from an existing search list
+ * Remove domain suffixes from an existing search list.
+ *
+ * Delegates to RemoveSearchListTokens for the actual string surgery,
+ * which uses multiset semantics: each token in @p domains drops one
+ * occurrence in the registry SearchList. This means VPN sessions never
+ * delete more entries than they actually added, even when they pushed
+ * a domain that was already in the pre-existing list or in another
+ * session's add. Comparison is on full tokens, so unrelated entries
+ * that happen to contain a removed name as a substring are preserved.
  *
  * @param  key      HKEY the list is stored at
- * @param  domains  domain suffixes to remove as comma separated string
+ * @param  domains  domain suffixes to remove, comma-separated
  */
 static void
 RemoveDnsSearchDomains(HKEY key, PCWSTR domains)
 {
-    LSTATUS err;
     WCHAR list[2048];
     DWORD size = sizeof(list);
-
-    err = RegGetValueW(key, NULL, L"SearchList", RRF_RT_REG_SZ, NULL, list, &size);
+    LSTATUS err = RegGetValueW(key, NULL, L"SearchList", RRF_RT_REG_SZ, NULL, list, &size);
     if (err)
     {
         MsgToEventLog(M_SYSERR, L"%S: could not get SearchList from registry (%lu)", __func__, err);
         return;
     }
 
-    PWSTR dst = wcsstr(list, domains);
-    if (!dst)
+    if (RemoveSearchListTokens(list, domains) == 0)
     {
         MsgToEventLog(M_ERR, L"%S: could not find domains in search list", __func__);
         return;
     }
 
-    /* Cut out domains from list */
-    size_t domlen = wcslen(domains);
-    PCWSTR src = dst + domlen;
-    /* Also remove the leading comma, if there is one */
-    dst = dst > list ? dst - 1 : dst;
-    wmemmove(dst, src, domlen);
-
-    size_t list_len = wcslen(list);
-    if (list_len)
+    if (list[0] != L'\0')
     {
-        /* Now check if the shortened list equals the initial search list */
+        /* If the shortened list equals the snapshot we took at first
+         * touch, the user's pre-VPN state is fully restored -- wipe both
+         * SearchList and InitialSearchList. */
         WCHAR initial[2048];
         size = sizeof(initial);
         err = RegGetValueW(key, NULL, L"InitialSearchList", RRF_RT_REG_SZ, NULL, initial, &size);
-        if (err)
+        if (!err && wcscmp(list, initial) == 0)
+        {
+            ResetDnsSearchDomains(key);
+            return;
+        }
+        if (err && err != ERROR_FILE_NOT_FOUND)
         {
             MsgToEventLog(M_SYSERR, L"%S: could not get InitialSearchList from registry (%lu)",
                           __func__, err);
             return;
         }
-
-        /* If the search list is back to its initial state reset it */
-        if (wcsncmp(list, initial, wcslen(list)) == 0)
-        {
-            ResetDnsSearchDomains(key);
-            return;
-        }
     }
 
-    size = (list_len + 1) * sizeof(list[0]);
+    size = RegWStringSize(list);
     err = RegSetValueExW(key, L"SearchList", 0, REG_SZ, (PBYTE)list, size);
     if (err)
     {
@@ -1751,7 +1886,7 @@ SetNameServersValue(PCWSTR itf_id, short family, PCSTR value)
         goto out;
     }
 
-    err = RegSetValueExA(itf, "NameServer", 0, REG_SZ, (PBYTE)value, strlen(value) + 1);
+    err = RegSetValueExA(itf, "NameServer", 0, REG_SZ, (PBYTE)value, (DWORD)strlen(value) + 1);
     if (err)
     {
         MsgToEventLog(M_SYSERR, L"%S: could not set name servers '%S' for %s family %d (%lu)",
@@ -1803,11 +1938,11 @@ static DWORD
 HandleDNSConfigMessage(const dns_cfg_message_t *msg, undo_lists_t *lists)
 {
     DWORD err = 0;
-    undo_type_t undo_type = (msg->family == AF_INET6) ? undo_dns4 : undo_dns6;
+    undo_type_t undo_type = (msg->family == AF_INET6) ? undo_dns6 : undo_dns4;
     int addr_len = msg->addr_len;
 
     /* sanity check */
-    const size_t max_addrs = _countof(msg->addr);
+    const int max_addrs = _countof(msg->addr);
     if (addr_len > max_addrs)
     {
         addr_len = max_addrs;
@@ -1858,7 +1993,7 @@ HandleDNSConfigMessage(const dns_cfg_message_t *msg, undo_lists_t *lists)
         return err; /* job done */
     }
 
-    if (msg->addr_len > 0)
+    if (addr_len > 0)
     {
         /* prepare the comma separated address list */
         /* cannot use max_addrs here as that is not considered compile
@@ -1879,7 +2014,7 @@ HandleDNSConfigMessage(const dns_cfg_message_t *msg, undo_lists_t *lists)
             {
                 RtlIpv4AddressToStringA(&msg->addr[i].ipv4, addrs + offset);
             }
-            offset += strlen(addrs);
+            offset = strlen(addrs);
         }
 
         err = SetNameServers(iid, msg->family, addrs);
@@ -1949,7 +2084,7 @@ SetNameServerAddresses(PWSTR itf_id, const nrpt_address_t *addresses)
         short family = families[i];
 
         /* Create a comma sparated list of addresses of this family */
-        int offset = 0;
+        size_t offset = 0;
         char addr_list[NRPT_ADDR_SIZE * NRPT_ADDR_NUM];
         for (int j = 0; j < NRPT_ADDR_NUM && addresses[j][0]; j++)
         {
@@ -2085,9 +2220,9 @@ GetItfDnsServersV6(HKEY itf_key, PSTR addrs, PDWORD size)
 
             size_t addr_len = strlen(pos);
             pos += addr_len;
-            s -= addr_len;
+            s -= (DWORD)addr_len;
         }
-        s = strlen(addrs) + 1;
+        s = (DWORD)strlen(addrs) + 1;
     }
 
     if (strchr(addrs, ':'))
@@ -2112,24 +2247,121 @@ GetItfDnsServersV6(HKEY itf_key, PSTR addrs, PDWORD size)
 static BOOL
 ListContainsDomain(PCWSTR list, PCWSTR domain, size_t len)
 {
-    PCWSTR match = list;
-    while (TRUE)
+    PCWSTR entry = list;
+    while (entry && *entry)
     {
-        match = wcsstr(match, domain);
-        if (!match)
+        PCWSTR comma = wcschr(entry, L',');
+        size_t entry_len = comma ? (size_t)(comma - entry) : wcslen(entry);
+        if (entry_len == len && wcsncmp(entry, domain, len) == 0)
         {
-            /* Domain has not matched */
-            break;
-        }
-        if ((match == list || *(match - 1) == ',')
-            && (*(match + len) == ',' || *(match + len) == '\0'))
-        {
-            /* Domain has matched fully */
             return TRUE;
         }
-        match += len;
+        if (!comma)
+        {
+            break;
+        }
+        entry = comma + 1;
     }
     return FALSE;
+}
+
+/**
+ * Convert interface specific domain suffix(es) from comma-separated
+ * string to MULTI_SZ string.
+ *
+ * The \p domains paramter will be set to a MULTI_SZ domains string.
+ * In case of an error \p size is set to 0 and the contents of \p domains
+ * are invalid.
+ * Note that domains are deleted from the string if they match a search domain.
+ *
+ * @param[in]     search_domains  optional string of comma separated search domains
+ * @param[in,out] domains         buffer that contains the input comma-separated
+ *                                string and will contain the MULTI_SZ output string
+ * @param[in,out] size            pointer to size of the input string in bytes. Will be
+ *                                set to the size of the string returned, including
+ *                                the terminating zeros or 0.
+ * @param[in]     capacity        capacity of the \p domains buffer in bytes
+ *
+ * @return LSTATUS NO_ERROR if all domain suffix(es) were converted successfully,
+ *         ERROR_FILE_NOT_FOUND if no domain was left after the conversion,
+ *         ERROR_MORE_DATA if not all converted domains did fit into the buffer.
+ *         ERROR_OUTOFMEMORY if the temporary buffer could not be allocated.
+ */
+static LSTATUS
+ConvertItfDnsDomains(PCWSTR search_domains, PWSTR domains, PDWORD size, const DWORD capacity)
+{
+    const size_t glyph_size = sizeof(*domains);
+    const size_t max_len = (size_t)capacity / glyph_size;
+
+    /* Space required for leading dot and two terminating zeros */
+    const size_t dot_len = 1;
+    const size_t term_len = 2;
+
+    LSTATUS ret = NO_ERROR;
+    size_t tmp_len = 0;
+    WCHAR *tmp = malloc(capacity);
+    if (tmp == NULL)
+    {
+        ret = ERROR_OUTOFMEMORY;
+        goto done;
+    }
+
+    PWCHAR tmp_pos = tmp;
+    PCWCHAR domain = domains;
+
+    while (domain && *domain)
+    {
+        PWCHAR comma = wcschr(domain, L',');
+        size_t domain_len = comma ? (size_t)(comma - domain) : wcslen(domain);
+
+        if (ListContainsDomain(search_domains, domain, domain_len))
+        {
+            /* Skip this domain */
+            domain = comma ? comma + 1 : domain + domain_len;
+            continue;
+        }
+
+        /* Check for enough space to convert this domain */
+        if (tmp_len + dot_len + domain_len + term_len > max_len)
+        {
+            /* Domain doesn't fit, bad luck if it's the first one */
+            *tmp_pos = L'\0';
+            if (tmp_len > 0)
+            {
+                tmp_len += 1;
+            }
+            ret = ERROR_MORE_DATA;
+            goto done;
+        }
+
+        /* Write leading dot and domain into tmp buffer */
+        *tmp_pos++ = L'.';
+        wcsncpy(tmp_pos, domain, domain_len);
+        tmp_pos += domain_len;
+        *tmp_pos++ = L'\0';
+        tmp_len += dot_len + domain_len + 1;
+
+        domain = comma ? comma + 1 : domain + domain_len;
+    }
+
+    if (tmp_len == 0)
+    {
+        ret = ERROR_FILE_NOT_FOUND;
+        goto done;
+    }
+
+    /* REG_MULTI_SZ second zero terminator */
+    *tmp_pos = L'\0';
+    tmp_len += 1;
+
+done:
+    if (tmp)
+    {
+        wmemcpy(domains, tmp, tmp_len);
+        free(tmp);
+    }
+    *size = (DWORD)(tmp_len * glyph_size);
+    return ret;
 }
 
 /**
@@ -2156,85 +2388,23 @@ ListContainsDomain(PCWSTR list, PCWSTR domain, size_t len)
 static LSTATUS
 GetItfDnsDomains(HKEY itf, PCWSTR search_domains, PWSTR domains, PDWORD size)
 {
-    if (domains == NULL || size == 0)
+    if (domains == NULL || size == NULL || *size == 0)
     {
         return ERROR_INVALID_PARAMETER;
     }
 
     LSTATUS err = ERROR_FILE_NOT_FOUND;
     const DWORD buf_size = *size;
-    const size_t one_glyph = sizeof(*domains);
+    const DWORD glyph_size = sizeof(*domains);
     PWSTR values[] = { L"SearchList", L"Domain", L"DhcpDomainSearchList", L"DhcpDomain", NULL };
 
     for (int i = 0; values[i]; i++)
     {
         *size = buf_size;
         err = RegGetValueW(itf, NULL, values[i], RRF_RT_REG_SZ, NULL, (PBYTE)domains, size);
-        if (!err && *size > one_glyph && wcschr(domains, '.'))
+        if (!err && *size > glyph_size && domains[(*size / glyph_size) - 1] == '\0' && wcschr(domains, '.'))
         {
-            /*
-             * Found domain(s), now convert them:
-             *   - prefix each domain with a dot
-             *   - convert comma separated list to MULTI_SZ
-             */
-            PWCHAR pos = domains;
-            const DWORD buf_len = buf_size / one_glyph;
-            while (TRUE)
-            {
-                /* Terminate the domain at the next comma */
-                PWCHAR comma = wcschr(pos, ',');
-                if (comma)
-                {
-                    *comma = '\0';
-                }
-
-                /* Ignore itf domains which match a pushed search domain */
-                size_t domain_len = wcslen(pos);
-                if (ListContainsDomain(search_domains, pos, domain_len))
-                {
-                    if (comma)
-                    {
-                        pos = comma + 1;
-                        continue;
-                    }
-                    else
-                    {
-                        /* This was the last domain */
-                        *pos = '\0';
-                        *size += one_glyph;
-                        return wcslen(domains) ? NO_ERROR : ERROR_FILE_NOT_FOUND;
-                    }
-                }
-
-                /* Check for enough space to convert this domain */
-                domain_len += 1; /* leading dot */
-                size_t converted_size = pos - domains;
-                size_t domain_size = domain_len * one_glyph;
-                size_t extra_size = 2 * one_glyph;
-                if (converted_size + domain_size + extra_size > buf_size)
-                {
-                    /* Domain doesn't fit, bad luck if it's the first one */
-                    *pos = '\0';
-                    *size = converted_size == 0 ? 0 : *size + 1;
-                    return ERROR_MORE_DATA;
-                }
-
-                /* Prefix domain at pos with the dot */
-                memmove(pos + 1, pos, buf_size - converted_size - one_glyph);
-                domains[buf_len - 1] = '\0';
-                *pos = '.';
-                *size += one_glyph;
-
-                if (!comma)
-                {
-                    /* Conversion is done */
-                    *(pos + domain_len) = '\0';
-                    *size += one_glyph;
-                    return NO_ERROR;
-                }
-
-                pos = comma + 1;
-            }
+            return ConvertItfDnsDomains(search_domains, domains, size, buf_size);
         }
     }
 
@@ -2441,7 +2611,7 @@ SetNrptRule(HKEY nrpt_key, PCWSTR subkey, PCSTR address, PCWSTR domains, DWORD d
 
     /* Set DNS Server address */
     err = RegSetValueExA(rule_key, "GenericDNSServers", 0, REG_SZ, (PBYTE)address,
-                         strlen(address) + 1);
+                         (DWORD)strlen(address) + 1);
     if (err)
     {
         goto out;
@@ -2562,14 +2732,16 @@ SetNrptRules(HKEY nrpt_key, const nrpt_address_t *addresses, const char *domains
     if (domains[0])
     {
         size_t domains_len = strlen(domains);
-        dom_size = domains_len + 2; /* len + the trailing NULs */
+        dom_size = (DWORD)domains_len + 2; /* len + the trailing NULs */
 
         wide_domains = utf8to16_size(domains, dom_size);
-        dom_size *= sizeof(*wide_domains);
         if (!wide_domains)
         {
             return ERROR_OUTOFMEMORY;
         }
+        domains_len = wcslen(wide_domains);
+        dom_size = (DWORD)(domains_len + 2) * sizeof(*wide_domains);
+
         /* Make a MULTI_SZ from a comma separated list */
         for (size_t i = 0; i < domains_len; ++i)
         {
@@ -2591,25 +2763,28 @@ SetNrptRules(HKEY nrpt_key, const nrpt_address_t *addresses, const char *domains
         free(wide_search_domains);
     }
 
-    /* Create address string list */
-    CHAR addr_list[NRPT_ADDR_NUM * NRPT_ADDR_SIZE];
-    PSTR pos = addr_list;
-    for (int i = 0; i < NRPT_ADDR_NUM && addresses[i][0]; ++i)
+    if (addresses[0][0])
     {
-        if (i != 0)
+        /* Create address string list */
+        CHAR addr_list[NRPT_ADDR_NUM * NRPT_ADDR_SIZE];
+        PSTR pos = addr_list;
+        for (int i = 0; i < NRPT_ADDR_NUM && addresses[i][0]; ++i)
         {
-            *pos++ = ';';
+            if (i != 0)
+            {
+                *pos++ = ';';
+            }
+            strcpy(pos, addresses[i]);
+            pos += strlen(pos);
         }
-        strcpy(pos, addresses[i]);
-        pos += strlen(pos);
-    }
 
-    WCHAR subkey[MAX_PATH];
-    swprintf(subkey, _countof(subkey), L"OpenVPNDNSRouting-%lu", ovpn_pid);
-    err = SetNrptRule(nrpt_key, subkey, addr_list, wide_domains, dom_size, dnssec);
-    if (err)
-    {
-        MsgToEventLog(M_ERR, L"%S: failed to set rule %s (%lu)", __func__, subkey, err);
+        WCHAR subkey[MAX_PATH];
+        swprintf(subkey, _countof(subkey), L"OpenVPNDNSRouting-%lu", ovpn_pid);
+        err = SetNrptRule(nrpt_key, subkey, addr_list, wide_domains, dom_size, dnssec);
+        if (err)
+        {
+            MsgToEventLog(M_ERR, L"%S: failed to set rule %s (%lu)", __func__, subkey, err);
+        }
     }
 
     if (domains[0])
@@ -2618,10 +2793,6 @@ SetNrptRules(HKEY nrpt_key, const nrpt_address_t *addresses, const char *domains
     }
     return err;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 /**
  * Return the registry key where NRPT rules are stored
@@ -2788,7 +2959,7 @@ HandleDNSConfigNrptMessage(const nrpt_dns_cfg_message_t *msg, DWORD ovpn_pid, un
         const char *rdom = msg->resolve_domains;
         size_t rdom_size = sizeof(msg->resolve_domains);
         size_t rdom_len = strlen(rdom);
-        if (rdom_len && (rdom_len + 1 >= rdom_size || rdom[rdom_len + 2] != 0))
+        if (rdom_len && (rdom_len + 1 >= rdom_size || rdom[rdom_len + 1] != 0))
         {
             return ERROR_MESSAGE_DATA;
         }
@@ -2860,11 +3031,19 @@ HandleDNSConfigNrptMessage(const nrpt_dns_cfg_message_t *msg, DWORD ovpn_pid, un
         goto out;
     }
 
-    /* Set name servers */
-    err = SetNameServerAddresses(iid, msg->addresses);
-    if (err)
+    /*
+     * Set DNS on the adapter for search domains to be considered.
+     * If split DNS is configured, do this only when search domains
+     * are given, so that look-ups for other domains do not go over
+     * the VPN all the time.
+     */
+    if (msg->search_domains[0] || !msg->resolve_domains[0])
     {
-        goto out;
+        err = SetNameServerAddresses(iid, msg->addresses);
+        if (err)
+        {
+            goto out;
+        }
     }
 
     /* Set search domains, if any */
@@ -2882,7 +3061,7 @@ out:
 static DWORD
 HandleWINSConfigMessage(const wins_cfg_message_t *msg, undo_lists_t *lists)
 {
-    DWORD err = 0;
+    DWORD err = NO_ERROR;
     wchar_t addr[16]; /* large enough to hold string representation of an ipv4 */
     int addr_len = msg->addr_len;
 
@@ -2892,22 +3071,9 @@ HandleWINSConfigMessage(const wins_cfg_message_t *msg, undo_lists_t *lists)
         addr_len = _countof(msg->addr);
     }
 
-    if (!msg->iface.name[0]) /* interface name is required */
+    if (!msg->iface.index) /* interface index is required */
     {
         return ERROR_MESSAGE_DATA;
-    }
-
-    /* use a non-const reference with limited scope to enforce null-termination of strings from
-     * client */
-    {
-        wins_cfg_message_t *msgptr = (wins_cfg_message_t *)msg;
-        msgptr->iface.name[_countof(msg->iface.name) - 1] = '\0';
-    }
-
-    wchar_t *wide_name = utf8to16(msg->iface.name); /* utf8 to wide-char */
-    if (!wide_name)
-    {
-        return ERROR_OUTOFMEMORY;
     }
 
     /* We delete all current addresses before adding any
@@ -2915,15 +3081,15 @@ HandleWINSConfigMessage(const wins_cfg_message_t *msg, undo_lists_t *lists)
      */
     if (addr_len > 0 || msg->header.type == msg_del_wins_cfg)
     {
-        err = netsh_wins_cmd(L"delete", wide_name, NULL);
+        err = netsh_wins_cmd(L"delete", msg->iface.index, NULL);
         if (err)
         {
             goto out;
         }
-        free(RemoveListItem(&(*lists)[undo_wins], CmpWString, wide_name));
+        free(RemoveListItem(&(*lists)[undo_wins], CmpAny, NULL));
     }
 
-    if (msg->header.type == msg_del_wins_cfg)
+    if (addr_len == 0 || msg->header.type == msg_del_wins_cfg)
     {
         goto out; /* job done */
     }
@@ -2931,7 +3097,7 @@ HandleWINSConfigMessage(const wins_cfg_message_t *msg, undo_lists_t *lists)
     for (int i = 0; i < addr_len; ++i)
     {
         RtlIpv4AddressToStringW(&msg->addr[i].ipv4, addr);
-        err = netsh_wins_cmd(i == 0 ? L"set" : L"add", wide_name, addr);
+        err = netsh_wins_cmd(i == 0 ? L"set" : L"add", msg->iface.index, addr);
         if (i == 0 && err)
         {
             goto out;
@@ -2941,22 +3107,23 @@ HandleWINSConfigMessage(const wins_cfg_message_t *msg, undo_lists_t *lists)
          */
     }
 
-    err = 0;
-
-    if (addr_len > 0)
+    int *if_index = malloc(sizeof(msg->iface.index));
+    if (if_index)
     {
-        wchar_t *tmp_name = _wcsdup(wide_name);
-        if (!tmp_name || AddListItem(&(*lists)[undo_wins], tmp_name))
-        {
-            free(tmp_name);
-            netsh_wins_cmd(L"delete", wide_name, NULL);
-            err = ERROR_OUTOFMEMORY;
-            goto out;
-        }
+        *if_index = msg->iface.index;
     }
 
+    if (!if_index || AddListItem(&(*lists)[undo_wins], if_index))
+    {
+        free(if_index);
+        netsh_wins_cmd(L"delete", msg->iface.index, NULL);
+        err = ERROR_OUTOFMEMORY;
+        goto out;
+    }
+
+    err = 0;
+
 out:
-    free(wide_name);
     return err;
 }
 
@@ -3206,7 +3373,7 @@ Undo(undo_lists_t *lists)
                     break;
 
                 case undo_wins:
-                    netsh_wins_cmd(L"delete", item->data, NULL);
+                    netsh_wins_cmd(L"delete", *(int *)item->data, NULL);
                     break;
 
                 case wfp_block:
@@ -3258,6 +3425,7 @@ RunOpenvpn(LPVOID p)
     size_t cmdline_size;
     undo_lists_t undo_lists;
     WCHAR errmsg[512] = L"";
+    BOOL flush_pipe = TRUE;
 
     SECURITY_ATTRIBUTES inheritable = { .nLength = sizeof(inheritable),
                                         .lpSecurityDescriptor = NULL,
@@ -3277,6 +3445,7 @@ RunOpenvpn(LPVOID p)
 
     if (!GetStartupData(pipe, &sud))
     {
+        flush_pipe = FALSE; /* client did not provide startup data */
         goto out;
     }
 
@@ -3416,12 +3585,46 @@ RunOpenvpn(LPVOID p)
         goto out;
     }
 
+    UUID pipe_uuid;
+    RPC_STATUS rpc_stat = UuidCreate(&pipe_uuid);
+    if (rpc_stat != RPC_S_OK)
+    {
+        ReturnError(pipe, rpc_stat, L"UuidCreate", 1, &exit_event);
+        goto out;
+    }
+
+    RPC_WSTR pipe_uuid_str = NULL;
+    rpc_stat = UuidToStringW(&pipe_uuid, &pipe_uuid_str);
+    if (rpc_stat != RPC_S_OK)
+    {
+        ReturnError(pipe, rpc_stat, L"UuidToString", 1, &exit_event);
+        goto out;
+    }
     swprintf(ovpn_pipe_name, _countof(ovpn_pipe_name),
-             L"\\\\.\\pipe\\" _L(PACKAGE) L"%ls\\service_%lu", service_instance,
-             GetCurrentThreadId());
+             L"\\\\.\\pipe\\" _L(PACKAGE) L"%ls\\service_%lu_%ls", service_instance,
+             GetCurrentThreadId(), pipe_uuid_str);
+    RpcStringFree(&pipe_uuid_str);
+
+    /* make a security descriptor for the named pipe with access
+     * restricted to the user and SYSTEM
+     */
+
+    SECURITY_ATTRIBUTES sa;
+    PSECURITY_DESCRIPTOR pSD = NULL;
+    LPCWSTR szSDDL = L"D:(A;;GA;;;SY)(A;;GA;;;OW)";
+    if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
+            szSDDL, SDDL_REVISION_1, &pSD, NULL))
+    {
+        ReturnLastError(pipe, L"ConvertSDDL");
+        goto out;
+    }
+    sa.nLength = sizeof(sa);
+    sa.lpSecurityDescriptor = pSD;
+    sa.bInheritHandle = FALSE;
+
     ovpn_pipe = CreateNamedPipe(
         ovpn_pipe_name, PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
-        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, 1, 128, 128, 0, NULL);
+        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS, 1, 128, 128, 0, &sa);
     if (ovpn_pipe == INVALID_HANDLE_VALUE)
     {
         ReturnLastError(pipe, L"CreateNamedPipe");
@@ -3538,7 +3741,10 @@ RunOpenvpn(LPVOID p)
     Undo(&undo_lists);
 
 out:
-    FlushFileBuffers(pipe);
+    if (flush_pipe)
+    {
+        FlushFileBuffers(pipe);
+    }
     DisconnectNamedPipe(pipe);
 
     free(ovpn_user);
@@ -3810,11 +4016,30 @@ ServiceStartInteractive(DWORD dwArgc, LPWSTR *lpszArgv)
 
     while (TRUE)
     {
-        if (ConnectNamedPipe(pipe, &overlapped) == FALSE && GetLastError() != ERROR_PIPE_CONNECTED
-            && GetLastError() != ERROR_IO_PENDING)
+        if (!ConnectNamedPipe(pipe, &overlapped))
         {
-            MsgToEventLog(M_SYSERR, L"Could not connect pipe");
-            break;
+            DWORD connect_error = GetLastError();
+            if (connect_error == ERROR_NO_DATA)
+            {
+                /*
+                 * Client connected and disconnected before we could process it.
+                 * Disconnect and retry instead of aborting the service.
+                 */
+                MsgToEventLog(M_ERR, L"ConnectNamedPipe returned ERROR_NO_DATA (client dropped)");
+                DisconnectNamedPipe(pipe);
+                ResetOverlapped(&overlapped);
+                continue;
+            }
+            else if (connect_error == ERROR_PIPE_CONNECTED)
+            {
+                /* No async I/O pending in this case; signal manually. */
+                SetEvent(overlapped.hEvent);
+            }
+            else if (connect_error != ERROR_IO_PENDING)
+            {
+                MsgToEventLog(M_SYSERR, L"Could not connect pipe");
+                break;
+            }
         }
 
         error = WaitForMultipleObjects(handle_count, handles, FALSE, INFINITE);
@@ -3822,6 +4047,17 @@ ServiceStartInteractive(DWORD dwArgc, LPWSTR *lpszArgv)
         {
             /* Client connected, spawn a worker thread for it */
             HANDLE next_pipe = CreateClientPipeInstance();
+
+            /* Avoid exceeding WaitForMultipleObjects MAXIMUM_WAIT_OBJECTS */
+            if (handle_count + 1 > MAXIMUM_WAIT_OBJECTS)
+            {
+                ReturnError(pipe, ERROR_CANT_WAIT, L"Too many concurrent clients", 1, &exit_event);
+                CloseHandleEx(&pipe);
+                pipe = next_pipe;
+                ResetOverlapped(&overlapped);
+                continue;
+            }
+
             HANDLE thread = CreateThread(NULL, 0, RunOpenvpn, pipe, CREATE_SUSPENDED, NULL);
             if (thread)
             {

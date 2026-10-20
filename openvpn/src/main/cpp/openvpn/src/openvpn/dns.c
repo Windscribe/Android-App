@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2022-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2022-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -45,7 +45,7 @@
  * @return              True if parsing was successful
  */
 static bool
-dns_server_port_parse(in_port_t *port, char *port_str)
+dns_server_port_parse(in_port_t *port, const char *port_str)
 {
     char *endptr;
     errno = 0;
@@ -71,8 +71,8 @@ dns_server_addr_parse(struct dns_server *server, const char *addr)
     in_port_t port = 0;
     sa_family_t af;
 
-    char *first_colon = strchr(addr, ':');
-    char *last_colon = strrchr(addr, ':');
+    const char *first_colon = strchr(addr, ':');
+    const char *last_colon = strrchr(addr, ':');
 
     if (!first_colon || first_colon == last_colon)
     {
@@ -93,7 +93,7 @@ dns_server_addr_parse(struct dns_server *server, const char *addr)
         if (addr[0] == '[')
         {
             addr += 1;
-            char *bracket = last_colon - 1;
+            const char *bracket = last_colon - 1;
             if (*bracket != ']' || bracket == addr || !dns_server_port_parse(&port, last_colon + 1))
             {
                 return false;
@@ -114,13 +114,13 @@ dns_server_addr_parse(struct dns_server *server, const char *addr)
         addr = addrcopy;
     }
 
-    struct addrinfo *ai = NULL;
-    if (openvpn_getaddrinfo(0, addr, NULL, 0, NULL, af, &ai) != 0)
+    if (server->addr_count >= SIZE(server->addr))
     {
         return false;
     }
 
-    if (server->addr_count >= SIZE(server->addr))
+    struct addrinfo *ai = NULL;
+    if (openvpn_getaddrinfo(0, addr, NULL, 0, NULL, af, &ai) != 0)
     {
         return false;
     }
@@ -442,7 +442,7 @@ run_up_down_service(bool add, const struct options *o, const struct tuntap *tt)
         .header = { (add ? msg_add_nrpt_cfg : msg_del_nrpt_cfg), sizeof(nrpt_dns_cfg_message_t),
                     0 },
         .iface = { .index = tt->adapter_index, .name = "" },
-        .flags = server->dnssec == DNS_SECURITY_NO ? 0 : nrpt_dnssec,
+        .flags = server->dnssec == DNS_SECURITY_YES ? nrpt_dnssec : 0,
     };
     strncpynt(nrpt.iface.name, tt->actual_name, sizeof(nrpt.iface.name));
 
@@ -485,11 +485,11 @@ setenv_dns_option(struct env_set *es, const char *format, int i, int j, const ch
 
     if (j < 0)
     {
-        name_ok = snprintf(name, sizeof(name), format, i);
+        name_ok = checked_snprintf(name, sizeof(name), format, i);
     }
     else
     {
-        name_ok = snprintf(name, sizeof(name), format, i, j);
+        name_ok = checked_snprintf(name, sizeof(name), format, i, j);
     }
 
     if (!name_ok)
@@ -609,13 +609,13 @@ run_updown_runner(bool up, struct options *o, const struct tuntap *tt,
     int ack_pipe_fd[2];
     if (pipe(dns_pipe_fd) != 0 || pipe(ack_pipe_fd) != 0)
     {
-        msg(M_ERR | M_ERRNO, "run_dns_up_down: unable to create pipes");
+        msg(M_WARN | M_ERRNO, "run_dns_up_down: unable to create pipes");
         return false;
     }
     updown_runner->pid = fork();
     if (updown_runner->pid == -1)
     {
-        msg(M_ERR | M_ERRNO, "run_dns_up_down: unable to fork");
+        msg(M_WARN | M_ERRNO, "run_dns_up_down: unable to fork");
         close(dns_pipe_fd[0]);
         close(dns_pipe_fd[1]);
         close(ack_pipe_fd[0]);
@@ -745,7 +745,7 @@ run_up_down_command(bool up, struct options *o, const struct tuntap *tt,
                 {
                     continue;
                 }
-                msg(M_ERR | M_ERRNO, "could not send dns vars filename");
+                msg(M_WARN | M_ERRNO, "could not send dns vars filename");
             }
             break;
         }
@@ -760,7 +760,7 @@ run_up_down_command(bool up, struct options *o, const struct tuntap *tt,
                 {
                     continue;
                 }
-                msg(M_ERR | M_ERRNO, "could not receive dns updown status");
+                msg(M_WARN | M_ERRNO, "could not receive dns updown status");
             }
             break;
         }

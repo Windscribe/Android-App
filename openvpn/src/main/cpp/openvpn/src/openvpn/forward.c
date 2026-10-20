@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -33,6 +33,7 @@
 #include "mss.h"
 #include "event.h"
 #include "occ.h"
+#include "otime.h"
 #include "ping.h"
 #include "ps.h"
 #include "dhcp.h"
@@ -43,8 +44,6 @@
 #include "tun_afunix.h"
 
 #include "memdbg.h"
-
-#include "mstats.h"
 
 counter_type link_read_bytes_global;  /* GLOBAL */
 counter_type link_write_bytes_global; /* GLOBAL */
@@ -129,7 +128,7 @@ context_immediate_reschedule(struct context *c)
 }
 
 static inline void
-context_reschedule_sec(struct context *c, int sec)
+context_reschedule_sec(struct context *c, time_t sec)
 {
     if (sec < 0)
     {
@@ -137,7 +136,7 @@ context_reschedule_sec(struct context *c, int sec)
     }
     if (sec < c->c2.timeval.tv_sec)
     {
-        c->c2.timeval.tv_sec = sec;
+        c->c2.timeval.tv_sec = (tv_sec_t)sec;
         c->c2.timeval.tv_usec = 0;
     }
 }
@@ -206,6 +205,12 @@ check_tls(struct context *c)
             {
                 register_signal(c->sig, SIGTERM, "auth-control-exit");
             }
+        }
+        else if (tmp_status == TLSMP_RESTART)
+        {
+            /* The session cannot recover on its own. Kill the connection so
+             * that it is set up again from scratch */
+            register_signal(c->sig, SIGUSR1, "dco key state desync");
         }
 
         interval_future_trigger(&c->c2.tmp_int, wakeup);
@@ -367,11 +372,6 @@ check_connection_established(struct context *c)
     }
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 bool
 send_control_channel_string_dowork(struct tls_session *session, const char *str,
                                    msglvl_t msglevel)
@@ -478,13 +478,20 @@ check_add_routes(struct context *c)
  * and the logic needs to change - we permit the event to trigger and check
  * kernel DCO counters here, returning and rearming the timer if there was
  * sufficient traffic.
+ *
+ * NOTE: FreeBSD DCO does not supply "tun bytes" (= decrypted payload) today,
+ * so "dco bytes" (encrypted bytes, including keepalives) is used instead
  */
 static void
 check_inactivity_timeout(struct context *c)
 {
     if (dco_enabled(&c->options) && dco_get_peer_stats(c, true) == 0)
     {
+#ifdef TARGET_FREEBSD
+        int64_t tot_bytes = c->c2.dco_read_bytes + c->c2.dco_write_bytes;
+#else
         int64_t tot_bytes = c->c2.tun_read_bytes + c->c2.tun_write_bytes;
+#endif
         int64_t new_bytes = tot_bytes - c->c2.inactivity_bytes;
 
         if (new_bytes > c->options.inactivity_minimum_bytes)
@@ -532,6 +539,23 @@ schedule_exit(struct context *c)
     {
         return false;
     }
+
+    /* DCO iroutes must be removed now, because the delay introduced by this
+     * timer can create a race condition:
+     * the same client may reconnect before the old instance is purged, leading
+     * to DCO iroutes removal *after* reconnection, thus killing the routes
+     * for the new instance too.
+     *
+     * Standard/virtual iroutes (non-DCO case) are not affected because the
+     * last connecting client claiming the iroutes takes ownership. Therefore
+     * they are not removed during delayed cleanup.
+     */
+    if (c->did_dco_iroutes)
+    {
+        c->did_dco_iroutes = false;
+        dco_delete_iroutes(&c->net_ctx, c);
+    }
+
     tls_set_single_session(c->c2.tls_multi);
     update_time();
     reset_coarse_timers(c);
@@ -932,8 +956,6 @@ read_incoming_link(struct context *c, struct link_socket *sock)
 
     /*ASSERT (!c->c2.to_tun.len);*/
 
-    perf_push(PERF_READ_IN_LINK);
-
     c->c2.buf = c->c2.buffers->read_link_buf;
     ASSERT(buf_init(&c->c2.buf, c->c2.frame.buf.headroom));
 
@@ -966,7 +988,6 @@ read_incoming_link(struct context *c, struct link_socket *sock)
                 msg(D_STREAM_ERRORS, "Connection reset, restarting [%d]", status);
             }
         }
-        perf_pop();
         return;
     }
 
@@ -983,8 +1004,6 @@ read_incoming_link(struct context *c, struct link_socket *sock)
 
     /* Remove socks header if applicable */
     socks_postprocess_incoming_link(c, sock);
-
-    perf_pop();
 }
 
 bool
@@ -997,12 +1016,6 @@ process_incoming_link_part1(struct context *c, struct link_socket_info *lsi, boo
     {
         c->c2.link_read_bytes += c->c2.buf.len;
         link_read_bytes_global += c->c2.buf.len;
-#ifdef ENABLE_MEMSTATS
-        if (mmap_stats)
-        {
-            mmap_stats->link_read_bytes = link_read_bytes_global;
-        }
-#endif
         c->c2.original_recv_size = c->c2.buf.len;
     }
     else
@@ -1212,15 +1225,11 @@ process_incoming_link_part2(struct context *c, struct link_socket_info *lsi,
 static void
 process_incoming_link(struct context *c, struct link_socket *sock)
 {
-    perf_push(PERF_PROC_IN_LINK);
-
     struct link_socket_info *lsi = &sock->info;
     const uint8_t *orig_buf = c->c2.buf.data;
 
     process_incoming_link_part1(c, lsi, false);
     process_incoming_link_part2(c, lsi, orig_buf);
-
-    perf_pop();
 }
 
 void
@@ -1257,19 +1266,11 @@ extract_dco_float_peer_addr(const sa_family_t socket_family, struct openvpn_sock
     }
 }
 
-static void
-process_incoming_dco(struct context *c)
+void
+process_incoming_dco(dco_context_t *dco)
 {
 #if defined(ENABLE_DCO) && (defined(TARGET_LINUX) || defined(TARGET_FREEBSD))
-    dco_context_t *dco = &c->c1.tuntap->dco;
-
-    dco_do_read(dco);
-
-    /* no message for us to handle - platform specific code has logged details */
-    if (dco->dco_message_type == 0)
-    {
-        return;
-    }
+    struct context *c = dco->c;
 
     /* FreeBSD currently sends us removal notifcation with the old peer-id in
      * p2p mode with the ping timeout reason, so ignore that one to not shoot
@@ -1326,8 +1327,6 @@ read_incoming_tun(struct context *c)
      */
     /*ASSERT (!c->c2.to_link.len);*/
 
-    perf_push(PERF_READ_IN_TUN);
-
     c->c2.buf = c->c2.buffers->read_tun_buf;
 
 #ifdef _WIN32
@@ -1342,11 +1341,11 @@ read_incoming_tun(struct context *c)
     if (c->c1.tuntap->backend_driver == DRIVER_AFUNIX)
     {
         c->c2.buf.len =
-            read_tun_afunix(c->c1.tuntap, BPTR(&c->c2.buf), c->c2.frame.buf.payload_size);
+            (int)read_tun_afunix(c->c1.tuntap, BPTR(&c->c2.buf), c->c2.frame.buf.payload_size);
     }
     else
     {
-        c->c2.buf.len = read_tun(c->c1.tuntap, BPTR(&c->c2.buf), c->c2.frame.buf.payload_size);
+        c->c2.buf.len = (int)read_tun(c->c1.tuntap, BPTR(&c->c2.buf), c->c2.frame.buf.payload_size);
     }
 #endif /* ifdef _WIN32 */
 
@@ -1360,7 +1359,6 @@ read_incoming_tun(struct context *c)
     {
         register_signal(c->sig, SIGTERM, "tun-stop");
         msg(M_INFO, "TUN/TAP interface has been stopped, exiting");
-        perf_pop();
         return;
     }
 
@@ -1370,14 +1368,11 @@ read_incoming_tun(struct context *c)
         register_signal(c->sig, SIGHUP, "tun-abort");
         c->persist.restart_sleep_seconds = 10;
         msg(M_INFO, "TUN/TAP I/O operation aborted, restarting");
-        perf_pop();
         return;
     }
 
     /* Check the status return from read() */
     check_status(c->c2.buf.len, "read from TUN/TAP", NULL, c->c1.tuntap);
-
-    perf_pop();
 }
 
 /**
@@ -1391,73 +1386,110 @@ read_incoming_tun(struct context *c)
 static void
 drop_if_recursive_routing(struct context *c, struct buffer *buf)
 {
-    bool drop = false;
-    struct openvpn_sockaddr tun_sa;
-    int ip_hdr_offset = 0;
-
     if (c->c2.to_link_addr == NULL) /* no remote addr known */
     {
         return;
     }
 
-    tun_sa = c->c2.to_link_addr->dest;
+    struct openvpn_sockaddr *link_addr = &c->c2.to_link_addr->dest;
+    struct link_socket_info *lsi = get_link_socket_info(c);
 
-    int proto_ver = get_tun_ip_ver(TUNNEL_TYPE(c->c1.tuntap), &c->c2.buf, &ip_hdr_offset);
+    int ip_hdr_offset = 0;
+    int tun_ip_ver = get_tun_ip_ver(TUNNEL_TYPE(c->c1.tuntap), buf, &ip_hdr_offset);
 
-    if (proto_ver == 4)
+    if (tun_ip_ver == 4)
     {
-        /* make sure we got whole IP header */
-        if (BLEN(buf) < ((int)sizeof(struct openvpn_iphdr) + ip_hdr_offset))
-        {
-            return;
-        }
-
-        /* skip ipv4 packets for ipv6 tun */
-        if (tun_sa.addr.sa.sa_family != AF_INET)
+        /* Ensure we can safely read the IPv4 header */
+        const int min_ip_header = ip_hdr_offset + sizeof(struct openvpn_iphdr);
+        if (BLEN(buf) < min_ip_header)
         {
             return;
         }
 
         struct openvpn_iphdr *pip = (struct openvpn_iphdr *)(BPTR(buf) + ip_hdr_offset);
-
-        /* drop packets with same dest addr as gateway */
-        if (memcmp(&tun_sa.addr.in4.sin_addr.s_addr, &pip->daddr, sizeof(pip->daddr)) == 0)
+        const int ip_hlen = OPENVPN_IPH_GET_LEN(pip->version_len);
+        /* Reject malformed or truncated headers */
+        if (ip_hlen < sizeof(struct openvpn_iphdr)
+            || BLEN(buf) < (int)(ip_hdr_offset + ip_hlen + sizeof(uint16_t) * 2))
         {
-            drop = true;
+            return;
+        }
+
+        /* skip ipv4 packets for ipv6 tun */
+        if (link_addr->addr.sa.sa_family != AF_INET)
+        {
+            return;
+        }
+
+        /* skip if tun protocol doesn't match link protocol */
+        if ((lsi->proto == PROTO_TCP && pip->protocol != OPENVPN_IPPROTO_TCP)
+            || (lsi->proto == PROTO_UDP && pip->protocol != OPENVPN_IPPROTO_UDP))
+        {
+            return;
+        }
+
+        /* drop packets with same dest addr and port as remote */
+        uint8_t *l4_hdr = (uint8_t *)pip + ip_hlen;
+
+        uint16_t link_port = ntohs(link_addr->addr.in4.sin_port);
+
+        /* TCP and UDP ports are at the same place in the header, and other protocols
+         * can not happen here due to the lsi->proto check above */
+        uint16_t src_port = ntohs(*(uint16_t *)l4_hdr);
+        uint16_t dst_port = ntohs(*(uint16_t *)(l4_hdr + sizeof(uint16_t)));
+        if ((memcmp(&link_addr->addr.in4.sin_addr.s_addr, &pip->daddr, sizeof(pip->daddr)) == 0) && (link_port == dst_port))
+        {
+            buf->len = 0;
+
+            struct gc_arena gc = gc_new();
+            msg(D_LOW, "Recursive routing detected, packet dropped %s:%" PRIu16 " -> %s",
+                print_in_addr_t(pip->saddr, IA_NET_ORDER, &gc),
+                src_port,
+                print_link_socket_actual(c->c2.to_link_addr, &gc));
+            gc_free(&gc);
         }
     }
-    else if (proto_ver == 6)
+    else if (tun_ip_ver == 6)
     {
-        /* make sure we got whole IPv6 header */
-        if (BLEN(buf) < ((int)sizeof(struct openvpn_ipv6hdr) + ip_hdr_offset))
+        /* make sure we got whole IPv6 header and TCP/UDP src/dst ports */
+        const int min_ipv6 = ip_hdr_offset + sizeof(struct openvpn_ipv6hdr) + sizeof(uint16_t) * 2;
+        if (BLEN(buf) < min_ipv6)
         {
             return;
         }
 
         /* skip ipv6 packets for ipv4 tun */
-        if (tun_sa.addr.sa.sa_family != AF_INET6)
+        if (link_addr->addr.sa.sa_family != AF_INET6)
         {
             return;
         }
 
         struct openvpn_ipv6hdr *pip6 = (struct openvpn_ipv6hdr *)(BPTR(buf) + ip_hdr_offset);
 
-        /* drop packets with same dest addr as gateway */
-        if (OPENVPN_IN6_ARE_ADDR_EQUAL(&tun_sa.addr.in6.sin6_addr, &pip6->daddr))
+        /* skip if tun protocol doesn't match link protocol */
+        if ((lsi->proto == PROTO_TCP && pip6->nexthdr != OPENVPN_IPPROTO_TCP)
+            || (lsi->proto == PROTO_UDP && pip6->nexthdr != OPENVPN_IPPROTO_UDP))
         {
-            drop = true;
+            return;
         }
-    }
 
-    if (drop)
-    {
-        struct gc_arena gc = gc_new();
+        uint16_t link_port = ntohs(link_addr->addr.in6.sin6_port);
 
-        c->c2.buf.len = 0;
+        /* drop packets with same dest addr and port as remote */
+        uint8_t *l4_hdr = (uint8_t *)pip6 + sizeof(struct openvpn_ipv6hdr);
+        uint16_t src_port = ntohs(*(uint16_t *)l4_hdr);
+        uint16_t dst_port = ntohs(*(uint16_t *)(l4_hdr + sizeof(uint16_t)));
+        if ((OPENVPN_IN6_ARE_ADDR_EQUAL(&link_addr->addr.in6.sin6_addr, &pip6->daddr)) && (link_port == dst_port))
+        {
+            buf->len = 0;
 
-        msg(D_LOW, "Recursive routing detected, drop tun packet to %s",
-            print_link_socket_actual(c->c2.to_link_addr, &gc));
-        gc_free(&gc);
+            struct gc_arena gc = gc_new();
+            msg(D_LOW, "Recursive routing detected, packet dropped %s:%" PRIu16 " -> %s",
+                print_in6_addr(pip6->saddr, IA_NET_ORDER, &gc),
+                src_port,
+                print_link_socket_actual(c->c2.to_link_addr, &gc));
+            gc_free(&gc);
+        }
     }
 }
 
@@ -1469,10 +1501,6 @@ drop_if_recursive_routing(struct context *c, struct buffer *buf)
 void
 process_incoming_tun(struct context *c, struct link_socket *out_sock)
 {
-    struct gc_arena gc = gc_new();
-
-    perf_push(PERF_PROC_IN_TUN);
-
     if (c->c2.buf.len > 0)
     {
         c->c2.tun_read_bytes += c->c2.buf.len;
@@ -1516,8 +1544,6 @@ process_incoming_tun(struct context *c, struct link_socket *out_sock)
     {
         buf_reset(&c->c2.to_link);
     }
-    perf_pop();
-    gc_free(&gc);
 }
 
 /**
@@ -1582,7 +1608,7 @@ ipv6_send_icmp_unreachable(struct context *c, struct buffer *buf, bool client)
     icmp6out.icmp6_type = OPENVPN_ICMP6_DESTINATION_UNREACHABLE;
     icmp6out.icmp6_code = OPENVPN_ICMP6_DU_NOROUTE;
 
-    int icmpheader_len = sizeof(struct openvpn_ipv6hdr) + sizeof(struct openvpn_icmp6hdr);
+    const int icmpheader_len = sizeof(struct openvpn_ipv6hdr) + sizeof(struct openvpn_icmp6hdr);
     int totalheader_len = icmpheader_len;
 
     if (TUNNEL_TYPE(c->c1.tuntap) == DEV_TYPE_TAP)
@@ -1596,9 +1622,12 @@ ipv6_send_icmp_unreachable(struct context *c, struct buffer *buf, bool client)
      * packet
      */
     int max_payload_size = min_int(MAX_ICMPV6LEN, c->c2.frame.tun_mtu - icmpheader_len);
-    int payload_len = min_int(max_payload_size, BLEN(&inputipbuf));
+    /* Ensure that minimum payload size is at least 64 bytes as extra safety layer */
+    max_payload_size = max_int(max_payload_size, 64);
+    const int payload_len = min_int(max_payload_size, BLEN(&inputipbuf));
+    const uint16_t icmp_len = (uint16_t)(sizeof(struct openvpn_icmp6hdr) + payload_len);
 
-    pip6out.payload_len = htons(sizeof(struct openvpn_icmp6hdr) + payload_len);
+    pip6out.payload_len = htons(icmp_len);
 
     /* Construct the packet as outgoing packet back to the client */
     struct buffer *outbuf;
@@ -1744,8 +1773,6 @@ process_outgoing_link(struct context *c, struct link_socket *sock)
     struct gc_arena gc = gc_new();
     int error_code = 0;
 
-    perf_push(PERF_PROC_OUT_LINK);
-
     if (c->c2.to_link.len > 0 && c->c2.to_link.len <= c->c2.frame.buf.payload_size)
     {
         /*
@@ -1815,12 +1842,6 @@ process_outgoing_link(struct context *c, struct link_socket *sock)
                 c->c2.max_send_size_local = max_int(size, c->c2.max_send_size_local);
                 c->c2.link_write_bytes += size;
                 link_write_bytes_global += size;
-#ifdef ENABLE_MEMSTATS
-                if (mmap_stats)
-                {
-                    mmap_stats->link_write_bytes = link_write_bytes_global;
-                }
-#endif
             }
         }
 
@@ -1873,7 +1894,6 @@ process_outgoing_link(struct context *c, struct link_socket *sock)
 
     buf_reset(&c->c2.to_link);
 
-    perf_pop();
     gc_free(&gc);
 }
 
@@ -1893,8 +1913,6 @@ process_outgoing_tun(struct context *c, struct link_socket *in_sock)
         return;
     }
 
-    perf_push(PERF_PROC_OUT_TUN);
-
     /*
      * The --mssfix option requires
      * us to examine the IP header (IPv4 or IPv6).
@@ -1907,7 +1925,7 @@ process_outgoing_tun(struct context *c, struct link_socket *in_sock)
         /*
          * Write to TUN/TAP device.
          */
-        int size;
+        ssize_t size;
 
 #ifdef LOG_RW
         if (c->c2.log_rw)
@@ -1948,7 +1966,7 @@ process_outgoing_tun(struct context *c, struct link_socket *in_sock)
             if (size != BLEN(&c->c2.to_tun))
             {
                 msg(D_LINK_ERRORS,
-                    "TUN/TAP packet was destructively fragmented on write to %s (tried=%d,actual=%d)",
+                    "TUN/TAP packet was destructively fragmented on write to %s (tried=%d,actual=%zd)",
                     c->c1.tuntap->actual_name, BLEN(&c->c2.to_tun), size);
             }
 
@@ -1967,13 +1985,7 @@ process_outgoing_tun(struct context *c, struct link_socket *in_sock)
     }
 
     buf_reset(&c->c2.to_tun);
-
-    perf_pop();
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 void
 pre_select(struct context *c)
@@ -2041,9 +2053,8 @@ pre_select(struct context *c)
     check_timeout_random_component(c);
 }
 
-static void
-multi_io_process_flags(struct context *c, struct event_set *es, const unsigned int flags,
-                       unsigned int *out_socket, unsigned int *out_tuntap)
+void
+multi_io_process_flags(struct context *c, struct event_set *es, struct link_socket *sock, const unsigned int flags)
 {
     unsigned int socket = 0;
     unsigned int tuntap = 0;
@@ -2114,14 +2125,6 @@ multi_io_process_flags(struct context *c, struct event_set *es, const unsigned i
     }
 
     /*
-     * outgoing bcast buffer waiting to be sent?
-     */
-    if (flags & IOW_MBUF)
-    {
-        socket |= EVENT_WRITE;
-    }
-
-    /*
      * Force wait on TUN input, even if also waiting on TCP/UDP output
      */
     if (flags & IOW_READ_TUN_FORCE)
@@ -2134,72 +2137,19 @@ multi_io_process_flags(struct context *c, struct event_set *es, const unsigned i
      * (for TCP server sockets this happens in
      *  socket_set_listen_persistent()).
      */
-    for (int i = 0; i < c->c1.link_sockets_num; i++)
-    {
-        if ((c->options.mode != MODE_SERVER) || (proto_is_dgram(c->c2.link_sockets[i]->info.proto)))
-        {
-            socket_set(c->c2.link_sockets[i], es, socket, &c->c2.link_sockets[i]->ev_arg, NULL);
-        }
-    }
-
+    socket_set(sock, es, socket, &sock->ev_arg, NULL);
     tun_set(c->c1.tuntap, es, tuntap, (void *)tun_shift, NULL);
-
-    if (out_socket)
-    {
-        *out_socket = socket;
-    }
-
-    if (out_tuntap)
-    {
-        *out_tuntap = tuntap;
-    }
 }
 
 /*
- * Wait for I/O events.  Used for both TCP & UDP sockets
- * in point-to-point mode and for UDP sockets in
- * point-to-multipoint mode.
+ * This is the core I/O wait function, used for all I/O waits.
+ *
+ * Invoked by P2P instances in tunnel_point_to_point() or by P2MP
+ * instances within the per-client context in multi_io.c.
  */
-
 void
-get_io_flags_dowork_udp(struct context *c, struct multi_io *multi_io, const unsigned int flags)
+io_wait(struct context *c, const unsigned int flags)
 {
-    unsigned int out_socket, out_tuntap;
-
-    multi_io_process_flags(c, multi_io->es, flags, &out_socket, &out_tuntap);
-    multi_io->udp_flags = out_socket | out_tuntap;
-}
-
-void
-get_io_flags_udp(struct context *c, struct multi_io *multi_io, const unsigned int flags)
-{
-    multi_io->udp_flags = ES_ERROR;
-    if (c->c2.fast_io && (flags & (IOW_TO_TUN | IOW_TO_LINK | IOW_MBUF)))
-    {
-        /* fast path -- only for TUN/TAP/UDP writes */
-        unsigned int ret = 0;
-        if (flags & IOW_TO_TUN)
-        {
-            ret |= TUN_WRITE;
-        }
-        if (flags & (IOW_TO_LINK | IOW_MBUF))
-        {
-            ret |= SOCKET_WRITE;
-        }
-        multi_io->udp_flags = ret;
-    }
-    else
-    {
-        /* slow path - delegate to io_wait_dowork_udp to calculate flags */
-        get_io_flags_dowork_udp(c, multi_io, flags);
-    }
-}
-
-void
-io_wait_dowork(struct context *c, const unsigned int flags)
-{
-    unsigned int out_socket;
-    unsigned int out_tuntap;
     struct event_set_return esr[4];
 
     /* These shifts all depend on EVENT_READ and EVENT_WRITE */
@@ -2208,9 +2158,7 @@ io_wait_dowork(struct context *c, const unsigned int flags)
     static uintptr_t management_shift =
         MANAGEMENT_SHIFT; /* depends on MANAGEMENT_READ and MANAGEMENT_WRITE */
 #endif
-#ifdef ENABLE_ASYNC_PUSH
-    static uintptr_t file_shift = FILE_SHIFT;
-#endif
+
 #if defined(TARGET_LINUX) || defined(TARGET_FREEBSD)
     static uintptr_t dco_shift = DCO_SHIFT; /* Event from DCO linux kernel module */
 #endif
@@ -2220,10 +2168,10 @@ io_wait_dowork(struct context *c, const unsigned int flags)
      */
     event_reset(c->c2.event_set);
 
-    multi_io_process_flags(c, c->c2.event_set, flags, &out_socket, &out_tuntap);
+    multi_io_process_flags(c, c->c2.event_set, c->c2.link_sockets[0], flags);
 
 #if defined(TARGET_LINUX) || defined(TARGET_FREEBSD)
-    if (out_socket & EVENT_READ && c->c2.did_open_tun)
+    if (c->c1.tuntap)
     {
         dco_event_set(&c->c1.tuntap->dco, c->c2.event_set, (void *)dco_shift);
     }
@@ -2233,14 +2181,6 @@ io_wait_dowork(struct context *c, const unsigned int flags)
     if (management)
     {
         management_socket_set(management, c->c2.event_set, (void *)management_shift, NULL);
-    }
-#endif
-
-#ifdef ENABLE_ASYNC_PUSH
-    /* arm inotify watcher */
-    if (c->options.mode == MODE_SERVER)
-    {
-        event_ctl(c->c2.event_set, c->c2.inotify_fd, EVENT_READ, (void *)file_shift);
     }
 #endif
 
@@ -2373,7 +2313,7 @@ process_io(struct context *c, struct link_socket *sock)
     {
         if (!IS_SIG(c))
         {
-            process_incoming_dco(c);
+            dco_read_and_process(&c->c1.tuntap->dco);
         }
     }
 }

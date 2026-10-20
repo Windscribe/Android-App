@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2025-2026 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -21,8 +21,8 @@
 /* KEM Recipient Info (KEMRI) routines */
 
 int ossl_cms_RecipientInfo_kemri_get0_alg(CMS_RecipientInfo *ri,
-                                          uint32_t **pkekLength,
-                                          X509_ALGOR **pwrap)
+    uint32_t **pkekLength,
+    X509_ALGOR **pwrap)
 {
     if (ri->type != CMS_RECIPINFO_KEM) {
         ERR_raise(ERR_LIB_CMS, CMS_R_NOT_KEM);
@@ -61,7 +61,7 @@ int CMS_RecipientInfo_kemri_set0_pkey(CMS_RecipientInfo *ri, EVP_PKEY *pk)
 
     if (pk != NULL) {
         pctx = EVP_PKEY_CTX_new_from_pkey(ossl_cms_ctx_get0_libctx(kemri->cms_ctx), pk,
-                                          ossl_cms_ctx_get0_propq(kemri->cms_ctx));
+            ossl_cms_ctx_get0_propq(kemri->cms_ctx));
         if (pctx == NULL || EVP_PKEY_decapsulate_init(pctx, NULL) <= 0)
             goto err;
 
@@ -77,8 +77,8 @@ err:
 /* Initialise a kemri based on passed certificate and key */
 
 int ossl_cms_RecipientInfo_kemri_init(CMS_RecipientInfo *ri, X509 *recip,
-                                      EVP_PKEY *recipPubKey, unsigned int flags,
-                                      const CMS_CTX *ctx)
+    EVP_PKEY *recipPubKey, unsigned int flags,
+    const CMS_CTX *ctx)
 {
     CMS_OtherRecipientInfo *ori;
     CMS_KEMRecipientInfo *kemri;
@@ -122,8 +122,8 @@ int ossl_cms_RecipientInfo_kemri_init(CMS_RecipientInfo *ri, X509 *recip,
         return 0;
 
     kemri->pctx = EVP_PKEY_CTX_new_from_pkey(ossl_cms_ctx_get0_libctx(ctx),
-                                             recipPubKey,
-                                             ossl_cms_ctx_get0_propq(ctx));
+        recipPubKey,
+        ossl_cms_ctx_get0_propq(ctx));
     if (kemri->pctx == NULL)
         return 0;
     if (EVP_PKEY_encapsulate_init(kemri->pctx, NULL) <= 0)
@@ -147,8 +147,8 @@ X509_ALGOR *CMS_RecipientInfo_kemri_get0_kdf_alg(CMS_RecipientInfo *ri)
 }
 
 int CMS_RecipientInfo_kemri_set_ukm(CMS_RecipientInfo *ri,
-                                    const unsigned char *ukm,
-                                    int ukmLength)
+    const unsigned char *ukm,
+    int ukmLength)
 {
     CMS_KEMRecipientInfo *kemri;
     ASN1_OCTET_STRING *ukm_str;
@@ -200,7 +200,7 @@ static EVP_KDF_CTX *create_kdf_ctx(CMS_KEMRecipientInfo *kemri)
         goto err;
 
     kdf = EVP_KDF_fetch(ossl_cms_ctx_get0_libctx(kemri->cms_ctx), kdf_alg,
-                        ossl_cms_ctx_get0_propq(kemri->cms_ctx));
+        ossl_cms_ctx_get0_propq(kemri->cms_ctx));
     if (kdf == NULL)
         goto err;
 
@@ -211,8 +211,8 @@ err:
 }
 
 static int kdf_derive(unsigned char *kek, size_t keklen,
-                      const unsigned char *ss, size_t sslen,
-                      CMS_KEMRecipientInfo *kemri)
+    const unsigned char *ss, size_t sslen,
+    CMS_KEMRecipientInfo *kemri)
 {
     EVP_KDF_CTX *kctx = NULL;
     OSSL_PARAM params[3];
@@ -221,7 +221,7 @@ static int kdf_derive(unsigned char *kek, size_t keklen,
     int rv = 0;
 
     infolen = CMS_CMSORIforKEMOtherInfo_encode(&infoder, kemri->wrap, kemri->ukm,
-                                               kemri->kekLength);
+        kemri->kekLength);
     if (infolen <= 0)
         goto err;
 
@@ -230,9 +230,9 @@ static int kdf_derive(unsigned char *kek, size_t keklen,
         goto err;
 
     params[0] = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_KEY,
-                                                  (unsigned char *)ss, sslen);
+        (unsigned char *)ss, sslen);
     params[1] = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_INFO,
-                                                  (char *)infoder, infolen);
+        (char *)infoder, infolen);
     params[2] = OSSL_PARAM_construct_end();
 
     if (EVP_KDF_derive(kctx, kek, keklen, params) <= 0)
@@ -252,9 +252,9 @@ err:
  */
 
 static int cms_kek_cipher(unsigned char **pout, size_t *poutlen,
-                          const unsigned char *ss, size_t sslen,
-                          const unsigned char *in, size_t inlen,
-                          CMS_KEMRecipientInfo *kemri, int enc)
+    const unsigned char *ss, size_t sslen,
+    const unsigned char *in, size_t inlen,
+    CMS_KEMRecipientInfo *kemri, int enc)
 {
     /* Key encryption key */
     unsigned char kek[EVP_MAX_KEY_LENGTH];
@@ -262,11 +262,15 @@ static int cms_kek_cipher(unsigned char **pout, size_t *poutlen,
     unsigned char *out = NULL;
     int outlen = 0;
     int rv = 0;
+    size_t outsize;
 
     if (keklen > sizeof(kek)) {
         ERR_raise(ERR_LIB_CMS, CMS_R_INVALID_KEY_LENGTH);
         return 0;
     }
+
+    if (inlen > INT_MAX)
+        return 0;
 
     if (!kdf_derive(kek, keklen, ss, sslen, kemri))
         goto err;
@@ -277,7 +281,13 @@ static int cms_kek_cipher(unsigned char **pout, size_t *poutlen,
     /* obtain output length of ciphered key */
     if (!EVP_CipherUpdate(kemri->ctx, NULL, &outlen, in, (int)inlen))
         goto err;
-    out = OPENSSL_malloc(outlen);
+    /*
+     * On its integrity-failure paths that primitive writes and cleanses up to
+     * inlen bytes of the output buffer. Size the buffer for that worst case so
+     * a failed unwrap cannot write past the allocation.
+     */
+    outsize = (size_t)outlen < inlen ? inlen : (size_t)outlen;
+    out = OPENSSL_malloc(outsize);
     if (out == NULL)
         goto err;
     if (!EVP_CipherUpdate(kemri->ctx, out, &outlen, in, (int)inlen))
@@ -299,7 +309,7 @@ err:
 /* Encrypt content key in KEM recipient info */
 
 int ossl_cms_RecipientInfo_kemri_encrypt(const CMS_ContentInfo *cms,
-                                         CMS_RecipientInfo *ri)
+    CMS_RecipientInfo *ri)
 {
     CMS_KEMRecipientInfo *kemri;
     CMS_EncryptedContentInfo *ec;
@@ -341,7 +351,7 @@ int ossl_cms_RecipientInfo_kemri_encrypt(const CMS_ContentInfo *cms,
     kem_ct = NULL;
 
     if (!cms_kek_cipher(&enckey, &enckeylen, kem_secret, kem_secret_len, ec->key, ec->keylen,
-                        kemri, 1))
+            kemri, 1))
         goto err;
     ASN1_STRING_set0(kemri->encryptedKey, enckey, (int)enckeylen);
 
@@ -353,7 +363,7 @@ err:
 }
 
 int ossl_cms_RecipientInfo_kemri_decrypt(const CMS_ContentInfo *cms,
-                                         CMS_RecipientInfo *ri)
+    CMS_RecipientInfo *ri)
 {
     CMS_KEMRecipientInfo *kemri;
     CMS_EncryptedContentInfo *ec;

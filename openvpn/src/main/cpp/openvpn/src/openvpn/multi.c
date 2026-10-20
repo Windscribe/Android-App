@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -37,11 +37,11 @@
 #include "run_command.h"
 #include "otime.h"
 #include "gremlin.h"
-#include "mstats.h"
 #include "ssl_verify.h"
 #include "ssl_ncp.h"
 #include "vlan.h"
 #include "auth_token.h"
+#include "route.h"
 #include <inttypes.h>
 #include <string.h>
 
@@ -78,17 +78,6 @@ set_cc_config(struct multi_instance *mi, struct buffer_list *cc_config)
     mi->cc_config = cc_config;
 }
 #endif
-
-static inline void
-update_mstat_n_clients(const int n_clients)
-{
-#ifdef ENABLE_MEMSTATS
-    if (mmap_stats)
-    {
-        mmap_stats->n_clients = n_clients;
-    }
-#endif
-}
 
 static bool
 learn_address_script(const struct multi_context *m, const struct multi_instance *mi, const char *op,
@@ -256,11 +245,6 @@ cid_compare_function(const void *key1, const void *key2)
 
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 #ifdef ENABLE_ASYNC_PUSH
 static uint32_t
 /*
@@ -268,7 +252,7 @@ static uint32_t
  */
 int_hash_function(const void *key, uint32_t iv)
 {
-    return (unsigned long)key;
+    return (uint32_t)(uintptr_t)key;
 }
 
 static bool
@@ -306,22 +290,23 @@ multi_init(struct context *t)
      * to determine which client sent an incoming packet
      * which is seen on the TCP/UDP socket.
      */
-    m->hash = hash_init(t->options.real_hash_size, get_random(), mroute_addr_hash_function,
-                        mroute_addr_compare_function);
+    m->hash = hash_init(t->options.real_hash_size, (uint32_t)get_random(),
+                        mroute_addr_hash_function, mroute_addr_compare_function);
 
     /*
      * Virtual address hash table.  Used to determine
      * which client to route a packet to.
      */
-    m->vhash = hash_init(t->options.virtual_hash_size, get_random(), mroute_addr_hash_function,
-                         mroute_addr_compare_function);
+    m->vhash = hash_init(t->options.virtual_hash_size, (uint32_t)get_random(),
+                         mroute_addr_hash_function, mroute_addr_compare_function);
 
     /*
      * This hash table is a clone of m->hash but with a
      * bucket size of one so that it can be used
      * for fast iteration through the list.
      */
-    m->iter = hash_init(1, get_random(), mroute_addr_hash_function, mroute_addr_compare_function);
+    m->iter = hash_init(1, (uint32_t)get_random(), mroute_addr_hash_function,
+                        mroute_addr_compare_function);
 
 #ifdef ENABLE_MANAGEMENT
     m->cid_hash = hash_init(t->options.real_hash_size, 0, cid_hash_function, cid_compare_function);
@@ -332,8 +317,8 @@ multi_init(struct context *t)
      * Mapping between inotify watch descriptors and
      * multi_instances.
      */
-    m->inotify_watchers =
-        hash_init(t->options.real_hash_size, get_random(), int_hash_function, int_compare_function);
+    m->inotify_watchers = hash_init(t->options.real_hash_size, (uint32_t)get_random(),
+                                    int_hash_function, int_compare_function);
 #endif
 
     /*
@@ -502,7 +487,12 @@ multi_del_iroutes(struct multi_context *m, struct multi_instance *mi)
     const struct iroute *ir;
     const struct iroute_ipv6 *ir6;
 
-    dco_delete_iroutes(m, mi);
+    /* check if DCO iroutes were already removed when scheduling a delayed exit */
+    if (mi->context.did_dco_iroutes)
+    {
+        mi->context.did_dco_iroutes = false;
+        dco_delete_iroutes(&m->top.net_ctx, &mi->context);
+    }
 
     if (TUNNEL_TYPE(mi->context.c1.tuntap) == DEV_TYPE_TUN)
     {
@@ -519,37 +509,29 @@ multi_del_iroutes(struct multi_context *m, struct multi_instance *mi)
 }
 
 static void
-setenv_stats(struct multi_context *m, struct context *c)
+setenv_stats(struct context *c)
 {
-    if (dco_enabled(&m->top.options))
-    {
-        if (dco_get_peer_stats_multi(&m->top.c1.tuntap->dco, false) < 0)
-        {
-            return;
-        }
-    }
-
     setenv_counter(c->c2.es, "bytes_received", c->c2.link_read_bytes + c->c2.dco_read_bytes);
     setenv_counter(c->c2.es, "bytes_sent", c->c2.link_write_bytes + c->c2.dco_write_bytes);
 }
 
 static void
-multi_client_disconnect_setenv(struct multi_context *m, struct multi_instance *mi)
+multi_client_disconnect_setenv(struct multi_instance *mi)
 {
     /* setenv client real IP address */
     setenv_trusted(mi->context.c2.es, get_link_socket_info(&mi->context));
 
     /* setenv stats */
-    setenv_stats(m, &mi->context);
+    setenv_stats(&mi->context);
 
     /* setenv connection duration */
     setenv_long_long(mi->context.c2.es, "time_duration", now - mi->created);
 }
 
 static void
-multi_client_disconnect_script(struct multi_context *m, struct multi_instance *mi)
+multi_client_disconnect_script(struct multi_instance *mi)
 {
-    multi_client_disconnect_setenv(m, mi);
+    multi_client_disconnect_setenv(mi);
 
     if (plugin_defined(mi->context.plugins, OPENVPN_PLUGIN_CLIENT_DISCONNECT))
     {
@@ -580,8 +562,6 @@ multi_client_disconnect_script(struct multi_context *m, struct multi_instance *m
 void
 multi_close_instance(struct multi_context *m, struct multi_instance *mi, bool shutdown)
 {
-    perf_push(PERF_MULTI_CLOSE_INSTANCE);
-
     ASSERT(!mi->halt);
     mi->halt = true;
     bool is_dgram = proto_is_dgram(mi->context.c2.link_sockets[0]->info.proto);
@@ -590,7 +570,6 @@ multi_close_instance(struct multi_context *m, struct multi_instance *mi, bool sh
 
     /* adjust current client connection count */
     m->n_clients += mi->n_clients_delta;
-    update_mstat_n_clients(m->n_clients);
     mi->n_clients_delta = 0;
 
     /* prevent dangling pointers */
@@ -623,7 +602,7 @@ multi_close_instance(struct multi_context *m, struct multi_instance *mi, bool sh
 #ifdef ENABLE_ASYNC_PUSH
         if (mi->inotify_watch != -1)
         {
-            hash_remove(m->inotify_watchers, (void *)(unsigned long)mi->inotify_watch);
+            hash_remove(m->inotify_watchers, (void *)(uintptr_t)mi->inotify_watch);
             mi->inotify_watch = -1;
         }
 #endif
@@ -657,7 +636,7 @@ multi_close_instance(struct multi_context *m, struct multi_instance *mi, bool sh
 
     if (mi->context.c2.tls_multi->multi_state >= CAS_CONNECT_DONE)
     {
-        multi_client_disconnect_script(m, mi);
+        multi_client_disconnect_script(mi);
     }
 
     close_context(&mi->context, SIGTERM, CC_GC_FREE);
@@ -672,8 +651,6 @@ multi_close_instance(struct multi_context *m, struct multi_instance *mi, bool sh
      * vhash reaper deal with it.
      */
     multi_instance_dec_refcount(mi);
-
-    perf_pop();
 }
 
 /*
@@ -686,6 +663,12 @@ multi_uninit(struct multi_context *m)
     {
         struct hash_iterator hi;
         struct hash_element *he;
+
+        /* fetch final stats while all peers can still be mapped to their instances */
+        if (dco_enabled(&m->top.options))
+        {
+            dco_get_peer_stats_multi(&m->top.c1.tuntap->dco, false);
+        }
 
         hash_iterator_init(m->iter, &hi);
         while ((he = hash_iterator_next(&hi)))
@@ -733,8 +716,6 @@ multi_create_instance(struct multi_context *m, const struct mroute_addr *real,
 {
     struct gc_arena gc = gc_new();
     struct multi_instance *mi;
-
-    perf_push(PERF_MULTI_CREATE_INSTANCE);
 
     msg(D_MULTI_MEDIUM, "MULTI: multi_create_instance called");
 
@@ -807,13 +788,11 @@ multi_create_instance(struct multi_context *m, const struct mroute_addr *real,
     mi->ev_arg.type = EVENT_ARG_MULTI_INSTANCE;
     mi->ev_arg.u.mi = mi;
 
-    perf_pop();
     gc_free(&gc);
     return mi;
 
 err:
     multi_close_instance(m, mi, false);
-    perf_pop();
     gc_free(&gc);
     return NULL;
 }
@@ -1232,18 +1211,25 @@ multi_learn_in_addr_t(struct multi_context *m, struct multi_instance *mi, in_add
         addr.netbits = (uint8_t)netbits;
     }
 
-    struct multi_instance *owner = multi_learn_addr(m, mi, &addr, 0);
+    struct multi_instance *owner = multi_learn_addr(m, mi, &addr, MULTI_ROUTE_PERMANENT);
 #ifdef ENABLE_MANAGEMENT
     if (management && owner)
     {
         management_learn_addr(management, &mi->context.c2.mda_context, &addr, primary);
     }
 #endif
-    if (!primary)
+    if (primary && multi_check_push_ifconfig_extra_route(&mi->context.options, addr.v4.addr))
     {
-        /* "primary" is the VPN ifconfig address of the peer and already
-         * known to DCO, so only install "extra" iroutes (primary = false)
-         */
+        /* "primary" is the VPN ifconfig address of the peer */
+        /* if it does not fall into the network defined by ifconfig_local
+         * we install this as extra onscope address on the interface  */
+        addr.netbits = 32;
+        addr.type |= MR_ONLINK_DCO_ADDR;
+
+        dco_install_iroute(m, mi, &addr);
+    }
+    else if (!primary)
+    {
         ASSERT(netbits >= 0); /* DCO requires populated netbits */
         dco_install_iroute(m, mi, &addr);
     }
@@ -1270,14 +1256,24 @@ multi_learn_in6_addr(struct multi_context *m, struct multi_instance *mi, struct 
         mroute_addr_mask_host_bits(&addr);
     }
 
-    struct multi_instance *owner = multi_learn_addr(m, mi, &addr, 0);
+    struct multi_instance *owner = multi_learn_addr(m, mi, &addr, MULTI_ROUTE_PERMANENT);
 #ifdef ENABLE_MANAGEMENT
     if (management && owner)
     {
         management_learn_addr(management, &mi->context.c2.mda_context, &addr, primary);
     }
 #endif
-    if (!primary)
+    if (primary && multi_check_push_ifconfig_ipv6_extra_route(&mi->context.options, &addr.v6.addr))
+    {
+        /* "primary" is the VPN ifconfig address of the peer */
+        /* if it does not fall into the network defined by ifconfig_local
+         * we install this as extra onscope address on the interface  */
+        addr.netbits = 128;
+        addr.type |= MR_ONLINK_DCO_ADDR;
+
+        dco_install_iroute(m, mi, &addr);
+    }
+    else if (!primary)
     {
         /* "primary" is the VPN ifconfig address of the peer and already
          * known to DCO, so only install "extra" iroutes (primary = false)
@@ -1302,6 +1298,8 @@ multi_add_iroutes(struct multi_context *m, struct multi_instance *mi)
     if (TUNNEL_TYPE(mi->context.c1.tuntap) == DEV_TYPE_TUN)
     {
         mi->did_iroutes = true;
+        /* multi_learn_in{6}_addr_t takes care of installing the DCO iroute */
+        mi->context.did_dco_iroutes = true;
         for (ir = mi->context.options.iroutes; ir != NULL; ir = ir->next)
         {
             if (ir->netbits >= 0)
@@ -1390,7 +1388,7 @@ check_stale_routes(struct multi_context *m)
     while ((he = hash_iterator_next(&hi)) != NULL)
     {
         struct multi_route *r = (struct multi_route *)he->value;
-        if (multi_route_defined(m, r)
+        if (multi_route_defined(m, r) && !(r->flags & MULTI_ROUTE_PERMANENT)
             && difftime(now, r->last_reference) >= m->top.options.stale_routes_ageing_time)
         {
             dmsg(D_MULTI_DEBUG, "MULTI: Deleting stale route for address '%s'",
@@ -2781,7 +2779,7 @@ multi_connection_established(struct multi_context *m, struct multi_instance *mi)
          * did not fail */
         if (mi->context.c2.tls_multi->multi_state == CAS_PENDING_DEFERRED_PARTIAL)
         {
-            multi_client_disconnect_script(m, mi);
+            multi_client_disconnect_script(mi);
         }
 
         mi->context.c2.tls_multi->multi_state = CAS_FAILED;
@@ -2789,7 +2787,6 @@ multi_connection_established(struct multi_context *m, struct multi_instance *mi)
 
     /* increment number of current authenticated clients */
     ++m->n_clients;
-    update_mstat_n_clients(m->n_clients);
     --mi->n_clients_delta;
 
 #ifdef ENABLE_MANAGEMENT
@@ -2812,8 +2809,13 @@ void
 multi_process_file_closed(struct multi_context *m, const unsigned int mpp_flags)
 {
     char buffer[INOTIFY_EVENT_BUFFER_SIZE];
-    size_t buffer_i = 0;
-    int r = read(m->top.c2.inotify_fd, buffer, INOTIFY_EVENT_BUFFER_SIZE);
+    ssize_t buffer_i = 0;
+    ssize_t r = read(m->top.c2.inotify_fd, buffer, INOTIFY_EVENT_BUFFER_SIZE);
+    if (r < 0)
+    {
+        msg(M_WARN | M_ERRNO, "MULTI: multi_process_file_closed error");
+        return;
+    }
 
     while (buffer_i < r)
     {
@@ -2825,7 +2827,7 @@ multi_process_file_closed(struct multi_context *m, const unsigned int mpp_flags)
         msg(D_MULTI_DEBUG, "MULTI: modified fd %d, mask %d", pevent->wd, pevent->mask);
 
         struct multi_instance *mi =
-            hash_lookup(m->inotify_watchers, (void *)(unsigned long)pevent->wd);
+            hash_lookup(m->inotify_watchers, (void *)(uintptr_t)pevent->wd);
 
         if (pevent->mask & IN_CLOSE_WRITE)
         {
@@ -2844,7 +2846,7 @@ multi_process_file_closed(struct multi_context *m, const unsigned int mpp_flags)
             /* this event is _always_ fired when watch is removed or file is deleted */
             if (mi)
             {
-                hash_remove(m->inotify_watchers, (void *)(unsigned long)pevent->wd);
+                hash_remove(m->inotify_watchers, (void *)(uintptr_t)pevent->wd);
                 mi->inotify_watch = -1;
             }
         }
@@ -2907,7 +2909,6 @@ multi_bcast(struct multi_context *m, const struct buffer *buf,
 
     if (BLEN(buf) > 0)
     {
-        perf_push(PERF_MULTI_BCAST);
 #ifdef MULTI_DEBUG_EVENT_LOOP
         printf("BCAST len=%d\n", BLEN(buf));
 #endif
@@ -2929,7 +2930,6 @@ multi_bcast(struct multi_context *m, const struct buffer *buf,
 
         hash_iterator_free(&hi);
         mbuf_free_buf(mb);
-        perf_pop();
     }
 }
 
@@ -2947,21 +2947,23 @@ multi_bcast(struct multi_context *m, const struct buffer *buf,
 static inline unsigned int
 compute_wakeup_sigma(const struct timeval *delta)
 {
+    ASSERT(delta->tv_sec >= 0);
+    ASSERT(delta->tv_usec >= 0);
     if (delta->tv_sec < 1)
     {
         /* if < 1 sec, fuzz = # of microseconds / 8 */
-        return delta->tv_usec >> 3;
+        return (unsigned int)(delta->tv_usec >> 3);
     }
     else
     {
         /* if < 10 minutes, fuzz = 13.1% of timeout */
         if (delta->tv_sec < 600)
         {
-            return delta->tv_sec << 17;
+            return (unsigned int)(delta->tv_sec << 17);
         }
         else
         {
-            return 120000000; /* if >= 10 minutes, fuzz = 2 minutes */
+            return 120 * 1000000; /* if >= 10 minutes, fuzz = 2 minutes */
         }
     }
 }
@@ -2984,14 +2986,14 @@ add_inotify_file_watch(struct multi_context *m, struct multi_instance *mi, int i
                        const char *file)
 {
     /* watch acf file */
-    long watch_descriptor = inotify_add_watch(inotify_fd, file, IN_CLOSE_WRITE | IN_ONESHOT);
+    int watch_descriptor = inotify_add_watch(inotify_fd, file, IN_CLOSE_WRITE | IN_ONESHOT);
     if (watch_descriptor >= 0)
     {
         if (mi->inotify_watch != -1)
         {
-            hash_remove(m->inotify_watchers, (void *)(unsigned long)mi->inotify_watch);
+            hash_remove(m->inotify_watchers, (void *)(uintptr_t)mi->inotify_watch);
         }
-        hash_add(m->inotify_watchers, (const uintptr_t *)watch_descriptor, mi, true);
+        hash_add(m->inotify_watchers, (void *)(uintptr_t)watch_descriptor, mi, true);
         mi->inotify_watch = watch_descriptor;
     }
     else
@@ -3014,8 +3016,7 @@ multi_process_post(struct multi_context *m, struct multi_instance *mi, const uns
     bool ret = true;
 
     if (!IS_SIG(&mi->context)
-        && ((flags & MPP_PRE_SELECT)
-            || ((flags & MPP_CONDITIONAL_PRE_SELECT) && !ANY_OUT(&mi->context))))
+        && ((flags & MPP_PRE_SELECT)))
     {
 #if defined(ENABLE_ASYNC_PUSH)
         bool was_unauthenticated = true;
@@ -3266,19 +3267,15 @@ process_incoming_del_peer(struct multi_context *m, struct multi_instance *mi, dc
      * installed, and we do not need to clean up the state in the kernel */
     mi->context.c2.tls_multi->dco_peer_id = -1;
     mi->context.sig->signal_text = reason;
-    mi->context.c2.dco_read_bytes = dco->dco_read_bytes;
-    mi->context.c2.dco_write_bytes = dco->dco_write_bytes;
     multi_signal_instance(m, mi, SIGTERM);
 }
 
-bool
-multi_process_incoming_dco(struct multi_context *m)
+void
+multi_process_incoming_dco(dco_context_t *dco)
 {
-    dco_context_t *dco = &m->top.c1.tuntap->dco;
+    ASSERT(dco->c->multi);
 
-    struct multi_instance *mi = NULL;
-
-    int ret = dco_do_read(&m->top.c1.tuntap->dco);
+    struct multi_context *m = dco->c->multi;
 
     int peer_id = dco->dco_message_peer_id;
 
@@ -3287,12 +3284,12 @@ multi_process_incoming_dco(struct multi_context *m)
      */
     if (peer_id < 0)
     {
-        return ret > 0;
+        return;
     }
 
     if ((peer_id < m->max_clients) && (m->instances[peer_id]))
     {
-        mi = m->instances[peer_id];
+        struct multi_instance *mi = m->instances[peer_id];
         set_prefix(mi);
         if (dco->dco_message_type == OVPN_CMD_DEL_PEER)
         {
@@ -3333,13 +3330,6 @@ multi_process_incoming_dco(struct multi_context *m)
             "type %d, del_peer_reason %d",
             peer_id, dco->dco_message_type, dco->dco_del_peer_reason);
     }
-
-    dco->dco_message_type = 0;
-    dco->dco_message_peer_id = -1;
-    dco->dco_del_peer_reason = -1;
-    dco->dco_read_bytes = 0;
-    dco->dco_write_bytes = 0;
-    return ret > 0;
 }
 #endif /* if defined(ENABLE_DCO) */
 
@@ -3403,7 +3393,6 @@ multi_process_incoming_link(struct multi_context *m, struct multi_instance *inst
 
             /* decrypt in instance context */
 
-            perf_push(PERF_PROC_IN_LINK);
             lsi = &sock->info;
             orig_buf = c->c2.buf.data;
             if (process_incoming_link_part1(c, lsi, floated))
@@ -3416,7 +3405,6 @@ multi_process_incoming_link(struct multi_context *m, struct multi_instance *inst
 
                 process_incoming_link_part2(c, lsi, orig_buf);
             }
-            perf_pop();
 
             if (TUNNEL_TYPE(m->top.c1.tuntap) == DEV_TYPE_TUN)
             {
@@ -3762,7 +3750,7 @@ gremlin_flood_clients(struct multi_context *m)
 
         for (i = 0; i < parm.packet_size; ++i)
         {
-            ASSERT(buf_write_u8(&buf, get_random() & 0xFF));
+            ASSERT(buf_write_u8(&buf, (uint8_t)(get_random() & 0xFF)));
         }
 
         for (i = 0; i < parm.n_packets; ++i)
@@ -3813,13 +3801,6 @@ multi_process_per_second_timers_dowork(struct multi_context *m)
     {
         check_stale_routes(m);
     }
-
-#ifdef ENABLE_MANAGEMENT
-    if (management)
-    {
-        management_check_bytecount_server(m);
-    }
-#endif /* ENABLE_MANAGEMENT */
 }
 
 static void
@@ -3847,7 +3828,6 @@ multi_push_restart_schedule_exit(struct multi_context *m, bool next_server)
 {
     struct hash_iterator hi;
     struct hash_element *he;
-    struct timeval tv;
 
     /* tell all clients to restart */
     hash_iterator_init(m->iter, &hi);
@@ -3865,15 +3845,14 @@ multi_push_restart_schedule_exit(struct multi_context *m, bool next_server)
 
     /* reschedule signal */
     ASSERT(!openvpn_gettimeofday(&m->deferred_shutdown_signal.wakeup, NULL));
-    tv.tv_sec = 2;
-    tv.tv_usec = 0;
+    struct timeval tv = { .tv_sec = 2, .tv_usec = 0 };
     tv_add(&m->deferred_shutdown_signal.wakeup, &tv);
 
     m->deferred_shutdown_signal.signal_received = m->top.sig->signal_received;
 
     schedule_add_entry(m->schedule, (struct schedule_entry *)&m->deferred_shutdown_signal,
                        &m->deferred_shutdown_signal.wakeup,
-                       compute_wakeup_sigma(&m->deferred_shutdown_signal.wakeup));
+                       compute_wakeup_sigma(&tv));
 
     signal_reset(m->top.sig, 0);
 }
@@ -3956,7 +3935,7 @@ management_callback_kill_by_cn(void *arg, const char *del_cn)
 }
 
 static int
-management_callback_kill_by_addr(void *arg, const in_addr_t addr, const int port, const int proto)
+management_callback_kill_by_addr(void *arg, const in_addr_t addr, const uint16_t port, const uint8_t proto)
 {
     struct multi_context *m = (struct multi_context *)arg;
     struct hash_iterator hi;
@@ -3969,9 +3948,9 @@ management_callback_kill_by_addr(void *arg, const in_addr_t addr, const int port
     saddr.addr.in4.sin_family = AF_INET;
     saddr.addr.in4.sin_addr.s_addr = htonl(addr);
     saddr.addr.in4.sin_port = htons(port);
+    maddr.proto = proto;
     if (mroute_extract_openvpn_sockaddr(&maddr, &saddr, true))
     {
-        maddr.proto = proto;
         hash_iterator_init(m->iter, &hi);
         while ((he = hash_iterator_next(&hi)))
         {
@@ -3986,10 +3965,6 @@ management_callback_kill_by_addr(void *arg, const in_addr_t addr, const int port
     }
     return count;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 static void
 management_delete_event(void *arg, event_t event)
@@ -4170,6 +4145,29 @@ multi_assign_peer_id(struct multi_context *m, struct multi_instance *mi)
     ASSERT(mi->context.c2.tls_multi->peer_id < m->max_clients);
 }
 
+/**
+ * @brief Determines the earliest wakeup interval based on periodic operations.
+ *
+ * Updates the \c timeval to reflect the next scheduled wakeup time.
+ * Also sets \c multi->earliest_wakeup to the instance with the earliest wakeup.
+ *
+ * @param multi     Pointer to the multi context
+ * @param timeval   Pointer to the timeval structure to be updated with the
+ *                  next wakeup time
+ */
+static void
+multi_get_timeout(struct multi_context *multi, struct timeval *timeval)
+{
+    multi_get_timeout_instance(multi, timeval);
+
+#ifdef ENABLE_MANAGEMENT
+    if (management)
+    {
+        management_check_bytecount_server(multi, timeval);
+    }
+#endif /* ENABLE_MANAGEMENT */
+}
+
 /**************************************************************************/
 /**
  * Main event loop for OpenVPN in point-to-multipoint server mode.
@@ -4184,8 +4182,6 @@ tunnel_server_loop(struct multi_context *multi)
 
     while (true)
     {
-        perf_push(PERF_EVENT_LOOP);
-
         /* wait on tun/socket list */
         multi_get_timeout(multi, &multi->top.c2.timeval);
         status = multi_io_wait(multi);
@@ -4206,7 +4202,6 @@ tunnel_server_loop(struct multi_context *multi)
         }
 
         MULTI_CHECK_SIG(multi);
-        perf_pop();
     }
 }
 
@@ -4254,7 +4249,9 @@ tunnel_server(struct context *top)
     tunnel_server_loop(&multi);
 
 #ifdef ENABLE_ASYNC_PUSH
-    close(top->c2.inotify_fd);
+    msg(D_LOW, "%s: close multi.top.c2.inotify_fd (%d)",
+        __func__, multi.top.c2.inotify_fd);
+    close(multi.top.c2.inotify_fd);
 #endif
 
     /* shut down management interface */
@@ -4269,46 +4266,192 @@ tunnel_server(struct context *top)
     close_instance(top);
 }
 
+/* Searches for the address and deletes it if it is owned by the multi_instance */
+static void
+multi_unlearn_addr(struct multi_context *m, struct multi_instance *mi, const struct mroute_addr *addr)
+{
+    struct hash_element *he;
+    const uint32_t hv = hash_value(m->vhash, addr);
+    struct hash_bucket *bucket = hash_bucket(m->vhash, hv);
+    struct multi_route *r = NULL;
+
+    /* if route currently exists, get the instance which owns it */
+    he = hash_lookup_fast(m->vhash, bucket, addr, hv);
+    if (he)
+    {
+        r = (struct multi_route *)he->value;
+    }
+
+    /* if the route does not exist or exists but is not owned by the current instance, return */
+    if (!r || r->instance != mi)
+    {
+        return;
+    }
+
+    struct gc_arena gc = gc_new();
+    msg(D_MULTI_LOW, "MULTI: Unlearn: %s -> %s", mroute_addr_print(&r->addr, &gc), multi_instance_string(mi, false, &gc));
+    learn_address_script(m, NULL, "delete", &r->addr);
+    hash_remove_by_value(m->vhash, r);
+    multi_route_del(r);
+
+    gc_free(&gc);
+}
+
+/**
+ * @param m     The multi_context
+ * @param mi    The multi_instance of the client we are updating
+ * @param a     The new IPv4 address in network byte order
+ */
+static void
+multi_unlearn_in_addr_t(struct multi_context *m, struct multi_instance *mi, in_addr_t a)
+{
+    struct mroute_addr addr;
+    CLEAR(addr);
+
+    addr.type = MR_ADDR_IPV4;
+    addr.len = 4;
+    addr.v4.addr = a;
+
+    multi_unlearn_addr(m, mi, &addr);
+}
+
+/**
+ * @param m     The multi_context
+ * @param mi    The multi_instance of the client we are updating
+ * @param a6    The new IPv6 address
+ */
+static void
+multi_unlearn_in6_addr(struct multi_context *m, struct multi_instance *mi, struct in6_addr a6)
+{
+    struct mroute_addr addr;
+    CLEAR(addr);
+
+    addr.type = MR_ADDR_IPV6;
+    addr.len = 16;
+    addr.v6.addr = a6;
+
+    multi_unlearn_addr(m, mi, &addr);
+}
+
+/* Function to unlearn previous ifconfig of a client in the server multi_context after a PUSH_UPDATE */
+void
+unlearn_ifconfig(struct multi_context *m, struct multi_instance *mi)
+{
+    in_addr_t old_addr = 0;
+    old_addr = htonl(mi->context.c2.push_ifconfig_local);
+    multi_unlearn_in_addr_t(m, mi, old_addr);
+    mi->context.c2.push_ifconfig_defined = false;
+    mi->context.c2.push_ifconfig_local = 0;
+    mi->reporting_addr = 0;
+}
+
+/* Function to unlearn previous ifconfig-ipv6 of a client in the server multi_context after a PUSH_UPDATE */
+void
+unlearn_ifconfig_ipv6(struct multi_context *m, struct multi_instance *mi)
+{
+    struct in6_addr old_addr6;
+    CLEAR(old_addr6);
+    old_addr6 = mi->context.c2.push_ifconfig_ipv6_local;
+    multi_unlearn_in6_addr(m, mi, old_addr6);
+    mi->context.c2.push_ifconfig_ipv6_defined = false;
+    CLEAR(mi->context.c2.push_ifconfig_ipv6_local);
+    CLEAR(mi->reporting_addr_ipv6);
+}
+
 /**
  * Update the vhash with new IP/IPv6 addresses in the multi_context when a
  * push-update message containing ifconfig/ifconfig-ipv6 options is sent
- * from the server. This function should be called after a push-update
- * and old_ip/old_ipv6 are the previous addresses of the client in
- * ctx->options.ifconfig_local and ctx->options.ifconfig_ipv6_local.
+ * from the server.
+ *
+ * @param m         The multi_context
+ * @param mi        The multi_instance of the client we are updating
+ * @param new_ip    The new IPv4 address or NULL if no change
+ * @param new_ipv6  The new IPv6 address or NULL if no change
  */
 void
-update_vhash(struct multi_context *m, struct multi_instance *mi, const char *old_ip, const char *old_ipv6)
+update_vhash(struct multi_context *m, struct multi_instance *mi, const char *new_ip, const char *new_ipv6)
 {
-    struct in_addr addr;
-    struct in6_addr new_ipv6;
-
-    if ((mi->context.options.ifconfig_local && (!old_ip || strcmp(old_ip, mi->context.options.ifconfig_local)))
-        && inet_pton(AF_INET, mi->context.options.ifconfig_local, &addr) == 1)
+    if (new_ip)
     {
-        in_addr_t new_ip = ntohl(addr.s_addr);
+        /* Remove old IP */
+        if (mi->context.c2.push_ifconfig_defined)
+        {
+            unlearn_ifconfig(m, mi);
+        }
 
         /* Add new IP */
-        multi_learn_in_addr_t(m, mi, new_ip, -1, true);
+        struct in_addr new_addr;
+        CLEAR(new_addr);
+        if (inet_pton(AF_INET, new_ip, &new_addr) == 1
+            && multi_learn_in_addr_t(m, mi, ntohl(new_addr.s_addr), -1, true))
+        {
+            mi->context.c2.push_ifconfig_defined = true;
+            mi->context.c2.push_ifconfig_local = ntohl(new_addr.s_addr);
+            /* set our client's VPN endpoint for status reporting purposes */
+            mi->reporting_addr = mi->context.c2.push_ifconfig_local;
+        }
     }
 
-    /* TO DO:
-     *  else if (old_ip)
-     *  {
-     *      // remove old IP
-     *  }
-     */
-
-    if ((mi->context.options.ifconfig_ipv6_local && (!old_ipv6 || strcmp(old_ipv6, mi->context.options.ifconfig_ipv6_local)))
-        && inet_pton(AF_INET6, mi->context.options.ifconfig_ipv6_local, &new_ipv6) == 1)
+    if (new_ipv6)
     {
+        /* Remove old IPv6 */
+        if (mi->context.c2.push_ifconfig_ipv6_defined)
+        {
+            unlearn_ifconfig_ipv6(m, mi);
+        }
+
         /* Add new IPv6 */
-        multi_learn_in6_addr(m, mi, new_ipv6, -1, true);
+        struct in6_addr new_addr6;
+        CLEAR(new_addr6);
+        if (inet_pton(AF_INET6, new_ipv6, &new_addr6) == 1
+            && multi_learn_in6_addr(m, mi, new_addr6, -1, true))
+        {
+            mi->context.c2.push_ifconfig_ipv6_defined = true;
+            mi->context.c2.push_ifconfig_ipv6_local = new_addr6;
+            /* set our client's VPN endpoint for status reporting purposes */
+            mi->reporting_addr_ipv6 = mi->context.c2.push_ifconfig_ipv6_local;
+        }
+    }
+}
+
+bool
+multi_check_push_ifconfig_extra_route(const struct options *o, in_addr_t dest)
+{
+    in_addr_t local_addr, local_netmask;
+
+    if (!o->ifconfig_local || !o->ifconfig_remote_netmask)
+    {
+        /* If we do not have a local address, we just return false as
+         * this check doesn't make sense. */
+        return false;
     }
 
-    /* TO DO:
-     *  else if (old_ipv6)
-     *  {
-     *      // remove old IPv6
-     *  }
-     */
+    /* if it falls into the network defined by ifconfig_local we assume
+     * it is already known to DCO and only install "extra" iroutes  */
+    inet_pton(AF_INET, o->ifconfig_local, &local_addr);
+    inet_pton(AF_INET, o->ifconfig_remote_netmask, &local_netmask);
+
+    return (local_addr & local_netmask) != (dest & local_netmask);
+}
+
+bool
+multi_check_push_ifconfig_ipv6_extra_route(const struct options *o, const struct in6_addr *dest)
+{
+    if (!o->ifconfig_ipv6_local || !o->ifconfig_ipv6_netbits)
+    {
+        /* If we do not have a local address, we just return false as
+         * this check doesn't make sense. */
+        return false;
+    }
+
+    /* if it falls into the network defined by ifconfig_local we assume
+     * it is already known to DCO and only install "extra" iroutes  */
+    struct in6_addr ifconfig_local;
+    if (inet_pton(AF_INET6, o->ifconfig_ipv6_local, &ifconfig_local) != 1)
+    {
+        return false;
+    }
+
+    return (!ipv6_net_contains_host(&ifconfig_local, o->ifconfig_ipv6_netbits,
+                                    dest));
 }

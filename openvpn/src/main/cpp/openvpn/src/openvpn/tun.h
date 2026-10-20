@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -59,7 +59,7 @@ enum tun_driver_type
 #define DCO_WIN_REFERENCE_STRING "ovpn-dco"
 #endif
 
-#if defined(_WIN32) || defined(TARGET_ANDROID)
+#if defined(_WIN32) || defined(TARGET_ANDROID) || defined(DHCP_UNIT_TEST)
 
 #define TUN_ADAPTER_INDEX_INVALID ((DWORD)-1)
 
@@ -104,11 +104,10 @@ struct tuntap_options
 
     const char *netbios_scope; /* NBS (47) */
 
-    int netbios_node_type;     /* NBT 1,2,4,8 (46) */
+    uint8_t netbios_node_type; /* NBT 1,2,4,8 (46) */
 
-#define N_DHCP_ADDR                     \
-    4 /* Max # of addresses allowed for \
-       * DNS, WINS, etc. */
+/* Max # of addresses allowed for  DNS, WINS, etc. */
+#define N_DHCP_ADDR 4
 
     /* DNS (6) */
     in_addr_t dns[N_DHCP_ADDR];
@@ -275,13 +274,15 @@ void tun_open_device(struct tuntap *tt, const char *dev_node, const char **devic
 
 void close_tun_handle(struct tuntap *tt);
 
-int write_tun(struct tuntap *tt, uint8_t *buf, int len);
+ssize_t write_tun(struct tuntap *tt, uint8_t *buf, int len);
 
-int read_tun(struct tuntap *tt, uint8_t *buf, int len);
+ssize_t read_tun(struct tuntap *tt, uint8_t *buf, int len);
 
+#ifdef ENABLE_FEATURE_TUN_PERSIST
 void tuncfg(const char *dev, const char *dev_type, const char *dev_node, int persist_mode,
             const char *username, const char *groupname, const struct tuntap_options *options,
             openvpn_net_ctx_t *ctx);
+#endif
 
 const char *guess_tuntap_dev(const char *dev, const char *dev_type, const char *dev_node,
                              struct gc_arena *gc);

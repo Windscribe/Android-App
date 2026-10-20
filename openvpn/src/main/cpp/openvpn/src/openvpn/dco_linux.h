@@ -1,9 +1,9 @@
 /*
  *  Interface to linux dco networking code
  *
- *  Copyright (C) 2020-2025 Antonio Quartulli <a@unstable.cc>
- *  Copyright (C) 2020-2025 Arne Schwabe <arne@rfc2549.org>
- *  Copyright (C) 2020-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2020-2026 Antonio Quartulli <a@unstable.cc>
+ *  Copyright (C) 2020-2026 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2020-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -62,8 +62,18 @@ enum ovpn_ifla_attrs
 
 typedef struct
 {
+    /* socket used for synchronous request/reply transactions (commands and
+     * stats queries). It is NOT subscribed to the multicast group, so its
+     * recvmsgs never dispatch an asynchronous notification. */
     struct nl_sock *nl_sock;
     struct nl_cb *nl_cb;
+    /* socket dedicated to multicast notifications (peer del/float, key swap).
+     * It is read only at the top-level dco_read_and_process() point, where it
+     * is safe to close instances. Keeping it separate from nl_sock prevents
+     * notifications from being processed re-entrantly while a request/reply is
+     * in flight. */
+    struct nl_sock *nl_sock_notify;
+    struct nl_cb *nl_cb_notify;
     int status;
 
     struct context *c;
@@ -81,8 +91,6 @@ typedef struct
     int dco_message_key_id;
     int dco_del_peer_reason;
     struct sockaddr_storage dco_float_peer_ss;
-    uint64_t dco_read_bytes;
-    uint64_t dco_write_bytes;
 } dco_context_t;
 
 #endif /* defined(ENABLE_DCO) && defined(TARGET_LINUX) */

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -24,14 +24,14 @@
 #ifndef OPENVPN_WIN32_UTIL_H
 #define OPENVPN_WIN32_UTIL_H
 
-#include <winioctl.h>
-
-#include "mtu.h"
-#include "openvpn-msg.h"
 #include "argv.h"
+#include "buffer.h"
 
 /* Convert a string from UTF-8 to UCS-2 */
 WCHAR *wide_string(const char *utf8, struct gc_arena *gc);
+
+/* Build a CreateProcess() command line from argv */
+WCHAR *wide_cmd_line(const struct argv *a, struct gc_arena *gc);
 
 /* Convert a string from UTF-16 to UTF-8 */
 char *utf16to8(const wchar_t *utf16, struct gc_arena *gc);
@@ -41,6 +41,18 @@ bool win_safe_filename(const char *fn);
 
 /* Find temporary directory */
 const char *win_get_tempdir(void);
+
+/**
+ * Check whether @p path resides within directory @p dir.
+ *
+ * Unlike a plain string prefix match, this requires the match to end on a
+ * path-component boundary, so that "C:\\foo_evil\\bar" is not considered to be
+ * inside "C:\\foo". Both arguments are expected to be normalized absolute
+ * paths. The comparison is case-insensitive.
+ *
+ * @return true if @p path is inside @p dir, false otherwise.
+ */
+bool win_path_in_dir(const WCHAR *path, const WCHAR *dir);
 
 #endif /* OPENVPN_WIN32_UTIL_H */
 #endif /* ifdef _WIN32 */

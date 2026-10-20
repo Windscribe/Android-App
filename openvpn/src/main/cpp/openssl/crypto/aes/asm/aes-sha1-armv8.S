@@ -2637,6 +2637,7 @@ asm_aescbc_sha1_hmac:
 
 .globl	asm_sha1_hmac_aescbc_dec
 .type	asm_sha1_hmac_aescbc_dec,%function
+.align	4
 
 asm_sha1_hmac_aescbc_dec:
 	AARCH64_VALID_CALL_TARGET

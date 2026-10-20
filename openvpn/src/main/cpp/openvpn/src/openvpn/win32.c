@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -35,6 +35,8 @@
 
 #include <minwindef.h>
 #include <winsock2.h>
+#include <accctrl.h>
+#include <aclapi.h>
 
 #include "buffer.h"
 #include "error.h"
@@ -146,6 +148,13 @@ set_pause_exit_win32(void)
     pause_exit_enabled = true;
 }
 
+/**
+ * @brief Initializes security attributes with a NULL DACL, allowing
+ *        unrestricted access to the resulting object.
+ *
+ * @param obj Security attributes structure to initialize.
+ * @return true on success, false otherwise.
+ */
 bool
 init_security_attributes_allow_all(struct security_attributes *obj)
 {
@@ -163,6 +172,93 @@ init_security_attributes_allow_all(struct security_attributes *obj)
         return false;
     }
     return true;
+}
+
+/**
+ * @brief Initializes security attributes with a DACL restricted to the
+ *        current process user.
+ *
+ * The resulting DACL grants GENERIC_ALL access to the calling user only,
+ * so the created object cannot be opened, signaled or otherwise accessed
+ * by other users on the system. The allocated DACL must be released with
+ * free_security_attributes() once the security attributes are no longer
+ * needed.
+ *
+ * @param obj Security attributes structure to initialize.
+ * @return true on success, false otherwise.
+ */
+static bool
+init_security_attributes_allow_user(struct security_attributes *obj)
+{
+    bool ret = false;
+
+    CLEAR(*obj);
+    obj->sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    obj->sa.lpSecurityDescriptor = &obj->sd;
+    obj->sa.bInheritHandle = FALSE;
+
+    if (!InitializeSecurityDescriptor(&obj->sd, SECURITY_DESCRIPTOR_REVISION))
+    {
+        return ret;
+    }
+
+    HANDLE token = NULL;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+    {
+        return ret;
+    }
+
+    PTOKEN_USER info = NULL;
+    DWORD info_len = 0;
+    if (!GetTokenInformation(token, TokenUser, info, info_len, &info_len)
+        && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+    {
+        goto out;
+    }
+
+    info = malloc(info_len);
+    if (!info || !GetTokenInformation(token, TokenUser, info, info_len, &info_len))
+    {
+        goto out;
+    }
+
+    EXPLICIT_ACCESS ea = { 0 };
+    ea.grfAccessPermissions = GENERIC_ALL;
+    ea.grfAccessMode = SET_ACCESS;
+    ea.grfInheritance = NO_INHERITANCE;
+    ea.Trustee.TrusteeForm = TRUSTEE_IS_SID;
+    ea.Trustee.TrusteeType = TRUSTEE_IS_USER;
+    ea.Trustee.ptstrName = (LPTSTR)info->User.Sid;
+
+    if (SetEntriesInAcl(1, &ea, NULL, &obj->dacl) != ERROR_SUCCESS)
+    {
+        goto out;
+    }
+
+    if (SetSecurityDescriptorDacl(&obj->sd, TRUE, obj->dacl, FALSE))
+    {
+        ret = true;
+    }
+
+out:
+    free(info);
+    CloseHandle(token);
+    return ret;
+}
+
+/**
+ * @brief Releases resources allocated by init_security_attributes_allow_user().
+ *
+ * @param obj Security attributes structure to release.
+ */
+static void
+free_security_attributes(struct security_attributes *obj)
+{
+    if (obj->dacl)
+    {
+        LocalFree(obj->dacl);
+        obj->dacl = NULL;
+    }
 }
 
 void
@@ -504,7 +600,7 @@ win32_signal_open(struct win32_signal *ws, int force, const char *exit_event_nam
         struct gc_arena gc = gc_new();
         const wchar_t *exit_event_nameW = wide_string(exit_event_name, &gc);
 
-        if (!init_security_attributes_allow_all(&sa))
+        if (!init_security_attributes_allow_user(&sa))
         {
             msg(M_ERR, "Error: win32_signal_open: init SA failed");
         }
@@ -526,6 +622,7 @@ win32_signal_open(struct win32_signal *ws, int force, const char *exit_event_nam
                 ws->mode = WSO_MODE_SERVICE;
             }
         }
+        free_security_attributes(&sa);
         gc_free(&gc);
     }
     /* set the ctrl handler in both console and service modes */
@@ -751,14 +848,15 @@ semaphore_open(struct semaphore *s, const char *name)
     s->name = name;
     s->hand = NULL;
 
-    if (init_security_attributes_allow_all(&sa))
+    if (init_security_attributes_allow_user(&sa))
     {
         s->hand = CreateSemaphore(&sa.sa, 1, 1, name);
     }
+    free_security_attributes(&sa);
 
     if (s->hand == NULL)
     {
-        msg(M_WARN | M_ERRNO, "WARNING: Cannot create Win32 semaphore '%s'", name);
+        msg(M_ERR, "Cannot create Win32 semaphore '%s'", name);
     }
     else
     {
@@ -881,8 +979,8 @@ env_block(const struct env_set *es)
     char force_path[256];
     char *sysroot = get_win_sys_path();
 
-    if (!snprintf(force_path, sizeof(force_path), "PATH=%s\\System32;%s;%s\\System32\\Wbem",
-                  sysroot, sysroot, sysroot))
+    if (!checked_snprintf(force_path, sizeof(force_path), "PATH=%s\\System32;%s;%s\\System32\\Wbem",
+                          sysroot, sysroot, sysroot))
     {
         msg(M_WARN, "env_block: default path truncated to %s", force_path);
     }
@@ -934,57 +1032,6 @@ env_block(const struct env_set *es)
     {
         return NULL;
     }
-}
-
-static WCHAR *
-wide_cmd_line(const struct argv *a, struct gc_arena *gc)
-{
-    size_t nchars = 1;
-    size_t maxlen = 0;
-    size_t i;
-    struct buffer buf;
-    char *work = NULL;
-
-    if (!a)
-    {
-        return NULL;
-    }
-
-    for (i = 0; i < a->argc; ++i)
-    {
-        const char *arg = a->argv[i];
-        const size_t len = strlen(arg);
-        nchars += len + 3;
-        if (len > maxlen)
-        {
-            maxlen = len;
-        }
-    }
-
-    work = gc_malloc(maxlen + 1, false, gc);
-    check_malloc_return(work);
-    buf = alloc_buf_gc(nchars, gc);
-
-    for (i = 0; i < a->argc; ++i)
-    {
-        const char *arg = a->argv[i];
-        strcpy(work, arg);
-        string_mod(work, CC_PRINT, CC_DOUBLE_QUOTE | CC_CRLF, '_');
-        if (i)
-        {
-            buf_printf(&buf, " ");
-        }
-        if (string_class(work, CC_ANY, CC_SPACE))
-        {
-            buf_printf(&buf, "%s", work);
-        }
-        else
-        {
-            buf_printf(&buf, "\"%s\"", work);
-        }
-    }
-
-    return wide_string(BSTR(&buf), gc);
 }
 
 /*
@@ -1418,13 +1465,8 @@ win32_version_string(struct gc_arena *gc)
     return (const char *)out.data;
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 bool
-send_msg_iservice(HANDLE pipe, const void *data, size_t size, ack_message_t *ack,
+send_msg_iservice(HANDLE pipe, const void *data, DWORD size, ack_message_t *ack,
                   const char *context)
 {
     struct gc_arena gc = gc_new();
@@ -1527,7 +1569,8 @@ win32_sleep(const int n)
 
     while (expire >= now)
     {
-        DWORD status = WaitForSingleObject(win32_signal.in.read, (expire - now) * 1000);
+        DWORD wait_ms = (DWORD)((expire - now) * 1000);
+        DWORD status = WaitForSingleObject(win32_signal.in.read, wait_ms);
         if ((status == WAIT_OBJECT_0 && win32_signal_get(&win32_signal)) || status == WAIT_TIMEOUT)
         {
             return;
@@ -1539,7 +1582,7 @@ win32_sleep(const int n)
         {
             if (expire > now)
             {
-                Sleep((expire - now) * 1000);
+                Sleep((DWORD)((expire - now) * 1000));
             }
             return;
         }
@@ -1591,18 +1634,17 @@ plugin_in_trusted_dir(const WCHAR *plugin_path)
     }
 
     /* Check if the plugin path resides within the plugin/install directory */
-    if ((wcslen(normalized_plugin_dir) > 0)
-        && (wcsnicmp(normalized_plugin_dir, plugin_path, wcslen(normalized_plugin_dir)) == 0))
+    if (win_path_in_dir(plugin_path, normalized_plugin_dir))
     {
         return true;
     }
 
     /* Fallback to the system directory */
-    return wcsnicmp(system_dir, plugin_path, wcslen(system_dir)) == 0;
+    return win_path_in_dir(plugin_path, system_dir);
 }
 
 bool
-protect_buffer_win32(char *buf, size_t len)
+protect_buffer_win32(char *buf, DWORD len)
 {
     bool ret;
     if (len % CRYPTPROTECTMEMORY_BLOCK_SIZE)
@@ -1620,7 +1662,7 @@ protect_buffer_win32(char *buf, size_t len)
 }
 
 bool
-unprotect_buffer_win32(char *buf, size_t len)
+unprotect_buffer_win32(char *buf, DWORD len)
 {
     bool ret;
     if (len % CRYPTPROTECTMEMORY_BLOCK_SIZE)
@@ -1636,9 +1678,5 @@ unprotect_buffer_win32(char *buf, size_t len)
     }
     return ret;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #endif /* ifdef _WIN32 */

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -50,7 +50,7 @@
 #include "socket_util.h"
 #include "mroute.h"
 
-#define MANAGEMENT_VERSION                  5
+#define MANAGEMENT_VERSION                  6
 #define MANAGEMENT_N_PASSWORD_RETRIES       3
 #define MANAGEMENT_LOG_HISTORY_INITIAL_SIZE 100
 #define MANAGEMENT_ECHO_BUFFER_SIZE         100
@@ -178,7 +178,7 @@ struct management_callback
     void (*status)(void *arg, const int version, struct status_output *so);
     void (*show_net)(void *arg, const msglvl_t msglevel);
     int (*kill_by_cn)(void *arg, const char *common_name);
-    int (*kill_by_addr)(void *arg, const in_addr_t addr, const int port, const int proto);
+    int (*kill_by_addr)(void *arg, const in_addr_t addr, const uint16_t port, const uint8_t proto);
     void (*delete_event)(void *arg, event_t event);
     int (*n_clients)(void *arg);
     bool (*send_cc_message)(void *arg, const char *message, const char *parameter);
@@ -264,6 +264,7 @@ struct man_settings
 #define UP_QUERY_PASS      2
 #define UP_QUERY_NEED_OK   3
 #define UP_QUERY_NEED_STR  4
+#define UP_QUERY_USERNAME  5
 
 /* states */
 #define MS_INITIAL       0 /* all sockets are closed */
@@ -296,6 +297,7 @@ struct man_connection
 #define IEC_RSA_SIGN    3
 #define IEC_CERTIFICATE 4
 #define IEC_PK_SIGN     5
+#define IEC_PASSWORD    6
     int in_extra_cmd;
     struct buffer_list *in_extra;
     unsigned long in_extra_cid;
@@ -493,7 +495,7 @@ void management_auth_token(struct management *man, const char *token);
 
 void management_check_bytecount_client(struct context *c, struct management *man, struct timeval *timeval);
 
-void management_check_bytecount_server(struct multi_context *multi);
+void management_check_bytecount_server(struct multi_context *multi, struct timeval *timeval);
 
 void man_persist_client_stats(struct management *man, struct context *c);
 

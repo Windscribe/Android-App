@@ -45,7 +45,6 @@
 #include <ncrypt.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <assert.h>
 
 #include "buffer.h"
 #include "openssl_compat.h"
@@ -62,7 +61,7 @@ SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
     return 0;
 }
 
-#else /* HAVE_XKEY_PROVIDER */
+#else  /* HAVE_XKEY_PROVIDER */
 
 static XKEY_EXTERNAL_SIGN_fn xkey_cng_sign;
 
@@ -170,10 +169,12 @@ parse_hexstring(const char *p, unsigned char *arr, size_t capacity)
             break;
         }
 
-        if (!isxdigit(p[0]) || !isxdigit(p[1]) || sscanf(p, "%2hhx", &arr[i++]) != 1)
+        unsigned int b;
+        if (!isxdigit(p[0]) || !isxdigit(p[1]) || sscanf(p, "%2x", &b) != 1)
         {
             return 0;
         }
+        arr[i++] = (unsigned char)b;
     }
     return i;
 }
@@ -342,21 +343,18 @@ out:
     return rv;
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 /** Sign hash in tbs using EC key in cd and NCryptSignHash */
 static int
 xkey_cng_ec_sign(CAPI_DATA *cd, unsigned char *sig, size_t *siglen, const unsigned char *tbs,
                  size_t tbslen)
 {
-    DWORD len = *siglen;
+    ASSERT(*siglen <= UINT_MAX);
+    ASSERT(tbslen <= UINT_MAX);
+    DWORD len = (DWORD)*siglen;
 
     msg(D_LOW, "Signing using NCryptSignHash with EC key");
 
-    DWORD status = NCryptSignHash(cd->crypt_prov, NULL, (BYTE *)tbs, tbslen, sig, len, &len, 0);
+    DWORD status = NCryptSignHash(cd->crypt_prov, NULL, (BYTE *)tbs, (DWORD)tbslen, sig, len, &len, 0);
 
     if (status != ERROR_SUCCESS)
     {
@@ -384,7 +382,9 @@ xkey_cng_rsa_sign(CAPI_DATA *cd, unsigned char *sig, size_t *siglen, const unsig
 
     ASSERT(cd);
     ASSERT(sig);
+    ASSERT(*siglen <= UINT_MAX);
     ASSERT(tbs);
+    ASSERT(tbslen <= INT_MAX);
 
     DWORD status = ERROR_SUCCESS;
     DWORD len = 0;
@@ -407,10 +407,10 @@ xkey_cng_rsa_sign(CAPI_DATA *cd, unsigned char *sig, size_t *siglen, const unsig
     }
     else if (!strcmp(sigalg.padmode, "pss"))
     {
-        int saltlen = tbslen; /* digest size by default */
+        int saltlen = (int)tbslen; /* digest size by default */
         if (!strcmp(sigalg.saltlen, "max"))
         {
-            saltlen = xkey_max_saltlen(EVP_PKEY_bits(cd->pubkey), tbslen);
+            saltlen = xkey_max_saltlen(EVP_PKEY_bits(cd->pubkey), saltlen);
             if (saltlen < 0)
             {
                 msg(M_NONFATAL, "Error in cryptoapicert: invalid salt length (%d)", saltlen);
@@ -421,8 +421,8 @@ xkey_cng_rsa_sign(CAPI_DATA *cd, unsigned char *sig, size_t *siglen, const unsig
         msg(D_LOW, "Signing using NCryptSignHash with PSS padding: hashalg <%s>, saltlen <%d>",
             sigalg.mdname, saltlen);
 
-        BCRYPT_PSS_PADDING_INFO padinfo = { hashalg,
-                                            (DWORD)saltlen }; /* cast is safe as saltlen >= 0 */
+        /* cast is safe as saltlen >= 0 */
+        BCRYPT_PSS_PADDING_INFO padinfo = { hashalg, (DWORD)saltlen };
         status = NCryptSignHash(cd->crypt_prov, &padinfo, (BYTE *)tbs, (DWORD)tbslen, sig,
                                 (DWORD)*siglen, &len, BCRYPT_PAD_PSS);
     }
@@ -442,10 +442,6 @@ xkey_cng_rsa_sign(CAPI_DATA *cd, unsigned char *sig, size_t *siglen, const unsig
     *siglen = len;
     return (*siglen > 0);
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 /** Dispatch sign op to xkey_cng_<rsa/ec>_sign */
 static int

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -146,7 +146,7 @@ tls_wrap_control(struct tls_wrap_ctx *ctx, uint8_t header, struct buffer *buf,
         if ((header >> P_OPCODE_SHIFT) == P_CONTROL_HARD_RESET_CLIENT_V3
             || (header >> P_OPCODE_SHIFT) == P_CONTROL_WKC_V1)
         {
-            if (!buf_copy(&ctx->work, ctx->tls_crypt_v2_wkc))
+            if (!ctx->tls_crypt_v2_wkc || !buf_copy(&ctx->work, ctx->tls_crypt_v2_wkc))
             {
                 msg(D_TLS_ERRORS, "Could not append tls-crypt-v2 client key");
                 buf->len = 0;
@@ -160,17 +160,14 @@ tls_wrap_control(struct tls_wrap_ctx *ctx, uint8_t header, struct buffer *buf,
     }
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 void
 write_control_auth(struct tls_session *session, struct key_state *ks, struct buffer *buf,
                    struct link_socket_actual **to_link_addr, int opcode, int max_ack,
                    bool prepend_ack)
 {
-    uint8_t header = ks->key_id | (opcode << P_OPCODE_SHIFT);
+    ASSERT(ks->key_id >= 0 && ks->key_id <= P_KEY_ID_MASK);
+    ASSERT(opcode >= 0 && opcode <= P_LAST_OPCODE);
+    uint8_t header = (uint8_t)(ks->key_id | (opcode << P_OPCODE_SHIFT));
 
     /* Workaround for Softether servers. Softether has a bug that it only
      * allows 4 ACks in packets and drops packets if more ACKs are contained
@@ -195,15 +192,14 @@ write_control_auth(struct tls_session *session, struct key_state *ks, struct buf
 
 bool
 read_control_auth(struct buffer *buf, struct tls_wrap_ctx *ctx,
-                  const struct link_socket_actual *from, const struct tls_options *opt,
-                  bool initial_packet)
+                  const struct link_socket_actual *from, const struct tls_options *opt)
 {
     struct gc_arena gc = gc_new();
     bool ret = false;
 
     const uint8_t opcode = *(BPTR(buf)) >> P_OPCODE_SHIFT;
     if ((opcode == P_CONTROL_HARD_RESET_CLIENT_V3 || opcode == P_CONTROL_WKC_V1)
-        && !tls_crypt_v2_extract_client_key(buf, ctx, opt, initial_packet))
+        && !tls_crypt_v2_extract_client_key(buf, ctx, opt))
     {
         msg(D_TLS_ERRORS, "TLS Error: can not extract tls-crypt-v2 client key from %s",
             print_link_socket_actual(from, &gc));
@@ -276,10 +272,10 @@ void
 free_tls_pre_decrypt_state(struct tls_pre_decrypt_state *state)
 {
     free_buf(&state->newbuf);
-    free_buf(&state->tls_wrap_tmp.tls_crypt_v2_metadata);
     if (state->tls_wrap_tmp.cleanup_key_ctx)
     {
         free_key_ctx_bi(&state->tls_wrap_tmp.opt.key_ctx_bi);
+        secure_memzero(&state->tls_wrap_tmp.original_wrap_keydata, sizeof(state->tls_wrap_tmp.original_wrap_keydata));
     }
 }
 
@@ -353,7 +349,7 @@ tls_pre_decrypt_lite(const struct tls_auth_standalone *tas, struct tls_pre_decry
     /* HMAC test and unwrapping the encrypted part of the control message
      * into newbuf or just setting newbuf to point to the start of control
      * message */
-    bool status = read_control_auth(&state->newbuf, &state->tls_wrap_tmp, from, NULL, true);
+    bool status = read_control_auth(&state->newbuf, &state->tls_wrap_tmp, from, NULL);
 
     if (!status)
     {
@@ -473,7 +469,7 @@ calculate_session_id_hmac(struct session_id client_sid, const struct openvpn_soc
     /* Get the valid time quantisation for our hmac,
      * we divide time by handwindow/2 and allow the previous
      * and future session time if specified by offset */
-    uint32_t session_id_time = ntohl(now / ((handwindow + 1) / 2) + offset);
+    uint32_t session_id_time = ntohl((uint32_t)(now / ((handwindow + 1) / 2) + offset));
 
     hmac_ctx_reset(hmac);
     /* We do not care about endian here since it does not need to be
@@ -499,10 +495,6 @@ calculate_session_id_hmac(struct session_id client_sid, const struct openvpn_soc
 
     return result.sid;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 bool
 check_session_hmac_and_pkt_id(struct tls_pre_decrypt_state *state,
@@ -554,13 +546,14 @@ check_session_hmac_and_pkt_id(struct tls_pre_decrypt_state *state,
     }
 
 
-    /* check adjacent timestamps too */
-    for (int offset = -2; offset <= 1; offset++)
+    /* check adjacent timestamps too, the handwindow is split in 2 for the
+     * offset, so we check the current timeslot and the two before that */
+    for (int offset = -2; offset <= 0; offset++)
     {
         struct session_id expected_id =
             calculate_session_id_hmac(state->peer_session_id, from, hmac, handwindow, offset);
 
-        if (memcmp_constant_time(&expected_id, &state->server_session_id, SID_SIZE))
+        if (memcmp_constant_time(&expected_id, &state->server_session_id, SID_SIZE) == 0)
         {
             return true;
         }

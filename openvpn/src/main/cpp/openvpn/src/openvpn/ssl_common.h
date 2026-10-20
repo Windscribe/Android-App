@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -285,7 +285,6 @@ struct tls_wrap_ctx
     struct key_ctx tls_crypt_v2_server_key; /**< Decrypts client keys */
     const struct buffer *tls_crypt_v2_wkc;  /**< Wrapped client key,
                                              *   sent to server */
-    struct buffer tls_crypt_v2_metadata;    /**< Received from client */
     bool cleanup_key_ctx;                   /**< opt.key_ctx_bi is owned by
                                              *   this context */
     /** original key data to be xored in to the key for dynamic tls-crypt.
@@ -305,8 +304,10 @@ struct tls_wrap_ctx
  */
 struct tls_options
 {
-    /* our master TLS context from which all SSL objects derived */
-    struct tls_root_ctx ssl_ctx;
+    /* our master TLS context from which all SSL objects are derived,
+     * this context is shared between all instances in p2pm with
+     * inherit_context_child. */
+    struct tls_root_ctx *ssl_ctx;
 
     /* data channel cipher, hmac, and key lengths */
     struct key_type key_type;
@@ -360,11 +361,7 @@ struct tls_options
     int verify_hash_depth;
     bool verify_hash_no_ca;
     hash_algo_type verify_hash_algo;
-#ifdef ENABLE_X509ALTUSERNAME
     char *x509_username_field[MAX_PARMS];
-#else
-    char *x509_username_field[2];
-#endif
 
     /* struct crypto_option flags */
     unsigned int crypto_flags;
@@ -383,6 +380,7 @@ struct tls_options
 
     bool tls_crypt_v2;
     const char *tls_crypt_v2_verify_script;
+    int tls_crypt_v2_max_age;
 
     /** TLS handshake wrapping state */
     struct tls_wrap_ctx tls_wrap;
@@ -397,6 +395,7 @@ struct tls_options
     const char *export_peer_cert_dir;
     const char *auth_user_pass_file;
     bool auth_user_pass_file_inline;
+    bool auth_user_pass_username_only;
 
     bool auth_token_generate;  /**< Generate auth-tokens on successful
                                 * user/pass auth,seet via
@@ -425,7 +424,7 @@ struct tls_options
 #define SSLF_CLIENT_CERT_OPTIONAL     (1u << 1)
 #define SSLF_USERNAME_AS_COMMON_NAME  (1u << 2)
 #define SSLF_AUTH_USER_PASS_OPTIONAL  (1u << 3)
-#define SSLF_OPT_VERIFY               (1u << 4)
+/* (1u << 4) free for usage */
 #define SSLF_CRL_VERIFY_DIR           (1u << 5)
 #define SSLF_TLS_VERSION_MIN_SHIFT    6
 #define SSLF_TLS_VERSION_MIN_MASK     0xFu /* (uses bit positions 6 to 9) */
