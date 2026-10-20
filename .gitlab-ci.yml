@@ -469,6 +469,15 @@ BuildStrongswan:
   when: manual
   image: $STRONGSWAN_CI_IMAGE
 
+  # Defaults only. Project-level CI/CD variables take precedence over these, so
+  # clear SS_BRANCH/SS_REMOTE in the GitLab UI for the pins below to apply.
+  # 6.1.0 is the first release fixing CVE-2026-78133 (libcharon IKEv2 rekeying
+  # use-after-free, affects all 6.0.x). The android-* tags lag the core: the
+  # newest, android-2.6.2, is still only 6.0.3.
+  variables:
+    SS_REMOTE: "https://github.com/strongswan/strongswan.git"
+    SS_BRANCH: "6.1.0"
+
   before_script:
     - export ROOT_DIR=$(pwd)
     - export GRADLE_USER_HOME=$(pwd)/.gradle

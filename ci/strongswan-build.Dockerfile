@@ -11,7 +11,7 @@ ARG GRADLE_VERSION=8.7
 ARG ANDROID_PLATFORM=android-34
 ARG ANDROID_BUILD_TOOLS=34.0.0
 ARG CMDLINE_TOOLS_VERSION=11076708
-ARG OPENSSL_TAG=OpenSSL_1_1_1t
+ARG OPENSSL_TAG=openssl-3.6.5
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk \
     ANDROID_HOME=/opt/android-sdk \
@@ -50,7 +50,8 @@ RUN yes | sdkmanager --licenses > /dev/null || true \
 ENV ANDROID_NDK_HOME="${ANDROID_SDK_ROOT}/ndk/${SS_NDK_VERSION}" \
     ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/${SS_NDK_VERSION}"
 
-# OpenSSL 1.1.1 source tree; BuildStrongswan reads it from OPENSSL_SRC.
+# OpenSSL source tree; BuildStrongswan reads it from OPENSSL_SRC.
+# The GitHub archive unpacks to openssl-<tag>, which OPENSSL_SRC relies on.
 RUN mkdir -p /opt/openssl-src \
     && wget -q "https://github.com/openssl/openssl/archive/refs/tags/${OPENSSL_TAG}.tar.gz" -O /tmp/openssl.tar.gz \
     && tar -xzf /tmp/openssl.tar.gz -C /opt/openssl-src \
