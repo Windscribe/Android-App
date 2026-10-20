@@ -38,8 +38,10 @@ $(GRADLE_USER_HOME)/caches/golang/$(GO_TARBALL):
 	mkdir -p "$(dir $@)"
 	flock "$@.lock" -c ' \
 	[ -f "$@" ] && exit 0; \
-	curl -o "$@.tmp" "https://dl.google.com/go/$(GO_TARBALL)" && \
-	echo "$(GO_HASH_$(GO_PLATFORM))  $@.tmp" | sha256sum -c && \
+	curl -o "$@.tmp" "https://dl.google.com/go/$(GO_TARBALL)" || exit 1; \
+	sum=$$(sha256sum "$@.tmp" | cut -d" " -f1); \
+	[ "$$sum" = "$(GO_HASH_$(GO_PLATFORM))" ] || \
+	  { echo "$(GO_TARBALL): checksum mismatch ($$sum)" >&2; exit 1; }; \
 	mv "$@.tmp" "$@"'
 
 $(BUILDDIR)/go-$(GO_VERSION)/.prepared: $(GRADLE_USER_HOME)/caches/golang/$(GO_TARBALL)
