@@ -74,7 +74,11 @@ cd "$APP_DIR"
 sed -i '/arguments '\''-j'\'' \+ Runtime\.runtime\.availableProcessors()/a\        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"' build.gradle
 
 echo "===> Building release APK..."
-gradle assembleRelease
+# Use the project's wrapper, not the image's gradle: each strongSwan tag pins
+# the Gradle version its AGP requires (6.1.0 needs 8.13), so the wrapper keeps
+# this in step automatically instead of failing on the next version bump.
+chmod +x "$APP_DIR/../gradlew"
+"$APP_DIR/../gradlew" assembleRelease
 
 echo "===> Copying output libs to: $STRONGSWAN_LIBS_DST"
 mkdir -p "$STRONGSWAN_LIBS_DST"
