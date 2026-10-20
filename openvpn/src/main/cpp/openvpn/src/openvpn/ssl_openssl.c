@@ -789,8 +789,8 @@ tls_ctx_load_ecdh_params(struct tls_root_ctx *ctx, const char *curve_name)
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     if (curve_name != NULL)
     {
-        /* Wording avoids an "OpenSSL <version>" token: SCA scanners match that
-         * pattern in string tables and report it as a bundled library version. */
+        /* Avoid an "OpenSSL <version>" token here: scanners match it in string
+         * tables and report it as a bundled library. */
         msg(M_WARN, "WARNING: this OpenSSL build does not support specifying an "
                     "ECDH curve with --ecdh-curve, using default curves. Use "
                     "--tls-groups to specify groups.");

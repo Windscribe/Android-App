@@ -50,7 +50,6 @@ RUN yes | sdkmanager --licenses > /dev/null || true \
 ENV ANDROID_NDK_HOME="${ANDROID_SDK_ROOT}/ndk/${SS_NDK_VERSION}" \
     ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/${SS_NDK_VERSION}"
 
-# OpenSSL source tree; BuildStrongswan reads it from OPENSSL_SRC.
 # The GitHub archive unpacks to openssl-<tag>, which OPENSSL_SRC relies on.
 RUN mkdir -p /opt/openssl-src \
     && wget -q "https://github.com/openssl/openssl/archive/refs/tags/${OPENSSL_TAG}.tar.gz" -O /tmp/openssl.tar.gz \
