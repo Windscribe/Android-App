@@ -1,6 +1,6 @@
 module golang.zx2c4.com/wireguard/android
 
-go 1.25.12
+go 1.25.14
 
 replace github.com/amnezia-vpn/amneziawg-go => github.com/Windscribe/amneziawg-go v0.2.20-0.20260806173830-cca5c05d73df
 
