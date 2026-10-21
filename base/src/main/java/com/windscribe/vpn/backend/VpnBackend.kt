@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.backend
 
+import android.R.attr.startDelay
 import com.windscribe.common.tunnel.EngineProfile
 import com.windscribe.common.tunnel.IpNetwork
 import com.windscribe.common.tunnel.StopReason
@@ -14,6 +15,7 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.tunnel.VpnServiceGate
 import com.windscribe.vpn.backend.tunnel.WindscribeVpnService
@@ -378,7 +380,8 @@ abstract class VpnBackend(
      */
     private fun configureBridgeAPI() {
         wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
-            bridgeAPI.setCurrentNodeId(preferencesHelper.selectedNodeId)
+            val cacheable = preferencesHelper.selectedProtocol == PreferencesKeyConstants.PROTO_WIRE_GUARD
+            bridgeAPI.setCurrentNodeId(if (cacheable) preferencesHelper.selectedNodeId else 0)
             bridgeAPI.setIgnoreSslErrors(false)
             bridgeAPI.setConnectedState(true)
         }
