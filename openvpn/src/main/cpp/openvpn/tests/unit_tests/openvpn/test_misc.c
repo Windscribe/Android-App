@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2021-2025 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2021-2026 Arne Schwabe <arne@rfc2549.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -38,6 +38,10 @@
 #include "test_common.h"
 #include "list.h"
 #include "mock_msg.h"
+#include "crypto.h"
+#ifdef _WIN32
+#include "win32-util.h"
+#endif
 
 static void
 test_compat_lzo_string(void **state)
@@ -101,7 +105,7 @@ test_auth_fail_temp_flags(void **state)
     const char *msg = parse_auth_failed_temp(&o, teststr);
     assert_string_equal(msg, "");
     assert_int_equal(o.server_backoff_time, 42);
-    assert_int_equal(o.no_advance, true);
+    assert_true(o.no_advance);
 }
 
 static void
@@ -138,13 +142,6 @@ word_compare_function(const void *key1, const void *key2)
     return strcmp((const char *)key1, (const char *)key2) == 0;
 }
 
-static uint32_t
-get_random(void)
-{
-    /* rand() is not very random, but it's C99 and this is just for testing */
-    return (uint32_t)rand();
-}
-
 static struct hash_element *
 hash_lookup_by_value(struct hash *hash, void *value)
 {
@@ -173,8 +170,8 @@ test_list(void **state)
      */
 
     struct gc_arena gc = gc_new();
-    struct hash *hash = hash_init(10000, get_random(), word_hash_function, word_compare_function);
-    struct hash *nhash = hash_init(256, get_random(), word_hash_function, word_compare_function);
+    struct hash *hash = hash_init(10000, (uint32_t)get_random(), word_hash_function, word_compare_function);
+    struct hash *nhash = hash_init(256, (uint32_t)get_random(), word_hash_function, word_compare_function);
 
     printf("hash_init n_buckets=%u mask=0x%08x\n", hash->n_buckets, hash->mask);
 
@@ -261,7 +258,7 @@ test_list(void **state)
         {
             struct hash_iterator hi;
             struct hash_element *he;
-            inc = (get_random() % 3) + 1;
+            inc = ((uint32_t)get_random() % 3) + 1;
             hash_iterator_init_range(hash, &hi, base, base + inc);
 
             while ((he = hash_iterator_next(&hi)))
@@ -445,12 +442,48 @@ test_atoi_variants(void **state)
     mock_set_debug_level(saved_log_level);
 }
 
-const struct CMUnitTest misc_tests[] = { cmocka_unit_test(test_compat_lzo_string),
-                                         cmocka_unit_test(test_auth_fail_temp_no_flags),
-                                         cmocka_unit_test(test_auth_fail_temp_flags),
-                                         cmocka_unit_test(test_auth_fail_temp_flags_msg),
-                                         cmocka_unit_test(test_list),
-                                         cmocka_unit_test(test_atoi_variants) };
+#ifdef _WIN32
+static void
+test_win_path_in_dir(void **state)
+{
+    /* plugin/install dir without trailing separator */
+    assert_true(win_path_in_dir(L"C:\\openvpn_plugins\\foo.dll", L"C:\\openvpn_plugins"));
+
+    /* the bug being fixed: a sibling dir sharing the prefix must NOT match */
+    assert_false(win_path_in_dir(L"C:\\openvpn_plugins_evil\\foo.dll", L"C:\\openvpn_plugins"));
+
+    /* trusted dir with trailing separator */
+    assert_true(win_path_in_dir(L"C:\\openvpn_plugins\\foo.dll", L"C:\\openvpn_plugins\\"));
+    assert_false(win_path_in_dir(L"C:\\openvpn_plugins_evil\\foo.dll", L"C:\\openvpn_plugins\\"));
+
+    /* forward slash separator in the candidate path is accepted */
+    assert_true(win_path_in_dir(L"C:\\openvpn_plugins/foo.dll", L"C:\\openvpn_plugins"));
+
+    /* comparison is case-insensitive */
+    assert_true(win_path_in_dir(L"c:\\OPENVPN_PLUGINS\\foo.dll", L"C:\\openvpn_plugins"));
+
+    /* the directory itself (no trailing component) is not "in" the directory */
+    assert_false(win_path_in_dir(L"C:\\openvpn_plugins", L"C:\\openvpn_plugins"));
+
+    /* nested subdirectories are still inside */
+    assert_true(win_path_in_dir(L"C:\\openvpn_plugins\\sub\\foo.dll", L"C:\\openvpn_plugins"));
+
+    /* an empty trusted dir never matches */
+    assert_false(win_path_in_dir(L"C:\\openvpn_plugins\\foo.dll", L""));
+}
+#endif /* _WIN32 */
+
+const struct CMUnitTest misc_tests[] = {
+#ifdef _WIN32
+    cmocka_unit_test(test_win_path_in_dir),
+#endif
+    cmocka_unit_test(test_compat_lzo_string),
+    cmocka_unit_test(test_auth_fail_temp_no_flags),
+    cmocka_unit_test(test_auth_fail_temp_flags),
+    cmocka_unit_test(test_auth_fail_temp_flags_msg),
+    cmocka_unit_test(test_list),
+    cmocka_unit_test(test_atoi_variants)
+};
 
 int
 main(void)

@@ -576,6 +576,8 @@ OPENSSL_ia32_rdseed_bytes:
 .hidden	OPENSSL_cpuid_setup
 .hidden	OPENSSL_ia32cap_P
 .comm	OPENSSL_ia32cap_P,40,4
+.section	.init
+	call	OPENSSL_cpuid_setup
 
 	.section ".note.gnu.property", "a"
 	.p2align 2

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -30,10 +30,19 @@
 #pragma pack(1)
 
 /* DHCP Option types */
-#define DHCP_PAD      0
-#define DHCP_ROUTER   3
-#define DHCP_MSG_TYPE 53 /* message type (u8) */
-#define DHCP_END      255
+#define DHCP_PAD                   0
+#define DHCP_ROUTER                3
+#define DHCP_DOMAIN_SERVER         6
+#define DHCP_DOMAIN_NAME           15
+#define DHCP_NTP_SERVER            42
+#define DHCP_VENDOR                43
+#define DHCP_NETBIOS_DOMAIN_SERVER 44
+#define DHCP_NETBIOS_DIST_SERVER   45
+#define DHCP_NETBIOS_NODE_TYPE     46
+#define DHCP_NETBIOS_SCOPE         47
+#define DHCP_MSG_TYPE              53
+#define DHCP_DOMAIN_SEARCH         119
+#define DHCP_END                   255
 
 /* DHCP Messages types */
 #define DHCPDISCOVER 1
@@ -83,5 +92,11 @@ struct dhcp_full
 #pragma pack()
 
 in_addr_t dhcp_extract_router_msg(struct buffer *ipbuf);
+
+#if defined(_WIN32) || defined(DHCP_UNIT_TEST)
+#include "tun.h"
+
+bool build_dhcp_options_string(struct buffer *buf, const struct tuntap_options *o);
+#endif
 
 #endif /* ifndef DHCP_H */

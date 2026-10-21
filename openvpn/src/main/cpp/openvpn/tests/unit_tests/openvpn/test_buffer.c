@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2016-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2016-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -386,7 +386,7 @@ test_snprintf(void **state)
 
     /* Instead of trying to trick the compiler here, disable the warnings
      * for this unit test. We know that the results will be truncated
-     * and we want to test that. Not we need the clang as clang-cl (msvc) does
+     * and we want to test that. Note we need the clang as clang-cl (msvc) does
      * not define __GNUC__ like it does under UNIX(-like) platforms */
 #if defined(__GNUC__) || defined(__clang__)
 /* some clang version do not understand -Wformat-truncation, so ignore the
@@ -424,6 +424,16 @@ test_snprintf(void **state)
 #endif
 }
 
+static void
+test_checked_snprintf(void **state)
+{
+    char buf[10];
+    assert_true(checked_snprintf(buf, sizeof(buf), "%s", "Hello"));
+    assert_true(checked_snprintf(buf, sizeof(buf), "%s", "Hello Foo"));
+    assert_false(checked_snprintf(buf, sizeof(buf), "%s", "Hello Foo!"));
+    assert_false(checked_snprintf(buf, sizeof(buf), "%s", "Hello World!"));
+}
+
 void
 test_buffer_chomp(void **state)
 {
@@ -453,6 +463,28 @@ test_buffer_chomp(void **state)
 /* for building long texts */
 #define A_TIMES_256 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO"
 
+static void
+test_buffer_null_predicates(void **state)
+{
+    struct buffer buf = alloc_buf(16);
+
+    /* The validity predicates must tolerate a NULL buffer pointer rather than
+     * dereferencing it, so that the whole buf_* family is NULL-safe. */
+    assert_false(buf_defined(NULL));
+    assert_false(buf_valid(NULL));
+    assert_int_equal(buf_len(NULL), 0);
+
+    assert_true(buf_defined(&buf));
+    assert_true(buf_valid(&buf));
+
+    free_buf(&buf);
+
+    /* A freed buffer is neither defined nor valid. */
+    assert_false(buf_defined(&buf));
+    assert_false(buf_valid(&buf));
+    assert_int_equal(buf_len(&buf), 0);
+}
+
 void
 test_buffer_parse(void **state)
 {
@@ -463,38 +495,38 @@ test_buffer_parse(void **state)
     const char test1[] = A_TIMES_256 "EOL\n" A_TIMES_256 "EOF";
 
     /* line buffer bigger than actual line */
-    assert_int_equal(buf_write(&buf, test1, sizeof(test1)), true);
+    assert_true(buf_write(&buf, test1, sizeof(test1)));
     status = buf_parse(&buf, '\n', line, sizeof(line));
-    assert_int_equal(status, true);
+    assert_true(status);
     assert_string_equal(line, A_TIMES_256 "EOL");
     status = buf_parse(&buf, '\n', line, sizeof(line));
-    assert_int_equal(status, true);
+    assert_true(status);
     assert_string_equal(line, A_TIMES_256 "EOF");
 
     /* line buffer exactly same size as actual line + terminating \0 */
     buf_reset_len(&buf);
-    assert_int_equal(buf_write(&buf, test1, sizeof(test1)), true);
+    assert_true(buf_write(&buf, test1, sizeof(test1)));
     status = buf_parse(&buf, '\n', line, 260);
-    assert_int_equal(status, true);
+    assert_true(status);
     assert_string_equal(line, A_TIMES_256 "EOL");
     status = buf_parse(&buf, '\n', line, 260);
-    assert_int_equal(status, true);
+    assert_true(status);
     assert_string_equal(line, A_TIMES_256 "EOF");
 
     /* line buffer smaller than actual line */
     buf_reset_len(&buf);
-    assert_int_equal(buf_write(&buf, test1, sizeof(test1)), true);
+    assert_true(buf_write(&buf, test1, sizeof(test1)));
     status = buf_parse(&buf, '\n', line, 257);
-    assert_int_equal(status, true);
+    assert_true(status);
     assert_string_equal(line, A_TIMES_256);
     status = buf_parse(&buf, '\n', line, 257);
-    assert_int_equal(status, true);
+    assert_true(status);
     assert_string_equal(line, "EOL");
     status = buf_parse(&buf, '\n', line, 257);
-    assert_int_equal(status, true);
+    assert_true(status);
     assert_string_equal(line, A_TIMES_256);
     status = buf_parse(&buf, '\n', line, 257);
-    assert_int_equal(status, true);
+    assert_true(status);
     assert_string_equal(line, "EOF");
 
     gc_free(&gc);
@@ -528,8 +560,10 @@ main(void)
         cmocka_unit_test(test_character_class),
         cmocka_unit_test(test_character_string_mod_buf),
         cmocka_unit_test(test_snprintf),
+        cmocka_unit_test(test_checked_snprintf),
         cmocka_unit_test(test_buffer_chomp),
-        cmocka_unit_test(test_buffer_parse)
+        cmocka_unit_test(test_buffer_parse),
+        cmocka_unit_test(test_buffer_null_predicates)
     };
 
     return cmocka_run_group_tests_name("buffer", tests, NULL, NULL);

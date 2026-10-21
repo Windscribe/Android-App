@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -42,6 +42,35 @@
 #define sleep(x) Sleep((x) * 1000)
 #define random   rand
 #define srandom  srand
+#endif
+
+/* if inttypes.h is included this breaks rc.exe when using the ClangCL
+ * Toolchain as it pulls in a inttypes.h variant for clang that rc.exe does
+ * not understand (#include_next preprocessor directive) */
+#if defined(_WIN32) && !defined(RC_INVOKED)
+#include <inttypes.h>
+typedef uint32_t in_addr_t;
+typedef uint16_t in_port_t;
+
+#define SIGHUP  1
+#define SIGINT  2
+#define SIGUSR1 10
+#define SIGUSR2 12
+#define SIGTERM 15
+#endif
+
+#if defined(_MSC_VER) && !defined(RC_INVOKED)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#define strncasecmp strnicmp
+#define strcasecmp  _stricmp
+
+#define S_IRUSR _S_IREAD
+#define S_IWUSR _S_IWRITE
+#define R_OK    4
+#define W_OK    2
+#define X_OK    1
+#define F_OK    0
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__) /* Microsoft compiler */
@@ -185,24 +214,17 @@
 
 #if defined(TARGET_LINUX) || defined(TARGET_ANDROID)
 
-#ifdef HAVE_LINUX_IF_TUN_H
-#include <linux/if_tun.h>
+#define EXTENDED_SOCKET_ERROR_CAPABILITY 1
+
+#ifdef TARGET_LINUX
+#define ENABLE_FEATURE_TUN_PERSIST
 #endif
+
+#include <linux/if_tun.h>
+#include <linux/sockios.h>
 
 #ifdef HAVE_NETINET_IP_H
 #include <netinet/ip.h>
-#endif
-
-#ifdef HAVE_LINUX_SOCKIOS_H
-#include <linux/sockios.h>
-#endif
-
-#ifdef HAVE_LINUX_TYPES_H
-#include <linux/types.h>
-#endif
-
-#ifdef HAVE_LINUX_ERRQUEUE_H
-#include <linux/errqueue.h>
 #endif
 
 #ifdef HAVE_NETINET_TCP_H
@@ -361,15 +383,6 @@ typedef int MIB_TCP_STATE;
 #endif
 
 /*
- * Do we have the capability to report extended socket errors?
- */
-#if defined(HAVE_LINUX_TYPES_H) && defined(HAVE_LINUX_ERRQUEUE_H)
-#define EXTENDED_SOCKET_ERROR_CAPABILITY 1
-#else
-#define EXTENDED_SOCKET_ERROR_CAPABILITY 0
-#endif
-
-/*
  * Does this platform support linux-style IP_PKTINFO
  * or bsd-style IP_RECVDSTADDR ?
  */
@@ -394,14 +407,6 @@ typedef int MIB_TCP_STATE;
  */
 #ifndef HAVE_SA_FAMILY_T
 typedef unsigned short sa_family_t;
-#endif
-
-/*
- * Disable ESEC
- */
-#if 0
-#undef EXTENDED_SOCKET_ERROR_CAPABILITY
-#define EXTENDED_SOCKET_ERROR_CAPABILITY 0
 #endif
 
 /*
@@ -470,7 +475,10 @@ socket_defined(const socket_descriptor_t sd)
 #endif
 
 #ifdef ENABLE_CRYPTO_MBEDTLS
+#include <mbedtls/version.h>
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
 #define ENABLE_PREDICTION_RESISTANCE
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 #endif /* ENABLE_CRYPTO_MBEDTLS */
 
 /*
@@ -526,13 +534,6 @@ socket_defined(const socket_descriptor_t sd)
  */
 #if defined(ENABLE_LZO) || defined(ENABLE_LZ4) || defined(ENABLE_COMP_STUB)
 #define USE_COMP
-#endif
-
-/*
- * Enable --memstats option
- */
-#ifdef TARGET_LINUX
-#define ENABLE_MEMSTATS
 #endif
 
 #ifdef _MSC_VER

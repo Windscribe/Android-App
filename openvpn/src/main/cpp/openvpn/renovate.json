@@ -27,7 +27,7 @@
                 "/^\\.github/workflows/.+\\.ya?ml$/"
             ],
             "matchStrings": [
-                "vcpkgGitCommitId:\\s*(?<currentDigest>.*?)\\n"
+                "VCPKG_GIT_COMMIT_ID:\\s*(?<currentDigest>.*?)\\n"
             ],
             "currentValueTemplate": "master",
             "depNameTemplate": "vcpkg",
@@ -40,9 +40,10 @@
                 "/^\\.github/workflows/.+\\.ya?ml$/"
             ],
             "matchStrings": [
-                "versioning=(?<versioning>.*?)\\n\\s*repository:\\s*(?<depName>.*?)\\n\\s*ref:\\s*(?<currentValue>.*?)\\n"
+                "versioning=(?<versioning>.*?)\\n\\s*ghrepo:\\s*(?<depName>.*?)\\n\\s*gitref:\\s*(?<currentValue>.*?)\\n"
             ],
             "datasourceTemplate": "github-tags"
         }
+
     ]
 }

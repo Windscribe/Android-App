@@ -17,4 +17,8 @@ object ExtraConstants {
 
     // Release:https://github.com/Windscribe/amneziawg-go/releases/tag/v0.2.16
     const val AMNEZIA_WG_VERSION = "2.0.0"
+
+    // Reported to the API as openVpnVersion; keep in step with the vendored
+    // OpenVPN in openvpn/src/main/cpp/openvpn (version.m4).
+    const val OPENVPN_VERSION = "2.7.8"
 }

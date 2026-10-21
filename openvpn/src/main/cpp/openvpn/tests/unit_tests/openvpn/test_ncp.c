@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2019-2025 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2019-2026 Arne Schwabe <arne@rfc2549.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -394,8 +394,6 @@ int
 main(void)
 {
     openvpn_unit_test_setup();
-#if defined(ENABLE_CRYPTO_OPENSSL)
-    OpenSSL_add_all_algorithms();
-#endif
+
     return cmocka_run_group_tests(ncp_tests, NULL, NULL);
 }

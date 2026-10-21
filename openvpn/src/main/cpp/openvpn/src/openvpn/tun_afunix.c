@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -53,13 +53,18 @@ tun_afunix_exec_child(const char *dev_node, struct tuntap *tt, struct env_set *e
     const char *msgprefix = "ERROR: failure executing process for tun:";
     struct argv argv = argv_new();
 
+    /* we should always called with a proper unix: dev node string */
+    ASSERT(dev_node && strncmp(dev_node, "unix:", strlen("unix:")) == 0);
     /* since we know that dev-node starts with unix: we can just skip that
      * to get the program name */
     const char *program = dev_node + strlen("unix:");
 
     argv_printf(&argv, "%s", program);
 
-    tt->afunix.childprocess = openvpn_execve_check(&argv, env, S_NOWAITPID, msgprefix);
+    /* exit when executing fails to easier spot errors here and treat this
+     * command like an external script */
+    int flags = S_NOWAITPID | S_SCRIPT | S_FATAL;
+    tt->afunix.childprocess = openvpn_execve_check(&argv, env, flags, msgprefix);
     if (!openvpn_waitpid_check(tt->afunix.childprocess, msgprefix, M_WARN))
     {
         tt->afunix.childprocess = 0;
@@ -128,7 +133,12 @@ close_tun_afunix(struct tuntap *tt)
         close(tt->fd);
         tt->fd = 0;
     }
-    kill(tt->afunix.childprocess, SIGINT);
+    /* only kill the child process if the PID is not 0 to avoid killing
+     * ourselves by accident */
+    if (tt->afunix.childprocess)
+    {
+        kill(tt->afunix.childprocess, SIGINT);
+    }
 
     free(tt->actual_name);
     free(tt);

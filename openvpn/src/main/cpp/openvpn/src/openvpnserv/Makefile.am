@@ -5,7 +5,7 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
 #  Copyright (C) 2006-2012 Alon Bar-Lev <alon.barlev@gmail.com>
 #
 
@@ -27,7 +27,7 @@ openvpnserv_CFLAGS = \
 	-D_WIN32_WINNT=_WIN32_WINNT_VISTA
 openvpnserv_LDADD = \
 	-ladvapi32 -luserenv -liphlpapi -lfwpuclnt -lrpcrt4 \
-	-lshlwapi -lnetapi32 -lws2_32 -lntdll -lole32
+	-lshlwapi -lnetapi32 -lws2_32 -lntdll -lole32 -lpathcch
 noinst_DATA = \
 	MSG00409.bin eventmsg.h eventmsg.rc openvpnservmsg.dll
 BUILT_SOURCES = \

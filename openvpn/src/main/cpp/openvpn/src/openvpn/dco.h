@@ -5,9 +5,9 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2021-2025 Arne Schwabe <arne@rfc2549.org>
- *  Copyright (C) 2021-2025 Antonio Quartulli <a@unstable.cc>
- *  Copyright (C) 2021-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2021-2026 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2021-2026 Antonio Quartulli <a@unstable.cc>
+ *  Copyright (C) 2021-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -127,12 +127,13 @@ int open_tun_dco(struct tuntap *tt, openvpn_net_ctx_t *ctx, const char *dev);
 void close_tun_dco(struct tuntap *tt, openvpn_net_ctx_t *ctx);
 
 /**
- * Read data from the DCO communication channel (i.e. a control packet)
+ * Read and process data from the DCO communication channel
+ * (i.e. a control packet)
  *
  * @param dco       the DCO context
  * @return          0 on success or a negative error code otherwise
  */
-int dco_do_read(dco_context_t *dco);
+int dco_read_and_process(dco_context_t *dco);
 
 /**
  * Install a DCO in the main event loop
@@ -219,10 +220,10 @@ void dco_install_iroute(struct multi_context *m, struct multi_instance *mi,
 /**
  * Remove all routes added through the specified client
  *
- * @param m         the server context
- * @param mi        the client instance for which routes have to be removed
+ * @param net_ctx   the iface networking context
+ * @param c         the client context for which routes have to be removed
  */
-void dco_delete_iroutes(struct multi_context *m, struct multi_instance *mi);
+void dco_delete_iroutes(openvpn_net_ctx_t *net_ctx, const struct context *c);
 
 /**
  * Update traffic statistics for all peers
@@ -305,7 +306,7 @@ close_tun_dco(struct tuntap *tt, openvpn_net_ctx_t *ctx)
 }
 
 static inline int
-dco_do_read(dco_context_t *dco)
+dco_read_and_process(dco_context_t *dco)
 {
     ASSERT(false);
     return 0;
@@ -360,7 +361,7 @@ dco_install_iroute(struct multi_context *m, struct multi_instance *mi, struct mr
 }
 
 static inline void
-dco_delete_iroutes(struct multi_context *m, struct multi_instance *mi)
+dco_delete_iroutes(openvpn_net_ctx_t *net_ctx, const struct context *c)
 {
 }
 

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -46,7 +46,7 @@ CvtHex(IN HASH Bin, OUT HASHHEX Hex)
         }
         else
         {
-            Hex[i * 2] = (j + 'a' - 10);
+            Hex[i * 2] = (unsigned char)(j + 'a' - 10);
         }
         j = Bin[i] & 0xf;
         if (j <= 9)
@@ -55,16 +55,11 @@ CvtHex(IN HASH Bin, OUT HASHHEX Hex)
         }
         else
         {
-            Hex[i * 2 + 1] = (j + 'a' - 10);
+            Hex[i * 2 + 1] = (unsigned char)(j + 'a' - 10);
         }
     }
     Hex[HASHHEXLEN] = '\0';
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
 
 /* calculate H(A1) as per spec */
 void
@@ -149,9 +144,5 @@ DigestCalcResponse(IN HASHHEX HA1,         /* H(A1) */
     md_ctx_free(md5_ctx);
     CvtHex(RespHash, Response);
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #endif /* if PROXY_DIGEST_AUTH */

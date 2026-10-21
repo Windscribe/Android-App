@@ -87,10 +87,12 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   external-auth option unless the client could authenticate in another
   acceptable way (e.g. client certificate), otherwise returning success
   will lead to authentication bypass (as does returning success on a wrong
-  password from a script).
+  password from a script). In the case that Expired token is accepted
+  the token will keep the session id and start time from the original
+  (expired) token.
 
   **Note:** the username for ``--auth-gen-token`` can be overridden by
-  ``--override-user``. In this case the client will be pushed also the
+  ``--override-username``. In this case the client will be pushed also the
   ``--auth-token-user`` option and an auth token that is valid for that
   username instead of the original username that the client authenticated
   with.
@@ -143,6 +145,16 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   The following options are legal in a client-specific context: ``--push``,
   ``--push-reset``, ``--push-remove``, ``--iroute``, ``--ifconfig-push``,
   ``--vlan-pvid`` and ``--config``.
+
+  **Note:** OpenVPN uses the CN exactly as written in the certificate.
+  But since this is a file access the filesystem might interfere.
+  Importantly OpenVPN will consider two CNs that only differ in case as
+  different names but a case-insensitive filesystem (like you might
+  encounter on Windows or macOS) will treat them as the same. When you
+  generate your certificates make sure that the CNs are sufficiently
+  different to not cause issues. When trusting an external CA note that
+  this is a potential attack vector via maliciously generated
+  certificates that exploit this issue.
 
 --client-to-client
   Because the OpenVPN server mode handles multiple clients through a
@@ -314,6 +326,10 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   3.  Use ``--ifconfig-pool`` allocation for dynamic IP (last
       choice).
 
+  When DCO is enabled and the IP is not in contained in the network specified
+  by ``--ifconfig``, OpenVPN will install a /32 host route for the ``local``
+  IP address.
+
 --ifconfig-ipv6-push args
   for ``--client-config-dir`` per-client static IPv6 interface
   configuration, see ``--client-config-dir`` and ``--ifconfig-push`` for
@@ -324,7 +340,11 @@ fast hardware. SSL/TLS authentication must be used in this mode.
 
      ifconfig-ipv6-push ipv6addr/bits ipv6remote
 
---multihome
+  When DCO is enabled and the IP is not in contained in the network specified
+  by ``--ifconfig-ipv6``, OpenVPN will install a /128 host route for the
+  ``ipv6addr`` IP address.
+
+--multihome [same-interface]
   Configure a multi-homed UDP server. This option needs to be used when a
   server has more than one IP address (e.g. multiple interfaces, or
   secondary IP addresses), and is not using ``--local`` to force binding
@@ -335,12 +355,18 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   default.
 
   *Notes:*
-    -  This option is only relevant for UDP servers.
-    -  If you do an IPv6+IPv4 dual-stack bind on a Linux machine with
-       multiple IPv4 address, connections to IPv4 addresses will not
-       work right on kernels before 3.15, due to missing kernel
-       support for the IPv4-mapped case (some distributions have
-       ported this to earlier kernel versions, though).
+    - This option is only relevant for UDP servers.
+    - Starting with 2.7.0, OpenVPN will ignore the incoming interface of
+      the packet, and leave selection of the outgoing interface to the
+      normal routing/policy mechanisms of the OS ("set ipi_ifindex=0").
+    - if the ``same-interface`` flag is added, OpenVPN will copy the
+      incoming interface index to the outgoing interface index,
+      trying to send the packet out over the same interface where it came
+      in on (= restoring earlier OpenVPN behaviour). This might not work
+      if there are no usable routes on that interface.
+    - the \*BSD systems use a different API for IPv4 that does not provide
+      the interface index anyway (IP_RECVDSTADDR), so there the difference
+      applies only to IPv6.
 
 --iroute args
   Generate an internal route to a specific client. The ``netmask``
@@ -390,7 +416,7 @@ fast hardware. SSL/TLS authentication must be used in this mode.
      iroute-ipv6 ipv6addr/bits
 
 --max-clients n
-  Limit server to a maximum of ``n`` concurrent clients.
+  Limit server to a maximum of ``n`` concurrent clients. Defaults to 1024.
 
 --max-routes-per-client n
   Allow a maximum of ``n`` internal routes per client (default
@@ -404,19 +430,6 @@ fast hardware. SSL/TLS authentication must be used in this mode.
 
   Note that this directive affects OpenVPN's internal routing table, not
   the kernel routing table.
-
---opt-verify
-  **DEPRECATED** Clients that connect with options that are incompatible with
-  those of the server will be disconnected.
-
-  Options that will be compared for compatibility include ``dev-type``,
-  ``link-mtu``, ``tun-mtu``, ``proto``, ``ifconfig``,
-  ``comp-lzo``, ``fragment``, ``keydir``, ``cipher``,
-  ``auth``, ``keysize``,
-  ``tls-auth``, ``key-method``, ``tls-server``
-  and ``tls-client``.
-
-  This option requires that ``--disable-occ`` NOT be used.
 
 --override-username username
   Sets the username of a connection to the specified username.  This username
@@ -496,6 +509,9 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   ``--setenv``, ``--auth-token``, ``--persist-tun``,
   ``--echo``, ``--comp-lzo``, ``--socket-flags``, ``--sndbuf``,
   ``--rcvbuf``, ``--session-timeout``
+
+  Note: using ``--push`` requires OpenVPN to run in ``--mode server`` (or
+  using of one of ``--server``, ``--server-bridge`` helper directives).
 
 --push-remove opt
   Selectively remove all ``--push`` options matching "opt" from the option
@@ -656,6 +672,11 @@ fast hardware. SSL/TLS authentication must be used in this mode.
      stale-routes-check n [t]
 
   If ``t`` is not present it defaults to ``n``.
+
+  Only dynamically learned routes are subject to this check. Routes added from
+  configuration, such as ``--iroute`` entries and a client's pushed ifconfig
+  address, are never removed by it; they are dropped only when the client
+  disconnects.
 
   This option helps to keep the dynamic routing table small. See also
   ``--max-routes-per-client``

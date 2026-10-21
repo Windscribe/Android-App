@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -38,7 +38,6 @@
 #include "mudp.h"
 #include "mtcp.h"
 #include "multi_io.h"
-#include "perf.h"
 #include "vlan.h"
 #include "reflect_filter.h"
 
@@ -203,10 +202,6 @@ struct multi_context
     struct context top; /**< Storage structure for process-wide
                          *   configuration. */
 
-    struct buffer hmac_reply;
-    struct link_socket_actual *hmac_reply_dest;
-    struct link_socket *hmac_reply_ls;
-
     /*
      * Timer object for stale route check
      */
@@ -239,8 +234,9 @@ struct multi_route
     struct mroute_addr addr;
     struct multi_instance *instance;
 
-#define MULTI_ROUTE_CACHE   (1 << 0)
-#define MULTI_ROUTE_AGEABLE (1 << 1)
+#define MULTI_ROUTE_CACHE     (1 << 0)
+#define MULTI_ROUTE_AGEABLE   (1 << 1)
+#define MULTI_ROUTE_PERMANENT (1 << 2) /* config-derived (iroute / pushed ifconfig); never stale-aged */
     unsigned int flags;
 
     unsigned int cache_generation;
@@ -272,10 +268,9 @@ void multi_close_instance(struct multi_context *m, struct multi_instance *mi, bo
 
 bool multi_process_timeout(struct multi_context *m, const unsigned int mpp_flags);
 
-#define MPP_PRE_SELECT             (1 << 0)
-#define MPP_CONDITIONAL_PRE_SELECT (1 << 1)
-#define MPP_CLOSE_ON_SIGNAL        (1 << 2)
-#define MPP_RECORD_TOUCH           (1 << 3)
+#define MPP_PRE_SELECT      (1 << 0)
+#define MPP_CLOSE_ON_SIGNAL (1 << 1)
+#define MPP_RECORD_TOUCH    (1 << 2)
 
 
 /**************************************************************************/
@@ -306,13 +301,9 @@ bool multi_process_post(struct multi_context *m, struct multi_instance *mi,
 /**
  * Process an incoming DCO message (from kernel space).
  *
- * @param m            - The single \c multi_context structure.
- *
- * @return
- *  - True, if the message was received correctly.
- *  - False, if there was an error while reading the message.
+ * @param dco - Pointer to the structure representing the DCO context.
  */
-bool multi_process_incoming_dco(struct multi_context *m);
+void multi_process_incoming_dco(dco_context_t *dco);
 
 /**************************************************************************/
 /**
@@ -582,15 +573,16 @@ multi_process_per_second_timers(struct multi_context *m)
 }
 
 /*
- * Compute earliest timeout expiry from the set of
- * all instances.  Output:
+ * Updates \c dest with the earliest timeout as a delta relative to the current
+ * time and sets \c m->earliest_wakeup to the \c multi_instance with the
+ * soonest scheduled wakeup.
  *
- * m->earliest_wakeup : instance needing the earliest service.
- * dest               : earliest timeout as a delta in relation
- *                      to current time.
+ * @param m     Pointer to the multi context
+ * @param dest  Pointer to a timeval struct that will hold the earliest timeout
+ *              delta.
  */
 static inline void
-multi_get_timeout(struct multi_context *m, struct timeval *dest)
+multi_get_timeout_instance(struct multi_context *m, struct timeval *dest)
 {
     struct timeval tv, current;
 
@@ -666,6 +658,32 @@ multi_process_outgoing_link_dowork(struct multi_context *m, struct multi_instanc
     return ret;
 }
 
+/**
+ * Determines if the ifconfig_push_local address falls into the range of the local
+ * IP addresses of the VPN interface (ifconfig_local with ifconfig_remote_netmask)
+ *
+ * @param o            The instance wide options
+ * @param dest         The destination IP address to check
+ *
+ * @return Returns true if ifconfig_push is outside that range and requires an extra
+ * route to be installed.
+ */
+bool
+multi_check_push_ifconfig_extra_route(const struct options *o, in_addr_t dest);
+
+/**
+ * Determines if the ifconfig_ipv6_local address falls into the range of the local
+ * IP addresses of the VPN interface (ifconfig_local with ifconfig_remote_netmask)
+ *
+ * @param o            The instance wide options
+ * @param dest         The destination IPv6 address to check
+ *
+ * @return Returns true if ifconfig_push is outside that range and requires an extra
+ * route to be installed.
+ */
+bool
+multi_check_push_ifconfig_ipv6_extra_route(const struct options *o, const struct in6_addr *dest);
+
 /*
  * Check for signals.
  */
@@ -692,6 +710,8 @@ lookup_by_cid(struct multi_context *m, const unsigned long cid);
 #endif
 
 void
-update_vhash(struct multi_context *m, struct multi_instance *mi, const char *old_ip, const char *old_ipv6);
+update_vhash(struct multi_context *m, struct multi_instance *mi, const char *new_ip, const char *new_ipv6);
+void unlearn_ifconfig(struct multi_context *m, struct multi_instance *mi);
+void unlearn_ifconfig_ipv6(struct multi_context *m, struct multi_instance *mi);
 
 #endif /* MULTI_H */

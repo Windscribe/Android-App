@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -224,16 +224,34 @@ clear_buf(void)
     return (struct buffer){ 0 };
 }
 
+/**
+ * Return true iff \c buf has a non-NULL data pointer.
+ *
+ * A defined buffer has been allocated but may have zero length or negative
+ * len (i.e. it is not necessarily valid).
+ *
+ * @param buf   The buffer to test. May be NULL, in which case the buffer is
+ *              not defined.
+ */
 static inline bool
 buf_defined(const struct buffer *buf)
 {
-    return buf->data != NULL;
+    return likely(buf != NULL) && buf->data != NULL;
 }
 
+/**
+ * Return true iff \c buf is valid.
+ *
+ * A buffer is valid when it is non-NULL, its data pointer is non-NULL and its
+ * \c len is non-negative.
+ *
+ * @param buf   The buffer to test. May be NULL, in which case the buffer is
+ *              not valid.
+ */
 static inline bool
 buf_valid(const struct buffer *buf)
 {
-    return likely(buf->data != NULL) && likely(buf->len >= 0);
+    return likely(buf != NULL) && likely(buf->data != NULL) && likely(buf->len >= 0);
 }
 
 static inline uint8_t *
@@ -496,11 +514,11 @@ bool buf_parse(struct buffer *buf, const int delim, char *line, const int size);
  */
 #define FHE_SPACE_BREAK_MASK 0xFF  /* space_break parameter in lower 8 bits */
 #define FHE_CAPS             0x100 /* output hex in caps */
-char *format_hex_ex(const uint8_t *data, int size, int maxoutput, unsigned int space_break_flags,
+char *format_hex_ex(const uint8_t *data, size_t size, size_t maxoutput, unsigned int space_break_flags,
                     const char *separator, struct gc_arena *gc);
 
 static inline char *
-format_hex(const uint8_t *data, int size, int maxoutput, struct gc_arena *gc)
+format_hex(const uint8_t *data, size_t size, size_t maxoutput, struct gc_arena *gc)
 {
     return format_hex_ex(data, size, maxoutput, 4, " ", gc);
 }
@@ -601,26 +619,26 @@ buf_inc_len(struct buffer *buf, int inc)
  */
 
 static inline uint8_t *
-buf_prepend(struct buffer *buf, int size)
+buf_prepend(struct buffer *buf, ssize_t size)
 {
     if (!buf_valid(buf) || size < 0 || size > buf->offset)
     {
         return NULL;
     }
-    buf->offset -= size;
-    buf->len += size;
+    buf->offset -= (int)size;
+    buf->len += (int)size;
     return BPTR(buf);
 }
 
 static inline bool
-buf_advance(struct buffer *buf, int size)
+buf_advance(struct buffer *buf, ssize_t size)
 {
     if (!buf_valid(buf) || size < 0 || buf->len < size)
     {
         return false;
     }
-    buf->offset += size;
-    buf->len -= size;
+    buf->offset += (int)size;
+    buf->len -= (int)size;
     return true;
 }
 
@@ -901,8 +919,8 @@ const char *np(const char *str);
 #define CC_SINGLE_QUOTE  (1 << 21) /**< single quote */
 #define CC_DOUBLE_QUOTE  (1 << 22) /**< double quote */
 #define CC_REVERSE_QUOTE (1 << 23) /**< reverse quote */
-#define CC_AT            (1 << 24) /**< at sign */
-#define CC_EQUAL         (1 << 25) /**< equal sign */
+#define CC_PERCENT       (1 << 24) /**< percent sign */
+#define CC_EXCLAMATION   (1 << 25) /**< exclamation mark */
 #define CC_LESS_THAN     (1 << 26) /**< less than sign */
 #define CC_GREATER_THAN  (1 << 27) /**< greater than sign */
 #define CC_PIPE          (1 << 28) /**< pipe */
@@ -971,6 +989,29 @@ strprefix(const char *str, const char *prefix)
     return 0 == strncmp(str, prefix, strlen(prefix));
 }
 
+/**
+ * Like snprintf() but returns an boolean.
+ *
+ * To check the return value of snprintf() one needs to
+ * do multiple comparisons of the \p size parameter
+ * against the return value. Doesn't get prettier by
+ * them being different types with different signedness
+ * and size.
+ *
+ * So this function allows to wrap all of that into one
+ * boolean return value.
+ *
+ * @return true if snprintf() was successful and not truncated.
+ */
+bool checked_snprintf(char *str, size_t size, const char *format, ...)
+#ifdef __GNUC__
+#if __USE_MINGW_ANSI_STDIO
+    __attribute__((format(gnu_printf, 3, 4)))
+#else
+    __attribute__((format(__printf__, 3, 4)))
+#endif
+#endif
+    ;
 
 /*
  * Verify that a pointer is correctly aligned
@@ -1043,6 +1084,18 @@ gc_reset(struct gc_arena *a)
 /*
  * Allocate memory to hold a structure
  */
+
+/* When allocating arrays make sure we do not use a excessive amount
+ * of memory.
+ */
+#if UINTPTR_MAX <= UINT32_MAX
+/* 1 GB on 32bit systems, they usually can only allocate 2 GB for the
+ * whole process.
+ */
+#define ALLOC_SIZE_MAX (1u << 30)
+#else
+#define ALLOC_SIZE_MAX ((size_t)1 << 32) /* 4 GB */
+#endif
 
 #define ALLOC_OBJ(dptr, type)                                       \
     {                                                               \
@@ -1175,7 +1228,7 @@ struct buffer_entry *buffer_list_push_data(struct buffer_list *ol, const void *d
  */
 struct buffer *buffer_list_peek(struct buffer_list *ol);
 
-void buffer_list_advance(struct buffer_list *ol, int n);
+void buffer_list_advance(struct buffer_list *ol, ssize_t n);
 
 void buffer_list_pop(struct buffer_list *ol);
 

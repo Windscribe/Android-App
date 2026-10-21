@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -22,7 +22,7 @@
 
 /*
  * 2004-01-28: Added Socks5 proxy support
- *   (Christof Meerwald, http://cmeerw.org)
+ *   (Christof Meerwald, https://cmeerw.org)
  */
 
 #ifndef OPTIONS_H
@@ -56,6 +56,8 @@
 #define OPTION_PARM_SIZE 256
 #define OPTION_LINE_SIZE 256
 
+#define PING_TIMEOUT_MAX 86400 /* one day (in seconds) */
+
 extern const char title_string[];
 
 /* certain options are saved before --pull modifications are applied */
@@ -63,6 +65,9 @@ struct options_pre_connect
 {
     bool tuntap_options_defined;
     struct tuntap_options tuntap_options;
+
+    const char *ifconfig_local;
+    const char *ifconfig_ipv6_local;
 
     bool routes_defined;
     struct route_option_list *routes;
@@ -251,7 +256,6 @@ struct verify_hash_list
 struct options
 {
     struct gc_arena gc;
-    bool gc_owned;
 
     /* first config file */
     const char *config;
@@ -333,10 +337,6 @@ struct options
 
     bool mtu_test;
 
-#ifdef ENABLE_MEMSTATS
-    char *memstats_fn;
-#endif
-
     bool mlock;
 
     int keepalive_ping; /* a proxy for ping/ping-restart */
@@ -406,9 +406,6 @@ struct options
     const char *status_file;
     int status_file_version;
     int status_file_update_freq;
-
-    /* optimize TUN/TAP/UDP writes */
-    bool fast_io;
 
     struct compress_options comp;
 
@@ -559,8 +556,10 @@ struct options
     bool pull; /* client pull of config options from server */
     int push_continuation;
     unsigned int push_option_types_found;
+    unsigned int push_update_options_found; /* tracks which option types have been reset in current PUSH_UPDATE sequence */
     const char *auth_user_pass_file;
     bool auth_user_pass_file_inline;
+    bool auth_user_pass_username_only;
     struct options_pre_connect *pre_connect;
 
     int scheduled_exit_interval;
@@ -654,10 +653,8 @@ struct options
      * within n seconds of handshake initiation. */
     int handshake_window;
 
-#ifdef ENABLE_X509ALTUSERNAME
     /* Field list used to be the username in X509 cert. */
     char *x509_username_field[MAX_PARMS];
-#endif
 
     /* Old key allowed to live n seconds after new key goes active */
     int transition_window;
@@ -678,6 +675,8 @@ struct options
     const char *tls_crypt_v2_metadata;
 
     const char *tls_crypt_v2_verify_script;
+
+    int tls_crypt_v2_max_age;
 
     /* Allow only one session */
     bool single_session;
@@ -765,15 +764,6 @@ struct options
 #define OPT_P_DEFAULT (~(OPT_P_INSTANCE | OPT_P_PULL_MODE))
 
 #define PULL_DEFINED(opt) ((opt)->pull)
-#define PUSH_DEFINED(opt) ((opt)->push_list)
-
-#ifndef PULL_DEFINED
-#define PULL_DEFINED(opt) (false)
-#endif
-
-#ifndef PUSH_DEFINED
-#define PUSH_DEFINED(opt) (false)
-#endif
 
 #ifdef _WIN32
 #define ROUTE_OPTION_FLAGS(o) ((o)->route_method & ROUTE_METHOD_MASK)
@@ -811,7 +801,7 @@ struct pull_filter
 #define PUF_TYPE_IGNORE 2 /**< filter type to ignore a matching option */
 #define PUF_TYPE_REJECT 3 /**< filter type to reject and trigger SIGUSR1 */
     int type;
-    int size;
+    size_t size;
     char *pattern;
     struct pull_filter *next;
 };
@@ -871,14 +861,11 @@ void remove_option(struct context *c, struct options *options, char *p[], bool i
  * @param option_types_found A pointer to the variable where the flags corresponding to the options
  * found are stored.
  * @param es The environment set structure.
- * @param update_options_found A pointer to the variable where the flags corresponding to the update
- * options found are stored, used to check if an option of the same type has already been processed
- * by update_option() within the same push-update message.
  */
 void update_option(struct context *c, struct options *options, char *p[], bool is_inline,
                    const char *file, int line, const int level, const msglvl_t msglevel,
                    const unsigned int permission_mask, unsigned int *option_types_found,
-                   struct env_set *es, unsigned int *update_options_found);
+                   struct env_set *es);
 
 void parse_argv(struct options *options, const int argc, char *argv[], const msglvl_t msglevel,
                 const unsigned int permission_mask, unsigned int *option_types_found,
@@ -908,7 +895,7 @@ void show_windows_version(const unsigned int flags);
 
 void show_dco_version(const unsigned int flags);
 
-void init_options(struct options *o, const bool init_gc);
+void init_options(struct options *o);
 
 void uninit_options(struct options *o);
 

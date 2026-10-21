@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -540,11 +540,15 @@ incoming_push_message(struct context *c, const struct buffer *buffer)
             }
             else
             {
-                if (!option_types_found)
+                /* Clear push_update_options_found for next PUSH_UPDATE sequence */
+                c->options.push_update_options_found = 0;
+
+                /* Use accumulated option_types_found for the entire PUSH_UPDATE sequence */
+                if (!c->options.push_option_types_found)
                 {
                     msg(M_WARN, "No updatable options found in incoming PUSH_UPDATE message");
                 }
-                else if (!do_update(c, option_types_found))
+                else if (!do_update(c, c->options.push_option_types_found))
                 {
                     msg(D_PUSH_ERRORS, "Failed to update options");
                     goto error;
@@ -771,6 +775,10 @@ send_push_options(struct context *c, struct buffer *buf, struct push_list *push_
     }
     return true;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 void
 send_push_reply_auth_token(struct tls_multi *multi)
@@ -1025,15 +1033,25 @@ push_update_digest(md_ctx_t *ctx, struct buffer *buf, const struct options *opt)
     char line[OPTION_PARM_SIZE];
     while (buf_parse(buf, ',', line, sizeof(line)))
     {
-        /* peer-id and auth-token might change on restart and this should not trigger reopening tun
+        /* peer-id and auth-token might change on restart and this should not
+         * trigger reopening tun
+         * Also other options that only affect the control channel should
+         * not trigger a reopen of the tun device
          */
-        if (strprefix(line, "peer-id ") || strprefix(line, "auth-token ")
-            || strprefix(line, "auth-token-user "))
+        if (strprefix(line, "peer-id ")
+            || strprefix(line, "auth-token ")
+            || strprefix(line, "auth-token-user")
+            || strprefix(line, "protocol-flags ")
+            || strprefix(line, "key-derivation ")
+            || strprefix(line, "explicit-exit-notify ")
+            || strprefix(line, "ping ")
+            || strprefix(line, "ping-restart ")
+            || strprefix(line, "ping-timer "))
         {
             continue;
         }
         /* tun reopen only needed if cipher change can change tun MTU */
-        if (strprefix(line, "cipher ") && !opt->ce.tun_mtu_defined)
+        if (strprefix(line, "cipher ") && opt->ce.tun_mtu_defined)
         {
             continue;
         }
@@ -1046,7 +1064,7 @@ process_incoming_push_reply(struct context *c, unsigned int permission_mask,
                             unsigned int *option_types_found, struct buffer *buf)
 {
     int ret = PUSH_MSG_ERROR;
-    const uint8_t ch = buf_read_u8(buf);
+    const int ch = buf_read_u8(buf);
     if (ch == ',')
     {
         struct buffer buf_orig = (*buf);
@@ -1090,10 +1108,6 @@ process_incoming_push_reply(struct context *c, unsigned int permission_mask,
     return ret;
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-
 int
 process_incoming_push_msg(struct context *c, const struct buffer *buffer,
                           bool honor_received_options, unsigned int permission_mask,
@@ -1118,7 +1132,7 @@ process_incoming_push_msg(struct context *c, const struct buffer *buffer,
                         " To be able to process PUSH_UPDATE messages, be sure to use the --disable-dco option.");
             return PUSH_MSG_ERROR;
         }
-        return process_incoming_push_update(c, permission_mask, option_types_found, &buf, false);
+        return process_push_update(c, &c->options, permission_mask, option_types_found, &buf, false);
     }
     else
     {

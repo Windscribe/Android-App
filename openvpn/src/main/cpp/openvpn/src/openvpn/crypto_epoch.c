@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2024-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2024-2025 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2024-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2024-2026 Arne Schwabe <arne@rfc2549.org>
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -208,11 +208,15 @@ epoch_generate_future_receive_keys(struct crypto_options *co)
 
     /* Either we have not generated any future keys yet (first initialisation)
      * or the last index is the same as our current epoch key
-     * (last generated receive epoch key should match the epoch key) */
+     * (last generated receive epoch key should match the epoch key).
+     *
+     * The last generated key might have been moved to the decrypt key already.
+     */
     struct key_ctx *highest_future_key =
         &co->epoch_data_keys_future[co->epoch_data_keys_future_count - 1];
 
-    ASSERT(co->epoch_key_recv.epoch == 1 || highest_future_key->epoch == co->epoch_key_recv.epoch);
+    ASSERT(co->epoch_key_recv.epoch == 1 || highest_future_key->epoch == co->epoch_key_recv.epoch
+           || current_decrypt_epoch == co->epoch_key_recv.epoch);
 
     /* free the keys that are not used anymore */
     for (uint16_t i = 0; i < co->epoch_data_keys_future_count; i++)
@@ -226,12 +230,19 @@ epoch_generate_future_receive_keys(struct crypto_options *co)
         }
     }
 
+    /* The current epoch_key_recv is the higest currently generated key */
+    uint16_t current_highest_key = co->epoch_key_recv.epoch;
+
+    /* The current highest generated epoch key should be either the last
+     * key in the future key array or been already moved the current decrypt
+     * key (and then all future keys need to be generated)*/
+    ASSERT(current_highest_key == highest_future_key->epoch
+           || current_highest_key == current_decrypt_epoch);
+
     /* Calculate the number of keys that need to be generated,
      * if no keys have been generated assume only the first key is defined */
-    uint16_t current_highest_key = highest_future_key->epoch ? highest_future_key->epoch : 1;
     uint16_t desired_highest_key = current_decrypt_epoch + co->epoch_data_keys_future_count;
     uint16_t num_keys_generate = desired_highest_key - current_highest_key;
-
 
     /* Move the old keys out of the way so the order of keys stays strictly
      * monotonic and consecutive. */
@@ -296,9 +307,10 @@ epoch_replace_update_recv_key(struct crypto_options *co, uint16_t new_epoch)
         free_key_ctx(&co->key_ctx_bi.encrypt);
 
         /* Update the epoch_key for send to match the current key being used.
-         * This is a bit of extra work but since we are a maximum of 16
-         * keys behind, a maximum 16 HMAC invocations are a small price to
-         * pay for not keeping all the old epoch keys around in future_keys
+         * This is a bit of extra work but since we are a maximum of
+         * epoch_data_keys_future_count keys behind (4 by default),
+         * a maximum 4 HMAC invocations are a small price to pay for not
+         * keeping all the old epoch keys around in future_keys
          * array */
         while (co->epoch_key_send.epoch < new_epoch)
         {

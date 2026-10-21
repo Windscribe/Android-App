@@ -5,7 +5,7 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
 #  Copyright (C) 2006-2012 Alon Bar-Lev <alon.barlev@gmail.com>
 #
 
@@ -28,6 +28,7 @@ AM_CFLAGS = \
 	$(OPTIONAL_LIBNL_GENL_CFLAGS) \
 	$(OPTIONAL_LZO_CFLAGS) \
 	$(OPTIONAL_LZ4_CFLAGS) \
+	$(OPTIONAL_SYSTEMD_CFLAGS) \
 	$(OPTIONAL_PKCS11_HELPER_CFLAGS) \
 	$(OPTIONAL_INOTIFY_CFLAGS) \
 	-DPLUGIN_LIBDIR=\"${plugindir}\" \
@@ -53,6 +54,7 @@ openvpn_SOURCES = \
 	comp-lz4.c comp-lz4.h \
 	crypto.c crypto.h crypto_backend.h \
 	crypto_openssl.c crypto_openssl.h \
+	crypto_mbedtls_legacy.c crypto_mbedtls_legacy.h \
 	crypto_mbedtls.c crypto_mbedtls.h \
 	crypto_epoch.c crypto_epoch.h \
 	dco.c dco.h dco_internal.h \
@@ -90,7 +92,6 @@ openvpn_SOURCES = \
 	mbedtls_compat.h \
 	mroute.c mroute.h \
 	mss.c mss.h \
-	mstats.c mstats.h \
 	mtcp.c mtcp.h \
 	mtu.c mtu.h \
 	mudp.c mudp.h \
@@ -112,7 +113,6 @@ openvpn_SOURCES = \
 	options_parse.c \
 	otime.c otime.h \
 	packet_id.c packet_id.h \
-	perf.c perf.h \
 	ping.c ping.h \
 	plugin.c plugin.h \
 	pool.c pool.h \

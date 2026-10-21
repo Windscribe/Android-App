@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -298,7 +298,8 @@ struct crypto_options
 
     /** last epoch_key used for generation of the current send data keys.
      * As invariant, the epoch of epoch_key_send is always kept >= the epoch of
-     * epoch_key_recv */
+     * key_ctx_bi.decrypt.epoch
+     */
     struct epoch_key epoch_key_send;
 
     /** epoch_key used for the highest receive epoch keys */
@@ -309,7 +310,8 @@ struct crypto_options
 
     /** The limit for AEAD cipher, this is the sum of packets + blocks
      * that are allowed to be used. Will switch to a new epoch if this
-     * limit is reached*/
+     * limit is reached.
+     */
     uint64_t aead_usage_limit;
 
     /** Keeps the future epoch data keys for decryption. The current one
@@ -601,8 +603,13 @@ bool read_pem_key_file(struct buffer *key, const char *pem_name, const char *key
  */
 void prng_bytes(uint8_t *output, int len);
 
-/* an analogue to the random() function, but use prng_bytes */
-long int get_random(void);
+/**
+ * an analogue to the random() function, but use prng_bytes and
+ * also int64_t instead of long to avoid LLP64 vs LP64
+ *
+ * @return Returns a random positive 63 bit integer
+ */
+int64_t get_random(void);
 
 /** Print a cipher list entry */
 void print_cipher(const char *cipher);
@@ -629,6 +636,13 @@ void key2_print(const struct key2 *k, const struct key_type *kt, const char *pre
 void crypto_read_openvpn_key(const struct key_type *key_type, struct key_ctx_bi *ctx,
                              const char *key_file, bool key_inline, const int key_direction,
                              const char *key_name, const char *opt_name, struct key2 *keydata);
+
+/**
+ * Generate a random key and initialise ctx to be used the in the crypto random
+ * test
+ */
+void generate_test_crypto_random_key(const struct key_type *key_type, struct key_ctx_bi *ctx,
+                                     const char *key_name);
 
 /*
  * Inline functions

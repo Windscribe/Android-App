@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -38,8 +38,6 @@
 #if defined(ENABLE_PKCS11)
 #include <pkcs11-helper-1.0/pkcs11h-certificate.h>
 #endif
-
-#include "mbedtls_compat.h"
 
 typedef struct _buffer_entry buffer_entry;
 
@@ -114,11 +112,13 @@ struct tls_key_cache
  */
 struct tls_root_ctx
 {
-    bool initialised;                      /**< True if the context has been initialised */
+    bool initialised; /**< True if the context has been initialised */
 
-    int endpoint;                          /**< Whether or not this is a server or a client */
+    int endpoint;     /**< Whether or not this is a server or a client */
 
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     mbedtls_dhm_context *dhm_ctx;          /**< Diffie-Helmann-Merkle context */
+#endif
     mbedtls_x509_crt *crt_chain;           /**< Local Certificate chain */
     mbedtls_x509_crt *ca_chain;            /**< CA chain for remote verification */
     mbedtls_pk_context *priv_key;          /**< Local private key */
@@ -130,7 +130,7 @@ struct tls_root_ctx
 #endif
     struct external_context external_key;  /**< External key context */
     int *allowed_ciphers;                  /**< List of allowed ciphers for this connection */
-    mbedtls_compat_group_id *groups;       /**< List of allowed groups for this connection */
+    uint16_t *groups;                      /**< List of allowed groups for this connection */
     mbedtls_x509_crt_profile cert_profile; /**< Allowed certificate types */
 };
 

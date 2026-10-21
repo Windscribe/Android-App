@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -39,7 +39,7 @@
 size_t
 array_mult_safe(const size_t m1, const size_t m2, const size_t extra)
 {
-    const size_t limit = 0xFFFFFFFF;
+    const size_t limit = ALLOC_SIZE_MAX;
     unsigned long long res =
         (unsigned long long)m1 * (unsigned long long)m2 + (unsigned long long)extra;
     if (unlikely(m1 > limit) || unlikely(m2 > limit) || unlikely(extra > limit)
@@ -480,18 +480,17 @@ gc_transfer(struct gc_arena *dest, struct gc_arena *src)
  */
 
 char *
-format_hex_ex(const uint8_t *data, int size, int maxoutput, unsigned int space_break_flags,
+format_hex_ex(const uint8_t *data, size_t size, size_t maxoutput, unsigned int space_break_flags,
               const char *separator, struct gc_arena *gc)
 {
     const size_t bytes_per_hexblock = space_break_flags & FHE_SPACE_BREAK_MASK;
     const size_t separator_len = separator ? strlen(separator) : 0;
-    static_assert(INT_MAX <= SIZE_MAX, "Code assumes INT_MAX <= SIZE_MAX");
     const size_t out_len = maxoutput > 0
                                ? maxoutput
                                : ((size * 2) + ((size / bytes_per_hexblock) * separator_len) + 2);
 
     struct buffer out = alloc_buf_gc(out_len, gc);
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
     {
         if (separator && i && !(i % bytes_per_hexblock))
         {
@@ -790,7 +789,7 @@ buf_string_compare_advance(struct buffer *src, const char *match)
 {
     if (buf_string_match_head_str(src, match))
     {
-        buf_advance(src, (int)strlen(match));
+        buf_advance(src, strlen(match));
         return true;
     }
     else
@@ -985,11 +984,11 @@ char_class(const unsigned char c, const unsigned int flags)
     {
         return true;
     }
-    if ((flags & CC_AT) && c == '@')
+    if ((flags & CC_PERCENT) && c == '%')
     {
         return true;
     }
-    if ((flags & CC_EQUAL) && c == '=')
+    if ((flags & CC_EXCLAMATION) && c == '!')
     {
         return true;
     }
@@ -1124,6 +1123,17 @@ string_replace_leading(char *str, const char match, const char replace)
         }
         ++str;
     }
+}
+
+bool
+checked_snprintf(char *str, size_t size, const char *format, ...)
+{
+    va_list arglist;
+    va_start(arglist, format);
+    ASSERT(size < INT_MAX);
+    int len = vsnprintf(str, size, format, arglist);
+    va_end(arglist);
+    return (len >= 0 && len < (ssize_t)size);
 }
 
 #ifdef VERIFY_ALIGNMENT
@@ -1313,7 +1323,7 @@ buffer_list_pop(struct buffer_list *ol)
 }
 
 void
-buffer_list_advance(struct buffer_list *ol, int n)
+buffer_list_advance(struct buffer_list *ol, ssize_t n)
 {
     if (ol->head)
     {

@@ -21,6 +21,28 @@ ANDROID_OPENSSL_DIR="$STRONGSWAN_DIR/src/frontends/android/openssl"
 export OUT_DIR="$STRONGSWAN_DIR/src/frontends/android/app/src/main/jni/openssl"
 APP_DIR="$STRONGSWAN_DIR/src/frontends/android/app"
 
+# OPENSSL_SRC comes from the image ENV, not .gitlab-ci.yml. Empty would make
+# the cp below read "/.".
+if [ -z "$OPENSSL_SRC" ] || [ ! -d "$OPENSSL_SRC" ]; then
+    echo "ERROR: OPENSSL_SRC is empty or not a directory: '$OPENSSL_SRC'" >&2
+    echo "It is set by ci/strongswan-build.Dockerfile; rebuild that image." >&2
+    exit 1
+fi
+
+# VERSION.dat exists only from OpenSSL 3.0 on, so this rejects a stale 1.x image.
+if [ ! -f "$OPENSSL_SRC/VERSION.dat" ]; then
+    echo "ERROR: no VERSION.dat in $OPENSSL_SRC -- expected OpenSSL 3.x." >&2
+    echo "A pre-3.0 source tree means the strongswan-build image is stale." >&2
+    exit 1
+fi
+# shellcheck source=/dev/null
+. "$OPENSSL_SRC/VERSION.dat"
+echo "===> OpenSSL source: ${MAJOR}.${MINOR}.${PATCH}"
+if [ "${MAJOR}" != "3" ]; then
+    echo "ERROR: expected OpenSSL 3.x, found ${MAJOR}.${MINOR}.${PATCH}." >&2
+    exit 1
+fi
+
 echo "===> Copying OpenSSL sources..."
 cp -a "$OPENSSL_SRC/." "$ANDROID_OPENSSL_DIR/"
 
@@ -51,7 +73,9 @@ cd "$APP_DIR"
 sed -i '/arguments '\''-j'\'' \+ Runtime\.runtime\.availableProcessors()/a\        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"' build.gradle
 
 echo "===> Building release APK..."
-gradle assembleRelease
+# The wrapper pins the Gradle version this strongSwan tag's AGP requires.
+chmod +x "$APP_DIR/../gradlew"
+"$APP_DIR/../gradlew" assembleRelease
 
 echo "===> Copying output libs to: $STRONGSWAN_LIBS_DST"
 mkdir -p "$STRONGSWAN_LIBS_DST"

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -543,15 +543,15 @@ platform_create_temp_file(const char *directory, const char *prefix, struct gc_a
     const char *retfname = NULL;
     unsigned int attempts = 0;
     char fname[256] = { 0 };
-    const char *fname_fmt = PACKAGE "_%.*s_%08lx%08lx.tmp";
+    const char *fname_fmt = PACKAGE "_%.*s_%08" PRIx64 "%08" PRIx64 ".tmp";
     const int max_prefix_len = sizeof(fname) - (sizeof(PACKAGE) + 7 + (2 * 8));
 
     while (attempts < 6)
     {
         ++attempts;
 
-        if (!snprintf(fname, sizeof(fname), fname_fmt, max_prefix_len, prefix,
-                      (unsigned long)get_random(), (unsigned long)get_random()))
+        if (!checked_snprintf(fname, sizeof(fname), fname_fmt, max_prefix_len, prefix,
+                              get_random(), get_random()))
         {
             msg(M_WARN, "ERROR: temporary filename too long");
             return NULL;

@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *  Copyright (C) 2006-2010, Brainspark B.V.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -49,13 +49,8 @@
 #include "ssl_verify_mbedtls.h"
 #include <mbedtls/debug.h>
 #include <mbedtls/error.h>
-#include <mbedtls/version.h>
-
-#if MBEDTLS_VERSION_NUMBER >= 0x02040000
 #include <mbedtls/net_sockets.h>
-#else
-#include <mbedtls/net.h>
-#endif
+#include <mbedtls/version.h>
 
 #include <mbedtls/oid.h>
 #include <mbedtls/pem.h>
@@ -98,7 +93,9 @@ tls_ctx_server_new(struct tls_root_ctx *ctx)
     ASSERT(NULL != ctx);
     CLEAR(*ctx);
 
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     ALLOC_OBJ_CLEAR(ctx->dhm_ctx, mbedtls_dhm_context);
+#endif
 
     ALLOC_OBJ_CLEAR(ctx->ca_chain, mbedtls_x509_crt);
 
@@ -112,7 +109,9 @@ tls_ctx_client_new(struct tls_root_ctx *ctx)
     ASSERT(NULL != ctx);
     CLEAR(*ctx);
 
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     ALLOC_OBJ_CLEAR(ctx->dhm_ctx, mbedtls_dhm_context);
+#endif
     ALLOC_OBJ_CLEAR(ctx->ca_chain, mbedtls_x509_crt);
 
     ctx->endpoint = MBEDTLS_SSL_IS_CLIENT;
@@ -133,8 +132,10 @@ tls_ctx_free(struct tls_root_ctx *ctx)
         mbedtls_x509_crt_free(ctx->crt_chain);
         free(ctx->crt_chain);
 
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
         mbedtls_dhm_free(ctx->dhm_ctx);
         free(ctx->dhm_ctx);
+#endif
 
         mbedtls_x509_crl_free(ctx->crl);
         free(ctx->crl);
@@ -162,53 +163,19 @@ tls_ctx_free(struct tls_root_ctx *ctx)
 bool
 tls_ctx_initialised(struct tls_root_ctx *ctx)
 {
-    ASSERT(NULL != ctx);
-    return ctx->initialised;
+    /* either this should be NULL or should be non-null and then have a
+     * valid TLS ctx inside as well */
+    ASSERT(NULL == ctx || ctx->initialised);
+    return ctx != NULL;
 }
-#ifdef MBEDTLS_SSL_KEYING_MATERIAL_EXPORT
-/* mbedtls_ssl_export_keying_material does not need helper/callback methods */
-#elif defined(HAVE_MBEDTLS_SSL_CONF_EXPORT_KEYS_EXT_CB)
+#if !defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
 /*
- * Key export callback for older versions of mbed TLS, to be used with
- * mbedtls_ssl_conf_export_keys_ext_cb(). It is called with the master
- * secret, client random and server random, and the type of PRF function
- * to use.
- *
- * Mbed TLS stores this callback in the mbedtls_ssl_config struct and it
- * is used in the mbedtls_ssl_contexts set up from that config. */
-int
-mbedtls_ssl_export_keys_cb(void *p_expkey, const unsigned char *ms, const unsigned char *kb,
-                           size_t maclen, size_t keylen, size_t ivlen,
-                           const unsigned char client_random[32],
-                           const unsigned char server_random[32],
-                           mbedtls_tls_prf_types tls_prf_type)
-{
-    struct tls_session *session = p_expkey;
-    struct key_state_ssl *ks_ssl = &session->key[KS_PRIMARY].ks_ssl;
-    struct tls_key_cache *cache = &ks_ssl->tls_key_cache;
-
-    static_assert(sizeof(ks_ssl->ctx->session->master) == sizeof(cache->master_secret),
-                  "master size mismatch");
-
-    memcpy(cache->client_server_random, client_random, 32);
-    memcpy(cache->client_server_random + 32, server_random, 32);
-    memcpy(cache->master_secret, ms, sizeof(cache->master_secret));
-    cache->tls_prf_type = tls_prf_type;
-
-    return 0;
-}
-#elif defined(HAVE_MBEDTLS_SSL_SET_EXPORT_KEYS_CB)
-/*
- * Key export callback for newer versions of mbed TLS, to be used with
- * mbedtls_ssl_set_export_keys_cb(). When used with TLS 1.2, the callback
- * is called with the TLS 1.2 master secret, client random, server random
- * and the type of PRF to use. With TLS 1.3, it is called with several
- * different keys (indicated by type), but unfortunately not the exporter
- * master secret.
- *
- * Unlike in older versions, the callback is not stored in the
- * mbedtls_ssl_config. It is placed in the mbedtls_ssl_context after it
- * has been set up. */
+ * If we don't have mbedtls_ssl_export_keying_material(), we use
+ * mbedtls_ssl_set_export_keys_cb() to obtain a copy of the TLS 1.2
+ * master secret and compute the TLS-Exporter function ourselves.
+ * Unfortunately, with TLS 1.3, there is no alternative to
+ * mbedtls_ssl_export_keying_material().
+ */
 void
 mbedtls_ssl_export_keys_cb(void *p_expkey, mbedtls_ssl_key_export_type type,
                            const unsigned char *secret, size_t secret_len,
@@ -240,9 +207,7 @@ mbedtls_ssl_export_keys_cb(void *p_expkey, mbedtls_ssl_key_export_type type,
     memcpy(cache->master_secret, secret, sizeof(cache->master_secret));
     cache->tls_prf_type = tls_prf_type;
 }
-#else  /* ifdef MBEDTLS_SSL_KEYING_MATERIAL_EXPORT */
-#error mbedtls_ssl_conf_export_keys_ext_cb, mbedtls_ssl_set_export_keys_cb or mbedtls_ssl_export_keying_material must be available in mbed TLS
-#endif /* HAVE_MBEDTLS_SSL_CONF_EXPORT_KEYS_EXT_CB */
+#endif /* !defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT) */
 
 
 bool
@@ -389,6 +354,73 @@ tls_ctx_set_cert_profile(struct tls_root_ctx *ctx, const char *profile)
     }
 }
 
+#if MBEDTLS_VERSION_NUMBER >= 0x04000000
+static const mbedtls_ecp_curve_info ecp_curve_info_table[] = {
+/* secp curves. */
+#if defined(PSA_WANT_ECC_SECP_R1_256)
+    { "secp256r1", MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1 },
+#endif
+#if defined(PSA_WANT_ECC_SECP_R1_384)
+    { "secp384r1", MBEDTLS_SSL_IANA_TLS_GROUP_SECP384R1 },
+#endif
+#if defined(PSA_WANT_ECC_SECP_R1_521)
+    { "secp521r1", MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1 },
+#endif
+
+/* Curve25519. */
+#if defined(PSA_WANT_ECC_MONTGOMERY_255)
+    { "X25519", MBEDTLS_SSL_IANA_TLS_GROUP_X25519 },
+#endif
+
+/* Curve448. */
+#if defined(PSA_WANT_ECC_MONTGOMERY_448)
+    { "X448", MBEDTLS_SSL_IANA_TLS_GROUP_X448 },
+#endif
+
+/* Brainpool curves. */
+#if defined(PSA_WANT_ECC_BRAINPOOL_P_R1_256)
+    { "brainpoolP256r1", MBEDTLS_SSL_IANA_TLS_GROUP_BP256R1 },
+#endif
+#if defined(PSA_WANT_ECC_BRAINPOOL_P_R1_384)
+    { "brainpoolP384r1", MBEDTLS_SSL_IANA_TLS_GROUP_BP384R1 },
+#endif
+#if defined(PSA_WANT_ECC_BRAINPOOL_P_R1_512)
+    { "brainpoolP512r1", MBEDTLS_SSL_IANA_TLS_GROUP_BP512R1 },
+#endif
+
+/* Named Diffie-Hellman groups. */
+#if defined(PSA_WANT_DH_RFC7919_2048)
+    { "ffdhe2048", MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE2048 },
+#endif
+#if defined(PSA_WANT_DH_RFC7919_3072)
+    { "ffdhe3072", MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE3072 },
+#endif
+#if defined(PSA_WANT_DH_RFC7919_4096)
+    { "ffdhe4096", MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE4096 },
+#endif
+#if defined(PSA_WANT_DH_RFC7919_6144)
+    { "ffdhe6144", MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE6144 },
+#endif
+#if defined(PSA_WANT_DH_RFC7919_8192)
+    { "ffdhe8192", MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE8192 },
+#endif
+};
+static const size_t ecp_curve_info_table_items = sizeof(ecp_curve_info_table) / sizeof(mbedtls_ecp_curve_info);
+
+static const mbedtls_ecp_curve_info *
+mbedtls_ecp_curve_info_from_name(const char *name)
+{
+    for (size_t i = 0; i < ecp_curve_info_table_items; i++)
+    {
+        if (strcmp(name, ecp_curve_info_table[i].name) == 0)
+        {
+            return &ecp_curve_info_table[i];
+        }
+    }
+    return NULL;
+}
+#endif /* MBEDTLS_VERSION_NUMBER >= 0x04000000 */
+
 void
 tls_ctx_set_tls_groups(struct tls_root_ctx *ctx, const char *groups)
 {
@@ -397,7 +429,7 @@ tls_ctx_set_tls_groups(struct tls_root_ctx *ctx, const char *groups)
 
     /* Get number of groups and allocate an array in ctx */
     int groups_count = get_num_elements(groups, ':');
-    ALLOC_ARRAY_CLEAR(ctx->groups, mbedtls_compat_group_id, groups_count + 1)
+    ALLOC_ARRAY_CLEAR(ctx->groups, uint16_t, groups_count + 1)
 
     /* Parse allowed ciphers, getting IDs */
     int i = 0;
@@ -413,9 +445,15 @@ tls_ctx_set_tls_groups(struct tls_root_ctx *ctx, const char *groups)
         }
         else
         {
-            ctx->groups[i] = mbedtls_compat_get_group_id(ci);
+            ctx->groups[i] = ci->tls_id;
             i++;
         }
+    }
+
+    /* Check if any groups were valid. */
+    if (i == 0)
+    {
+        msg(M_FATAL, "Error: All groups in \"%s\" are invalid or unsupported.", groups);
     }
 
     /* Recent mbedtls versions state that the list of groups must be terminated
@@ -450,6 +488,7 @@ tls_ctx_check_cert_time(const struct tls_root_ctx *ctx)
 void
 tls_ctx_load_dh_params(struct tls_root_ctx *ctx, const char *dh_file, bool dh_inline)
 {
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     if (dh_inline)
     {
         if (!mbed_ok(mbedtls_dhm_parse_dhm(ctx->dhm_ctx, (const unsigned char *)dh_file,
@@ -468,6 +507,12 @@ tls_ctx_load_dh_params(struct tls_root_ctx *ctx, const char *dh_file, bool dh_in
 
     msg(D_TLS_DEBUG_LOW, "Diffie-Hellman initialized with " counter_format " bit key",
         (counter_type)mbedtls_dhm_get_bitlen(ctx->dhm_ctx));
+#else
+    if (strcmp(dh_file, "none") != 0)
+    {
+        msg(M_FATAL, "Mbed TLS 4 only supports pre-defined Diffie-Hellman groups.");
+    }
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 }
 
 void
@@ -509,10 +554,14 @@ tls_ctx_load_cert_file(struct tls_root_ctx *ctx, const char *cert_file, bool cer
 
     if (cert_inline)
     {
+        if (!cert_file)
+        {
+            msg(M_FATAL, "Cannot load inline certificate: NULL");
+        }
         if (!mbed_ok(mbedtls_x509_crt_parse(ctx->crt_chain, (const unsigned char *)cert_file,
                                             strlen(cert_file) + 1)))
         {
-            msg(M_FATAL, "Cannot load inline certificate file");
+            msg(M_FATAL, "Cannot load inline certificate");
         }
     }
     else
@@ -538,8 +587,7 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file, bool
     if (priv_key_inline)
     {
         status = mbedtls_compat_pk_parse_key(ctx->priv_key, (const unsigned char *)priv_key_file,
-                                             strlen(priv_key_file) + 1, NULL, 0,
-                                             mbedtls_ctr_drbg_random, rand_ctx_get());
+                                             strlen(priv_key_file) + 1, NULL, 0);
 
         if (MBEDTLS_ERR_PK_PASSWORD_REQUIRED == status)
         {
@@ -547,19 +595,17 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file, bool
             pem_password_callback(passbuf, 512, 0, NULL);
             status = mbedtls_compat_pk_parse_key(
                 ctx->priv_key, (const unsigned char *)priv_key_file, strlen(priv_key_file) + 1,
-                (unsigned char *)passbuf, strlen(passbuf), mbedtls_ctr_drbg_random, rand_ctx_get());
+                (unsigned char *)passbuf, strlen(passbuf));
         }
     }
     else
     {
-        status = mbedtls_compat_pk_parse_keyfile(ctx->priv_key, priv_key_file, NULL,
-                                                 mbedtls_ctr_drbg_random, rand_ctx_get());
+        status = mbedtls_compat_pk_parse_keyfile(ctx->priv_key, priv_key_file, NULL);
         if (MBEDTLS_ERR_PK_PASSWORD_REQUIRED == status)
         {
             char passbuf[512] = { 0 };
             pem_password_callback(passbuf, 512, 0, NULL);
-            status = mbedtls_compat_pk_parse_keyfile(ctx->priv_key, priv_key_file, passbuf,
-                                                     mbedtls_ctr_drbg_random, rand_ctx_get());
+            status = mbedtls_compat_pk_parse_keyfile(ctx->priv_key, priv_key_file, passbuf);
         }
     }
     if (!mbed_ok(status))
@@ -575,8 +621,7 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file, bool
         return 1;
     }
 
-    if (!mbed_ok(mbedtls_compat_pk_check_pair(&ctx->crt_chain->pk, ctx->priv_key,
-                                              mbedtls_ctr_drbg_random, rand_ctx_get())))
+    if (!mbed_ok(mbedtls_compat_pk_check_pair(&ctx->crt_chain->pk, ctx->priv_key)))
     {
         msg(M_WARN, "Private key does not match the certificate");
         return 1;
@@ -590,6 +635,7 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file, bool
 #pragma GCC diagnostic ignored "-Wconversion"
 #endif
 
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
 /**
  * external_pkcs1_sign implements a mbed TLS rsa_sign_func callback, that uses
  * the management interface to request an RSA signature for the supplied hash.
@@ -610,9 +656,6 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file, bool
  */
 static inline int
 external_pkcs1_sign(void *ctx_voidptr, int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-#if MBEDTLS_VERSION_NUMBER < 0x03020100
-                    int mode,
-#endif
                     mbedtls_md_type_t md_alg, unsigned int hashlen, const unsigned char *hash,
                     unsigned char *sig)
 {
@@ -626,13 +669,6 @@ external_pkcs1_sign(void *ctx_voidptr, int (*f_rng)(void *, unsigned char *, siz
     {
         return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
     }
-
-#if MBEDTLS_VERSION_NUMBER < 0x03020100
-    if (MBEDTLS_RSA_PRIVATE != mode)
-    {
-        return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
-    }
-#endif
 
     /*
      * Support a wide range of hashes. TLSv1.1 and before only need SIG_RSA_RAW,
@@ -716,11 +752,16 @@ external_key_len(void *vctx)
 
     return ctx->signature_length;
 }
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 
 int
 tls_ctx_use_external_signing_func(struct tls_root_ctx *ctx, external_sign_func sign_func,
                                   void *sign_ctx)
 {
+#if MBEDTLS_VERSION_NUMBER >= 0x04000000
+    msg(M_WARN, "tls_ctx_use_external_signing_func is not implemented for Mbed TLS 4.");
+    return 1;
+#else
     ASSERT(NULL != ctx);
 
     if (ctx->crt_chain == NULL)
@@ -748,6 +789,7 @@ tls_ctx_use_external_signing_func(struct tls_root_ctx *ctx, external_sign_func s
     }
 
     return 0;
+#endif /* MBEDTLS_VERSION_NUMBER >= 0x04000000 */
 }
 
 #ifdef ENABLE_MANAGEMENT
@@ -985,6 +1027,7 @@ my_debug(void *ctx, int level, const char *file, int line, const char *str)
 void
 tls_ctx_personalise_random(struct tls_root_ctx *ctx)
 {
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     static char old_sha256_hash[32] = { 0 };
     unsigned char sha256_hash[32] = { 0 };
     mbedtls_ctr_drbg_context *cd_ctx = rand_ctx_get();
@@ -1000,13 +1043,14 @@ tls_ctx_personalise_random(struct tls_root_ctx *ctx)
 
         if (0 != memcmp(old_sha256_hash, sha256_hash, sizeof(sha256_hash)))
         {
-            if (!mbed_ok(mbedtls_compat_ctr_drbg_update(cd_ctx, sha256_hash, 32)))
+            if (!mbed_ok(mbedtls_ctr_drbg_update(cd_ctx, sha256_hash, 32)))
             {
                 msg(M_WARN, "WARNING: failed to personalise random, could not update CTR_DRBG");
             }
             memcpy(old_sha256_hash, sha256_hash, sizeof(old_sha256_hash));
         }
     }
+#endif /* MBEDTLS_VERSION_NUMBER < 0x040000 */
 }
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -1116,7 +1160,9 @@ key_state_ssl_init(struct key_state_ssl *ks_ssl, const struct tls_root_ctx *ssl_
     }
 #endif
     mbedtls_ssl_conf_dbg(ks_ssl->ssl_config, my_debug, NULL);
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     mbedtls_ssl_conf_rng(ks_ssl->ssl_config, mbedtls_ctr_drbg_random, rand_ctx_get());
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 
     mbedtls_ssl_conf_cert_profile(ks_ssl->ssl_config, &ssl_ctx->cert_profile);
 
@@ -1147,12 +1193,14 @@ key_state_ssl_init(struct key_state_ssl *ks_ssl, const struct tls_root_ctx *ssl_
 #endif /* MBEDTLS_SSL_CBC_RECORD_SPLITTING */
 
     /* Initialise authentication information */
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     if (is_server)
     {
         mbed_ok(mbedtls_ssl_conf_dh_param_ctx(ks_ssl->ssl_config, ssl_ctx->dhm_ctx));
     }
+#endif
 
-    mbed_ok(mbedtls_ssl_conf_own_cert(ks_ssl->ssl_config, ssl_ctx->crt_chain, ssl_ctx->priv_key));
+    (void)mbed_ok(mbedtls_ssl_conf_own_cert(ks_ssl->ssl_config, ssl_ctx->crt_chain, ssl_ctx->priv_key));
 
     /* Initialise SSL verification */
     if (session->opt->ssl_flags & SSLF_CLIENT_CERT_OPTIONAL)
@@ -1204,23 +1252,17 @@ key_state_ssl_init(struct key_state_ssl *ks_ssl, const struct tls_root_ctx *ssl_
         mbedtls_ssl_conf_max_tls_version(ks_ssl->ssl_config, version);
     }
 
-#if defined(HAVE_MBEDTLS_SSL_CONF_EXPORT_KEYS_EXT_CB) \
-    && !defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
-    /* Initialize keying material exporter, old style. */
-    mbedtls_ssl_conf_export_keys_ext_cb(ks_ssl->ssl_config, mbedtls_ssl_export_keys_cb, session);
-#endif
-
     /* Initialise SSL context */
     ALLOC_OBJ_CLEAR(ks_ssl->ctx, mbedtls_ssl_context);
     mbedtls_ssl_init(ks_ssl->ctx);
-    mbed_ok(mbedtls_ssl_setup(ks_ssl->ctx, ks_ssl->ssl_config));
+    (void)mbed_ok(mbedtls_ssl_setup(ks_ssl->ctx, ks_ssl->ssl_config));
     /* We do verification in our own callback depending on the
      * exact configuration. We do not rely on the default hostname
      * verification. */
     ASSERT(mbed_ok(mbedtls_ssl_set_hostname(ks_ssl->ctx, NULL)));
 
-#if defined(HAVE_MBEDTLS_SSL_SET_EXPORT_KEYS_CB) && !defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
-    /* Initialize keying material exporter, new style. */
+#if !defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
+    /* Initialize the keying material exporter callback. */
     mbedtls_ssl_set_export_keys_cb(ks_ssl->ctx, mbedtls_ssl_export_keys_cb, session);
 #endif
 
@@ -1286,14 +1328,12 @@ int
 key_state_write_plaintext_const(struct key_state_ssl *ks, const uint8_t *data, int len)
 {
     int retval = 0;
-    perf_push(PERF_BIO_WRITE_PLAINTEXT);
 
     ASSERT(NULL != ks);
     ASSERT(len >= 0);
 
     if (0 == len)
     {
-        perf_pop();
         return 0;
     }
 
@@ -1303,7 +1343,6 @@ key_state_write_plaintext_const(struct key_state_ssl *ks, const uint8_t *data, i
 
     if (retval < 0)
     {
-        perf_pop();
         if (MBEDTLS_ERR_SSL_WANT_WRITE == retval || MBEDTLS_ERR_SSL_WANT_READ == retval)
         {
             return 0;
@@ -1316,14 +1355,12 @@ key_state_write_plaintext_const(struct key_state_ssl *ks, const uint8_t *data, i
     {
         msg(D_TLS_ERRORS, "TLS ERROR: write tls_write_plaintext_const incomplete %d/%d", retval,
             len);
-        perf_pop();
         return -1;
     }
 
     /* successful write */
     dmsg(D_HANDSHAKE_VERBOSE, "write tls_write_plaintext_const %d bytes", retval);
 
-    perf_pop();
     return 1;
 }
 
@@ -1333,15 +1370,12 @@ key_state_read_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
     int retval = 0;
     int len = 0;
 
-    perf_push(PERF_BIO_READ_CIPHERTEXT);
-
     ASSERT(NULL != ks);
     ASSERT(buf);
     ASSERT(buf->len >= 0);
 
     if (buf->len)
     {
-        perf_pop();
         return 0;
     }
 
@@ -1352,7 +1386,6 @@ key_state_read_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
     /* Error during read, check for retry error */
     if (retval < 0)
     {
-        perf_pop();
         if (MBEDTLS_ERR_SSL_WANT_WRITE == retval || MBEDTLS_ERR_SSL_WANT_READ == retval)
         {
             return 0;
@@ -1365,14 +1398,12 @@ key_state_read_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
     if (0 == retval)
     {
         buf->len = 0;
-        perf_pop();
         return 0;
     }
 
     /* successful read */
     dmsg(D_HANDSHAKE_VERBOSE, "read tls_read_ciphertext %d bytes", retval);
     buf->len = retval;
-    perf_pop();
     return 1;
 }
 
@@ -1380,7 +1411,6 @@ int
 key_state_write_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
 {
     int retval = 0;
-    perf_push(PERF_BIO_WRITE_CIPHERTEXT);
 
     ASSERT(NULL != ks);
     ASSERT(buf);
@@ -1388,7 +1418,6 @@ key_state_write_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
 
     if (0 == buf->len)
     {
-        perf_pop();
         return 0;
     }
 
@@ -1396,8 +1425,6 @@ key_state_write_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
 
     if (retval < 0)
     {
-        perf_pop();
-
         if (MBEDTLS_ERR_SSL_WANT_WRITE == retval || MBEDTLS_ERR_SSL_WANT_READ == retval)
         {
             return 0;
@@ -1410,7 +1437,6 @@ key_state_write_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
     {
         msg(D_TLS_ERRORS, "TLS ERROR: write tls_write_ciphertext incomplete %d/%d", retval,
             buf->len);
-        perf_pop();
         return -1;
     }
 
@@ -1420,7 +1446,6 @@ key_state_write_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
     memset(BPTR(buf), 0, BLEN(buf)); /* erase data just written */
     buf->len = 0;
 
-    perf_pop();
     return 1;
 }
 
@@ -1430,15 +1455,12 @@ key_state_read_plaintext(struct key_state_ssl *ks, struct buffer *buf)
     int retval = 0;
     int len = 0;
 
-    perf_push(PERF_BIO_READ_PLAINTEXT);
-
     ASSERT(NULL != ks);
     ASSERT(buf);
     ASSERT(buf->len >= 0);
 
     if (buf->len)
     {
-        perf_pop();
         return 0;
     }
 
@@ -1449,20 +1471,19 @@ key_state_read_plaintext(struct key_state_ssl *ks, struct buffer *buf)
     /* Error during read, check for retry error */
     if (retval < 0)
     {
-        if (MBEDTLS_ERR_SSL_WANT_WRITE == retval || MBEDTLS_ERR_SSL_WANT_READ == retval)
+        if (MBEDTLS_ERR_SSL_WANT_WRITE == retval || MBEDTLS_ERR_SSL_WANT_READ == retval
+            || MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET == retval)
         {
             return 0;
         }
         mbed_log_err(D_TLS_ERRORS, retval, "TLS_ERROR: read tls_read_plaintext error");
         buf->len = 0;
-        perf_pop();
         return -1;
     }
     /* Nothing read, try again */
     if (0 == retval)
     {
         buf->len = 0;
-        perf_pop();
         return 0;
     }
 
@@ -1470,7 +1491,6 @@ key_state_read_plaintext(struct key_state_ssl *ks, struct buffer *buf)
     dmsg(D_HANDSHAKE_VERBOSE, "read tls_read_plaintext %d bytes", retval);
     buf->len = retval;
 
-    perf_pop();
     return 1;
 }
 
@@ -1532,6 +1552,7 @@ show_available_tls_ciphers_list(const char *cipher_list, const char *tls_cert_pr
 void
 show_available_curves(void)
 {
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     const mbedtls_ecp_curve_info *pcurve = mbedtls_ecp_curve_list();
 
     if (NULL == pcurve)
@@ -1546,6 +1567,13 @@ show_available_curves(void)
         printf("%s\n", pcurve->name);
         pcurve++;
     }
+#else
+    printf("Available elliptic curves:\n\n");
+    for (size_t i = 0; i < ecp_curve_info_table_items; i++)
+    {
+        printf("%s\n", ecp_curve_info_table[i].name);
+    }
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 }
 
 const char *

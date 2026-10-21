@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -34,12 +34,9 @@
 #include "socket.h"
 #include "tun.h"
 #include "otime.h"
-#include "perf.h"
 #include "status.h"
 #include "integer.h"
 #include "ps.h"
-#include "mstats.h"
-
 
 #if SYSLOG_CAPABILITY
 #ifndef LOG_OPENVPN
@@ -624,14 +621,14 @@ set_check_status(unsigned int info_level, unsigned int verbose_level)
  * from the OS.
  */
 void
-x_check_status(int status, const char *description, struct link_socket *sock, struct tuntap *tt)
+x_check_status(ssize_t status, const char *description, struct link_socket *sock, struct tuntap *tt)
 {
     const char *extended_msg = NULL;
 
     bool crt_error = false;
     int my_errno = openvpn_errno_maybe_crt(&crt_error);
 
-    msg(x_cs_verbose_level, "%s %s returned %d",
+    msg(x_cs_verbose_level, "%s %s returned %zd",
         sock ? proto2ascii(sock->info.proto, sock->info.af, true) : "", description, status);
 
     if (status < 0)
@@ -724,21 +721,12 @@ openvpn_exit(const int status)
         }
 #endif
 
-#ifdef ENABLE_MEMSTATS
-        mstats_close();
-#endif
-
 #ifdef ABORT_ON_ERROR
         if (status == OPENVPN_EXIT_STATUS_ERROR)
         {
             abort();
         }
 #endif
-
-        if (status == OPENVPN_EXIT_STATUS_GOOD)
-        {
-            perf_output_results();
-        }
     }
 
     exit(status);

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -162,6 +162,36 @@ multi_io_free(struct multi_io *multi_io)
     }
 }
 
+/*
+ * Return the io flags appropriate for
+ * a point-to-multipoint tunnel.
+ */
+static unsigned int
+p2mp_iow_flags(const struct multi_context *m, struct link_socket *sock)
+{
+    unsigned int flags = IOW_WAIT_SIGNAL;
+
+    if (m->pending)
+    {
+        if (TUN_OUT(&m->pending->context))
+        {
+            flags |= IOW_TO_TUN;
+        }
+
+        /* If the to be processed socket happens to be the same one on the pending
+         * UDP client instance, we set that socket ready for write */
+        if (LINK_OUT(&m->pending->context) && m->pending->context.c2.link_sockets[0] == sock)
+        {
+            flags |= IOW_TO_LINK;
+        }
+    }
+    else
+    {
+        flags |= IOW_READ;
+    }
+    return flags;
+}
+
 int
 multi_io_wait(struct multi_context *m)
 {
@@ -179,7 +209,17 @@ multi_io_wait(struct multi_context *m)
 
     if (has_udp_in_local_list(&m->top.options))
     {
-        get_io_flags_udp(&m->top, m->multi_io, p2mp_iow_flags(m));
+        for (int i = 0; i < m->top.c1.link_sockets_num; i++)
+        {
+            struct link_socket *sock = m->top.c2.link_sockets[i];
+
+            if ((m->top.options.mode == MODE_SERVER) && proto_is_dgram(sock->info.proto))
+            {
+                unsigned int flags = p2mp_iow_flags(m, sock);
+
+                multi_io_process_flags(&m->top, m->multi_io->es, sock, flags);
+            }
+        }
     }
 
     tun_set(m->top.c1.tuntap, m->multi_io->es, EVENT_READ, MULTI_IO_TUN, persistent);
@@ -242,9 +282,7 @@ multi_io_wait_lite(struct multi_context *m, struct multi_instance *mi, const int
             tun_input_pending = NULL;
             /* For some reason, the Linux 2.2 TUN/TAP driver hits this timeout */
             c->c2.timeval.tv_sec = 1;
-            perf_push(PERF_PROC_OUT_TUN_MTCP);
             io_wait(c, IOW_TO_TUN);
-            perf_pop();
             break;
 
         case TA_SOCKET_WRITE:
@@ -467,7 +505,7 @@ multi_io_process_io(struct multi_context *m)
                     }
                     else
                     {
-                        multi_process_io_udp(m, ev_arg->u.sock);
+                        multi_process_io_udp(m, ev_arg->u.sock, e->rwflags);
                         mi = m->pending;
                     }
                     /* monitor and/or handle events that are
@@ -502,23 +540,12 @@ multi_io_process_io(struct multi_context *m)
                         multi_io_action(m, NULL, TA_TUN_READ, false);
                     }
                 }
-                /* new incoming TCP client attempting to connect? */
-                else if (e->arg == MULTI_IO_SOCKET)
-                {
-                    struct multi_instance *mi;
-                    ASSERT(m->top.c2.link_sockets[0]);
-                    socket_reset_listen_persistent(m->top.c2.link_sockets[0]);
-                    mi = multi_create_instance_tcp(m, m->top.c2.link_sockets[0]);
-                    if (mi)
-                    {
-                        multi_io_action(m, mi, TA_INITIAL, false);
-                    }
-                }
+
 #if defined(ENABLE_DCO)
                 /* incoming data on DCO? */
                 else if (e->arg == MULTI_IO_DCO)
                 {
-                    multi_process_incoming_dco(m);
+                    dco_read_and_process(&m->top.c1.tuntap->dco);
                 }
 #endif
                 /* signal received? */
@@ -541,7 +568,7 @@ multi_io_process_io(struct multi_context *m)
     multi_io->n_esr = 0;
 
     /*
-     * Process queued mbuf packets destined for TCP socket
+     * Drain the queued mbuf packets, datagram and TCP instances alike
      */
     {
         struct multi_instance *mi;

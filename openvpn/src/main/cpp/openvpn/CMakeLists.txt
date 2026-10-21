@@ -85,9 +85,12 @@ if (MSVC)
     if (USE_WERROR)
         add_compile_options(/WX)
     endif ()
+    # C4018: signed/unsigned mismatch
+    # C4244: conversion from 'type1' to 'type2', possible loss of data
+    # C4267: conversion from 'size_t' to 'type', possible loss of data
     add_compile_options(
         /MP
-        /W2
+        /W3 /wd4018 /wd4267 /wd4244
         /sdl
         /Qspectre
         /guard:cf
@@ -109,12 +112,12 @@ if (MSVC)
         add_link_options("$<$<CONFIG:Release>:/CETCOMPAT>")
     endif()
 else ()
-    add_compile_options(-Wall -Wuninitialized)
+    add_compile_options(-Wall)
     check_and_add_compiler_flag(-Wno-stringop-truncation NoStringOpTruncation)
     check_and_add_compiler_flag(-Wstrict-prototypes StrictPrototypes)
     check_and_add_compiler_flag(-Wold-style-definition OldStyleDefinition)
     add_compile_options(-Wconversion -Wno-sign-conversion)
-    add_compile_options(-Wextra -Wno-sign-compare -Wno-type-limits -Wno-unused-parameter)
+    add_compile_options(-Wextra -Wno-sign-compare -Wno-unused-parameter)
     # clang doesn't have the different levels but also doesn't include it in -Wextra
     check_and_add_compiler_flag(-Wimplicit-fallthrough=2 GCCImplicitFallthrough)
     if (WIN32)
@@ -138,6 +141,10 @@ set(OPENVPN_VERSION_MINOR ${PRODUCT_VERSION_MINOR})
 set(OPENVPN_VERSION_PATCH ${PRODUCT_VERSION_PATCH})
 set(OPENVPN_VERSION_RESOURCE ${PRODUCT_VERSION_RESOURCE})
 
+set(TAP_WIN_COMPONENT_ID "${PRODUCT_TAP_WIN_COMPONENT_ID}")
+set(TAP_WIN_MIN_MAJOR ${PRODUCT_TAP_WIN_MIN_MAJOR})
+set(TAP_WIN_MIN_MINOR ${PRODUCT_TAP_WIN_MIN_MINOR})
+
 set(CMAKE_C_STANDARD 11)
 
 # Set the various defines for config.h.cmake.in
@@ -145,7 +152,6 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Android" OR ${FAKE_ANDROID})
     set(TARGET_ANDROID YES)
     set(ENABLE_ASYNC_PUSH YES)
     set(ENABLE_SITNL YES)
-    set(HAVE_LINUX_TYPES_H 1)
     # Wacky workaround as OpenSSL package detection is otherwise broken (https://stackoverflow.com/questions/45958214/android-cmake-could-not-find-openssl)
     list(APPEND CMAKE_FIND_ROOT_PATH ${OPENSSL_ROOT_DIR})
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -153,9 +159,6 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(ENABLE_ASYNC_PUSH YES)
     set(ENABLE_LINUXDCO YES)
     set(ENABLE_SITNL YES)
-    set(HAVE_DECL_SO_MARK YES)
-    set(ENABLE_FEATURE_TUN_PERSIST 1)
-    set(HAVE_LINUX_TYPES_H 1)
     set(ENABLE_DCO YES)
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
     set(TARGET_FREEBSD YES)
@@ -244,6 +247,7 @@ endif()
 
 check_symbol_exists(chsize io.h HAVE_CHSIZE)
 check_symbol_exists(getrlimit sys/resource.h HAVE_GETRLIMIT)
+check_symbol_exists(strsep string.h HAVE_STRSEP)
 
 # Some OS (e.g. FreeBSD) need some basic headers to allow
 # including network headers
@@ -258,8 +262,6 @@ check_include_files(dlfcn.h HAVE_DLFCN_H)
 check_include_files(dmalloc.h HAVE_DMALLOC_H)
 check_include_files(fcntl.h HAVE_FCNTL_H)
 check_include_files(err.h HAVE_ERR_H)
-check_include_files(linux/if_tun.h HAVE_LINUX_IF_TUN_H)
-check_include_files(linux/sockios.h HAVE_LINUX_SOCKIOS_H)
 check_include_files(netdb.h HAVE_NETDB_H)
 check_include_files("${NETEXTRA};netinet/in6.h" HAVE_NETINET_IN_H)
 check_include_files(net/if.h HAVE_NET_IF_H)
@@ -305,10 +307,6 @@ function(check_mbed_configuration)
         set(CMAKE_REQUIRED_LINK_OPTIONS "-L${MBED_LIBRARY_PATH}")
     endif ()
     set(CMAKE_REQUIRED_LIBRARIES "mbedtls;mbedx509;mbedcrypto")
-    check_symbol_exists(mbedtls_ctr_drbg_update_ret mbedtls/ctr_drbg.h HAVE_MBEDTLS_CTR_DRBG_UPDATE_RET)
-    check_symbol_exists(mbedtls_ssl_conf_export_keys_ext_cb mbedtls/ssl.h HAVE_MBEDTLS_SSL_CONF_EXPORT_KEYS_EXT_CB)
-    check_symbol_exists(mbedtls_ssl_set_export_keys_cb mbedtls/ssl.h HAVE_MBEDTLS_SSL_SET_EXPORT_KEYS_CB)
-    check_symbol_exists(mbedtls_ssl_tls_prf mbedtls/ssl.h HAVE_MBEDTLS_SSL_TLS_PRF)
     check_include_files(psa/crypto.h HAVE_PSA_CRYPTO_H)
 endfunction()
 
@@ -331,8 +329,6 @@ function(add_library_deps target)
         target_link_libraries(${target} PUBLIC ${wolfssl_LINK_LIBRARIES})
         target_include_directories(${target} PRIVATE ${wolfssl_INCLUDE_DIRS}/wolfssl)
     else ()
-        set(ENABLE_X509ALTUSERNAME YES)
-
         find_package(OpenSSL REQUIRED)
         target_link_libraries(${target} PUBLIC OpenSSL::SSL OpenSSL::Crypto)
         if (WIN32)
@@ -371,10 +367,8 @@ if (${MBED})
 elseif (${WOLFSSL})
     set(ENABLE_CRYPTO_OPENSSL YES)
     set(ENABLE_CRYPTO_WOLFSSL YES)
-    set(ENABLE_X509ALTUSERNAME YES)
 else ()
     set(ENABLE_CRYPTO_OPENSSL YES)
-    set(ENABLE_X509ALTUSERNAME YES)
 endif ()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} src/compat include)
@@ -384,6 +378,26 @@ add_custom_command(
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/contrib/cmake/git-version.py
     )
 set(HAVE_CONFIG_VERSION_H YES)
+
+if (BUILD_TESTING)
+    find_package(cmocka CONFIG)
+    if (TARGET cmocka::cmocka)
+        set(CMOCKA_LIBRARIES cmocka::cmocka)
+        get_target_property(CMOCKA_INCLUDE_DIRS cmocka::cmocka INTERFACE_INCLUDE_DIRECTORIES)
+    else ()
+        pkg_search_module(cmocka cmocka REQUIRED IMPORTED_TARGET)
+        set(CMOCKA_LIBRARIES PkgConfig::cmocka)
+        set(CMOCKA_INCLUDE_DIRS ${cmocka_INCLUDE_DIRS})
+    endif ()
+    # cmocka_version.h exists since cmocka 2.0; its absence selects the
+    # cmocka 1.x compat shims in test_common.h. Detecting a header only needs
+    # the include path - do NOT add cmocka to CMAKE_REQUIRED_LIBRARIES, as that
+    # makes check_include_files link the shared library, which can fail in the
+    # probe for unrelated reasons and wrongly mis-detect cmocka 2.x as < 2.0.
+    set(CMAKE_REQUIRED_INCLUDES ${CMOCKA_INCLUDE_DIRS})
+    check_include_files(cmocka_version.h HAVE_CMOCKA_VERSION_H)
+    unset(CMAKE_REQUIRED_INCLUDES)
+endif ()
 
 configure_file(config.h.cmake.in config.h)
 configure_file(include/openvpn-plugin.h.in openvpn-plugin.h)
@@ -490,8 +504,6 @@ set(SOURCE_FILES
     src/openvpn/mroute.h
     src/openvpn/mss.c
     src/openvpn/mss.h
-    src/openvpn/mstats.c
-    src/openvpn/mstats.h
     src/openvpn/mtcp.c
     src/openvpn/mtcp.h
     src/openvpn/mtu.c
@@ -519,8 +531,6 @@ set(SOURCE_FILES
     src/openvpn/ovpn_dco_win.h
     src/openvpn/packet_id.c
     src/openvpn/packet_id.h
-    src/openvpn/perf.c
-    src/openvpn/perf.h
     src/openvpn/ping.c
     src/openvpn/ping.h
     src/openvpn/pkcs11.c
@@ -643,21 +653,16 @@ if (NOT WIN32)
     endif ()
 endif ()
 
+option(UT_ALLOW_BIG_ALLOC "Allow unit-tests to use > 1 GB of memory" ON)
 
 if (BUILD_TESTING)
-    find_package(cmocka CONFIG)
-    if (TARGET cmocka::cmocka)
-        set(CMOCKA_LIBRARIES cmocka::cmocka)
-    else ()
-        pkg_search_module(cmocka cmocka REQUIRED IMPORTED_TARGET)
-        set(CMOCKA_LIBRARIES PkgConfig::cmocka)
-    endif ()
-
     set(unit_tests
         "test_argv"
         "test_auth_token"
         "test_buffer"
         "test_crypto"
+        "test_dhcp"
+        "test_mbuf"
         "test_misc"
         "test_ncp"
         "test_options_parse"
@@ -729,7 +734,7 @@ if (BUILD_TESTING)
             add_test(${test_name} ${test_name})
             # for compat with autotools make check
             set_tests_properties(${test_name} PROPERTIES
-                ENVIRONMENT "srcdir=${_UT_SOURCE_DIR}")
+                ENVIRONMENT "srcdir=${_UT_SOURCE_DIR};LSAN_OPTIONS=suppressions=${_UT_SOURCE_DIR}/input/leak_suppr.txt")
         endif ()
         add_executable(${test_name}
             tests/unit_tests/openvpn/${test_name}.c
@@ -748,6 +753,9 @@ if (BUILD_TESTING)
         # for compat with IDEs like Clion that ignore the tests properties
         # for the environment variable srcdir when running tests as fallback
         target_compile_definitions(${test_name} PRIVATE "UNIT_TEST_SOURCEDIR=\"${_UT_SOURCE_DIR}\"")
+        if (UT_ALLOW_BIG_ALLOC)
+            target_compile_definitions(${test_name} PRIVATE UNIT_TEST_ALLOW_BIG_ALLOC)
+        endif ()
 
         if (NOT ${test_name} STREQUAL "test_buffer")
             target_sources(${test_name} PRIVATE
@@ -808,6 +816,11 @@ if (BUILD_TESTING)
             src/openvpn/xkey_helper.c
             src/openvpn/xkey_provider.c
     )
+
+    target_sources(test_mbuf PRIVATE
+        tests/unit_tests/openvpn/mock_get_random.c
+        src/openvpn/mbuf.c
+        )
 
     target_sources(test_misc PRIVATE
         tests/unit_tests/openvpn/mock_get_random.c
@@ -888,7 +901,6 @@ if (BUILD_TESTING)
     target_sources(test_push_update_msg PRIVATE
         tests/unit_tests/openvpn/mock_msg.c
         tests/unit_tests/openvpn/mock_get_random.c
-        src/openvpn/push_util.c
         src/openvpn/options_util.c
         src/openvpn/otime.c
         src/openvpn/list.c
@@ -910,6 +922,11 @@ if (BUILD_TESTING)
             )
     endif ()
 
+    target_compile_definitions(test_dhcp PRIVATE DHCP_UNIT_TEST)
+    target_sources(test_dhcp PRIVATE
+        tests/unit_tests/openvpn/mock_get_random.c
+        )
+
     if (TARGET test_networking)
         target_link_options(test_networking PRIVATE -Wl,--wrap=parse_line)
         target_compile_options(test_networking PRIVATE -UNDEBUG)
@@ -920,6 +937,7 @@ if (BUILD_TESTING)
             src/openvpn/crypto_openssl.c
             src/openvpn/crypto.c
             src/openvpn/crypto_epoch.c
+            src/openvpn/fdmisc.c
             src/openvpn/otime.c
             src/openvpn/packet_id.c
             )

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -102,6 +102,7 @@ print_bypass_addresses(const struct route_bypass *rb)
 #define RTA_SUCCESS 1 /* route addition succeeded */
 #define RTA_EEXIST  2 /* route not added as it already exists */
 
+#ifndef TARGET_ANDROID
 static bool
 add_bypass_address(struct route_bypass *rb, const in_addr_t a)
 {
@@ -123,6 +124,7 @@ add_bypass_address(struct route_bypass *rb, const in_addr_t a)
         return false;
     }
 }
+#endif
 
 struct route_option_list *
 new_route_option_list(struct gc_arena *a)
@@ -257,9 +259,9 @@ get_special_addr(const struct route_list *rl, const char *string, in_addr_t *out
     {
         if (rl)
         {
-            if (rl->rgi.flags & RGI_ADDR_DEFINED)
+            if (rl->ngi.flags & RGI_ADDR_DEFINED)
             {
-                *out = rl->rgi.gateway.addr;
+                *out = rl->ngi.gateway.addr;
             }
             else
             {
@@ -624,10 +626,10 @@ init_route_list(struct route_list *rl, const struct route_option_list *opt,
         rl->spec.flags |= RTSA_DEFAULT_METRIC;
     }
 
-    get_default_gateway(&rl->rgi, remote_host != IPV4_INVALID_ADDR ? remote_host : INADDR_ANY, ctx);
-    if (rl->rgi.flags & RGI_ADDR_DEFINED)
+    get_default_gateway(&rl->ngi, INADDR_ANY, ctx);
+    if (rl->ngi.flags & RGI_ADDR_DEFINED)
     {
-        setenv_route_addr(es, "net_gateway", rl->rgi.gateway.addr, -1);
+        setenv_route_addr(es, "net_gateway", rl->ngi.gateway.addr, -1);
 #if defined(ENABLE_DEBUG) && !defined(ENABLE_SMALL)
         print_default_gateway(D_ROUTE, &rl->rgi, NULL);
 #endif
@@ -636,6 +638,8 @@ init_route_list(struct route_list *rl, const struct route_option_list *opt,
     {
         dmsg(D_ROUTE, "ROUTE: default_gateway=UNDEF");
     }
+
+    get_default_gateway(&rl->rgi, remote_host != IPV4_INVALID_ADDR ? remote_host : INADDR_ANY, ctx);
 
     if (rl->spec.flags & RTSA_REMOTE_HOST)
     {
@@ -773,10 +777,10 @@ init_route_ipv6_list(struct route_ipv6_list *rl6, const struct route_ipv6_option
     msg(D_ROUTE, "GDG6: remote_host_ipv6=%s",
         remote_host_ipv6 ? print_in6_addr(*remote_host_ipv6, 0, &gc) : "n/a");
 
-    get_default_gateway_ipv6(&rl6->rgi6, remote_host_ipv6, ctx);
-    if (rl6->rgi6.flags & RGI_ADDR_DEFINED)
+    get_default_gateway_ipv6(&rl6->ngi6, NULL, ctx);
+    if (rl6->ngi6.flags & RGI_ADDR_DEFINED)
     {
-        setenv_str(es, "net_gateway_ipv6", print_in6_addr(rl6->rgi6.gateway.addr_ipv6, 0, &gc));
+        setenv_str(es, "net_gateway_ipv6", print_in6_addr(rl6->ngi6.gateway.addr_ipv6, 0, &gc));
 #if defined(ENABLE_DEBUG) && !defined(ENABLE_SMALL)
         print_default_gateway(D_ROUTE, NULL, &rl6->rgi6);
 #endif
@@ -785,6 +789,8 @@ init_route_ipv6_list(struct route_ipv6_list *rl6, const struct route_ipv6_option
     {
         dmsg(D_ROUTE, "ROUTE6: default_gateway=UNDEF");
     }
+
+    get_default_gateway_ipv6(&rl6->rgi6, remote_host_ipv6, ctx);
 
     if (is_route_parm_defined(remote_endpoint))
     {
@@ -1756,11 +1762,6 @@ done:
     return (status != RTA_ERROR);
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 void
 route_ipv6_clear_host_bits(struct route_ipv6 *r6)
 {
@@ -1827,7 +1828,7 @@ add_route_ipv6(struct route_ipv6 *r6, const struct tuntap *tt, unsigned int flag
     if (r6->iface != NULL && gateway_needed
         && IN6_IS_ADDR_LINKLOCAL(&r6->gateway)) /* fe80::...%intf */
     {
-        int len = strlen(gateway) + 1 + strlen(r6->iface) + 1;
+        size_t len = strlen(gateway) + 1 + strlen(r6->iface) + 1;
         char *tmp = gc_malloc(len, true, &gc);
         snprintf(tmp, len, "%s%%%s", gateway, r6->iface);
         gateway = tmp;
@@ -2031,9 +2032,7 @@ delete_route(struct route_ipv4 *r, const struct tuntap *tt, unsigned int flags,
 #if !defined(TARGET_AIX)
     const char *netmask;
 #endif
-#if !defined(TARGET_ANDROID)
     const char *gateway;
-#endif
 #else /* if !defined(TARGET_LINUX) */
     int metric;
 #endif
@@ -2052,9 +2051,7 @@ delete_route(struct route_ipv4 *r, const struct tuntap *tt, unsigned int flags,
 #if !defined(TARGET_AIX)
     netmask = print_in_addr_t(r->netmask, 0, &gc);
 #endif
-#if !defined(TARGET_ANDROID)
     gateway = print_in_addr_t(r->gateway, 0, &gc);
-#endif
 #endif
 
     is_local_route = local_route(r->network, r->netmask, r->gateway, rgi);
@@ -2161,9 +2158,13 @@ delete_route(struct route_ipv4 *r, const struct tuntap *tt, unsigned int flags,
     openvpn_execve_check(&argv, es, 0, "ERROR: OpenBSD/NetBSD route delete command failed");
 
 #elif defined(TARGET_ANDROID)
+    /* Avoids the unused variables warnings that all other platforms use
+     * by adding them to the error message. */
     msg(D_ROUTE_DEBUG, "Deleting routes on Android is not possible/not "
                        "needed. The VpnService API allows routes to be set "
-                       "on connect only and will clean up automatically.");
+                       "on connect only and will clean up automatically. "
+                       "Tried to delete route %s netmask %s gateway %s",
+        network, netmask, gateway);
 #elif defined(TARGET_AIX)
 
     {
@@ -2247,7 +2248,7 @@ delete_route_ipv6(const struct route_ipv6 *r6, const struct tuntap *tt, const st
     if (r6->iface != NULL && gateway_needed
         && IN6_IS_ADDR_LINKLOCAL(&r6->gateway)) /* fe80::...%intf */
     {
-        int len = strlen(gateway) + 1 + strlen(r6->iface) + 1;
+        size_t len = strlen(gateway) + 1 + strlen(r6->iface) + 1;
         char *tmp = gc_malloc(len, true, &gc);
         snprintf(tmp, len, "%s%%%s", gateway, r6->iface);
         gateway = tmp;
@@ -2345,7 +2346,10 @@ delete_route_ipv6(const struct route_ipv6 *r6, const struct tuntap *tt, const st
 #elif defined(TARGET_ANDROID)
     msg(D_ROUTE_DEBUG, "Deleting routes on Android is not possible/not "
                        "needed. The VpnService API allows routes to be set "
-                       "on connect only and will clean up automatically.");
+                       "on connect only and will clean up automatically. "
+                       "Tried to delete %s gateway %s",
+        network,
+        gateway_needed ? gateway : "(not needed)");
 #elif defined(TARGET_HAIKU)
 
     /* ex: route delete /dev/net/ipro1000/0 inet6 :: gw beef::cafe prefixlen 64 */
@@ -2364,10 +2368,6 @@ delete_route_ipv6(const struct route_ipv6 *r6, const struct tuntap *tt, const st
     /* release resources potentially allocated during route cleanup */
     net_ctx_reset(ctx);
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 /*
  * The --redirect-gateway option requires OS-specific code below
@@ -2840,7 +2840,7 @@ del_route_ipapi(const struct route_ipv4 *r, const struct tuntap *tt)
 
 /* Returns RTA_SUCCESS on success, RTA_EEXIST if route exists, RTA_ERROR on error */
 static int
-do_route_service(const bool add, const route_message_t *rt, const size_t size, HANDLE pipe)
+do_route_service(const bool add, const route_message_t *rt, const DWORD size, HANDLE pipe)
 {
     int ret = RTA_ERROR;
     ack_message_t ack;
@@ -3255,9 +3255,9 @@ done:
 }
 
 /* IPv6 implementation using netlink
- * http://www.linuxjournal.com/article/7356
+ * https://www.linuxjournal.com/article/7356 - "Kernel Korner - Why and How to Use Netlink Socket"
  * netlink(3), netlink(7), rtnetlink(7)
- * http://www.virtualbox.org/svn/vbox/trunk/src/VBox/NetworkServices/NAT/rtmon_linux.c
+ * https://www.virtualbox.org/svn/vbox/trunk/src/VBox/NetworkServices/NAT/
  */
 struct rtreq
 {
@@ -3345,19 +3345,19 @@ struct rtmsg
 #define NEXTADDR(w, u)        \
     if (rtm_addrs & (w))      \
     {                         \
-        l = sizeof(u);        \
+        size_t l = sizeof(u); \
         memmove(cp, &(u), l); \
         cp += ROUNDUP(l);     \
     }
 
 #define ADVANCE(x, n) (x += ROUNDUP(sizeof(struct sockaddr_in)))
 #else /* if defined(TARGET_SOLARIS) */
-#define NEXTADDR(w, u)                         \
-    if (rtm_addrs & (w))                       \
-    {                                          \
-        l = ((struct sockaddr *)&(u))->sa_len; \
-        memmove(cp, &(u), l);                  \
-        cp += ROUNDUP(l);                      \
+#define NEXTADDR(w, u)                                \
+    if (rtm_addrs & (w))                              \
+    {                                                 \
+        size_t l = ((struct sockaddr *)&(u))->sa_len; \
+        memmove(cp, &(u), l);                         \
+        cp += ROUNDUP(l);                             \
     }
 
 #define ADVANCE(x, n) (x += ROUNDUP((n)->sa_len))
@@ -3365,19 +3365,13 @@ struct rtmsg
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 void
 get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_ctx_t *ctx)
 {
     struct gc_arena gc = gc_new();
     struct rtmsg m_rtmsg;
     int sockfd = -1;
-    int seq, l, pid, rtm_addrs;
-    unsigned int i;
+    int rtm_addrs;
     struct sockaddr so_dst, so_mask;
     char *cp = m_rtmsg.m_space;
     struct sockaddr *gate = NULL, *ifp = NULL, *sa;
@@ -3388,8 +3382,8 @@ get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_
     CLEAR(*rgi);
 
     /* setup data to send to routing socket */
-    pid = getpid();
-    seq = 0;
+    const int pid = getpid();
+    int seq = 0;
 #ifdef TARGET_OPENBSD
     rtm_addrs = RTA_DST | RTA_NETMASK; /* Kernel refuses RTA_IFP */
 #else
@@ -3406,7 +3400,7 @@ get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_
     rtm.rtm_version = RTM_VERSION;
     rtm.rtm_seq = ++seq;
 #ifdef TARGET_OPENBSD
-    rtm.rtm_tableid = getrtable();
+    rtm.rtm_tableid = (u_short)getrtable();
 #endif
     rtm.rtm_addrs = rtm_addrs;
 
@@ -3421,7 +3415,8 @@ get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_
     NEXTADDR(RTA_DST, so_dst);
     NEXTADDR(RTA_NETMASK, so_mask);
 
-    rtm.rtm_msglen = l = cp - (char *)&m_rtmsg;
+    /* sizeof(struct rt_msghdr) + padding */
+    rtm.rtm_msglen = (u_short)(cp - (char *)&m_rtmsg);
 
     /* transact with routing socket */
     sockfd = socket(PF_ROUTE, SOCK_RAW, 0);
@@ -3430,24 +3425,25 @@ get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_
         msg(M_WARN, "GDG: socket #1 failed");
         goto done;
     }
-    if (write(sockfd, (char *)&m_rtmsg, l) < 0)
+    if (write(sockfd, (char *)&m_rtmsg, rtm.rtm_msglen) < 0)
     {
         msg(M_WARN | M_ERRNO, "GDG: problem writing to routing socket");
         goto done;
     }
+    ssize_t ret;
     do
     {
-        l = read(sockfd, (char *)&m_rtmsg, sizeof(m_rtmsg));
-    } while (l > 0 && (rtm.rtm_seq != seq || rtm.rtm_pid != pid));
+        ret = read(sockfd, (char *)&m_rtmsg, sizeof(m_rtmsg));
+    } while (ret > 0 && (rtm.rtm_seq != seq || rtm.rtm_pid != pid));
     close(sockfd);
     sockfd = -1;
 
     /* extract return data from routing socket */
     rtm_aux = &rtm;
-    cp = ((char *)(rtm_aux + 1));
+    cp = (char *)(rtm_aux + 1);
     if (rtm_aux->rtm_addrs)
     {
-        for (i = 1; i; i <<= 1)
+        for (unsigned int i = 1; i; i <<= 1)
         {
             if (i & rtm_aux->rtm_addrs)
             {
@@ -3595,8 +3591,7 @@ get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi6, const struct in6_
 {
     struct rtmsg m_rtmsg;
     int sockfd = -1;
-    int seq, l, pid, rtm_addrs;
-    unsigned int i;
+    int rtm_addrs;
     struct sockaddr_in6 so_dst, so_mask;
     char *cp = m_rtmsg.m_space;
     struct sockaddr *gate = NULL, *ifp = NULL, *sa;
@@ -3605,8 +3600,8 @@ get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi6, const struct in6_
     CLEAR(*rgi6);
 
     /* setup data to send to routing socket */
-    pid = getpid();
-    seq = 0;
+    const int pid = getpid();
+    int seq = 0;
 #ifdef TARGET_OPENBSD
     rtm_addrs = RTA_DST | RTA_NETMASK; /* Kernel refuses RTA_IFP */
 #else
@@ -3623,7 +3618,7 @@ get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi6, const struct in6_
     rtm.rtm_version = RTM_VERSION;
     rtm.rtm_seq = ++seq;
 #ifdef TARGET_OPENBSD
-    rtm.rtm_tableid = getrtable();
+    rtm.rtm_tableid = (u_short)getrtable();
 #endif
 
     so_dst.sin6_family = AF_INET6;
@@ -3647,7 +3642,8 @@ get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi6, const struct in6_
     NEXTADDR(RTA_DST, so_dst);
     NEXTADDR(RTA_NETMASK, so_mask);
 
-    rtm.rtm_msglen = l = cp - (char *)&m_rtmsg;
+    /* sizeof(struct rt_msghdr) + padding */
+    rtm.rtm_msglen = (u_short)(cp - (char *)&m_rtmsg);
 
     /* transact with routing socket */
     sockfd = socket(PF_ROUTE, SOCK_RAW, 0);
@@ -3656,26 +3652,26 @@ get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi6, const struct in6_
         msg(M_WARN, "GDG6: socket #1 failed");
         goto done;
     }
-    if (write(sockfd, (char *)&m_rtmsg, l) < 0)
+    if (write(sockfd, (char *)&m_rtmsg, rtm.rtm_msglen) < 0)
     {
         msg(M_WARN | M_ERRNO, "GDG6: problem writing to routing socket");
         goto done;
     }
-
+    ssize_t ret;
     do
     {
-        l = read(sockfd, (char *)&m_rtmsg, sizeof(m_rtmsg));
-    } while (l > 0 && (rtm.rtm_seq != seq || rtm.rtm_pid != pid));
+        ret = read(sockfd, (char *)&m_rtmsg, sizeof(m_rtmsg));
+    } while (ret > 0 && (rtm.rtm_seq != seq || rtm.rtm_pid != pid));
 
     close(sockfd);
     sockfd = -1;
 
     /* extract return data from routing socket */
     rtm_aux = &rtm;
-    cp = ((char *)(rtm_aux + 1));
+    cp = (char *)(rtm_aux + 1);
     if (rtm_aux->rtm_addrs)
     {
-        for (i = 1; i; i <<= 1)
+        for (unsigned int i = 1; i; i <<= 1)
         {
             if (i & rtm_aux->rtm_addrs)
             {
@@ -3742,10 +3738,6 @@ done:
         close(sockfd);
     }
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #undef max
 

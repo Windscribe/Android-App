@@ -1,14 +1,16 @@
 /*
- * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2026 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
  * in the file LICENSE in the source distribution or at
  * https://www.openssl.org/source/license.html
  */
+/* clang-format off */
 {-
 use OpenSSL::paramnames qw(produce_param_decoder);
 -}
+/* clang-format on */
 
 #include <string.h>
 #include <openssl/err.h>
@@ -16,6 +18,7 @@ use OpenSSL::paramnames qw(produce_param_decoder);
 #include "prov/digestcommon.h"
 #include "internal/common.h"
 
+/* clang-format off */
 {- produce_param_decoder('digest_default_get_params',
                          (['OSSL_DIGEST_PARAM_BLOCK_SIZE',   'bsize',    'size_t'],
                           ['OSSL_DIGEST_PARAM_SIZE',         'size',     'size_t'],
@@ -23,8 +26,14 @@ use OpenSSL::paramnames qw(produce_param_decoder);
                           ['OSSL_DIGEST_PARAM_ALGID_ABSENT', 'aldid',    'int'],
                          )); -}
 
+{- produce_param_decoder('digest_default_get_ctx_params',
+                         (['OSSL_DIGEST_PARAM_FIPS_APPROVED_INDICATOR',
+                           'fips indicator', 'int'],
+                         )); -}
+/* clang-format on */
+
 int ossl_digest_default_get_params(OSSL_PARAM params[], size_t blksz,
-                                   size_t paramsz, unsigned long flags)
+    size_t paramsz, unsigned long flags)
 {
     struct digest_default_get_params_st p;
 
@@ -50,6 +59,20 @@ int ossl_digest_default_get_params(OSSL_PARAM params[], size_t blksz,
         return 0;
     }
     return 1;
+}
+
+const OSSL_PARAM *ossl_digest_default_gettable_ctx_params(ossl_unused void *ctx,
+    ossl_unused void *provctx)
+{
+    return digest_default_get_ctx_params_list;
+}
+
+int ossl_digest_default_get_ctx_params(ossl_unused void *ctx,
+    OSSL_PARAM params[])
+{
+    struct digest_default_get_ctx_params_st p;
+
+    return digest_default_get_ctx_params_decoder(params, &p);
 }
 
 const OSSL_PARAM *ossl_digest_default_gettable_params(void *provctx)

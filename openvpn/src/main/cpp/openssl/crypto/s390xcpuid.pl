@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2009-2025 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2009-2026 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -461,16 +461,12 @@ $code.=<<___;
 s390x_kdsa:
 	lr	%r0,$fc
 	l${g}r	%r1,$param
-	lhi	%r2,0
 
 	.long	0xb93a0004	# kdsa %r0,$in
 	brc	1,.-4		# pay attention to "partial completion"
-	brc	7,.Lkdsa_err	# if CC==0 return 0, else return 1
-.Lkdsa_out:
+	ipm	%r2		# load program mask and
+	srl	%r2,28		# extract cc
 	br	$ra
-.Lkdsa_err:
-	lhi	%r2,1
-	j	.Lkdsa_out
 .size	s390x_kdsa,.-s390x_kdsa
 ___
 }
@@ -530,6 +526,11 @@ s390x_flip_endian64:
 .size	s390x_flip_endian64,.-s390x_flip_endian64
 ___
 }
+
+$code.=<<___;
+.section	.init
+	brasl	$ra,OPENSSL_cpuid_setup
+___
 
 $code =~ s/\`([^\`]*)\`/eval $1/gem;
 print $code;

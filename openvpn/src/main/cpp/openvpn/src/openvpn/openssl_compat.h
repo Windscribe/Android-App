@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -45,6 +45,15 @@
 #include <openssl/x509.h>
 #include <openssl/err.h>
 
+/* Define the type of error. This is something that is less
+ * intrusive than casts everywhere */
+#if defined(OPENSSL_IS_AWSLC)
+typedef uint32_t openssl_err_t;
+#else
+typedef unsigned long openssl_err_t;
+#endif
+
+
 /* Functionality missing in 1.1.0 */
 #if OPENSSL_VERSION_NUMBER < 0x10101000L && !defined(ENABLE_CRYPTO_WOLFSSL)
 #define SSL_CTX_set1_groups SSL_CTX_set1_curves
@@ -52,21 +61,6 @@
 
 /* Functionality missing in LibreSSL before 3.5 */
 #if defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x3050000fL
-/**
- * Destroy a X509 object
- *
- * @param obj                X509 object
- */
-static inline void
-X509_OBJECT_free(X509_OBJECT *obj)
-{
-    if (obj)
-    {
-        X509_OBJECT_free_contents(obj);
-        OPENSSL_free(obj);
-    }
-}
-
 #define EVP_CTRL_AEAD_SET_TAG EVP_CTRL_GCM_SET_TAG
 #define EVP_CTRL_AEAD_GET_TAG EVP_CTRL_GCM_GET_TAG
 #endif
@@ -157,12 +151,12 @@ EVP_MD_free(const EVP_MD *md)
     /* OpenSSL 1.1.1 and lower use only const EVP_MD, nothing to free */
 }
 
-static inline unsigned long
+static inline openssl_err_t
 ERR_get_error_all(const char **file, int *line, const char **func, const char **data, int *flags)
 {
     static const char *empty = "";
     *func = empty;
-    unsigned long err = ERR_get_error_line_data(file, line, data, flags);
+    openssl_err_t err = ERR_get_error_line_data(file, line, data, flags);
     return err;
 }
 
@@ -194,21 +188,17 @@ SSL_get0_peer_signature_name(const SSL *ssl, const char **sigalg)
           LIBRESSL_VERSION_NUMBER > 0x3050400fL) */
 
 #if OPENSSL_VERSION_NUMBER < 0x30200000L && OPENSSL_VERSION_NUMBER >= 0x30000000L
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 static inline const char *
 SSL_get0_group_name(SSL *s)
 {
-    int nid = SSL_get_negotiated_group(s);
+    int nid = (int)SSL_get_negotiated_group(s);
     return SSL_group_to_name(s, nid);
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
 #endif
+
+/* Introduced in OpenSSL 3.6.0 */
+#ifndef EVP_CIPH_FLAG_ENC_THEN_MAC
+#define EVP_CIPH_FLAG_ENC_THEN_MAC 0x10000000
 #endif
 
 #endif /* OPENSSL_COMPAT_H_ */

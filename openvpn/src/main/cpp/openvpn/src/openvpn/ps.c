@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -596,7 +596,7 @@ proxy_connection_io_send(struct proxy_connection *pc, int *bytes_sent)
         {
             dmsg(D_PS_PROXY_DEBUG, "PORT SHARE PROXY: partial write[%d], tried=%d got=%zd", (int)sd,
                  pc->buf.len, status);
-            buf_advance(&pc->buf, (int)status);
+            buf_advance(&pc->buf, status);
             return IOSTAT_EAGAIN_ON_WRITE;
         }
         else
@@ -800,12 +800,9 @@ struct port_share *
 port_share_open(const char *host, const char *port, const int max_initial_buf,
                 const char *journal_dir)
 {
-    pid_t pid;
     socket_descriptor_t fd[2];
     struct openvpn_sockaddr hostaddr;
     struct port_share *ps;
-    int status;
-    struct addrinfo *ai;
 
     ALLOC_OBJ_CLEAR(ps, struct port_share);
     ps->foreground_fd = -1;
@@ -814,9 +811,9 @@ port_share_open(const char *host, const char *port, const int max_initial_buf,
     /*
      * Get host's IP address
      */
-
-    status =
-        openvpn_getaddrinfo(GETADDR_RESOLVE | GETADDR_FATAL, host, port, 0, NULL, AF_UNSPEC, &ai);
+    struct addrinfo *ai;
+    int status = openvpn_getaddrinfo(GETADDR_RESOLVE | GETADDR_FATAL, host, port,
+                                     0, NULL, AF_UNSPEC, &ai);
     ASSERT(status == 0);
     ASSERT(sizeof(hostaddr.addr) >= ai->ai_addrlen);
     memcpy(&hostaddr.addr.sa, ai->ai_addr, ai->ai_addrlen);
@@ -836,19 +833,22 @@ port_share_open(const char *host, const char *port, const int max_initial_buf,
      */
     if (socketpair(PF_UNIX, SOCK_DGRAM, 0, fd) == -1)
     {
-        msg(M_WARN, "PORT SHARE: socketpair call failed");
+        msg(M_WARN | M_ERRNO, "PORT SHARE: socketpair call failed");
         goto error;
     }
 
     /*
      * Fork off background proxy process.
      */
-    pid = fork();
+    pid_t pid = fork();
 
-    if (pid)
+    if (pid < 0)
     {
-        int status;
-
+        msg(M_WARN | M_ERRNO, "PORT SHARE: fork failed");
+        goto error;
+    }
+    else if (pid)
+    {
         /*
          * Foreground Process
          */
@@ -862,7 +862,7 @@ port_share_open(const char *host, const char *port, const int max_initial_buf,
         set_cloexec(fd[0]);
 
         /* wait for background child process to initialize */
-        status = recv_control(fd[0]);
+        int status = recv_control(fd[0]);
         if (status == RESPONSE_INIT_SUCCEEDED)
         {
             /* note that this will cause possible EAGAIN when writing to

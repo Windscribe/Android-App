@@ -1,7 +1,7 @@
 /*
  *  Simplified Interface To NetLink
  *
- *  Copyright (C) 2016-2025 Antonio Quartulli <a@unstable.cc>
+ *  Copyright (C) 2016-2026 Antonio Quartulli <a@unstable.cc>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -27,6 +27,7 @@
 
 #include "dco.h"
 #include "errlevel.h"
+#include "fdmisc.h"
 #include "buffer.h"
 #include "misc.h"
 #include "networking.h"
@@ -181,6 +182,9 @@ sitnl_socket(void)
         return fd;
     }
 
+    /* set close on exec to avoid child processes access the socket */
+    set_cloexec(fd);
+
     if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf)) < 0)
     {
         msg(M_WARN | M_ERRNO, "%s: SO_SNDBUF", __func__);
@@ -202,7 +206,7 @@ sitnl_socket(void)
  * Bind socket to Netlink subsystem
  */
 static int
-sitnl_bind(int fd, uint32_t groups)
+sitnl_bind(int fd, uint32_t groups, uint32_t *local_pid)
 {
     socklen_t addr_len;
     struct sockaddr_nl local;
@@ -237,6 +241,14 @@ sitnl_bind(int fd, uint32_t groups)
         return -EINVAL;
     }
 
+    /* We bound with nl_pid=0, so the kernel assigned this socket a unique port
+     * id (it is not the process pid - a process may own several netlink
+     * sockets). getsockname() above is the only way to learn it: hand it back
+     * to the caller, which uses it to check that replies are addressed to this
+     * socket.
+     */
+    *local_pid = local.nl_pid;
+
     return 0;
 }
 
@@ -248,6 +260,7 @@ sitnl_send(struct nlmsghdr *payload, pid_t peer, unsigned int groups, sitnl_pars
            void *arg_cb)
 {
     int fd, ret;
+    uint32_t local_pid = 0;
     struct sockaddr_nl nladdr;
     struct nlmsgerr *err;
     struct nlmsghdr *h;
@@ -269,11 +282,17 @@ sitnl_send(struct nlmsghdr *payload, pid_t peer, unsigned int groups, sitnl_pars
     nladdr.nl_pid = peer;
     nladdr.nl_groups = groups;
 
-    /* NB: We currently do not verify seq and pid on answers.
-     * If we ever want to start with that we probably need to come up
-     * with something better than "seconds since epoch"...
+    /* Match replies to requests with a monotonically increasing sequence
+     * number, seeded once from wall-clock time so it differs between runs.
+     * The kernel echoes this seq (and our port id) in its replies, letting the
+     * receive loop below discard any unrelated or spoofed message.
      */
-    payload->nlmsg_seq = (uint32_t)time(NULL);
+    static uint32_t sitnl_seq;
+    if (!sitnl_seq)
+    {
+        sitnl_seq = (uint32_t)time(NULL);
+    }
+    payload->nlmsg_seq = ++sitnl_seq;
 
     /* no need to send reply */
     if (!cb)
@@ -288,7 +307,7 @@ sitnl_send(struct nlmsghdr *payload, pid_t peer, unsigned int groups, sitnl_pars
         return -errno;
     }
 
-    if (sitnl_bind(fd, 0) < 0)
+    if (sitnl_bind(fd, 0, &local_pid) < 0)
     {
         msg(M_WARN | M_ERRNO, "%s: can't bind rtnl socket", __func__);
         ret = -errno;
@@ -362,18 +381,23 @@ sitnl_send(struct nlmsghdr *payload, pid_t peer, unsigned int groups, sitnl_pars
                 goto out;
             }
 
-            /*            if (((int)nladdr.nl_pid != peer) || (h->nlmsg_pid != nladdr.nl_pid)
-             *               || (h->nlmsg_seq != seq))
-             *           {
-             *               rcv_len -= NLMSG_ALIGN(len);
-             *               h = (struct nlmsghdr *)((char *)h + NLMSG_ALIGN(len));
-             *               msg(M_DEBUG, "%s: skipping unrelated message. nl_pid:%d (peer:%d)
-             * nl_msg_pid:%d nl_seq:%d seq:%d",
-             *                   __func__, (int)nladdr.nl_pid, peer, h->nlmsg_pid,
-             *                   h->nlmsg_seq, seq);
-             *               continue;
-             *           }
+            /* Discard any message that did not come from the kernel or does
+             * not match the request we sent: only the kernel (nl_pid 0) can
+             * legitimately reply, and a valid reply echoes our port id and
+             * sequence number. This prevents a local process from injecting a
+             * spoofed reply that the callback would otherwise act on.
              */
+            if ((nladdr.nl_pid != 0) || (h->nlmsg_pid != local_pid)
+                || (h->nlmsg_seq != payload->nlmsg_seq))
+            {
+                msg(D_RTNL,
+                    "%s: skipping unrelated message. nl_pid:%u nlmsg_pid:%u (local:%u) nlmsg_seq:%u (seq:%u)",
+                    __func__, nladdr.nl_pid, h->nlmsg_pid, local_pid, h->nlmsg_seq,
+                    payload->nlmsg_seq);
+                rcv_len -= NLMSG_ALIGN(len);
+                h = (struct nlmsghdr *)((char *)h + NLMSG_ALIGN(len));
+                continue;
+            }
 
             if (h->nlmsg_type == NLMSG_DONE)
             {
@@ -1333,7 +1357,15 @@ net_iface_new(openvpn_net_ctx_t *ctx, const char *iface, const char *type, void 
     {
         dco_context_t *dco = arg;
         struct rtattr *data = SITNL_NEST(&req.n, sizeof(req), IFLA_INFO_DATA);
-        SITNL_ADDATTR(&req.n, sizeof(req), IFLA_OVPN_MODE, &dco->ifmode, sizeof(uint8_t));
+
+        /* the netlink format is uint8_t for this and using something
+         * other than uint8_t here (enum underlying type is undefined but
+         * commonly int) causes the values to be 0 when passed
+         * on big endian arch as we only take the (biggest endian) byte
+         * directly at the address
+         */
+        uint8_t ifmode = (uint8_t)dco->ifmode;
+        SITNL_ADDATTR(&req.n, sizeof(req), IFLA_OVPN_MODE, &ifmode, sizeof(uint8_t));
         SITNL_NEST_END(&req.n, data);
     }
 #endif

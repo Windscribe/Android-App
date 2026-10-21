@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -54,13 +54,52 @@ init_http_proxy_options_once(struct http_proxy_options **hpo, struct gc_arena *g
 }
 
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 /* cached proxy username/password */
 static struct user_pass static_proxy_user_pass;
+
+bool
+proxy_recv_char(uint8_t *c, const char *name, socket_descriptor_t sd,
+                struct timeval *timeout, volatile int *signal_received)
+{
+    fd_set reads;
+    FD_ZERO(&reads);
+    openvpn_fd_set(sd, &reads);
+
+    const int status = openvpn_select(sd + 1, &reads, NULL, NULL, timeout);
+
+    get_signal(signal_received);
+    if (*signal_received)
+    {
+        return false;
+    }
+
+    /* timeout? */
+    if (status == 0)
+    {
+        msg(D_LINK_ERRORS | M_ERRNO, "%s: TCP port read timeout expired", name);
+        return false;
+    }
+
+    /* error */
+    if (status < 0)
+    {
+        msg(D_LINK_ERRORS | M_ERRNO, "%s: TCP port read failed on select()", name);
+        return false;
+    }
+
+    /* read single char */
+    const ssize_t size = recv(sd, (void *)c, 1, MSG_NOSIGNAL);
+
+    /* error? */
+    if (size != 1)
+    {
+        msg(D_LINK_ERRORS | M_ERRNO, "%s: TCP port read failed on recv()", name);
+        return false;
+    }
+
+    return true;
+}
+
 
 static bool
 recv_line(socket_descriptor_t sd, char *buf, int len, const int timeout_sec, const bool verbose,
@@ -77,9 +116,6 @@ recv_line(socket_descriptor_t sd, char *buf, int len, const int timeout_sec, con
 
     while (true)
     {
-        int status;
-        ssize_t size;
-        fd_set reads;
         struct timeval tv;
         uint8_t c;
 
@@ -88,50 +124,12 @@ recv_line(socket_descriptor_t sd, char *buf, int len, const int timeout_sec, con
             ASSERT(buf_init(&la, 0));
         }
 
-        FD_ZERO(&reads);
-        openvpn_fd_set(sd, &reads);
         tv.tv_sec = timeout_sec;
         tv.tv_usec = 0;
 
-        status = select(sd + 1, &reads, NULL, NULL, &tv);
-
-        get_signal(signal_received);
-        if (*signal_received)
+        if (!proxy_recv_char(&c, "recv_line", sd, &tv, signal_received))
         {
-            goto error;
-        }
-
-        /* timeout? */
-        if (status == 0)
-        {
-            if (verbose)
-            {
-                msg(D_LINK_ERRORS | M_ERRNO, "recv_line: TCP port read timeout expired");
-            }
-            goto error;
-        }
-
-        /* error */
-        if (status < 0)
-        {
-            if (verbose)
-            {
-                msg(D_LINK_ERRORS | M_ERRNO, "recv_line: TCP port read failed on select()");
-            }
-            goto error;
-        }
-
-        /* read single char */
-        size = recv(sd, (void *)&c, 1, MSG_NOSIGNAL);
-
-        /* error? */
-        if (size != 1)
-        {
-            if (verbose)
-            {
-                msg(D_LINK_ERRORS | M_ERRNO, "recv_line: TCP port read failed on recv()");
-            }
-            goto error;
+            return false;
         }
 
 #if 0
@@ -184,18 +182,15 @@ recv_line(socket_descriptor_t sd, char *buf, int len, const int timeout_sec, con
     }
 
     return true;
-
-error:
-    return false;
 }
 
-static bool
-send_line(socket_descriptor_t sd, const char *buf)
+bool
+proxy_send(socket_descriptor_t sd, const void *buf, size_t buf_len)
 {
-    const ssize_t size = send(sd, buf, strlen(buf), MSG_NOSIGNAL);
-    if (size != (ssize_t)strlen(buf))
+    const ssize_t size = openvpn_send(sd, buf, buf_len, MSG_NOSIGNAL);
+    if (size != (ssize_t)buf_len)
     {
-        msg(D_LINK_ERRORS | M_ERRNO, "send_line: TCP port write failed on send()");
+        msg(D_LINK_ERRORS | M_ERRNO, "proxy_send: TCP port write failed on send()");
         return false;
     }
     return true;
@@ -206,10 +201,10 @@ send_line_crlf(socket_descriptor_t sd, const char *src)
 {
     bool ret;
 
-    struct buffer buf = alloc_buf(strlen(src) + 3);
+    struct buffer buf = alloc_buf(strlen(src) + 2);
     ASSERT(buf_write(&buf, src, strlen(src)));
-    ASSERT(buf_write(&buf, "\r\n", 3));
-    ret = send_line(sd, BSTR(&buf));
+    ASSERT(buf_write(&buf, "\r\n", 2));
+    ret = proxy_send(sd, BSTR(&buf), BLEN(&buf));
     free_buf(&buf);
     return ret;
 }
@@ -772,7 +767,9 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
 
                 char get[80];
                 CLEAR(buf2);
-                snprintf(get, sizeof(get), "%%*s NTLM %%%zus", sizeof(buf2) - 1);
+                /* mingw checks calls to the builtin snprintf() with the
+                 * ms_printf archetype, which does not know the 'z' modifier */
+                snprintf(get, sizeof(get), "%%*s NTLM %%%us", (unsigned int)(sizeof(buf2) - 1));
                 nparms = sscanf(buf, get, buf2);
 
                 /* check for "Proxy-Authenticate: NTLM TlRM..." */
@@ -903,7 +900,7 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
 
                 if (opaque)
                 {
-                    const int len = strlen(opaque) + 16;
+                    const size_t len = strlen(opaque) + 16;
                     opaque_kv = gc_malloc(len, false, &gc);
                     snprintf(opaque_kv, len, ", opaque=\"%s\"", opaque);
                 }
@@ -931,11 +928,10 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
                 }
 
                 /* send digest response */
-                int sret = snprintf(
-                    buf, sizeof(buf),
-                    "Proxy-Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", uri=\"%s\", qop=%s, nc=%s, cnonce=\"%s\", response=\"%s\"%s",
-                    username, realm, nonce, uri, qop, nonce_count, cnonce, response, opaque_kv);
-                if (sret >= sizeof(buf))
+                if (!checked_snprintf(
+                        buf, sizeof(buf),
+                        "Proxy-Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", uri=\"%s\", qop=%s, nc=%s, cnonce=\"%s\", response=\"%s\"%s",
+                        username, realm, nonce, uri, qop, nonce_count, cnonce, response, opaque_kv))
                 {
                     goto error;
                 }
@@ -1068,7 +1064,3 @@ error:
     gc_free(&gc);
     return ret;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif

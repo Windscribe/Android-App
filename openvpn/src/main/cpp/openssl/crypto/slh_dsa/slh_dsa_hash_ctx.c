@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2024-2026 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -55,7 +55,7 @@ SLH_DSA_HASH_CTX *ossl_slh_dsa_hash_ctx_new(const SLH_DSA_KEY *key)
         }
     }
     return ret;
- err:
+err:
     ossl_slh_dsa_hash_ctx_free(ret);
     return NULL;
 }
@@ -77,7 +77,7 @@ SLH_DSA_HASH_CTX *ossl_slh_dsa_hash_ctx_dup(const SLH_DSA_HASH_CTX *src)
     ret->key = src->key;
 
     if (src->md_ctx != NULL
-            && (ret->md_ctx = EVP_MD_CTX_dup(src->md_ctx)) == NULL)
+        && (ret->md_ctx = EVP_MD_CTX_dup(src->md_ctx)) == NULL)
         goto err;
     if (src->md_big_ctx != NULL) {
         if (src->md_big_ctx != src->md_ctx) {
@@ -88,10 +88,10 @@ SLH_DSA_HASH_CTX *ossl_slh_dsa_hash_ctx_dup(const SLH_DSA_HASH_CTX *src)
         }
     }
     if (src->hmac_ctx != NULL
-            && (ret->hmac_ctx = EVP_MAC_CTX_dup(src->hmac_ctx)) == NULL)
+        && (ret->hmac_ctx = EVP_MAC_CTX_dup(src->hmac_ctx)) == NULL)
         goto err;
     return ret;
- err:
+err:
     ossl_slh_dsa_hash_ctx_free(ret);
     return NULL;
 }
@@ -109,5 +109,6 @@ void ossl_slh_dsa_hash_ctx_free(SLH_DSA_HASH_CTX *ctx)
     if (ctx->md_big_ctx != ctx->md_ctx)
         EVP_MD_CTX_free(ctx->md_big_ctx);
     EVP_MAC_CTX_free(ctx->hmac_ctx);
-    OPENSSL_free(ctx);
+    /* Erases the |scratch| hash intermediates */
+    OPENSSL_clear_free(ctx, sizeof(*ctx));
 }

@@ -11,8 +11,8 @@ NDK_GO_ARCH_MAP_arm := arm
 NDK_GO_ARCH_MAP_arm64 := arm64
 NDK_GO_ARCH_MAP_mips := mipsx
 NDK_GO_ARCH_MAP_mips64 := mips64x
-CD_TAG := 1.5.4
-CD_COMMIT := 69340d151e159d055745450f16c988fba9210634
+CD_TAG := 1.5.8
+CD_COMMIT := 2d9f38cbceea8855a25fd8d31eb6761d3293e256
 comma := ,
 CLANG_FLAGS := --target=$(TARGET) --sysroot=$(SYSROOT)
 export CGO_CFLAGS := $(CLANG_FLAGS) $(subst -mthumb,-marm,$(CFLAGS))
@@ -24,12 +24,12 @@ export CGO_ENABLED := 1
 # Must match the `go` directive in go.mod. If it is lower, cmd/go silently
 # switches to an unpatched toolchain from the proxy and the boottime patch below
 # stops reaching the binary; GOTOOLCHAIN=local makes that a build error instead.
-GO_VERSION := 1.25.12
+GO_VERSION := 1.25.14
 GO_PLATFORM := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(NDK_GO_ARCH_MAP_$(shell uname -m))
 GO_TARBALL := go$(GO_VERSION).$(GO_PLATFORM).tar.gz
-GO_HASH_darwin-amd64 := 00a2e743b82bccec03c51c4b0f7e46d5fec52184075fd6c5183c3bb39ae9fb00
-GO_HASH_darwin-arm64 := fa2c88bbcf64bd3b2aef355f026cfec6d3a4a01c132f999c8f8c964eb767164f
-GO_HASH_linux-amd64 := 234828b7a89e0e303d2556310ee549fbcf253d28de937bac3da13d6294262ac1
+GO_HASH_darwin-amd64 := b09087a67d5792a8b0fcbf74212d62560c94ac8a8fd750ff920d8cb5f1e20118
+GO_HASH_darwin-arm64 := 5b26c0b6f308240fca2614fb02f622cfcc8c0cc3b69c78bba4845489a4590259
+GO_HASH_linux-amd64 := a21ae5633a269bcd7e90cf767e48225633795e99d831742cbf3397064fee7712
 export GOTOOLCHAIN := local
 
 default: $(DESTDIR)/libwg-go.so
@@ -38,8 +38,10 @@ $(GRADLE_USER_HOME)/caches/golang/$(GO_TARBALL):
 	mkdir -p "$(dir $@)"
 	flock "$@.lock" -c ' \
 	[ -f "$@" ] && exit 0; \
-	curl -o "$@.tmp" "https://dl.google.com/go/$(GO_TARBALL)" && \
-	echo "$(GO_HASH_$(GO_PLATFORM))  $@.tmp" | sha256sum -c && \
+	curl -o "$@.tmp" "https://dl.google.com/go/$(GO_TARBALL)" || exit 1; \
+	sum=$$(sha256sum "$@.tmp" | cut -d" " -f1); \
+	[ "$$sum" = "$(GO_HASH_$(GO_PLATFORM))" ] || \
+	  { echo "$(GO_TARBALL): checksum mismatch ($$sum)" >&2; exit 1; }; \
 	mv "$@.tmp" "$@"'
 
 $(BUILDDIR)/go-$(GO_VERSION)/.prepared: $(GRADLE_USER_HOME)/caches/golang/$(GO_TARBALL)

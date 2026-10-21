@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -40,7 +40,7 @@
 static void
 send_hmac_reset_packet(struct multi_context *m, struct tls_pre_decrypt_state *state,
                        struct tls_auth_standalone *tas, struct session_id *sid,
-                       bool request_resend_wkc)
+                       bool request_resend_wkc, struct link_socket *sock)
 {
     reset_packet_id_send(&state->tls_wrap_tmp.opt.packet_id.send);
     state->tls_wrap_tmp.opt.packet_id.rec.initialized = true;
@@ -54,16 +54,30 @@ send_hmac_reset_packet(struct multi_context *m, struct tls_pre_decrypt_state *st
     ASSERT(buf_init(&c->c2.buffers->aux_buf, buf.offset));
 
     buf_copy(&c->c2.buffers->aux_buf, &buf);
-    m->hmac_reply = c->c2.buffers->aux_buf;
-    m->hmac_reply_dest = &m->top.c2.from;
+
+    /*
+     * We do not want to keep any state here, so we send the reply to the
+     * initial packet synchronously without queueing anything.
+     *
+     * If we hit EAGAIN on a busy socket, the packet will be lost and the
+     * client will have to retransmit its HARD_RESET. This is considered an
+     * acceptable compromise to avoid consuming server resources under attack.
+     */
+    msg_set_prefix("Connection Attempt");
+    c->c2.to_link = c->c2.buffers->aux_buf;
+    c->c2.to_link_addr = &c->c2.from;
     msg(D_MULTI_DEBUG, "Reset packet from client, sending HMAC based reset challenge");
+    process_outgoing_link(c, sock);
+    c->c2.to_link.len = 0;
+    c->c2.to_link_addr = NULL;
+    msg_set_prefix(NULL);
 }
 
 
 /* Returns true if this packet should create a new session */
 static bool
 do_pre_decrypt_check(struct multi_context *m, struct tls_pre_decrypt_state *state,
-                     struct mroute_addr addr)
+                     struct mroute_addr addr, struct link_socket *sock)
 {
     ASSERT(m->top.c2.tls_auth_standalone);
 
@@ -106,7 +120,7 @@ do_pre_decrypt_check(struct multi_context *m, struct tls_pre_decrypt_state *stat
             /* Calculate the session ID HMAC for our reply and create reset packet */
             struct session_id sid =
                 calculate_session_id_hmac(state->peer_session_id, from, hmac, handwindow, 0);
-            send_hmac_reset_packet(m, state, tas, &sid, true);
+            send_hmac_reset_packet(m, state, tas, &sid, true, sock);
 
             return false;
         }
@@ -139,7 +153,7 @@ do_pre_decrypt_check(struct multi_context *m, struct tls_pre_decrypt_state *stat
         struct session_id sid =
             calculate_session_id_hmac(state->peer_session_id, from, hmac, handwindow, 0);
 
-        send_hmac_reset_packet(m, state, tas, &sid, false);
+        send_hmac_reset_packet(m, state, tas, &sid, false, sock);
 
         /* We have a reply do not create a new session */
         return false;
@@ -180,11 +194,6 @@ do_pre_decrypt_check(struct multi_context *m, struct tls_pre_decrypt_state *stat
     return false;
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 /*
  * Get a client instance based on real address.  If
  * the instance doesn't exist, create it while
@@ -199,7 +208,6 @@ multi_get_create_instance_udp(struct multi_context *m, bool *floated, struct lin
     struct multi_instance *mi = NULL;
     struct hash *hash = m->hash;
     real.proto = sock->info.proto;
-    m->hmac_reply_ls = sock;
 
     if (mroute_extract_openvpn_sockaddr(&real, &m->top.c2.from.dest, true) && m->top.c2.buf.len > 0)
     {
@@ -214,7 +222,7 @@ multi_get_create_instance_udp(struct multi_context *m, bool *floated, struct lin
         /* make sure buffer has enough length to read opcode (1 byte) and peer-id (3 bytes) */
         if (v2)
         {
-            uint32_t peer_id = ntohl(*(uint32_t *)ptr) & 0xFFFFFF;
+            uint32_t peer_id = ((uint32_t)ptr[1] << 16) | ((uint32_t)ptr[2] << 8) | ((uint32_t)ptr[3]);
             peer_id_disabled = (peer_id == MAX_PEER_ID);
 
             if (!peer_id_disabled && (peer_id < m->max_clients) && (m->instances[peer_id]))
@@ -258,7 +266,7 @@ multi_get_create_instance_udp(struct multi_context *m, bool *floated, struct lin
                     "shutting down",
                     mroute_addr_print(&real, &gc));
             }
-            else if (do_pre_decrypt_check(m, &state, real))
+            else if (do_pre_decrypt_check(m, &state, real, sock))
             {
                 /* This is an unknown session but with valid tls-auth/tls-crypt
                  * (or no auth at all).  If this is the initial packet of a
@@ -315,89 +323,33 @@ multi_get_create_instance_udp(struct multi_context *m, bool *floated, struct lin
     return mi;
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-
 /*
  * Send a packet to UDP socket.
  */
 static inline void
 multi_process_outgoing_link(struct multi_context *m, const unsigned int mpp_flags)
 {
-    struct multi_instance *mi = multi_process_outgoing_link_pre(m);
-    if (mi)
+    if (m->pending)
     {
-        multi_process_outgoing_link_dowork(m, mi, mpp_flags);
-    }
-    if (m->hmac_reply_dest && m->hmac_reply.len > 0)
-    {
-        msg_set_prefix("Connection Attempt");
-        m->top.c2.to_link = m->hmac_reply;
-        m->top.c2.to_link_addr = m->hmac_reply_dest;
-        process_outgoing_link(&m->top, m->hmac_reply_ls);
-        m->hmac_reply_ls = NULL;
-        m->hmac_reply_dest = NULL;
+        multi_process_outgoing_link_dowork(m, m->pending, mpp_flags);
     }
 }
 
 /*
- * Process an I/O event.
+ * Process a UDP socket event.
  */
 void
-multi_process_io_udp(struct multi_context *m, struct link_socket *sock)
+multi_process_io_udp(struct multi_context *m, struct link_socket *sock, unsigned int rwflags)
 {
-    const unsigned int status = m->multi_io->udp_flags;
-    const unsigned int mpp_flags = m->top.c2.fast_io
-                                       ? (MPP_CONDITIONAL_PRE_SELECT | MPP_CLOSE_ON_SIGNAL)
-                                       : (MPP_PRE_SELECT | MPP_CLOSE_ON_SIGNAL);
-
-#ifdef MULTI_DEBUG_EVENT_LOOP
-    char buf[16];
-    buf[0] = 0;
-    if (status & SOCKET_READ)
-    {
-        strcat(buf, "SR/");
-    }
-    else if (status & SOCKET_WRITE)
-    {
-        strcat(buf, "SW/");
-    }
-    else if (status & TUN_READ)
-    {
-        strcat(buf, "TR/");
-    }
-    else if (status & TUN_WRITE)
-    {
-        strcat(buf, "TW/");
-    }
-    else if (status & FILE_CLOSED)
-    {
-        strcat(buf, "FC/");
-    }
-    printf("IO %s\n", buf);
-#endif /* ifdef MULTI_DEBUG_EVENT_LOOP */
-
-#ifdef ENABLE_MANAGEMENT
-    if (status & (MANAGEMENT_READ | MANAGEMENT_WRITE))
-    {
-        ASSERT(management);
-        management_io(management);
-    }
-#endif
+    const unsigned int mpp_flags = (MPP_PRE_SELECT | MPP_CLOSE_ON_SIGNAL);
 
     /* UDP port ready to accept write */
-    if (status & SOCKET_WRITE)
+    if (rwflags & SOCKET_WRITE)
     {
         multi_process_outgoing_link(m, mpp_flags);
     }
-    /* TUN device ready to accept write */
-    else if (status & TUN_WRITE)
-    {
-        multi_process_outgoing_tun(m, mpp_flags);
-    }
     /* Incoming data on UDP port */
-    else if (status & SOCKET_READ)
+    else if (rwflags & SOCKET_READ)
     {
         read_incoming_link(&m->top, sock);
         if (!IS_SIG(&m->top))
@@ -405,69 +357,4 @@ multi_process_io_udp(struct multi_context *m, struct link_socket *sock)
             multi_process_incoming_link(m, NULL, mpp_flags, sock);
         }
     }
-    /* Incoming data on TUN device */
-    else if (status & TUN_READ)
-    {
-        read_incoming_tun(&m->top);
-        if (!IS_SIG(&m->top))
-        {
-            multi_process_incoming_tun(m, mpp_flags);
-        }
-    }
-#ifdef ENABLE_ASYNC_PUSH
-    /* INOTIFY callback */
-    else if (status & FILE_CLOSED)
-    {
-        multi_process_file_closed(m, mpp_flags);
-    }
-#endif
-#if defined(ENABLE_DCO)
-    else if (status & DCO_READ)
-    {
-        if (!IS_SIG(&m->top))
-        {
-            bool ret = true;
-            while (ret)
-            {
-                ret = multi_process_incoming_dco(m);
-            }
-        }
-    }
-#endif
-
-    m->multi_io->udp_flags = ES_ERROR;
-}
-
-/*
- * Return the io_wait() flags appropriate for
- * a point-to-multipoint tunnel.
- */
-unsigned int
-p2mp_iow_flags(const struct multi_context *m)
-{
-    unsigned int flags = IOW_WAIT_SIGNAL;
-    if (m->pending)
-    {
-        if (TUN_OUT(&m->pending->context))
-        {
-            flags |= IOW_TO_TUN;
-        }
-        if (LINK_OUT(&m->pending->context))
-        {
-            flags |= IOW_TO_LINK;
-        }
-    }
-    else if (mbuf_defined(m->mbuf))
-    {
-        flags |= IOW_MBUF;
-    }
-    else if (m->hmac_reply_dest)
-    {
-        flags |= IOW_TO_LINK;
-    }
-    else
-    {
-        flags |= IOW_READ;
-    }
-    return flags;
 }

@@ -1,8 +1,8 @@
 /*
  *  Interface to ovpn-win-dco networking code
  *
- *  Copyright (C) 2020-2025 Arne Schwabe <arne@rfc2549.org>
- *  Copyright (C) 2020-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2020-2026 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2020-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -459,7 +459,8 @@ dco_new_peer(dco_context_t *dco, unsigned int peerid, socket_descriptor_t sd, st
     if (!DeviceIoControl(dco->tt->hand, OVPN_IOCTL_MP_NEW_PEER, &newPeer, sizeof(newPeer), NULL, 0,
                          &bytesReturned, NULL))
     {
-        msg(M_ERR, "DeviceIoControl(OVPN_IOCTL_MP_NEW_PEER) failed");
+        msg(M_WARN | M_ERRNO, "DeviceIoControl(OVPN_IOCTL_MP_NEW_PEER) failed");
+        return -1;
     }
 
     return 0;
@@ -574,7 +575,7 @@ dco_new_key(dco_context_t *dco, unsigned int peerid, int keyid, dco_key_slot_t s
 
     if (!DeviceIoControl(dco->tt->hand, ioctl, buf, bufSize, NULL, 0, &bytes_returned, NULL))
     {
-        msg(M_ERR, "DeviceIoControl(OVPN_IOCTL_NEW_KEY) failed");
+        msg(M_WARN | M_ERRNO, "DeviceIoControl(OVPN_IOCTL_NEW_KEY) failed");
         return -1;
     }
     return 0;
@@ -608,7 +609,7 @@ dco_swap_keys(dco_context_t *dco, unsigned int peer_id)
     DWORD bytes_returned = 0;
     if (!DeviceIoControl(dco->tt->hand, ioctl, buf, len, NULL, 0, &bytes_returned, NULL))
     {
-        msg(M_ERR, "DeviceIoControl(OVPN_IOCTL_SWAP_KEYS) failed");
+        msg(M_WARN | M_ERRNO, "DeviceIoControl(OVPN_IOCTL_SWAP_KEYS) failed");
         return -1;
     }
     return 0;
@@ -690,7 +691,7 @@ dco_handle_overlapped_success(dco_context_t *dco, bool queued)
 }
 
 int
-dco_do_read(dco_context_t *dco)
+dco_read_and_process(dco_context_t *dco)
 {
     if (dco->ifmode != DCO_MODE_MP)
     {
@@ -725,6 +726,15 @@ dco_do_read(dco_context_t *dco)
             }
 
             break;
+    }
+
+    if (dco->c->mode == CM_TOP)
+    {
+        multi_process_incoming_dco(dco);
+    }
+    else
+    {
+        process_incoming_dco(dco);
     }
 
     return 0;

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -45,6 +45,7 @@
 #include "win32.h"
 #include "wfp_block.h"
 #include "networking.h"
+#include "dhcp.h"
 
 #include "memdbg.h"
 
@@ -1684,10 +1685,10 @@ clear_tuntap(struct tuntap *tuntap)
 #endif
 }
 
-#if defined(TARGET_OPENBSD) || defined(TARGET_DARWIN)
+#if defined(TARGET_FREEBSD) || defined(TARGET_DRAGONFLY) || defined(TARGET_NETBSD) || defined(TARGET_OPENBSD) || defined(TARGET_DARWIN)
 
 /*
- * OpenBSD and Mac OS X when using utun
+ * BSDs and Mac OS X when using utun
  * have a slightly incompatible TUN device from
  * the rest of the world, in that it prepends a
  * uint32 to the beginning of the IP header
@@ -1698,17 +1699,15 @@ clear_tuntap(struct tuntap *tuntap)
  * We strip off this field on reads and
  * put it back on writes.
  *
- * I have not tested TAP devices on OpenBSD,
- * but I have conditionalized the special
- * TUN handling code described above to
- * go away for TAP devices.
+ * For TAP devices, this is not needed and must
+ * not be done.
  */
 
 #include <netinet/ip.h>
 #include <sys/uio.h>
 
-static inline int
-header_modify_read_write_return(int len)
+static inline ssize_t
+header_modify_read_write_return(ssize_t len)
 {
     if (len > 0)
     {
@@ -1720,23 +1719,16 @@ header_modify_read_write_return(int len)
     }
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
-static int
+static ssize_t
 write_tun_header(struct tuntap *tt, uint8_t *buf, int len)
 {
     if (tt->type == DEV_TYPE_TUN)
     {
         u_int32_t type;
         struct iovec iv[2];
-        struct openvpn_iphdr *iph;
+        struct ip *iph = (struct ip *)buf;
 
-        iph = (struct openvpn_iphdr *)buf;
-
-        if (OPENVPN_IPH_GET_VER(iph->version_len) == 6)
+        if (iph->ip_v == 6)
         {
             type = htonl(AF_INET6);
         }
@@ -1758,7 +1750,7 @@ write_tun_header(struct tuntap *tt, uint8_t *buf, int len)
     }
 }
 
-static int
+static ssize_t
 read_tun_header(struct tuntap *tt, uint8_t *buf, int len)
 {
     if (tt->type == DEV_TYPE_TUN)
@@ -1779,11 +1771,25 @@ read_tun_header(struct tuntap *tt, uint8_t *buf, int len)
     }
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
+/* For MacOS this extra handling is conditional on the UTUN driver.
+ * So it needs its own read_tun()/write_tun() with the necessary
+ * checks. They are located in the macOS-specific section below.
+ */
+#if !defined(TARGET_DARWIN)
+ssize_t
+write_tun(struct tuntap *tt, uint8_t *buf, int len)
+{
+    return write_tun_header(tt, buf, len);
+}
+
+ssize_t
+read_tun(struct tuntap *tt, uint8_t *buf, int len)
+{
+    return read_tun_header(tt, buf, len);
+}
 #endif
 
-#endif /* if defined (TARGET_OPENBSD) || defined(TARGET_DARWIN) */
+#endif /* if defined(TARGET_FREEBSD) || defined(TARGET_DRAGONFLY) || defined(TARGET_NETBSD) || defined (TARGET_OPENBSD) || defined(TARGET_DARWIN) */
 
 bool
 tun_name_is_fixed(const char *dev)
@@ -1800,7 +1806,7 @@ tun_dco_enabled(struct tuntap *tt)
 #endif
 
 
-#if !(defined(_WIN32) || defined(TARGET_LINUX) || defined(TARGET_SOLARIS))
+#if !(defined(_WIN32) || defined(TARGET_LINUX) || defined(TARGET_SOLARIS) || defined(TARGET_ANDROID))
 static void
 open_tun_generic(const char *dev, const char *dev_type, const char *dev_node, struct tuntap *tt)
 {
@@ -1967,7 +1973,6 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
          openvpn_net_ctx_t *ctx)
 {
 #define ANDROID_TUNNAME "vpnservice-tun"
-    struct user_pass up;
     struct gc_arena gc = gc_new();
     bool opentun;
 
@@ -2040,23 +2045,19 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
     free(tt);
 }
 
-int
+ssize_t
 write_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     return write(tt->fd, buf, len);
 }
 
-int
+ssize_t
 read_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     return read(tt->fd, buf, len);
 }
 
 #elif defined(TARGET_LINUX)
-
-#ifndef HAVE_LINUX_SOCKIOS_H
-#error header file linux/sockios.h required
-#endif
 
 #if !PEDANTIC
 
@@ -2185,11 +2186,6 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
 
 #ifdef ENABLE_FEATURE_TUN_PERSIST
 
-/* TUNSETGROUP appeared in 2.6.23 */
-#ifndef TUNSETGROUP
-#define TUNSETGROUP _IOW('T', 206, int)
-#endif
-
 void
 tuncfg(const char *dev, const char *dev_type, const char *dev_node, int persist_mode,
        const char *username, const char *groupname, const struct tuntap_options *options,
@@ -2254,26 +2250,17 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
     free(tt);
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
-int
+ssize_t
 write_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     return write(tt->fd, buf, len);
 }
 
-int
+ssize_t
 read_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     return read(tt->fd, buf, len);
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #elif defined(TARGET_SOLARIS)
 
@@ -2294,7 +2281,7 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
     struct strioctl strioc_if, strioc_ppa;
 
     /* improved generic TUN/TAP driver from
-     * http://www.whiteboard.ne.jp/~admin2/tuntap/
+     * https://web.archive.org/web/20250504214754/http://www.whiteboard.ne.jp/~admin2/tuntap/
      * has IPv6 support
      */
     CLEAR(ifr);
@@ -2599,7 +2586,7 @@ solaris_error_close(struct tuntap *tt, const struct env_set *es, const char *act
     argv_free(&argv);
 }
 
-int
+ssize_t
 write_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     struct strbuf sbuf;
@@ -2608,7 +2595,7 @@ write_tun(struct tuntap *tt, uint8_t *buf, int len)
     return putmsg(tt->fd, NULL, &sbuf, 0) >= 0 ? sbuf.len : -1;
 }
 
-int
+ssize_t
 read_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     struct strbuf sbuf;
@@ -2685,18 +2672,6 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
 
     free(tt);
     argv_free(&argv);
-}
-
-int
-write_tun(struct tuntap *tt, uint8_t *buf, int len)
-{
-    return write_tun_header(tt, buf, len);
-}
-
-int
-read_tun(struct tuntap *tt, uint8_t *buf, int len)
-{
-    return read_tun_header(tt, buf, len);
 }
 
 #elif defined(TARGET_NETBSD)
@@ -2800,87 +2775,7 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
     argv_free(&argv);
 }
 
-static inline int
-netbsd_modify_read_write_return(int len)
-{
-    if (len > 0)
-    {
-        return len > sizeof(u_int32_t) ? len - sizeof(u_int32_t) : 0;
-    }
-    else
-    {
-        return len;
-    }
-}
-
-int
-write_tun(struct tuntap *tt, uint8_t *buf, int len)
-{
-    if (tt->type == DEV_TYPE_TUN)
-    {
-        u_int32_t type;
-        struct iovec iv[2];
-        struct openvpn_iphdr *iph;
-
-        iph = (struct openvpn_iphdr *)buf;
-
-        if (OPENVPN_IPH_GET_VER(iph->version_len) == 6)
-        {
-            type = htonl(AF_INET6);
-        }
-        else
-        {
-            type = htonl(AF_INET);
-        }
-
-        iv[0].iov_base = (char *)&type;
-        iv[0].iov_len = sizeof(type);
-        iv[1].iov_base = buf;
-        iv[1].iov_len = len;
-
-        return netbsd_modify_read_write_return(writev(tt->fd, iv, 2));
-    }
-    else
-    {
-        return write(tt->fd, buf, len);
-    }
-}
-
-int
-read_tun(struct tuntap *tt, uint8_t *buf, int len)
-{
-    if (tt->type == DEV_TYPE_TUN)
-    {
-        u_int32_t type;
-        struct iovec iv[2];
-
-        iv[0].iov_base = (char *)&type;
-        iv[0].iov_len = sizeof(type);
-        iv[1].iov_base = buf;
-        iv[1].iov_len = len;
-
-        return netbsd_modify_read_write_return(readv(tt->fd, iv, 2));
-    }
-    else
-    {
-        return read(tt->fd, buf, len);
-    }
-}
-
 #elif defined(TARGET_FREEBSD)
-
-static inline int
-freebsd_modify_read_write_return(int len)
-{
-    if (len > 0)
-    {
-        return len > sizeof(u_int32_t) ? len - sizeof(u_int32_t) : 0;
-    }
-    else
-    {
-        return len;
-    }
-}
 
 void
 open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tuntap *tt,
@@ -2954,83 +2849,7 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
     argv_free(&argv);
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
-int
-write_tun(struct tuntap *tt, uint8_t *buf, int len)
-{
-    if (tt->type == DEV_TYPE_TUN)
-    {
-        u_int32_t type;
-        struct iovec iv[2];
-        struct ip *iph;
-
-        iph = (struct ip *)buf;
-
-        if (iph->ip_v == 6)
-        {
-            type = htonl(AF_INET6);
-        }
-        else
-        {
-            type = htonl(AF_INET);
-        }
-
-        iv[0].iov_base = (char *)&type;
-        iv[0].iov_len = sizeof(type);
-        iv[1].iov_base = buf;
-        iv[1].iov_len = len;
-
-        return freebsd_modify_read_write_return(writev(tt->fd, iv, 2));
-    }
-    else
-    {
-        return write(tt->fd, buf, len);
-    }
-}
-
-int
-read_tun(struct tuntap *tt, uint8_t *buf, int len)
-{
-    if (tt->type == DEV_TYPE_TUN)
-    {
-        u_int32_t type;
-        struct iovec iv[2];
-
-        iv[0].iov_base = (char *)&type;
-        iv[0].iov_len = sizeof(type);
-        iv[1].iov_base = buf;
-        iv[1].iov_len = len;
-
-        return freebsd_modify_read_write_return(readv(tt->fd, iv, 2));
-    }
-    else
-    {
-        return read(tt->fd, buf, len);
-    }
-}
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-
 #elif defined(TARGET_DRAGONFLY)
-
-static inline int
-dragonfly_modify_read_write_return(int len)
-{
-    if (len > 0)
-    {
-        return len > sizeof(u_int32_t) ? len - sizeof(u_int32_t) : 0;
-    }
-    else
-    {
-        return len;
-    }
-}
 
 void
 open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tuntap *tt,
@@ -3058,60 +2877,6 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
     free(tt);
 }
 
-int
-write_tun(struct tuntap *tt, uint8_t *buf, int len)
-{
-    if (tt->type == DEV_TYPE_TUN)
-    {
-        u_int32_t type;
-        struct iovec iv[2];
-        struct ip *iph;
-
-        iph = (struct ip *)buf;
-
-        if (iph->ip_v == 6)
-        {
-            type = htonl(AF_INET6);
-        }
-        else
-        {
-            type = htonl(AF_INET);
-        }
-
-        iv[0].iov_base = (char *)&type;
-        iv[0].iov_len = sizeof(type);
-        iv[1].iov_base = buf;
-        iv[1].iov_len = len;
-
-        return dragonfly_modify_read_write_return(writev(tt->fd, iv, 2));
-    }
-    else
-    {
-        return write(tt->fd, buf, len);
-    }
-}
-
-int
-read_tun(struct tuntap *tt, uint8_t *buf, int len)
-{
-    if (tt->type == DEV_TYPE_TUN)
-    {
-        u_int32_t type;
-        struct iovec iv[2];
-
-        iv[0].iov_base = (char *)&type;
-        iv[0].iov_len = sizeof(type);
-        iv[1].iov_base = buf;
-        iv[1].iov_len = len;
-
-        return dragonfly_modify_read_write_return(readv(tt->fd, iv, 2));
-    }
-    else
-    {
-        return read(tt->fd, buf, len);
-    }
-}
-
 #elif defined(TARGET_DARWIN)
 
 /* Darwin (MacOS X) is mostly "just use the generic stuff", but there
@@ -3125,7 +2890,7 @@ read_tun(struct tuntap *tt, uint8_t *buf, int len)
 /*
  * utun is the native Darwin tun driver present since at least 10.7
  * Thanks goes to Jonathan Levin for providing an example how to utun
- * (http://newosxbook.com/src.jl?tree=listings&file=17-15-utun.c)
+ * (https://www.cs.dartmouth.edu/~sergey/netreads/utun/utun-demo.c)
  */
 
 /* Helper functions that tries to open utun device
@@ -3246,7 +3011,7 @@ open_darwin_utun(const char *dev, const char *dev_type, const char *dev_node, st
     /* Retrieve the assigned interface name. */
     if (getsockopt(fd, SYSPROTO_CONTROL, UTUN_OPT_IFNAME, utunname, &utunname_len))
     {
-        msg(M_ERR | M_ERRNO, "Error retrieving utun interface name");
+        msg(M_ERR, "Error retrieving utun interface name");
     }
 
     tt->actual_name = string_alloc(utunname, NULL);
@@ -3305,11 +3070,6 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
     }
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 void
 close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
 {
@@ -3333,7 +3093,7 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
     gc_free(&gc);
 }
 
-int
+ssize_t
 write_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     if (tt->backend_driver == DRIVER_UTUN)
@@ -3346,7 +3106,7 @@ write_tun(struct tuntap *tt, uint8_t *buf, int len)
     }
 }
 
-int
+ssize_t
 read_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     if (tt->backend_driver == DRIVER_UTUN)
@@ -3358,10 +3118,6 @@ read_tun(struct tuntap *tt, uint8_t *buf, int len)
         return read(tt->fd, buf, len);
     }
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #elif defined(TARGET_AIX)
 
@@ -3485,13 +3241,13 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
     argv_free(&argv);
 }
 
-int
+ssize_t
 write_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     return write(tt->fd, buf, len);
 }
 
-int
+ssize_t
 read_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     return read(tt->fd, buf, len);
@@ -3802,7 +3558,11 @@ get_tap_reg(struct gc_arena *gc)
             msg(M_FATAL, "Error enumerating registry subkeys of key: %s", ADAPTER_KEY);
         }
 
-        snprintf(unit_string, sizeof(unit_string), "%s\\%s", ADAPTER_KEY, enum_name);
+        if (!checked_snprintf(unit_string, sizeof(unit_string), "%s\\%s", ADAPTER_KEY, enum_name))
+        {
+            msg(M_WARN, "Error constructing unit string for %s", enum_name);
+            continue;
+        }
 
         status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, unit_string, 0, KEY_READ, &unit_key);
 
@@ -3911,8 +3671,14 @@ get_panel_reg(struct gc_arena *gc)
             msg(M_FATAL, "Error enumerating registry subkeys of key: %s", NETWORK_CONNECTIONS_KEY);
         }
 
-        snprintf(connection_string, sizeof(connection_string), "%s\\%s\\Connection",
-                 NETWORK_CONNECTIONS_KEY, enum_name);
+        if (!checked_snprintf(connection_string, sizeof(connection_string),
+                              "%s\\%s\\Connection",
+                              NETWORK_CONNECTIONS_KEY, enum_name))
+        {
+            msg(M_WARN, "Error constructing connection string for %s", enum_name);
+            continue;
+        }
+
 
         status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, connection_string, 0, KEY_READ, &connection_key);
 
@@ -5362,8 +5128,8 @@ netsh_ifconfig(const struct tuntap_options *to, DWORD adapter_index, const in_ad
         }
         else
         {
-            /* example: netsh interface ip set address 42 static 10.3.0.1 255.255.255.0 */
-            argv_printf(&argv, "%s%s interface ip set address %lu static %s %s", get_win_sys_path(),
+            /* example: netsh interface ip set address 42 static 10.3.0.1 255.255.255.0 store=active */
+            argv_printf(&argv, "%s%s interface ip set address %lu static %s %s store=active", get_win_sys_path(),
                         NETSH_PATH_SUFFIX, adapter_index, print_in_addr_t(ip, 0, &gc),
                         print_in_addr_t(netmask, 0, &gc));
 
@@ -5552,202 +5318,6 @@ tun_standby(struct tuntap *tt)
         }
     }
     return ret;
-}
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
-/*
- * Convert DHCP options from the command line / config file
- * into a raw DHCP-format options string.
- */
-
-static void
-write_dhcp_u8(struct buffer *buf, const int type, const int data, bool *error)
-{
-    if (!buf_safe(buf, 3))
-    {
-        *error = true;
-        msg(M_WARN, "write_dhcp_u8: buffer overflow building DHCP options");
-        return;
-    }
-    buf_write_u8(buf, type);
-    buf_write_u8(buf, 1);
-    buf_write_u8(buf, data);
-}
-
-static void
-write_dhcp_u32_array(struct buffer *buf, const int type, const uint32_t *data,
-                     const unsigned int len, bool *error)
-{
-    if (len > 0)
-    {
-        int i;
-        const int size = len * sizeof(uint32_t);
-
-        if (!buf_safe(buf, 2 + size))
-        {
-            *error = true;
-            msg(M_WARN, "write_dhcp_u32_array: buffer overflow building DHCP options");
-            return;
-        }
-        if (size < 1 || size > 255)
-        {
-            *error = true;
-            msg(M_WARN, "write_dhcp_u32_array: size (%d) must be > 0 and <= 255", size);
-            return;
-        }
-        buf_write_u8(buf, type);
-        buf_write_u8(buf, size);
-        for (i = 0; i < len; ++i)
-        {
-            buf_write_u32(buf, data[i]);
-        }
-    }
-}
-
-static void
-write_dhcp_str(struct buffer *buf, const int type, const char *str, bool *error)
-{
-    const int len = strlen(str);
-    if (!buf_safe(buf, 2 + len))
-    {
-        *error = true;
-        msg(M_WARN, "write_dhcp_str: buffer overflow building DHCP options");
-        return;
-    }
-    if (len < 1 || len > 255)
-    {
-        *error = true;
-        msg(M_WARN, "write_dhcp_str: string '%s' must be > 0 bytes and <= 255 bytes", str);
-        return;
-    }
-    buf_write_u8(buf, type);
-    buf_write_u8(buf, len);
-    buf_write(buf, str, len);
-}
-
-/*
- * RFC3397 states that multiple searchdomains are encoded as follows:
- *  - at start the length of the entire option is given
- *  - each subdomain is preceded by its length
- *  - each searchdomain is separated by a NUL character
- * e.g. if you want "openvpn.net" and "duckduckgo.com" then you end up with
- *  0x1D  0x7 openvpn 0x3 net 0x00 0x0A duckduckgo 0x3 com 0x00
- */
-static void
-write_dhcp_search_str(struct buffer *buf, const int type, const char *const *str_array,
-                      int array_len, bool *error)
-{
-    char tmp_buf[256];
-    int i;
-    int len = 0;
-    int label_length_pos;
-
-    for (i = 0; i < array_len; i++)
-    {
-        const char *ptr = str_array[i];
-
-        if (strlen(ptr) + len + 1 > sizeof(tmp_buf))
-        {
-            *error = true;
-            msg(M_WARN, "write_dhcp_search_str: temp buffer overflow building DHCP options");
-            return;
-        }
-        /* Loop over all subdomains separated by a dot and replace the dot
-         * with the length of the subdomain */
-
-        /* label_length_pos points to the byte to be replaced by the length
-         * of the following domain label */
-        label_length_pos = len++;
-
-        while (true)
-        {
-            if (*ptr == '.' || *ptr == '\0')
-            {
-                tmp_buf[label_length_pos] = (len - label_length_pos) - 1;
-                label_length_pos = len;
-                if (*ptr == '\0')
-                {
-                    break;
-                }
-            }
-            tmp_buf[len++] = *ptr++;
-        }
-        /* And close off with an extra NUL char */
-        tmp_buf[len++] = 0;
-    }
-
-    if (!buf_safe(buf, 2 + len))
-    {
-        *error = true;
-        msg(M_WARN, "write_search_dhcp_str: buffer overflow building DHCP options");
-        return;
-    }
-    if (len > 255)
-    {
-        *error = true;
-        msg(M_WARN, "write_dhcp_search_str: search domain string must be <= 255 bytes");
-        return;
-    }
-
-    buf_write_u8(buf, type);
-    buf_write_u8(buf, len);
-    buf_write(buf, tmp_buf, len);
-}
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-
-static bool
-build_dhcp_options_string(struct buffer *buf, const struct tuntap_options *o)
-{
-    bool error = false;
-    if (o->domain)
-    {
-        write_dhcp_str(buf, 15, o->domain, &error);
-    }
-
-    if (o->netbios_scope)
-    {
-        write_dhcp_str(buf, 47, o->netbios_scope, &error);
-    }
-
-    if (o->netbios_node_type)
-    {
-        write_dhcp_u8(buf, 46, o->netbios_node_type, &error);
-    }
-
-    write_dhcp_u32_array(buf, 6, (uint32_t *)o->dns, o->dns_len, &error);
-    write_dhcp_u32_array(buf, 44, (uint32_t *)o->wins, o->wins_len, &error);
-    write_dhcp_u32_array(buf, 42, (uint32_t *)o->ntp, o->ntp_len, &error);
-    write_dhcp_u32_array(buf, 45, (uint32_t *)o->nbdd, o->nbdd_len, &error);
-
-    if (o->domain_search_list_len > 0)
-    {
-        write_dhcp_search_str(buf, 119, o->domain_search_list, o->domain_search_list_len, &error);
-    }
-
-    /* the MS DHCP server option 'Disable Netbios-over-TCP/IP
-     * is implemented as vendor option 001, value 002.
-     * A value of 001 means 'leave NBT alone' which is the default */
-    if (o->disable_nbt)
-    {
-        if (!buf_safe(buf, 8))
-        {
-            msg(M_WARN, "build_dhcp_options_string: buffer overflow building DHCP options");
-            return false;
-        }
-        buf_write_u8(buf, 43);
-        buf_write_u8(buf, 6); /* total length field */
-        buf_write_u8(buf, 0x001);
-        buf_write_u8(buf, 4); /* length of the vendor specified field */
-        buf_write_u32(buf, 0x002);
-    }
-    return !error;
 }
 
 static void
@@ -6265,7 +5835,7 @@ tun_open_device(struct tuntap *tt, const char *dev_node, const char **device_gui
         if (tt->backend_driver != windows_driver)
         {
             msg(M_FATAL,
-                "Adapter '%s' is using %s driver, %s expected. If you want to use this device, adjust --windows-driver.",
+                "Adapter '%s' is using %s driver, %s expected.",
                 dev_node, print_tun_backend_driver(windows_driver),
                 print_tun_backend_driver(tt->backend_driver));
         }
@@ -6733,13 +6303,13 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
     free(tt);
 }
 
-int
+ssize_t
 write_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     return write(tt->fd, buf, len);
 }
 
-int
+ssize_t
 read_tun(struct tuntap *tt, uint8_t *buf, int len)
 {
     return read(tt->fd, buf, len);

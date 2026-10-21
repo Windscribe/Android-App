@@ -36,7 +36,8 @@ used when debugging or testing out special usage scenarios.
 
      hash-size r v
 
-  By default, both tables are sized at 256 buckets.
+  By default, both tables are sized at 4 times ``--max-clients`` buckets.
+  With the default of 1024 of ``--max-clients`` this gives 4096 buckets.
 
 --bcast-buffers n
   Allocate ``n`` buffers for broadcast datagrams (default :code:`256`).
@@ -102,7 +103,9 @@ used when debugging or testing out special usage scenarios.
 
   Data channel offload currently requires data-ciphers to only contain
   AEAD ciphers (AES-GCM and Chacha20-Poly1305) and Linux with the
-  ovpn-dco module.
+  ovpn module. The ovpn module has been integrated into the Linux kernel
+  since 6.16 or is available as backport from
+  https://github.com/OpenVPN/ovpn-backports.
 
   Note that some options have no effect or cannot be used when DCO mode
   is enabled.

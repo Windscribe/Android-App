@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -369,21 +369,32 @@ verify_peer_cert(const struct tls_options *opt, openvpn_x509_cert_t *peer_cert, 
     /* verify X509 name or username against --verify-x509-[user]name */
     if (opt->verify_x509_type != VERIFY_X509_NONE)
     {
-        if ((opt->verify_x509_type == VERIFY_X509_SUBJECT_DN
-             && strcmp(opt->verify_x509_name, subject) == 0)
-            || (opt->verify_x509_type == VERIFY_X509_SUBJECT_RDN
-                && strcmp(opt->verify_x509_name, common_name) == 0)
-            || (opt->verify_x509_type == VERIFY_X509_SUBJECT_RDN_PREFIX
-                && strncmp(opt->verify_x509_name, common_name, strlen(opt->verify_x509_name)) == 0))
+        const char *err_fmt = "VERIFY X509NAME ERROR: %s, must be %s";
+        const char *match_str = common_name;
+        bool verified = false;
+        switch (opt->verify_x509_type)
         {
-            msg(D_HANDSHAKE, "VERIFY X509NAME OK: %s", subject);
+            case VERIFY_X509_SUBJECT_DN:
+                match_str = subject;
+                verified = !strcmp(opt->verify_x509_name, match_str);
+                break;
+            case VERIFY_X509_SUBJECT_RDN:
+                verified = !strcmp(opt->verify_x509_name, match_str);
+                break;
+            case VERIFY_X509_SUBJECT_RDN_PREFIX:
+                err_fmt = "VERIFY X509NAME ERROR: %s, must start with %s";
+                verified = !strncmp(opt->verify_x509_name, match_str, strlen(opt->verify_x509_name));
+                break;
+            default:
+                ASSERT(0); /* should not happen */
+                break;
         }
-        else
+        if (!verified)
         {
-            msg(D_HANDSHAKE, "VERIFY X509NAME ERROR: %s, must be %s", subject,
-                opt->verify_x509_name);
-            return FAILURE; /* Reject connection */
+            msg(D_HANDSHAKE, err_fmt, match_str, opt->verify_x509_name);
+            return FAILURE;
         }
+        msg(D_HANDSHAKE, "VERIFY X509NAME OK: %s", subject);
     }
 
     return SUCCESS;
@@ -548,7 +559,7 @@ verify_check_crl_dir(const char *crl_dir, openvpn_x509_cert_t *cert, const char 
         goto cleanup;
     }
 
-    if (!snprintf(fn, sizeof(fn), "%s%c%s", crl_dir, PATH_SEPARATOR, serial))
+    if (!checked_snprintf(fn, sizeof(fn), "%s%c%s", crl_dir, PATH_SEPARATOR, serial))
     {
         msg(D_HANDSHAKE, "VERIFY CRL: filename overflow");
         goto cleanup;
@@ -874,11 +885,6 @@ check_auth_pending_method(const char *peer_info, const char *method)
     return supported;
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 /**
  *  Checks if the deferred state should also send auth pending
  *  request to the client. Also removes the auth_pending control file
@@ -888,7 +894,8 @@ check_auth_pending_method(const char *peer_info, const char *method)
  *  @returns false  The file had an invlaid format or another error occured
  */
 static bool
-key_state_check_auth_pending_file(struct auth_deferred_status *ads, struct tls_multi *multi,
+key_state_check_auth_pending_file(struct auth_deferred_status *ads,
+                                  struct tls_multi *multi,
                                   struct tls_session *session)
 {
     bool ret = true;
@@ -916,7 +923,7 @@ key_state_check_auth_pending_file(struct auth_deferred_status *ads, struct tls_m
             buf_chomp(extra_buf);
 
             long timeout = strtol(BSTR(timeout_buf), NULL, 10);
-            if (timeout == 0)
+            if (timeout <= 0)
             {
                 msg(M_WARN, "could not parse auth pending file timeout");
                 buffer_list_free(lines);
@@ -933,14 +940,14 @@ key_state_check_auth_pending_file(struct auth_deferred_status *ads, struct tls_m
                          pending_method);
                 auth_set_client_reason(multi, buf);
                 msg(M_INFO,
-                    "Client does not supported auth pending method "
-                    "'%s'",
+                    "Client does not supported auth pending method '%s'",
                     pending_method);
                 ret = false;
             }
             else
             {
-                send_auth_pending_messages(multi, session, BSTR(extra_buf), timeout);
+                send_auth_pending_messages(multi, session, BSTR(extra_buf),
+                                           (unsigned int)timeout);
             }
         }
 
@@ -949,10 +956,6 @@ key_state_check_auth_pending_file(struct auth_deferred_status *ads, struct tls_m
     key_state_rm_auth_pending_file(ads);
     return ret;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 /**
  *  Removes auth_pending and auth_control files from file system
@@ -992,7 +995,7 @@ key_state_gen_auth_control_files(struct auth_deferred_status *ads, const struct 
     const char *apf = platform_create_temp_file(opt->tmp_dir, "apf", &gc);
     const char *afr = platform_create_temp_file(opt->tmp_dir, "afr", &gc);
 
-    if (acf && apf)
+    if (acf && apf && afr)
     {
         ads->auth_control_file = string_alloc(acf, NULL);
         ads->auth_pending_file = string_alloc(apf, NULL);
@@ -1004,7 +1007,7 @@ key_state_gen_auth_control_files(struct auth_deferred_status *ads, const struct 
     }
 
     gc_free(&gc);
-    return (acf && apf);
+    return (acf && apf && afr);
 }
 
 /**
@@ -1329,7 +1332,7 @@ verify_user_pass_script(struct tls_session *session, struct tls_multi *multi,
     }
     else
     {
-        setenv_str(session->opt->es, "username", up->username);
+        /* username env is already set by set_verify_user_pass_env */
         setenv_str(session->opt->es, "password", up->password);
     }
 
@@ -1377,10 +1380,6 @@ verify_user_pass_script(struct tls_session *session, struct tls_multi *multi,
         /* purge auth control filename (and file itself) for non-deferred returns */
         key_state_rm_auth_control_files(&ks->script_auth);
     }
-    if (!session->opt->auth_user_pass_verify_script_via_file)
-    {
-        setenv_del(session->opt->es, "password");
-    }
 
 done:
     if (tmp_file && strlen(tmp_file) > 0)
@@ -1389,6 +1388,11 @@ done:
     }
 
 error:
+    if (!session->opt->auth_user_pass_verify_script_via_file)
+    {
+        setenv_del(session->opt->es, "password");
+    }
+
     argv_free(&argv);
     gc_free(&gc);
     return retval;
@@ -1646,10 +1650,10 @@ verify_user_pass(struct user_pass *up, struct tls_multi *multi, struct tls_sessi
     {
         ks->auth_token_state_flags = verify_auth_token(up, multi, session);
 
-        /* If this is the first time we see an auth-token in this multi session,
-         * save it as initial auth token. This ensures using the
-         * same session ID and initial timestamp in new tokens */
-        if (!multi->auth_token_initial)
+        /* If this is a valid token and the first time we see an auth-token
+         * in this multi session, save it as initial auth token. This ensures
+         * using the same session ID and initial timestamp in new tokens */
+        if (!multi->auth_token_initial && (ks->auth_token_state_flags & AUTH_TOKEN_HMAC_OK))
         {
             multi->auth_token_initial = strdup(up->password);
         }

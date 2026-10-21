@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -511,6 +511,7 @@ packet_id_persist_save(struct packet_id_persist *p)
         && (p->time != p->time_last_written || p->id != p->id_last_written))
     {
         struct packet_id_persist_file_image image;
+        CLEAR(image);
         ssize_t n;
         off_t seek_ret;
         struct gc_arena gc = gc_new();

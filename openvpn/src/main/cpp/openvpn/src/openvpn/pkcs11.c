@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -53,18 +53,17 @@ __mygettimeofday(struct timeval *tv)
 }
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 static void
-__mysleep(const unsigned long usec)
+__mysleep(unsigned long usec)
 {
 #if defined(_WIN32)
     Sleep(usec / 1000);
 #else
-    usleep(usec);
+    if (usec > UINT_MAX)
+    {
+        usec = UINT_MAX;
+    }
+    usleep((useconds_t)usec);
 #endif
 }
 
@@ -436,9 +435,6 @@ pkcs11_management_id_get(const int index, char **id, char **base64)
 {
     pkcs11h_certificate_id_list_t id_list = NULL;
     pkcs11h_certificate_id_list_t entry = NULL;
-#if 0 /* certificate_id seems to be unused -- JY */
-    pkcs11h_certificate_id_t certificate_id = NULL;
-#endif
     pkcs11h_certificate_t certificate = NULL;
     CK_RV rv = CKR_OK;
     unsigned char *certificate_blob = NULL;
@@ -531,7 +527,13 @@ pkcs11_management_id_get(const int index, char **id, char **base64)
         goto cleanup;
     }
 
-    if (openvpn_base64_encode(certificate_blob, certificate_blob_size, &internal_base64) == -1)
+    if (certificate_blob_size > INT_MAX)
+    {
+        msg(M_WARN, "PKCS#11: Invalid certificate size %zu", certificate_blob_size);
+        goto cleanup;
+    }
+
+    if (openvpn_base64_encode(certificate_blob, (int)certificate_blob_size, &internal_base64) == -1)
     {
         msg(M_WARN, "PKCS#11: Cannot encode certificate");
         goto cleanup;
@@ -548,6 +550,9 @@ cleanup:
     pkcs11h_certificate_freeCertificateIdList(id_list);
     id_list = NULL;
 
+    pkcs11h_certificate_freeCertificate(certificate);
+    certificate = NULL;
+
     free(internal_id);
     internal_id = NULL;
 
@@ -562,10 +567,6 @@ cleanup:
 
     return success;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 int
 tls_ctx_use_pkcs11(struct tls_root_ctx *const ssl_ctx, bool pkcs11_id_management,
@@ -671,7 +672,7 @@ _pkcs11_openvpn_show_pkcs11_ids_pin_prompt(void *const global_data, void *const 
     ASSERT(token != NULL);
 
     buf_printf(&pass_prompt, "Please enter '%s' token PIN or 'cancel': ", token->display);
-    if (!query_user_SINGLE(BSTR(&pass_prompt), BLEN(&pass_prompt), pin, pin_max, false))
+    if (!query_user_SINGLE(BSTR(&pass_prompt), pin, (int)pin_max, false))
     {
         msg(M_FATAL, "Could not retrieve the PIN");
     }

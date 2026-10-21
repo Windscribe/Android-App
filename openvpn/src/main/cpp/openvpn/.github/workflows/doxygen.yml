@@ -1,0 +1,54 @@
+name: Deploy Doxygen documentation to Pages
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    if: ${{ github.repository_owner == 'openvpn' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: openvpn
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y --no-install-recommends \
+            build-essential doxygen graphviz \
+            liblzo2-dev libpam0g-dev liblz4-dev libcap-ng-dev libnl-genl-3-dev linux-libc-dev man2html libcmocka-dev python3-docutils libtool automake autoconf libssl-dev
+
+      - name: Build Doxygen documentation
+        id: build
+        run: |
+          cd openvpn
+          autoreconf -f -i
+          cd ..
+          mkdir doxygen
+          cd doxygen
+          ../openvpn/configure
+          make doxygen
+          touch doc/doxygen/html/.nojekyll
+      - name: Upload static files as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: doxygen/doc/doxygen/html/
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

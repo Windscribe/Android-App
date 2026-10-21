@@ -469,6 +469,12 @@ BuildStrongswan:
   when: manual
   image: $STRONGSWAN_CI_IMAGE
 
+  # Project-level CI/CD variables override these. The android-* tags lag the
+  # core releases, so pin the core tag.
+  variables:
+    SS_REMOTE: "https://github.com/strongswan/strongswan.git"
+    SS_BRANCH: "6.1.0"
+
   before_script:
     - export ROOT_DIR=$(pwd)
     - export GRADLE_USER_HOME=$(pwd)/.gradle

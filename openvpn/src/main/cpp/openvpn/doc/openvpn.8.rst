@@ -150,10 +150,10 @@ NOTES
 This product includes software developed by the OpenSSL Project
 (https://www.openssl.org/)
 
-For more information on the TLS protocol, see
-http://www.ietf.org/rfc/rfc2246.txt
+For more information on the TLS protocol see:
+https://tools.ietf.org/html/rfc2246
 
-For more information on the LZO real-time compression library see
+For more information on the LZO real-time compression library see:
 https://www.oberhumer.com/opensource/lzo/
 
 
@@ -161,7 +161,7 @@ https://www.oberhumer.com/opensource/lzo/
 COPYRIGHT
 =========
 
-Copyright (C) 2002-2020 OpenVPN Inc This program is free software; you
+Copyright (C) 2002-2025 OpenVPN Inc This program is free software; you
 can redistribute it and/or modify it under the terms of the GNU General
 Public License version 2 as published by the Free Software Foundation.
 

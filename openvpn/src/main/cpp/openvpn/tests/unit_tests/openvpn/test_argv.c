@@ -14,6 +14,10 @@
 #include "buffer.h"
 #include "test_common.h"
 
+#ifdef _WIN32
+#include "win32-util.h"
+#endif
+
 /* Defines for use in the tests and the mock parse_line() */
 #define PATH1      "/s p a c e"
 #define PATH2      "/foo bar/baz"
@@ -250,6 +254,97 @@ argv_insert_head__non_empty_argv__head_added(void **state)
     argv_free(&a);
 }
 
+#ifdef _WIN32
+/*
+ * An argument is quoted if and only if it holds a space or a character that
+ * cmd.exe would act on when CreateProcess() runs a .bat/.cmd target.
+ */
+static void
+wide_cmd_line__quotes_only_what_cmd_would_reinterpret(void **state)
+{
+    static const struct
+    {
+        const char *arg;
+        const WCHAR *expected;
+    } cases[] = {
+        /* nothing special - must stay unquoted, or existing scripts break */
+        { "CN=user1", L"script.bat 0 CN=user1" },
+        /* the batch delimiters are deliberately not triggers */
+        { "CN=a,b;c=d", L"script.bat 0 CN=a,b;c=d" },
+        /* a space has always forced quoting */
+        { "O=Ctrl, CN=y", L"script.bat 0 \"O=Ctrl, CN=y\"" },
+        /* cmd.exe operators that quoting neutralizes */
+        { "CN=x&ver", L"script.bat 0 \"CN=x&ver\"" },
+        { "CN=x|ver", L"script.bat 0 \"CN=x|ver\"" },
+        { "CN=x>f", L"script.bat 0 \"CN=x>f\"" },
+        { "CN=x<f", L"script.bat 0 \"CN=x<f\"" },
+        { "CN=x^f", L"script.bat 0 \"CN=x^f\"" },
+        { "CN=x(f)", L"script.bat 0 \"CN=x(f)\"" },
+        /* a double quote is replaced, so quoting cannot be broken out of */
+        { "CN=a\"b", L"script.bat 0 CN=a_b" },
+    };
+
+    for (size_t i = 0; i < SIZE(cases); i++)
+    {
+        struct gc_arena gc = gc_new();
+        struct argv a = argv_new();
+
+        argv_printf(&a, "%s %d %s", "script.bat", 0, cases[i].arg);
+        assert_int_equal(a.argc, 3);
+
+        WCHAR *cmd_line = wide_cmd_line(&a, &gc);
+        assert_non_null(cmd_line);
+        assert_int_equal(wcscmp(cmd_line, cases[i].expected), 0);
+
+        argv_free(&a);
+        gc_free(&gc);
+    }
+}
+
+/*
+ * cmd.exe expands %VAR% and !VAR! even inside quotes, and OpenVPN puts
+ * peer-controlled data (e.g. certificate subject fields) on the command line,
+ * so these characters are replaced to stop a value from expanding back into a
+ * quote and command operator.
+ */
+static void
+wide_cmd_line__replaces_cmd_expansion(void **state)
+{
+    static const struct
+    {
+        const char *arg;
+        const WCHAR *expected;
+    } cases[] = {
+        /* a bare percent or bang is replaced */
+        { "CN=x%f", L"script.bat 0 CN=x_f" },
+        { "CN=x!f", L"script.bat 0 CN=x_f" },
+        /* a closed expansion token is replaced, so nothing expands */
+        { "CN=%X509_0_O%", L"script.bat 0 CN=_X509_0_O_" },
+        { "CN=!X509_0_O!", L"script.bat 0 CN=_X509_0_O_" },
+        /* the reported bypass: quotes in one field are already replaced, and
+         * neutralizing % stops %X509_0_O% from re-injecting them */
+        { "O=BREAK\"&whoami&\", CN=%X509_0_O%",
+          L"script.bat 0 \"O=BREAK_&whoami&_, CN=_X509_0_O_\"" },
+    };
+
+    for (size_t i = 0; i < SIZE(cases); i++)
+    {
+        struct gc_arena gc = gc_new();
+        struct argv a = argv_new();
+
+        argv_printf(&a, "%s %d %s", "script.bat", 0, cases[i].arg);
+        assert_int_equal(a.argc, 3);
+
+        WCHAR *cmd_line = wide_cmd_line(&a, &gc);
+        assert_non_null(cmd_line);
+        assert_int_equal(wcscmp(cmd_line, cases[i].expected), 0);
+
+        argv_free(&a);
+        gc_free(&gc);
+    }
+}
+#endif /* _WIN32 */
+
 int
 main(void)
 {
@@ -269,6 +364,10 @@ main(void)
         cmocka_unit_test(argv_str__multiple_argv__correct_output),
         cmocka_unit_test(argv_insert_head__non_empty_argv__head_added),
         cmocka_unit_test(argv_insert_head__empty_argv__head_only),
+#ifdef _WIN32
+        cmocka_unit_test(wide_cmd_line__quotes_only_what_cmd_would_reinterpret),
+        cmocka_unit_test(wide_cmd_line__replaces_cmd_expansion),
+#endif
     };
 
     return cmocka_run_group_tests_name("argv", tests, NULL, NULL);

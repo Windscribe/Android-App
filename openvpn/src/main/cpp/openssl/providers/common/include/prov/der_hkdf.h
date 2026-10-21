@@ -13,6 +13,7 @@
 #include "internal/der.h"
 
 /* Well known OIDs precompiled */
+/* clang-format off */
 
 /*
  * id-alg-hkdf-with-sha256 OBJECT IDENTIFIER ::= { id-alg 28 }
@@ -35,3 +36,4 @@ extern const unsigned char ossl_der_oid_id_alg_hkdf_with_sha384[DER_OID_SZ_id_al
 #define DER_OID_SZ_id_alg_hkdf_with_sha512 13
 extern const unsigned char ossl_der_oid_id_alg_hkdf_with_sha512[DER_OID_SZ_id_alg_hkdf_with_sha512];
 
+/* clang-format on */
