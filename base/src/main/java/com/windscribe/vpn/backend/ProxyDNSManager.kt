@@ -48,7 +48,8 @@ class ProxyDNSManager(
         private const val READY_MAX_ATTEMPTS = 100
     }
 
-    private var cdLib = CdLib()
+    /** Lazy so libwg-go loads on the connect coroutine rather than when the graph is built. */
+    private val cdLib by lazy { CdLib() }
     private var controlDJob: Job? = null
     var dnsDetails: DNSDetails? = null
     var invalidConfig = false

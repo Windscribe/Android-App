@@ -21,7 +21,9 @@ class ProxyTunnelManager(
     val running: Boolean
         get() = proxyJob?.isActive == true
     private var proxyJob: Job? = null
-    private var tunnelLib = WSTunnelLib()
+
+    /** Lazy so libwg-go loads on the proxy coroutine rather than when the backend is built. */
+    private val tunnelLib by lazy { WSTunnelLib() }
     private var protectJob: Job? = null
 
     fun startProxyTunnel(
