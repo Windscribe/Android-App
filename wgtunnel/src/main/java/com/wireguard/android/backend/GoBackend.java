@@ -78,11 +78,21 @@ public final class GoBackend implements Backend {
      * @param context An Android {@link Context}
      */
     public GoBackend(final Context context) {
-        SharedLibraryLoader.loadSharedLibrary(context, "wg-go");
+        loadLibrary(context);
         this.context = context;
-        // The only place the library is loaded. Diagnostics only: a failure must not block a tunnel.
+        // Diagnostics only: a failure must not block a tunnel.
         if (wgSetCrashOutput() != 0)
             Log.w(TAG, "Could not install Go crash output");
+    }
+
+    /**
+     * Loads libwg-go.so, which carries ctrld and wstunnel as well as wg-go, so the callers of those
+     * two must come through here rather than assume a WireGuard connection loaded it. Idempotent.
+     *
+     * <p>Never on the main thread: the Go runtime initialises as the library loads.
+     */
+    public static void loadLibrary(final Context context) {
+        SharedLibraryLoader.loadSharedLibrary(context, "wg-go");
     }
 
     @Nullable private static native String wgGetConfig(int handle);
