@@ -15,6 +15,7 @@ import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
@@ -90,6 +91,7 @@ class DeviceStateManager
         private var context: Context? = null
         private var connectivityManager: ConnectivityManager? = null
         private var networkCallback: ConnectivityManager.NetworkCallback? = null
+        private var underlyingNetworkCallback: ConnectivityManager.NetworkCallback? = null
         private var screenStateReceiver: ScreenStateBroadcastReceiver? = null
 
         // SharedFlow for network change events (for debouncing)
@@ -168,6 +170,39 @@ class DeviceStateManager
                 logger.debug("Network callback registered using registerDefaultNetworkCallback()")
             } catch (e: Exception) {
                 logger.error("Failed to register network callback", e)
+            }
+
+            // The default callback goes quiet on the underlying network once our tunnel is the
+            // default, so a Wi-Fi change mid-session would otherwise never reach us.
+            underlyingNetworkCallback =
+                object : ConnectivityManager.NetworkCallback() {
+                    override fun onAvailable(network: Network) {
+                        handleNetworkChange()
+                    }
+
+                    override fun onLost(network: Network) {
+                        handleNetworkChange()
+                    }
+
+                    override fun onCapabilitiesChanged(
+                        network: Network,
+                        networkCapabilities: NetworkCapabilities,
+                    ) {
+                        handleNetworkChange()
+                    }
+                }
+
+            try {
+                connectivityManager.registerNetworkCallback(
+                    NetworkRequest
+                        .Builder()
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                        .build(),
+                    underlyingNetworkCallback!!,
+                )
+            } catch (e: Exception) {
+                logger.error("Failed to register the underlying network callback", e)
             }
         }
 
@@ -323,14 +358,63 @@ class DeviceStateManager
             }
 
         /**
+         * The network we report on, resolving past our own VPN. Our tunnel is this app's default
+         * network while it is up, and below API 29 a VPN network's capabilities carry TRANSPORT_VPN
+         * alone — the underlying transports are merged in only from API 29 — so reading the active
+         * network there yields no transport and no name for the whole connected session.
+         */
+        private fun ConnectivityManager.getUnderlyingNetworkCompat(): Network? {
+            val active = getActiveNetworkCompat()
+            if (active != null && capabilitiesOrNull(active)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) != true) {
+                return active
+            }
+            return bestNonVpnNetwork() ?: active
+        }
+
+        /** Validated first, then the transport order [getCurrentNetworkType] reports in. */
+        @Suppress("DEPRECATION")
+        private fun ConnectivityManager.bestNonVpnNetwork(): Network? =
+            try {
+                allNetworks
+                    .mapNotNull { network -> capabilitiesOrNull(network)?.let { network to it } }
+                    .filter { (_, caps) ->
+                        caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN) &&
+                            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    }.minWithOrNull(
+                        compareBy(
+                            { (_, caps) -> if (caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) 0 else 1 },
+                            { (_, caps) -> transportRank(caps) },
+                        ),
+                    )?.first
+            } catch (e: Exception) {
+                logger.warn("Could not scan for a non-VPN network: ${e.message}")
+                null
+            }
+
+        private fun transportRank(caps: NetworkCapabilities): Int =
+            when {
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> 0
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> 1
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> 2
+                else -> 3
+            }
+
+        private fun ConnectivityManager.capabilitiesOrNull(network: Network): NetworkCapabilities? =
+            try {
+                getNetworkCapabilities(network)
+            } catch (_: Exception) {
+                null
+            }
+
+        /**
          * Checks if there's underlying connectivity (WiFi or Cellular with validated internet).
          * Returns true only if there's a network with underlying transport and working internet.
          * On API < 23 (including Fire OS), validation check is optional as it may not be properly set.
          */
         private fun hasUnderlyingConnectivity(): Boolean {
             return try {
-                val activeNetwork = connectivityManager?.getActiveNetworkCompat() ?: return false
-                val caps = connectivityManager?.getNetworkCapabilities(activeNetwork) ?: return false
+                val underlying = connectivityManager?.getUnderlyingNetworkCompat() ?: return false
+                val caps = connectivityManager?.getNetworkCapabilities(underlying) ?: return false
 
                 val hasInternet = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 val hasWifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
@@ -353,10 +437,9 @@ class DeviceStateManager
          */
         private fun getCurrentNetworkType(): NetworkType {
             return try {
-                // Get the active network
-                val activeNetwork = connectivityManager?.getActiveNetworkCompat() ?: return NetworkType.NONE
+                val underlying = connectivityManager?.getUnderlyingNetworkCompat() ?: return NetworkType.NONE
                 val caps =
-                    connectivityManager?.getNetworkCapabilities(activeNetwork) ?: return NetworkType.NONE
+                    connectivityManager?.getNetworkCapabilities(underlying) ?: return NetworkType.NONE
 
                 // Check if it has internet capability
                 if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
@@ -523,6 +606,15 @@ class DeviceStateManager
                 }
             }
             networkCallback = null
+
+            underlyingNetworkCallback?.let { callback ->
+                try {
+                    connectivityManager?.unregisterNetworkCallback(callback)
+                } catch (e: Exception) {
+                    logger.error("Error unregistering the underlying network callback", e)
+                }
+            }
+            underlyingNetworkCallback = null
 
             // Unregister screen state receiver
             screenStateReceiver?.let { receiver ->

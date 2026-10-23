@@ -309,6 +309,7 @@ class UserRepository(
     fun prepareDashboard(firebaseToken: String?): Flow<UserDataState> =
         flow {
             preferenceHelper.loginTime = Date()
+            preferenceHelper.isConnectingToConfigured = false
             emit(UserDataState.Loading("Getting session"))
             unblockWgParamsRepository.update()
             try {
