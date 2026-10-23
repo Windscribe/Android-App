@@ -923,6 +923,7 @@ open class WindVpnController
                                     nickName = "Windscribe location",
                                 )
                             Util.saveSelectedLocation(lastSelectedLocation)
+                            preferencesHelper.isConnectingToConfigured = true
                             val protocolInformation = openVPNInfo.getProtocolInformation()
                             autoConnectionManager.setSelectedProtocol(protocolInformation)
                             launchVPNService(protocolInformation, connectionUUID)
