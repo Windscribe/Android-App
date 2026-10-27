@@ -12,7 +12,7 @@ NDK_GO_ARCH_MAP_arm64 := arm64
 NDK_GO_ARCH_MAP_mips := mipsx
 NDK_GO_ARCH_MAP_mips64 := mips64x
 CD_TAG := 1.5.8
-CD_COMMIT := 2d9f38cbceea8855a25fd8d31eb6761d3293e256
+CD_COMMIT := 01f0c0a6a8344d489d17522cbd6124fd086f3f4b
 comma := ,
 CLANG_FLAGS := --target=$(TARGET) --sysroot=$(SYSROOT)
 export CGO_CFLAGS := $(CLANG_FLAGS) $(subst -mthumb,-marm,$(CFLAGS))
@@ -24,12 +24,12 @@ export CGO_ENABLED := 1
 # Must match the `go` directive in go.mod. If it is lower, cmd/go silently
 # switches to an unpatched toolchain from the proxy and the boottime patch below
 # stops reaching the binary; GOTOOLCHAIN=local makes that a build error instead.
-GO_VERSION := 1.25.14
+GO_VERSION := 1.26.10
 GO_PLATFORM := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(NDK_GO_ARCH_MAP_$(shell uname -m))
 GO_TARBALL := go$(GO_VERSION).$(GO_PLATFORM).tar.gz
-GO_HASH_darwin-amd64 := b09087a67d5792a8b0fcbf74212d62560c94ac8a8fd750ff920d8cb5f1e20118
-GO_HASH_darwin-arm64 := 5b26c0b6f308240fca2614fb02f622cfcc8c0cc3b69c78bba4845489a4590259
-GO_HASH_linux-amd64 := a21ae5633a269bcd7e90cf767e48225633795e99d831742cbf3397064fee7712
+GO_HASH_darwin-amd64 := e820ab780c273ae4a340b79d0f3c4313b74ee029aa3874792145d44b9f4f91da
+GO_HASH_darwin-arm64 := 0b5183492292ada170f9b561a834863808dd02edba599e4ad0e89899330020b3
+GO_HASH_linux-amd64 := ccfe7ae822d2c2f41f4fe7c956199967a4dac22d0ee0d2b2bfdb440aab3b20c5
 export GOTOOLCHAIN := local
 
 default: $(DESTDIR)/libwg-go.so
