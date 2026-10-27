@@ -11,7 +11,7 @@ NDK_GO_ARCH_MAP_arm := arm
 NDK_GO_ARCH_MAP_arm64 := arm64
 NDK_GO_ARCH_MAP_mips := mipsx
 NDK_GO_ARCH_MAP_mips64 := mips64x
-CD_TAG := 1.5.9-0.20261022132454-01f0c0a6a834
+CD_TAG := 1.5.8
 CD_COMMIT := 01f0c0a6a8344d489d17522cbd6124fd086f3f4b
 comma := ,
 CLANG_FLAGS := --target=$(TARGET) --sysroot=$(SYSROOT)
