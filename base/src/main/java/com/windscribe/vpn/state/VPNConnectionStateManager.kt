@@ -53,6 +53,13 @@ class VPNConnectionStateManager(
         _serviceMode.value = mode
     }
 
+    /**
+     * True while the live attempt is an emergency connect. Not persisted: the flag only has to
+     * outlive the attempt, and a stale one would silence the connectivity test on a normal session.
+     */
+    @Volatile
+    var emergencyConnect: Boolean = false
+
     private val _connectionCount = MutableSharedFlow<Int>(preferencesHelper.getConnectionCount())
     val connectionCount: SharedFlow<Int> = _connectionCount
 
