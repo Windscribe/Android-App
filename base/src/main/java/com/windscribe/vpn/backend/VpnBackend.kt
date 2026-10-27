@@ -219,8 +219,20 @@ abstract class VpnBackend(
      *
      * The bridge leg is allowed only when the tunnel terminates on a Windscribe node; a custom config
      * has no node bridge, so asking for one costs a session token request that can only fail.
+     *
+     * Skipped entirely for an emergency connect: that tunnel is the only way to reach the API at
+     * all, so a failed test would tear down the session the user is connecting to recover.
      */
     fun testConnectivity() {
+        if (stateManager.emergencyConnect) {
+            vpnLogger.debug("Emergency connect: skipping connectivity test.")
+            connectionJob?.cancel()
+            connectivityTestJob?.cancel()
+            connectivityTestJob = null
+            preferencesHelper.userIP = null
+            connectivityTestPassed(null)
+            return
+        }
         if (connectivityTestJob?.isActive == true) {
             vpnLogger.debug("Connectivity test already running, skipping new test.")
             return
@@ -301,8 +313,8 @@ abstract class VpnBackend(
         }
     }
 
-    open fun connectivityTestPassed(ip: String) {
-        vpnLogger.debug("Connectivity test successful: $ip")
+    open fun connectivityTestPassed(ip: String?) {
+        vpnLogger.debug("Connection ready: ip=$ip")
         sessionWasEstablished = true
         updateState(VPNState(VPNState.Status.Connected, ip = ip))
         mainScope.launch {
