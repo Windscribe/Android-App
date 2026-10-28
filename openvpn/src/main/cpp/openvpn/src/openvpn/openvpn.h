@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -60,7 +60,7 @@ struct key_schedule
     struct key_ctx_bi static_key;
 
     /* our global SSL context */
-    struct tls_root_ctx ssl_ctx;
+    struct tls_root_ctx *ssl_ctx;
 
     /* optional TLS control channel wrapping */
     struct key_type tls_auth_key_type;
@@ -420,9 +420,6 @@ struct context_2
     struct env_set *es;
     bool es_owned;
 
-    /* don't wait for TUN/TAP/UDP to be ready to accept write */
-    bool fast_io;
-
     /* --ifconfig endpoints to be pushed to client */
     bool push_request_received;
     bool push_ifconfig_defined;
@@ -510,6 +507,8 @@ struct context
     bool did_we_daemonize;       /**< Whether demonization has already
                                   *   taken place. */
 
+    bool did_dco_iroutes;        /**< Whether DCO iroutes have been installed */
+
     struct context_persist persist;
     /**< Persistent %context. */
     struct context_0 *c0; /**< Level 0 %context. */
@@ -524,7 +523,6 @@ struct context
     if (IS_SIG(c))                            \
     {                                         \
         const int brk = func(arg);            \
-        perf_pop();                           \
         if (brk)                              \
         {                                     \
             break;                            \

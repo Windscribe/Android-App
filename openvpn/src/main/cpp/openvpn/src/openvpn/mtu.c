@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -35,6 +35,7 @@
 #include "crypto.h"
 
 #include "memdbg.h"
+#include "ssl_common.h"
 
 /* allocate a buffer for socket or tun layer */
 void
@@ -51,6 +52,13 @@ unsigned int
 calc_packet_id_size_dc(const struct options *options, const struct key_type *kt)
 {
     bool tlsmode = options->tls_server || options->tls_client;
+    bool epoch = options->imported_protocol_flags & CO_EPOCH_DATA_KEY_FORMAT;
+
+    /* epoch format uses a 64-bit packet id: 16 bit epoch + 48 bit per-epoch counter */
+    if (epoch)
+    {
+        return sizeof(uint64_t);
+    }
 
     bool packet_id_long_form = !tlsmode || cipher_kt_mode_ofb_cfb(kt->cipher);
 
@@ -66,11 +74,11 @@ frame_calculate_protocol_header_size(const struct key_type *kt, const struct opt
 
     bool tlsmode = options->tls_server || options->tls_client;
 
-    /* A socks proxy adds 10 byte of extra header to each packet
+    /* A socks proxy adds extra header to each packet
      * (we only support Socks with IPv4, this value is different for IPv6) */
     if (options->ce.socks_proxy_server && proto_is_udp(options->ce.proto))
     {
-        header_size += 10;
+        header_size += SOCKS_UDPv4_HEADROOM;
     }
 
     /* TCP stream based packets have a 16 bit length field */
@@ -273,6 +281,8 @@ translate_mtu_discover_type_name(const char *name)
 }
 
 #if EXTENDED_SOCKET_ERROR_CAPABILITY
+
+#include <linux/errqueue.h>
 
 struct probehdr
 {

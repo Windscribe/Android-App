@@ -7,26 +7,21 @@
 
 #ifdef ENABLE_MANAGEMENT
 #include "multi.h"
-#endif
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
+#include "ssl_util.h"
 #endif
 
 int
-process_incoming_push_update(struct context *c, unsigned int permission_mask,
-                             unsigned int *option_types_found, struct buffer *buf,
-                             bool msg_sender)
+process_push_update(struct context *c, struct options *o, unsigned int permission_mask,
+                    unsigned int *option_types_found, struct buffer *buf, bool msg_sender)
 {
     int ret = PUSH_MSG_ERROR;
-    const uint8_t ch = buf_read_u8(buf);
+    const int ch = buf_read_u8(buf);
     if (ch == ',')
     {
-        if (apply_push_options(c, &c->options, buf, permission_mask, option_types_found, c->c2.es,
+        if (apply_push_options(c, o, buf, permission_mask, option_types_found, c->c2.es,
                                true))
         {
-            switch (c->options.push_continuation)
+            switch (o->push_continuation)
             {
                 case 0:
                 case 1:
@@ -56,8 +51,8 @@ process_incoming_push_update(struct context *c, unsigned int permission_mask,
  * Return index of last `,` or `0` if it didn't find any.
  * If there is a comma at index `0` it's an error anyway
  */
-static int
-find_first_comma_of_next_bundle(const char *str, int ix)
+static size_t
+find_first_comma_of_next_bundle(const char *str, size_t ix)
 {
     while (ix > 0)
     {
@@ -74,8 +69,8 @@ find_first_comma_of_next_bundle(const char *str, int ix)
 static struct buffer
 forge_msg(const char *src, const char *continuation, struct gc_arena *gc)
 {
-    int src_len = strlen(src);
-    int con_len = continuation ? strlen(continuation) : 0;
+    size_t src_len = strlen(src);
+    size_t con_len = continuation ? strlen(continuation) : 0;
     struct buffer buf = alloc_buf_gc(src_len + sizeof(push_update_cmd) + con_len + 2, gc);
 
     buf_printf(&buf, "%s,%s%s", push_update_cmd, src, continuation ? continuation : "");
@@ -92,11 +87,11 @@ gc_strdup(const char *src, struct gc_arena *gc)
     return ret;
 }
 
-/* It split the messagge (if necessay) and fill msgs with the message chunks.
+/* It split the messagge (if necessary) and fill msgs with the message chunks.
  * Return `false` on failure an `true` on success.
  */
 static bool
-message_splitter(const char *s, struct buffer *msgs, struct gc_arena *gc, const int safe_cap)
+message_splitter(const char *s, struct buffer_list *msgs, struct gc_arena *gc, const size_t safe_cap)
 {
     if (!s || !*s)
     {
@@ -104,15 +99,14 @@ message_splitter(const char *s, struct buffer *msgs, struct gc_arena *gc, const 
     }
 
     char *str = gc_strdup(s, gc);
-    int i = 0;
-    int im = 0;
+    size_t i = 0;
 
     while (*str)
     {
         /* + ',' - '/0' */
         if (strlen(str) > safe_cap)
         {
-            int ci = find_first_comma_of_next_bundle(str, safe_cap);
+            size_t ci = find_first_comma_of_next_bundle(str, safe_cap);
             if (!ci)
             {
                 /* if no commas were found go to fail, do not send any message */
@@ -120,76 +114,144 @@ message_splitter(const char *s, struct buffer *msgs, struct gc_arena *gc, const 
             }
             str[ci] = '\0';
             /* copy from i to (ci -1) */
-            msgs[im] = forge_msg(str, ",push-continuation 2", gc);
+            struct buffer tmp = forge_msg(str, ",push-continuation 2", gc);
+            buffer_list_push(msgs, BSTR(&tmp));
             i = ci + 1;
         }
         else
         {
-            if (im)
+            if (msgs->head)
             {
-                msgs[im] = forge_msg(str, ",push-continuation 1", gc);
+                struct buffer tmp = forge_msg(str, ",push-continuation 1", gc);
+                buffer_list_push(msgs, BSTR(&tmp));
             }
             else
             {
-                msgs[im] = forge_msg(str, NULL, gc);
+                struct buffer tmp = forge_msg(str, NULL, gc);
+                buffer_list_push(msgs, BSTR(&tmp));
             }
             i = strlen(str);
         }
         str = &str[i];
-        im++;
     }
     return true;
 }
 
 /* send the message(s) prepared to one single client */
 static bool
-send_single_push_update(struct context *c, struct buffer *msgs, unsigned int *option_types_found)
+send_single_push_update(struct multi_context *m, struct multi_instance *mi, struct buffer_list *msgs)
 {
-    if (!msgs[0].data || !*(msgs[0].data))
+    if (!msgs->head)
     {
         return false;
     }
-    int i = -1;
 
-    while (msgs[++i].data && *(msgs[i].data))
+    unsigned int option_types_found = 0;
+    struct context *c = &mi->context;
+    struct options o;
+    CLEAR(o);
+
+    /* Set canary values to detect ifconfig options in push-update messages.
+     * These placeholder strings will be overwritten to NULL by the option
+     * parser if -ifconfig or -ifconfig-ipv6 options are present in the
+     * push-update.
+     */
+    const char *canary = "canary";
+    o.ifconfig_local = canary;
+    o.ifconfig_ipv6_local = canary;
+
+    struct buffer_entry *e = msgs->head;
+    while (e)
     {
-        if (!send_control_channel_string(c, BSTR(&msgs[i]), D_PUSH))
+        if (!send_control_channel_string(c, BSTR(&e->buf), D_PUSH))
         {
             return false;
         }
 
-        /* After sending the control message, we update the options
-         * server-side in the client's context so pushed options like
-         * ifconfig/ifconfig-ipv6 can actually work.
+        /* After sending the control message, we parse it, miming the behavior
+         * of `process_incoming_push_msg()` and we fill an empty `options` struct
+         * with the new options. If an `ifconfig_local` or `ifconfig_ipv6_local`
+         * options is found we update the vhash accordingly, so that the pushed
+         * ifconfig/ifconfig-ipv6 options can actually work.
          * If we don't do that, packets arriving from the client with the
          * new address will be rejected and packets for the new address
          * will not be routed towards the client.
-         * For the same reason we later update the vhash too in
-         * `send_push_update()` function.
          * Using `buf_string_compare_advance()` we mimic the behavior
          * inside `process_incoming_push_msg()`. However, we don't need
          * to check the return value here because we just want to `advance`,
          * meaning we skip the `push_update_cmd' we added earlier.
+         * Also we need to make a temporary copy so we can buf_advance()
+         * without modifying original buffer.
          */
-        buf_string_compare_advance(&msgs[i], push_update_cmd);
-        if (process_incoming_push_update(c, pull_permission_mask(c), option_types_found, &msgs[i], true) == PUSH_MSG_ERROR)
+        struct buffer tmp_msg = e->buf;
+        buf_string_compare_advance(&tmp_msg, push_update_cmd);
+        unsigned int permission_mask = pull_permission_mask(c);
+        if (process_push_update(c, &o, permission_mask, &option_types_found, &tmp_msg, true) == PUSH_MSG_ERROR)
         {
-            msg(M_WARN, "Failed to process push update message sent to client ID: %u",
-                c->c2.tls_multi ? c->c2.tls_multi->peer_id : UINT32_MAX);
-            continue;
+            msg(M_WARN, "Failed to process push update message sent to client ID: %u", c->c2.tls_multi->peer_id);
         }
-        c->options.push_option_types_found |= *option_types_found;
-        if (!options_postprocess_pull(&c->options, c->c2.es))
-        {
-            msg(M_WARN, "Failed to post-process push update message sent to client ID: %u",
-                c->c2.tls_multi ? c->c2.tls_multi->peer_id : UINT32_MAX);
-        }
+        e = e->next;
     }
+
+    if (option_types_found & OPT_P_UP)
+    {
+        /* -ifconfig */
+        if (!o.ifconfig_local && mi->context.c2.push_ifconfig_defined)
+        {
+            unlearn_ifconfig(m, mi);
+        }
+        /* -ifconfig-ipv6 */
+        if (!o.ifconfig_ipv6_local && mi->context.c2.push_ifconfig_ipv6_defined)
+        {
+            unlearn_ifconfig_ipv6(m, mi);
+        }
+
+        if (o.ifconfig_local && !strcmp(o.ifconfig_local, canary))
+        {
+            o.ifconfig_local = NULL;
+        }
+        if (o.ifconfig_ipv6_local && !strcmp(o.ifconfig_ipv6_local, canary))
+        {
+            o.ifconfig_ipv6_local = NULL;
+        }
+
+        /* new ifconfig or new ifconfig-ipv6 */
+        update_vhash(m, mi, o.ifconfig_local, o.ifconfig_ipv6_local);
+    }
+
     return true;
 }
 
-int
-send_push_update(struct multi_context *m, const void *target, const char *msg, const push_update_type type, const int push_bundle_size)
+/* Return true if the client supports push-update */
+static bool
+support_push_update(struct multi_instance *mi)
+{
+    ASSERT(mi->context.c2.tls_multi);
+    const unsigned int iv_proto_peer = extract_iv_proto(mi->context.c2.tls_multi->peer_info);
+    if (!(iv_proto_peer & IV_PROTO_PUSH_UPDATE))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief A function to send a PUSH_UPDATE control message from server to client(s).
+ *
+ * @param m the multi_context, contains all the clients connected to this server.
+ * @param target the target to which to send the message. It should be:
+ * `NULL` if `type == UPT_BROADCAST`,
+ * a `mroute_addr *` if `type == UPT_BY_ADDR`,
+ * a `char *` if `type == UPT_BY_CN`,
+ * an `unsigned long *` if `type == UPT_BY_CID`.
+ * @param msg a string containing the options to send.
+ * @param type the way to address the message (broadcast, by cid, by cn, by address).
+ * @param push_bundle_size the maximum size of a bundle of pushed option. Just use PUSH_BUNDLE_SIZE macro.
+ * @return The number of clients to which the message was sent. Might return < 0 in case of error.
+ */
+static int
+send_push_update(struct multi_context *m, const void *target, const char *msg, const push_update_type type, const size_t push_bundle_size)
 {
     if (dco_enabled(&m->top.options))
     {
@@ -198,26 +260,23 @@ send_push_update(struct multi_context *m, const void *target, const char *msg, c
         return 0;
     }
 
-    if (!msg || !*msg || !m
-        || (!target && type != UPT_BROADCAST))
+    if (!msg || !*msg || !m || (!target && type != UPT_BROADCAST))
     {
         return -EINVAL;
     }
 
     struct gc_arena gc = gc_new();
     /* extra space for possible trailing ifconfig and push-continuation */
-    const int extra = 84 + sizeof(push_update_cmd);
+    const size_t extra = 84 + sizeof(push_update_cmd);
     /* push_bundle_size is the maximum size of a message, so if the message
      * we want to send exceeds that size we have to split it into smaller messages */
-    const int safe_cap = push_bundle_size - extra;
-    int msgs_num = (strlen(msg) / safe_cap) + ((strlen(msg) % safe_cap) != 0);
-    struct buffer *msgs = gc_malloc((msgs_num + 1) * sizeof(struct buffer), true, &gc);
+    ASSERT(push_bundle_size > extra);
+    const size_t safe_cap = push_bundle_size - extra;
+    struct buffer_list *msgs = buffer_list_new();
 
-    unsigned int option_types_found = 0;
-
-    msgs[msgs_num].data = NULL;
     if (!message_splitter(msg, msgs, &gc, safe_cap))
     {
+        buffer_list_free(msgs);
         gc_free(&gc);
         return -EINVAL;
     }
@@ -228,23 +287,29 @@ send_push_update(struct multi_context *m, const void *target, const char *msg, c
 
         if (!mi)
         {
+            buffer_list_free(msgs);
+            gc_free(&gc);
             return -ENOENT;
         }
 
-        const char *old_ip = mi->context.options.ifconfig_local;
-        const char *old_ipv6 = mi->context.options.ifconfig_ipv6_local;
-        if (!mi->halt
-            && send_single_push_update(&mi->context, msgs, &option_types_found))
+        if (!support_push_update(mi))
         {
-            if (option_types_found & OPT_P_UP)
-            {
-                update_vhash(m, mi, old_ip, old_ipv6);
-            }
+            msg(M_CLIENT, "PUSH_UPDATE: not sending message to unsupported peer with ID: %u", mi->context.c2.tls_multi->peer_id);
+            buffer_list_free(msgs);
+            gc_free(&gc);
+            return 0;
+        }
+
+        if (!mi->halt
+            && send_single_push_update(m, mi, msgs))
+        {
+            buffer_list_free(msgs);
             gc_free(&gc);
             return 1;
         }
         else
         {
+            buffer_list_free(msgs);
             gc_free(&gc);
             return 0;
         }
@@ -259,29 +324,22 @@ send_push_update(struct multi_context *m, const void *target, const char *msg, c
     {
         struct multi_instance *curr_mi = he->value;
 
-        if (curr_mi->halt)
+        if (curr_mi->halt || !support_push_update(curr_mi))
         {
             continue;
         }
 
         /* Type is UPT_BROADCAST so we update every client */
-        option_types_found = 0;
-        const char *old_ip = curr_mi->context.options.ifconfig_local;
-        const char *old_ipv6 = curr_mi->context.options.ifconfig_ipv6_local;
-        if (!send_single_push_update(&curr_mi->context, msgs, &option_types_found))
+        if (!send_single_push_update(m, curr_mi, msgs))
         {
-            msg(M_CLIENT, "ERROR: Peer ID: %u has not been updated",
-                curr_mi->context.c2.tls_multi ? curr_mi->context.c2.tls_multi->peer_id : UINT32_MAX);
+            msg(M_CLIENT, "ERROR: Peer ID: %u has not been updated", curr_mi->context.c2.tls_multi->peer_id);
             continue;
-        }
-        if (option_types_found & OPT_P_UP)
-        {
-            update_vhash(m, curr_mi, old_ip, old_ipv6);
         }
         count++;
     }
 
     hash_iterator_free(&hi);
+    buffer_list_free(msgs);
     gc_free(&gc);
     return count;
 }
@@ -317,7 +375,3 @@ management_callback_send_push_update_by_cid(void *arg, unsigned long cid, const 
     RETURN_UPDATE_STATUS(n_sent);
 }
 #endif /* ifdef ENABLE_MANAGEMENT */
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif

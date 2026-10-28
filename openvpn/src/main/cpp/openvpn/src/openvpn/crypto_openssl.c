@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -229,7 +229,7 @@ crypto_clear_error(void)
 void
 crypto_print_openssl_errors(const unsigned int flags)
 {
-    unsigned long err = 0;
+    openssl_err_t err = 0;
     int line, errflags;
     const char *file, *data, *func;
 
@@ -789,7 +789,8 @@ cipher_kt_mode_cbc(const char *ciphername)
 #ifdef EVP_CIPH_FLAG_CTS
                    && !(EVP_CIPHER_flags(cipher) & EVP_CIPH_FLAG_CTS)
 #endif
-                   && !(EVP_CIPHER_flags(cipher) & EVP_CIPH_FLAG_AEAD_CIPHER));
+                   && !(EVP_CIPHER_flags(cipher) & EVP_CIPH_FLAG_AEAD_CIPHER)
+                   && !(EVP_CIPHER_flags(cipher) & EVP_CIPH_FLAG_ENC_THEN_MAC));
     EVP_CIPHER_free(cipher);
     return ret;
 }
@@ -895,11 +896,6 @@ cipher_ctx_mode(const EVP_CIPHER_CTX *ctx)
     return EVP_CIPHER_CTX_mode(ctx);
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 bool
 cipher_ctx_mode_cbc(const cipher_ctx_t *ctx)
 {
@@ -908,7 +904,7 @@ cipher_ctx_mode_cbc(const cipher_ctx_t *ctx)
         return false;
     }
 
-    int flags = EVP_CIPHER_CTX_flags(ctx);
+    unsigned long flags = EVP_CIPHER_CTX_flags(ctx);
     int mode = EVP_CIPHER_CTX_mode(ctx);
 
     return mode == EVP_CIPH_CBC_MODE
@@ -939,7 +935,7 @@ cipher_ctx_mode_aead(const cipher_ctx_t *ctx)
 {
     if (ctx)
     {
-        int flags = EVP_CIPHER_CTX_flags(ctx);
+        unsigned long flags = EVP_CIPHER_CTX_flags(ctx);
         if (flags & EVP_CIPH_FLAG_AEAD_CIPHER)
         {
             return true;
@@ -994,18 +990,14 @@ int
 cipher_ctx_final_check_tag(EVP_CIPHER_CTX *ctx, uint8_t *dst, int *dst_len, uint8_t *tag,
                            size_t tag_len)
 {
-    ASSERT(tag_len < SIZE_MAX);
-    if (!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, tag_len, tag))
+    ASSERT(tag_len < INT_MAX);
+    if (!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, (int)tag_len, tag))
     {
         return 0;
     }
 
     return cipher_ctx_final(ctx, dst, dst_len);
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 /*
  *
@@ -1164,7 +1156,7 @@ md_ctx_size(const EVP_MD_CTX *ctx)
 }
 
 void
-md_ctx_update(EVP_MD_CTX *ctx, const uint8_t *src, int src_len)
+md_ctx_update(EVP_MD_CTX *ctx, const uint8_t *src, size_t src_len)
 {
     EVP_DigestUpdate(ctx, src, src_len);
 }
@@ -1258,7 +1250,7 @@ hmac_ctx_final(HMAC_CTX *ctx, uint8_t *dst)
 
     HMAC_Final(ctx, dst, &in_hmac_len);
 }
-#else  /* if OPENSSL_VERSION_NUMBER < 0x30000000L */
+#else /* if OPENSSL_VERSION_NUMBER < 0x30000000L */
 hmac_ctx_t *
 hmac_ctx_new(void)
 {
@@ -1324,10 +1316,14 @@ hmac_ctx_size(hmac_ctx_t *ctx)
 void
 hmac_ctx_reset(hmac_ctx_t *ctx)
 {
-    /* The OpenSSL MAC API lacks a reset method and passing NULL as params
-     * does not reset it either, so use the params array to reinitialise it the
-     * same way as before */
-    if (!EVP_MAC_init(ctx->ctx, NULL, 0, ctx->params))
+    /* OpenSSL 3.0.3 fixed EVP_MAC reinitialization with an existing key.
+     * Older versions need the parameters, including the key, to reset. */
+#if OPENSSL_VERSION_NUMBER >= 0x30000030L
+    const OSSL_PARAM *params = NULL;
+#else
+    const OSSL_PARAM *params = ctx->params;
+#endif
+    if (!EVP_MAC_init(ctx->ctx, NULL, 0, params))
     {
         crypto_msg(M_FATAL, "EVP_MAC_init failed");
     }
@@ -1411,7 +1407,8 @@ bool
 ssl_tls1_PRF(const uint8_t *label, size_t label_len, const uint8_t *sec, size_t slen, uint8_t *out1,
              size_t olen)
 {
-    CRYPTO_tls1_prf(EVP_md5_sha1(), out1, olen, sec, slen, label, label_len, NULL, 0, NULL, 0);
+    return CRYPTO_tls1_prf(EVP_md5_sha1(), out1, olen, sec, slen,
+                           (const char *)label, label_len, NULL, 0, NULL, 0);
 }
 #elif !defined(LIBRESSL_VERSION_NUMBER) && !defined(ENABLE_CRYPTO_WOLFSSL)
 #if defined(__GNUC__) || defined(__clang__)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2025 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2017-2026 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright 2017 Ribose Inc. All Rights Reserved.
  * Ported from Ribose contributions from Botan.
  *
@@ -14,6 +14,7 @@
 #include "crypto/sm2.h"
 #include "crypto/sm2err.h"
 #include "crypto/ec.h" /* ossl_ec_group_do_inverse_ord() */
+#include "crypto/bn.h" /* fixed-top / Montgomery constant-time BN helpers */
 #include "internal/numbers.h"
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -21,10 +22,10 @@
 #include <string.h>
 
 int ossl_sm2_compute_z_digest(uint8_t *out,
-                              const EVP_MD *digest,
-                              const uint8_t *id,
-                              const size_t id_len,
-                              const EC_KEY *key)
+    const EVP_MD *digest,
+    const uint8_t *id,
+    const size_t id_len,
+    const EC_KEY *key)
 {
     int rc = 0;
     const EC_GROUP *group = EC_KEY_get0_group(key);
@@ -60,6 +61,7 @@ int ossl_sm2_compute_z_digest(uint8_t *out,
         goto done;
     }
 
+    BN_CTX_start(ctx);
     p = BN_CTX_get(ctx);
     a = BN_CTX_get(ctx);
     b = BN_CTX_get(ctx);
@@ -115,42 +117,43 @@ int ossl_sm2_compute_z_digest(uint8_t *out,
         goto done;
 
     if (BN_bn2binpad(a, buf, p_bytes) < 0
-            || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || BN_bn2binpad(b, buf, p_bytes) < 0
-            || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || !EC_POINT_get_affine_coordinates(group,
-                                                EC_GROUP_get0_generator(group),
-                                                xG, yG, ctx)
-            || BN_bn2binpad(xG, buf, p_bytes) < 0
-            || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || BN_bn2binpad(yG, buf, p_bytes) < 0
-            || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || !EC_POINT_get_affine_coordinates(group,
-                                                pubkey,
-                                                xA, yA, ctx)
-            || BN_bn2binpad(xA, buf, p_bytes) < 0
-            || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || BN_bn2binpad(yA, buf, p_bytes) < 0
-            || !EVP_DigestUpdate(hash, buf, p_bytes)
-            || !EVP_DigestFinal(hash, out, NULL)) {
+        || !EVP_DigestUpdate(hash, buf, p_bytes)
+        || BN_bn2binpad(b, buf, p_bytes) < 0
+        || !EVP_DigestUpdate(hash, buf, p_bytes)
+        || !EC_POINT_get_affine_coordinates(group,
+            EC_GROUP_get0_generator(group),
+            xG, yG, ctx)
+        || BN_bn2binpad(xG, buf, p_bytes) < 0
+        || !EVP_DigestUpdate(hash, buf, p_bytes)
+        || BN_bn2binpad(yG, buf, p_bytes) < 0
+        || !EVP_DigestUpdate(hash, buf, p_bytes)
+        || !EC_POINT_get_affine_coordinates(group,
+            pubkey,
+            xA, yA, ctx)
+        || BN_bn2binpad(xA, buf, p_bytes) < 0
+        || !EVP_DigestUpdate(hash, buf, p_bytes)
+        || BN_bn2binpad(yA, buf, p_bytes) < 0
+        || !EVP_DigestUpdate(hash, buf, p_bytes)
+        || !EVP_DigestFinal(hash, out, NULL)) {
         ERR_raise(ERR_LIB_SM2, ERR_R_INTERNAL_ERROR);
         goto done;
     }
 
     rc = 1;
 
- done:
+done:
     OPENSSL_free(buf);
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     EVP_MD_CTX_free(hash);
     return rc;
 }
 
 static BIGNUM *sm2_compute_msg_hash(const EVP_MD *digest,
-                                    const EC_KEY *key,
-                                    const uint8_t *id,
-                                    const size_t id_len,
-                                    const uint8_t *msg, size_t msg_len)
+    const EC_KEY *key,
+    const uint8_t *id,
+    const size_t id_len,
+    const uint8_t *msg, size_t msg_len)
 {
     EVP_MD_CTX *hash = EVP_MD_CTX_new();
     const int md_size = EVP_MD_get_size(digest);
@@ -185,10 +188,10 @@ static BIGNUM *sm2_compute_msg_hash(const EVP_MD *digest,
     }
 
     if (!EVP_DigestInit(hash, fetched_digest)
-            || !EVP_DigestUpdate(hash, z, md_size)
-            || !EVP_DigestUpdate(hash, msg, msg_len)
-               /* reuse z buffer to hold H(Z || M) */
-            || !EVP_DigestFinal(hash, z, NULL)) {
+        || !EVP_DigestUpdate(hash, z, md_size)
+        || !EVP_DigestUpdate(hash, msg, msg_len)
+        /* reuse z buffer to hold H(Z || M) */
+        || !EVP_DigestFinal(hash, z, NULL)) {
         ERR_raise(ERR_LIB_SM2, ERR_R_EVP_LIB);
         goto done;
     }
@@ -197,7 +200,7 @@ static BIGNUM *sm2_compute_msg_hash(const EVP_MD *digest,
     if (e == NULL)
         ERR_raise(ERR_LIB_SM2, ERR_R_INTERNAL_ERROR);
 
- done:
+done:
     EVP_MD_free(fetched_digest);
     OPENSSL_free(z);
     EVP_MD_CTX_free(hash);
@@ -213,15 +216,20 @@ static ECDSA_SIG *sm2_sig_gen(const EC_KEY *key, const BIGNUM *e)
     EC_POINT *kG = NULL;
     BN_CTX *ctx = NULL;
     BIGNUM *k = NULL;
-    BIGNUM *rk = NULL;
     BIGNUM *r = NULL;
     BIGNUM *s = NULL;
     BIGNUM *x1 = NULL;
     BIGNUM *tmp = NULL;
+    BN_MONT_CTX *mont = EC_GROUP_get_mont_data(group);
     OSSL_LIB_CTX *libctx = ossl_ec_key_get_libctx(key);
 
     if (dA == NULL) {
         ERR_raise(ERR_LIB_SM2, SM2_R_INVALID_PRIVATE_KEY);
+        goto done;
+    }
+
+    if (mont == NULL) {
+        ERR_raise(ERR_LIB_SM2, ERR_R_EC_LIB);
         goto done;
     }
     kG = EC_POINT_new(group);
@@ -237,7 +245,6 @@ static ECDSA_SIG *sm2_sig_gen(const EC_KEY *key, const BIGNUM *e)
 
     BN_CTX_start(ctx);
     k = BN_CTX_get(ctx);
-    rk = BN_CTX_get(ctx);
     x1 = BN_CTX_get(ctx);
     tmp = BN_CTX_get(ctx);
     if (tmp == NULL) {
@@ -271,32 +278,70 @@ static ECDSA_SIG *sm2_sig_gen(const EC_KEY *key, const BIGNUM *e)
             ERR_raise(ERR_LIB_SM2, ERR_R_INTERNAL_ERROR);
             goto done;
         }
+        /*
+         * Pin the nonce to a fixed, value-independent width and flag it
+         * BN_FLG_CONSTTIME, so its magnitude does not leak through operand
+         * lengths in the scalar copy inside the ladder or in the arithmetic
+         * below.  BN_priv_rand_range_ex() is kept so the nonce value itself
+         * is unchanged; only its representation is pinned.
+         */
+        BN_set_flags(k, BN_FLG_CONSTTIME);
+        if (!bn_set_top_fixed(k, bn_get_top(order))) {
+            ERR_raise(ERR_LIB_SM2, ERR_R_BN_LIB);
+            goto done;
+        }
 
         if (!EC_POINT_mul(group, kG, k, NULL, NULL, ctx)
-                || !EC_POINT_get_affine_coordinates(group, kG, x1, NULL,
-                                                    ctx)
-                || !BN_mod_add(r, e, x1, order, ctx)) {
+            || !EC_POINT_get_affine_coordinates(group, kG, x1, NULL,
+                ctx)
+            || !BN_mod_add(r, e, x1, order, ctx)) {
             ERR_raise(ERR_LIB_SM2, ERR_R_INTERNAL_ERROR);
             goto done;
         }
 
-        /* try again if r == 0 or r+k == n */
+        /* try again if r == 0 or r + k == n */
         if (BN_is_zero(r))
             continue;
 
-        if (!BN_add(rk, r, k)) {
-            ERR_raise(ERR_LIB_SM2, ERR_R_INTERNAL_ERROR);
+        /*
+         * Since 0 < r < n and 0 < k < n, r + k == n is the same as
+         * k == n - r.  Both operands of the subtraction are public, so
+         * compute it in the open and then compare against the nonce with a
+         * fixed-width constant-time comparison.  A BN_cmp() on r + k would
+         * branch on whether the sum carried into an extra word, which
+         * depends on the value of k.
+         */
+        if (!BN_sub(tmp, order, r)
+            || !bn_set_top_fixed(tmp, bn_get_top(order))) {
+            ERR_raise(ERR_LIB_SM2, ERR_R_BN_LIB);
             goto done;
         }
 
-        if (BN_cmp(rk, order) == 0)
+        if (CRYPTO_memcmp(bn_get_words(k), bn_get_words(tmp),
+                bn_get_top(order) * sizeof(BN_ULONG))
+            == 0)
             continue;
 
+        /*
+         * s = ((1 + dA)^-1 * (k - r * dA)) mod order
+         *
+         * Computed with fixed-top / Montgomery constant-time primitives, so
+         * that the running time does not depend on the secret k or dA (the
+         * generic BN_mod_mul()/BN_sub() used previously reduce via BN_div(),
+         * whose timing is value dependent).  This mirrors the ECDSA path.
+         *
+         * s holds (1 + dA)^-1 throughout; the (k - r * dA) term is built in
+         * tmp.  bn_mul_mont_fixed_top() with one operand in the Montgomery
+         * domain yields the plain product, and the final
+         * BN_mod_mul_montgomery() returns the user-visible, normalised value.
+         */
         if (!BN_add(s, dA, BN_value_one())
-                || !ossl_ec_group_do_inverse_ord(group, s, s, ctx)
-                || !BN_mod_mul(tmp, dA, r, order, ctx)
-                || !BN_sub(tmp, k, tmp)
-                || !BN_mod_mul(s, s, tmp, order, ctx)) {
+            || !ossl_ec_group_do_inverse_ord(group, s, s, ctx)
+            || !bn_to_mont_fixed_top(tmp, r, mont, ctx)
+            || !bn_mul_mont_fixed_top(tmp, tmp, dA, mont, ctx)
+            || !bn_mod_sub_fixed_top(tmp, k, tmp, order)
+            || !bn_to_mont_fixed_top(tmp, tmp, mont, ctx)
+            || !BN_mod_mul_montgomery(s, tmp, s, mont, ctx)) {
             ERR_raise(ERR_LIB_SM2, ERR_R_BN_LIB);
             goto done;
         }
@@ -311,24 +356,25 @@ static ECDSA_SIG *sm2_sig_gen(const EC_KEY *key, const BIGNUM *e)
             goto done;
         }
 
-         /* takes ownership of r and s */
+        /* takes ownership of r and s */
         ECDSA_SIG_set0(sig, r, s);
         break;
     }
 
- done:
+done:
     if (sig == NULL) {
         BN_free(r);
         BN_free(s);
     }
 
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     EC_POINT_free(kG);
     return sig;
 }
 
 static int sm2_sig_verify(const EC_KEY *key, const ECDSA_SIG *sig,
-                          const BIGNUM *e)
+    const BIGNUM *e)
 {
     int ret = 0;
     const EC_GROUP *group = EC_KEY_get0_group(key);
@@ -373,9 +419,9 @@ static int sm2_sig_verify(const EC_KEY *key, const ECDSA_SIG *sig,
     ECDSA_SIG_get0(sig, &r, &s);
 
     if (BN_cmp(r, BN_value_one()) < 0
-            || BN_cmp(s, BN_value_one()) < 0
-            || BN_cmp(order, r) <= 0
-            || BN_cmp(order, s) <= 0) {
+        || BN_cmp(s, BN_value_one()) < 0
+        || BN_cmp(order, r) <= 0
+        || BN_cmp(order, s) <= 0) {
         ERR_raise(ERR_LIB_SM2, SM2_R_BAD_SIGNATURE);
         goto done;
     }
@@ -391,7 +437,7 @@ static int sm2_sig_verify(const EC_KEY *key, const ECDSA_SIG *sig,
     }
 
     if (!EC_POINT_mul(group, pt, s, EC_KEY_get0_public_key(key), t, ctx)
-            || !EC_POINT_get_affine_coordinates(group, pt, x1, NULL, ctx)) {
+        || !EC_POINT_get_affine_coordinates(group, pt, x1, NULL, ctx)) {
         ERR_raise(ERR_LIB_SM2, ERR_R_EC_LIB);
         goto done;
     }
@@ -404,18 +450,18 @@ static int sm2_sig_verify(const EC_KEY *key, const ECDSA_SIG *sig,
     if (BN_cmp(r, t) == 0)
         ret = 1;
 
- done:
-    BN_CTX_end(ctx);
+done:
     EC_POINT_free(pt);
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     return ret;
 }
 
 ECDSA_SIG *ossl_sm2_do_sign(const EC_KEY *key,
-                            const EVP_MD *digest,
-                            const uint8_t *id,
-                            const size_t id_len,
-                            const uint8_t *msg, size_t msg_len)
+    const EVP_MD *digest,
+    const uint8_t *id,
+    const size_t id_len,
+    const uint8_t *msg, size_t msg_len)
 {
     BIGNUM *e = NULL;
     ECDSA_SIG *sig = NULL;
@@ -428,17 +474,17 @@ ECDSA_SIG *ossl_sm2_do_sign(const EC_KEY *key,
 
     sig = sm2_sig_gen(key, e);
 
- done:
+done:
     BN_free(e);
     return sig;
 }
 
 int ossl_sm2_do_verify(const EC_KEY *key,
-                       const EVP_MD *digest,
-                       const ECDSA_SIG *sig,
-                       const uint8_t *id,
-                       const size_t id_len,
-                       const uint8_t *msg, size_t msg_len)
+    const EVP_MD *digest,
+    const ECDSA_SIG *sig,
+    const uint8_t *id,
+    const size_t id_len,
+    const uint8_t *msg, size_t msg_len)
 {
     BIGNUM *e = NULL;
     int ret = 0;
@@ -451,14 +497,14 @@ int ossl_sm2_do_verify(const EC_KEY *key,
 
     ret = sm2_sig_verify(key, sig, e);
 
- done:
+done:
     BN_free(e);
     return ret;
 }
 
 int ossl_sm2_internal_sign(const unsigned char *dgst, int dgstlen,
-                           unsigned char *sig, unsigned int *siglen,
-                           EC_KEY *eckey)
+    unsigned char *sig, unsigned int *siglen,
+    EC_KEY *eckey)
 {
     BIGNUM *e = NULL;
     ECDSA_SIG *s = NULL;
@@ -472,8 +518,8 @@ int ossl_sm2_internal_sign(const unsigned char *dgst, int dgstlen,
 
     e = BN_bin2bn(dgst, dgstlen, NULL);
     if (e == NULL) {
-       ERR_raise(ERR_LIB_SM2, ERR_R_BN_LIB);
-       goto done;
+        ERR_raise(ERR_LIB_SM2, ERR_R_BN_LIB);
+        goto done;
     }
 
     s = sm2_sig_gen(eckey, e);
@@ -484,22 +530,22 @@ int ossl_sm2_internal_sign(const unsigned char *dgst, int dgstlen,
 
     sigleni = i2d_ECDSA_SIG(s, &sig);
     if (sigleni < 0) {
-       ERR_raise(ERR_LIB_SM2, ERR_R_INTERNAL_ERROR);
-       goto done;
+        ERR_raise(ERR_LIB_SM2, ERR_R_INTERNAL_ERROR);
+        goto done;
     }
     *siglen = (unsigned int)sigleni;
 
     ret = 1;
 
- done:
+done:
     ECDSA_SIG_free(s);
     BN_free(e);
     return ret;
 }
 
 int ossl_sm2_internal_verify(const unsigned char *dgst, int dgstlen,
-                             const unsigned char *sig, int sig_len,
-                             EC_KEY *eckey)
+    const unsigned char *sig, int sig_len,
+    EC_KEY *eckey)
 {
     ECDSA_SIG *s = NULL;
     BIGNUM *e = NULL;
@@ -532,7 +578,7 @@ int ossl_sm2_internal_verify(const unsigned char *dgst, int dgstlen,
 
     ret = sm2_sig_verify(eckey, s, e);
 
- done:
+done:
     OPENSSL_free(der);
     BN_free(e);
     ECDSA_SIG_free(s);

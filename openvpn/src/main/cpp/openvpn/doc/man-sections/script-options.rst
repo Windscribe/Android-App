@@ -52,7 +52,7 @@ Script Order of Execution
 
 #. ``--learn-address``
 
-   Executed in ``--mode server`` mode whenever an IPv4 address/route or MAC
+   Executed in ``--mode server`` mode whenever an IP address/route or MAC
    address is added to OpenVPN's internal routing table.
 
 #. ``--auth-user-pass-verify``
@@ -149,7 +149,7 @@ SCRIPT HOOKS
   :code:`auth_pending_file`. The first line must be the timeout in
   seconds, the required method on the second line (e.g. crtext) and
   third line must be the EXTRA as documented in the
-  ``client-pending-auth`` section of `doc/management.txt`.
+  ``client-pending-auth`` section of ``doc/management.txt``.
 
   This directive is designed to enable a plugin-style interface for
   extending OpenVPN's authentication capabilities.
@@ -331,10 +331,14 @@ SCRIPT HOOKS
       OpenVPN's internal routing table.
 
   :code:`$2` - [address]
-      The address being learned or unlearned. This can be an IPv4 address
-      such as :code:`"198.162.10.14"`, an IPv4 subnet such as
-      :code:`"198.162.10.0/24"`, or an ethernet MAC address (when
-      ``--dev tap`` is being used) such as :code:`"00:FF:01:02:03:04"`.
+      The address being learned or unlearned. This can be:
+
+      * an IPv4 address such as :code:`"198.162.10.14"`,
+      * an IPv4 subnet such as :code:`"198.162.10.0/24"`,
+      * an IPv6 address such as :code:`"2001:db8:1:2:3:4:5:6"`,
+      * an IPv6 subnet such as :code:`"2001:db8:1:2:3:4:5::/112"`, or
+      * an ethernet MAC address (when ``--dev tap`` is being used)
+        such as :code:`"00:FF:01:02:03:04"`.
 
   :code:`$3` - [common name]
       The common name on the certificate associated with the client linked
@@ -352,6 +356,10 @@ SCRIPT HOOKS
   to configure firewall access policies with regard to the client's
   high-level common name, rather than the low level client virtual
   addresses.
+
+  A dual-stack client connecting to a dual-stack server will cause two calls
+  to the ``cmd`` script in quick succession, as the server learns each of the
+  IPv4 and IPv6 client addresses.
 
 --route-up cmd
   Run command ``cmd`` after routes are added, subject to ``--route-delay``.
@@ -571,8 +579,8 @@ characters for each string type will be converted to underbar ('\_').
     a filename, etc.
 
 *Q: Can string remapping be disabled?*
-    Yes, by using the ``--no-name-remapping`` option, however this
-    should be considered an advanced option.
+    No.  The options ``--no-name-remapping`` and ``--compat-names`` have
+    been removed in 2.5 because they were considered too insecure.
 
 Here is a brief rundown of OpenVPN's current string types and the
 permitted character class for each string:
@@ -588,7 +596,7 @@ permitted character class for each string:
 
 *--auth-user-pass username*
    Same as Common Name, with one exception:
-   starting with OpenVPN 2.0.1, the username is passed to the
+   The username is passed to the
    :code:`OPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY` plugin in its raw form,
    without string remapping.
 
@@ -597,11 +605,9 @@ permitted character class for each string:
    a character which will cause the C library isprint() function to
    return true.
 
-*--client-config-dir filename as derived from common name or`username*
-   Alphanumeric, underbar ('\_'), dash ('-'), and dot ('.') except for "."
-   or ".." as standalone strings. As of v2.0.1-rc6, the at ('@') character
-   has been added as well for compatibility with the common name character
-   class.
+*--client-config-dir filename as derived from common name or username*
+   Alphanumeric, underbar ('\_'), dash ('-'), at ('@'), and dot ('.')
+   except for "." or ".." as standalone strings.
 
 *Environmental variable names*
    Alphanumeric or underbar ('\_').
@@ -620,7 +626,7 @@ Environmental Variables
 Once set, a variable is persisted indefinitely until it is reset by a
 new value or a restart,
 
-As of OpenVPN 2.0-beta12, in server mode, environmental variables set by
+In server mode, environmental variables set by
 OpenVPN are scoped according to the client objects they are associated
 with, so there should not be any issues with scripts having access to
 stale, previously set variables which refer to different client
@@ -861,7 +867,7 @@ instances.
 
 :code:`route_ipv6_{parm}_{n}`
     A set of variables which define each IPv6 route to be added, and are
-    set prior to **--up** script execution.
+    set prior to ``--up`` script execution.
 
     ``parm`` will be one of :code:`network`, :code:`gateway` or
     :code:`metric`. ``route_ipv6_network_{n}`` contains :code:`netmask`
@@ -877,9 +883,9 @@ instances.
 :code:`route_redirect_gateway_ipv4`
 
 :code:`route_redirect_gateway_ipv6`
-    Set to `1` if the corresponding default gateway should be redirected
-    into the tunnel, and to `2` if also the local LAN segment should be
-    blocked (`block-local`).  Not set otherwise.  Set prior to **--up** script
+    Set to :code:`1` if the corresponding default gateway should be redirected
+    into the tunnel, and to :code:`2` if also the local LAN segment should be
+    blocked (:code:`block-local`).  Not set otherwise.  Set prior to ``--up`` script
     execution.
 
 :code:`script_context`

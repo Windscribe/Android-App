@@ -566,6 +566,7 @@ open class WindVpnController
             try {
                 ConnectionLogContext.set(connectionId)
                 activeConnectionId = connectionId
+                vpnConnectionStateManager.emergencyConnect = false
                 // Debug on purpose: the next line logs this same moment at info.
                 logger.debug("Connecting to VPN.")
                 vpnConnectionStateManager.setState(VPNState(Connecting, connectionId = connectionId))
@@ -923,6 +924,8 @@ open class WindVpnController
                                     nickName = "Windscribe location",
                                 )
                             Util.saveSelectedLocation(lastSelectedLocation)
+                            preferencesHelper.isConnectingToConfigured = true
+                            vpnConnectionStateManager.emergencyConnect = true
                             val protocolInformation = openVPNInfo.getProtocolInformation()
                             autoConnectionManager.setSelectedProtocol(protocolInformation)
                             launchVPNService(protocolInformation, connectionUUID)

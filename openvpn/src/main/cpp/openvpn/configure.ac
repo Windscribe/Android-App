@@ -4,7 +4,7 @@ dnl             session authentication and key exchange,
 dnl             packet encryption, packet authentication, and
 dnl             packet compression.
 dnl
-dnl  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+dnl  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
 dnl  Copyright (C) 2006-2012 Alon Bar-Lev <alon.barlev@gmail.com>
 dnl
 dnl  This program is free software; you can redistribute it and/or modify
@@ -85,13 +85,6 @@ AC_ARG_ENABLE(
 	[AS_HELP_STRING([--disable-ofb-cfb], [disable support for OFB and CFB cipher modes @<:@default=yes@:>@])],
 	,
 	[enable_crypto_ofb_cfb="yes"]
-)
-
-AC_ARG_ENABLE(
-	[x509-alt-username],
-	[AS_HELP_STRING([--enable-x509-alt-username], [enable the --x509-username-field feature @<:@default=no@:>@])],
-	,
-	[enable_x509_alt_username="no"]
 )
 
 AC_ARG_ENABLE(
@@ -217,13 +210,6 @@ AC_ARG_ENABLE(
 )
 
 AC_ARG_ENABLE(
-	[strict],
-	[AS_HELP_STRING([--enable-strict], [enable strict compiler warnings (debugging option) @<:@default=no@:>@])],
-	,
-	[enable_strict="no"]
-)
-
-AC_ARG_ENABLE(
 	[pedantic],
 	[AS_HELP_STRING([--enable-pedantic], [enable pedantic compiler warnings, will not generate a working executable (debugging option) @<:@default=no@:>@])],
 	,
@@ -235,13 +221,6 @@ AC_ARG_ENABLE(
 	[AS_HELP_STRING([--enable-werror], [promote compiler warnings to errors, will cause builds to fail if the compiler issues warnings (debugging option) @<:@default=no@:>@])],
 	,
 	[enable_werror="no"]
-)
-
-AC_ARG_ENABLE(
-	[strict-options],
-	[AS_HELP_STRING([--enable-strict-options], [enable strict options check between peers (debugging option) @<:@default=no@:>@])],
-	,
-	[enable_strict_options="no"]
 )
 
 AC_ARG_ENABLE(
@@ -475,13 +454,7 @@ ifdef(
 )
 
 AC_C_INLINE
-AC_TYPE_OFF_T
-AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_UID_T
 AX_TYPE_SOCKLEN_T
-AC_CHECK_SIZEOF([unsigned int])
-AC_CHECK_SIZEOF([unsigned long])
 AC_CHECK_HEADERS([ \
 	fcntl.h io.h \
 	sys/types.h sys/socket.h \
@@ -492,10 +465,10 @@ AC_CHECK_HEADERS([ \
 AC_CHECK_HEADERS([ \
 	sys/time.h sys/ioctl.h sys/stat.h \
 	sys/mman.h sys/file.h sys/wait.h \
-	unistd.h libgen.h stropts.h \
+	libgen.h stropts.h \
 	syslog.h pwd.h grp.h termios.h \
-	sys/sockio.h sys/uio.h linux/sockios.h \
-	linux/types.h linux/errqueue.h poll.h sys/epoll.h err.h \
+	sys/sockio.h sys/uio.h \
+	poll.h sys/epoll.h err.h \
 ])
 
 SOCKET_INCLUDES="
@@ -533,24 +506,6 @@ AC_CHECK_HEADERS(
 	[[${SOCKET_INCLUDES}]]
 )
 
-AC_CHECK_TYPES(
-	[in_addr_t],
-	,
-	[AC_DEFINE([in_addr_t], [uint32_t], [Workaround missing in_addr_t])],
-	[[${SOCKET_INCLUDES}]]
-)
-AC_CHECK_TYPES(
-	[in_port_t],
-	,
-	[AC_DEFINE([in_port_t], [uint16_t], [Workaround missing in_port_t])],
-	[[${SOCKET_INCLUDES}]]
-)
-AC_CHECK_TYPE(
-	[struct iphdr],
-	[AC_DEFINE([HAVE_IPHDR], [1], [struct iphdr needed for IPv6 support])],
-	,
-	[[${SOCKET_INCLUDES}]]
-)
 AC_CHECK_TYPE(
 	[struct msghdr],
 	[AC_DEFINE([HAVE_MSGHDR], [1], [struct msghdr needed for extended socket error support])],
@@ -587,12 +542,6 @@ AC_CHECK_TYPE(
 	[AC_MSG_ERROR([struct sockaddr_in6 not found, needed for ipv6 transport support.])],
 	[[${SOCKET_INCLUDES}]]
 )
-AC_CHECK_DECLS(
-	[SO_MARK],
-	,
-	,
-	[[${SOCKET_INCLUDES}]]
-)
 
 saved_LDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -Wl,--wrap=exit"
@@ -618,56 +567,14 @@ AC_LINK_IFELSE(
 )
 LDFLAGS="$saved_LDFLAGS"
 
-dnl We emulate signals in Windows
-AC_CHECK_DECLS(
-	[SIGHUP],
-	,
-	[AC_DEFINE([SIGHUP], [1], [SIGHUP replacement])],
-	[[
-		#include <signal.h>
-	]]
-)
-AC_CHECK_DECLS(
-	[SIGINT],
-	,
-	[AC_DEFINE([SIGINT], [2], [SIGINT replacement])],
-	[[
-		#include <signal.h>
-	]]
-)
-AC_CHECK_DECLS(
-	[SIGUSR1],
-	,
-	[AC_DEFINE([SIGUSR1], [10], [SIGUSR1 replacement])],
-	[[
-		#include <signal.h>
-	]]
-)
-AC_CHECK_DECLS(
-	[SIGUSR2],
-	,
-	[AC_DEFINE([SIGUSR2], [12], [SIGUSR2 replacement])],
-	[[
-		#include <signal.h>
-	]]
-)
-AC_CHECK_DECLS(
-	[SIGTERM],
-	,
-	[AC_DEFINE([SIGTERM], [15], [SIGTERM replacement])],
-	[[
-		#include <signal.h>
-	]]
-)
-
 AC_FUNC_FORK
 
 AC_CHECK_FUNCS([ \
-	daemon chroot getpwnam setuid nice system dup dup2 \
+	daemon chroot getpwnam setuid nice dup dup2 \
 	syslog openlog mlockall getrlimit getgrnam setgid \
-	setgroups flock time gettimeofday \
+	setgroups flock gettimeofday \
 	setsid chdir \
-	chsize ftruncate execve getpeereid basename dirname access \
+	chsize ftruncate execve getpeereid basename dirname \
 	epoll_create strsep \
 ])
 
@@ -716,16 +623,6 @@ AC_CHECK_HEADERS(
 		tap-windows.h \
 	],
 	[have_tap_header="yes"]
-)
-AC_CHECK_DECLS(
-	[TUNSETPERSIST],
-	[AC_DEFINE([ENABLE_FEATURE_TUN_PERSIST], [1], [We have persist tun capability])],
-	,
-	[[
-		#ifdef HAVE_LINUX_IF_TUN_H
-		#include <linux/if_tun.h>
-		#endif
-	]]
 )
 CFLAGS="${old_CFLAGS}"
 test "${have_tap_header}" = "yes" || AC_MSG_ERROR([no tap header could be found])
@@ -827,7 +724,7 @@ if test "$enable_dco" != "no"; then
 				OPTIONAL_LIBNL_GENL_LIBS="${LIBNL_GENL_LIBS}"
 
 				AC_DEFINE(ENABLE_DCO, 1, [Enable shared data channel offload])
-				AC_MSG_NOTICE([Enabled ovpn-dco support for Linux])
+				AC_MSG_NOTICE([Enabled ovpn-dco (via ovpn kernel module) support for Linux])
 			fi
 			;;
 		*-*-freebsd*)
@@ -995,7 +892,7 @@ elif test "${with_crypto_library}" = "mbedtls"; then
 	if test -z "${MBEDTLS_CFLAGS}" -a -z "${MBEDTLS_LIBS}"; then
 		# if the user did not explicitly specify flags, try to autodetect
 		PKG_CHECK_MODULES([MBEDTLS],
-			[mbedtls >= 2.0.0 mbedx509 >= 2.0.0 mbedcrypto >= 2.0.0],
+			[mbedtls >= 3.2.1 mbedx509 >= 3.2.1 mbedcrypto >= 3.2.1],
 			[have_mbedtls="yes"],
 			[LIBS="${LIBS} -lmbedtls -lmbedx509 -lmbedcrypto"]
 		)
@@ -1020,34 +917,16 @@ elif test "${with_crypto_library}" = "mbedtls"; then
 #include <mbedtls/version.h>
 			]],
 			[[
-#if MBEDTLS_VERSION_NUMBER < 0x02000000 || (MBEDTLS_VERSION_NUMBER >= 0x03000000 && MBEDTLS_VERSION_NUMBER < 0x03020100)
+#if MBEDTLS_VERSION_NUMBER < 0x03020100
 #error invalid version
 #endif
 			]]
 		)],
 		[AC_MSG_RESULT([ok])],
-		[AC_MSG_ERROR([mbed TLS version >= 2.0.0 or >= 3.2.1 required])]
+		[AC_MSG_ERROR([mbed TLS version >= 3.2.1 required])]
 	)
 
 	AC_CHECK_HEADERS(psa/crypto.h)
-
-	AC_CHECK_FUNCS([mbedtls_ssl_tls_prf mbedtls_ssl_conf_export_keys_ext_cb])
-
-	if test "x$ac_cv_func_mbedtls_ssl_conf_export_keys_ext_cb" != xyes; then
-		AC_CHECK_FUNCS([mbedtls_ssl_set_export_keys_cb])
-		if test "x$ac_cv_func_mbedtls_ssl_set_export_keys_cb" != xyes; then
-			AC_CHECK_FUNC([mbedtls_ssl_export_keying_material])
-			if test "x$ac_cv_func_mbedtls_ssl_export_keying_material" != xyes; then
-				AC_MSG_ERROR(This version of mbed TLS has no support for exporting key material.)
-			fi
-		fi
-	fi
-
-	AC_CHECK_FUNC(
-		[mbedtls_ctr_drbg_update_ret],
-		AC_DEFINE([HAVE_MBEDTLS_CTR_DRBG_UPDATE_RET], [1],
-			  [Use mbedtls_ctr_drbg_update_ret from mbed TLS]),
-	)
 
 	CFLAGS="${saved_CFLAGS}"
 	LIBS="${saved_LIBS}"
@@ -1239,28 +1118,14 @@ dnl Check for systemd
 dnl
 AM_CONDITIONAL([ENABLE_SYSTEMD], [test "${enable_systemd}" = "yes"])
 if test "$enable_systemd" = "yes" ; then
-    PKG_CHECK_MODULES([libsystemd], [systemd libsystemd],
+    PKG_CHECK_MODULES([libsystemd], [libsystemd > 216],
                       [],
-                      [PKG_CHECK_MODULES([libsystemd], [libsystemd-daemon])]
+                      [AC_MSG_ERROR([systemd enabled but libsystemd is missing])]
                       )
 
-    PKG_CHECK_EXISTS([libsystemd > 216],
-                     [AC_DEFINE([SYSTEMD_NEWER_THAN_216], [1],
-                           [systemd is newer than v216])]
-                    )
-
-    AC_CHECK_HEADERS(systemd/sd-daemon.h,
-       ,
-       [
-	   AC_MSG_ERROR([systemd development headers not found.])
-       ])
-
-    saved_LIBS="${LIBS}"
-    LIBS="${LIBS} ${libsystemd_LIBS}"
-    AC_CHECK_FUNCS([sd_booted], [], [AC_MSG_ERROR([systemd library is missing sd_booted()])])
+    OPTIONAL_SYSTEMD_CFLAGS="${libsystemd_CFLAGS}"
     OPTIONAL_SYSTEMD_LIBS="${libsystemd_LIBS}"
     AC_DEFINE(ENABLE_SYSTEMD, 1, [Enable systemd integration])
-    LIBS="${saved_LIBS}"
 
     if test -n "${SYSTEMD_UNIT_DIR}"; then
         systemdunitdir="${SYSTEMD_UNIT_DIR}"
@@ -1285,15 +1150,6 @@ if test -n "${GIT}"; then
 	fi
 fi
 AC_MSG_RESULT([${GIT_CHECKOUT}])
-
-dnl enable --x509-username-field feature if requested
-if test "${enable_x509_alt_username}" = "yes"; then
-	if test "${with_crypto_library}" = "mbedtls" ; then
-		AC_MSG_ERROR([mbed TLS does not support the --x509-username-field feature])
-	fi
-
-	AC_DEFINE([ENABLE_X509ALTUSERNAME], [1], [Enable --x509-username-field feature])
-fi
 
 test "${enable_management}" = "yes" && AC_DEFINE([ENABLE_MANAGEMENT], [1], [Enable management server capability])
 test "${enable_debug}" = "yes" && AC_DEFINE([ENABLE_DEBUG], [1], [Enable debugging support])
@@ -1399,7 +1255,7 @@ ACL_CHECK_ADD_COMPILE_FLAGS([-Wstrict-prototypes])
 ACL_CHECK_ADD_COMPILE_FLAGS([-Wold-style-definition])
 ACL_CHECK_ADD_COMPILE_FLAGS([-Wconversion -Wno-sign-conversion])
 ACL_CHECK_ADD_COMPILE_FLAGS([-Wall])
-ACL_CHECK_ADD_COMPILE_FLAGS([-Wextra -Wno-sign-compare -Wno-type-limits -Wno-unused-parameter])
+ACL_CHECK_ADD_COMPILE_FLAGS([-Wextra -Wno-sign-compare -Wno-unused-parameter])
 # clang doesn't have the different levels but also doesn't include it in -Wextra
 ACL_CHECK_ADD_COMPILE_FLAGS([-Wimplicit-fallthrough=2])
 if test "${WIN32}" = "yes"; then
@@ -1408,12 +1264,8 @@ if test "${WIN32}" = "yes"; then
 fi
 
 if test "${enable_pedantic}" = "yes"; then
-	enable_strict="yes"
 	CFLAGS="${CFLAGS} -pedantic"
 	AC_DEFINE([PEDANTIC], [1], [Enable pedantic mode])
-fi
-if test "${enable_strict}" = "yes"; then
-	CFLAGS="${CFLAGS} -Wsign-compare -Wuninitialized"
 fi
 if test "${enable_werror}" = "yes"; then
 	CFLAGS="${CFLAGS} -Werror"
@@ -1432,7 +1284,7 @@ fi
 
 if test "${enable_async_push}" = "yes"; then
 	case "$host" in
-		*-*-freebsd*)
+		*-*-freebsd1[[0-4]]*)
 			PKG_CHECK_MODULES(
 				[OPTIONAL_INOTIFY],
 				[libinotify],
@@ -1477,6 +1329,7 @@ AC_SUBST([OPTIONAL_LZO_CFLAGS])
 AC_SUBST([OPTIONAL_LZO_LIBS])
 AC_SUBST([OPTIONAL_LZ4_CFLAGS])
 AC_SUBST([OPTIONAL_LZ4_LIBS])
+AC_SUBST([OPTIONAL_SYSTEMD_CFLAGS])
 AC_SUBST([OPTIONAL_SYSTEMD_LIBS])
 AC_SUBST([OPTIONAL_PKCS11_HELPER_CFLAGS])
 AC_SUBST([OPTIONAL_PKCS11_HELPER_LIBS])
@@ -1515,7 +1368,16 @@ PKG_CHECK_MODULES(
 	[have_cmocka="yes"],
 	[AC_MSG_WARN([cmocka.pc not found on the system using pkg-config ${pkg_config_found}.  Unit tests disabled])]
 )
-AM_CONDITIONAL([ENABLE_UNITTESTS], [test "${enable_unit_tests}" = "yes" -a "${have_cmocka}" = "yes" ])
+AM_CONDITIONAL([ENABLE_UNITTESTS], [false])
+if test "${enable_unit_tests}" = "yes" -a "${have_cmocka}" = "yes"; then
+   AM_CONDITIONAL([ENABLE_UNITTESTS], [true])
+
+   saved_CFLAGS="${CFLAGS}"
+   CFLAGS="${CFLAGS} ${CMOCKA_CFLAGS}"
+   # detect cmocka < 2.0.0 that had no cmocka_version.h
+   AC_CHECK_HEADERS([cmocka_version.h])
+   CFLAGS="${saved_CFLAGS}"
+fi
 AC_SUBST([ENABLE_UNITTESTS])
 
 TEST_LDFLAGS="${OPTIONAL_CRYPTO_LIBS} ${OPTIONAL_PKCS11_HELPER_LIBS} ${OPTIONAL_LIBCAPNG_LIBS}"
@@ -1551,6 +1413,7 @@ AC_CONFIG_FILES([
         tests/unit_tests/Makefile
         tests/unit_tests/example_test/Makefile
         tests/unit_tests/openvpn/Makefile
+        tests/unit_tests/openvpnserv/Makefile
         tests/unit_tests/plugins/Makefile
         tests/unit_tests/plugins/auth-pam/Makefile
 	sample/Makefile

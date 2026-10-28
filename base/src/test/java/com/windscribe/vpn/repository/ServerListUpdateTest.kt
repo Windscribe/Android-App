@@ -3,6 +3,8 @@ package com.windscribe.vpn.repository
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.LocationResponse
+import com.windscribe.vpn.api.response.ServerData
+import com.windscribe.vpn.api.response.ServerInventory
 import com.windscribe.vpn.api.response.ServerResponse
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -87,6 +89,41 @@ class ServerListUpdateTest {
             coVerify(exactly = 1) { api.getLocations() }
             coVerify(exactly = 1) { api.getServers(any()) }
             assertEquals("the first caller's revision must be visible to the second", 42L, revision)
+        }
+
+    /** The delta the caller observed is the delta that gets applied: no second session fetch. */
+    @Test
+    fun `a supplied inventory is applied without refetching the session`() =
+        runTest {
+            revision = 755L
+            val repo = repository(backgroundScope)
+            val inventory =
+                ServerInventory(
+                    action = ServerInventory.ACTION_DELTA,
+                    enabled =
+                        listOf(
+                            ServerData(
+                                id = 263,
+                                hostname = "us-014.windscribe.dev",
+                                ip = "181.215.52.122",
+                                ip2 = "181.215.52.123",
+                                ip3 = "181.215.52.124",
+                                datacenterId = 87,
+                                weight = 1,
+                                health = 0,
+                                forceDisconnect = 1,
+                            ),
+                        ),
+                    disabled = emptyList(),
+                    revision = 756L,
+                )
+
+            repo.update(inventory)
+            advanceUntilIdle()
+
+            coVerify(exactly = 0) { api.getSessionGeneric(any(), any()) }
+            coVerify(exactly = 1) { db.addServers(match { it.single().forceDisconnect == 1 }) }
+            assertEquals("the supplied revision must be stored", 756L, revision)
         }
 
     @Test

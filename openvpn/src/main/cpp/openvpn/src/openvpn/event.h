@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -25,7 +25,6 @@
 
 #include "win32.h"
 #include "sig.h"
-#include "perf.h"
 
 /*
  * rwflags passed to event_ctl and returned by
@@ -69,8 +68,6 @@
 #define MANAGEMENT_SHIFT 6
 #define MANAGEMENT_READ  (1 << (MANAGEMENT_SHIFT + READ_SHIFT))
 #define MANAGEMENT_WRITE (1 << (MANAGEMENT_SHIFT + WRITE_SHIFT))
-#define FILE_SHIFT       8
-#define FILE_CLOSED      (1 << (FILE_SHIFT + READ_SHIFT))
 #define DCO_SHIFT        10
 #define DCO_READ         (1 << (DCO_SHIFT + READ_SHIFT))
 #define DCO_WRITE        (1 << (DCO_SHIFT + WRITE_SHIFT))
@@ -189,9 +186,7 @@ static inline int
 event_wait(struct event_set *es, const struct timeval *tv, struct event_set_return *out, int outlen)
 {
     int ret;
-    perf_push(PERF_IO_WAIT);
     ret = (*es->func.wait)(es, tv, out, outlen);
-    perf_pop();
     return ret;
 }
 

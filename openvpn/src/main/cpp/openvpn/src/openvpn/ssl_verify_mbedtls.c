@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -34,14 +34,22 @@
 
 #if defined(ENABLE_CRYPTO_MBEDTLS)
 
+#include <mbedtls/version.h>
+
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
+#include "crypto_mbedtls_legacy.h"
+#include <mbedtls/bignum.h>
+#include <mbedtls/sha1.h>
+#else
 #include "crypto_mbedtls.h"
+#endif
+
 #include "mbedtls_compat.h"
+
 #include "ssl_verify.h"
 #include <mbedtls/asn1.h>
 #include <mbedtls/error.h>
-#include <mbedtls/bignum.h>
 #include <mbedtls/oid.h>
-#include <mbedtls/sha1.h>
 
 #define MAX_SUBJECT_LENGTH 256
 
@@ -85,8 +93,7 @@ verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth, uint3
 
         ret = mbedtls_x509_crt_verify_info(errstr, sizeof(errstr) - 1, "", *flags);
         if (ret <= 0
-            && !snprintf(errstr, sizeof(errstr), "Could not retrieve error string, flags=%" PRIx32,
-                         *flags))
+            && !checked_snprintf(errstr, sizeof(errstr), "Could not retrieve error string, flags=%" PRIx32, *flags))
         {
             errstr[0] = '\0';
         }
@@ -123,56 +130,326 @@ verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth, uint3
     return 0;
 }
 
-#ifdef ENABLE_X509ALTUSERNAME
-#warning "X509 alt user name not yet supported for mbed TLS"
-#endif
+/* not supported for mbedTLS yet */
+bool
+x509_username_field_ext_supported(const char *fieldname)
+{
+    return false;
+}
+
+static const char *
+fieldname_to_oid(const char *fieldname)
+{
+    if (strcmp(fieldname, "C") == 0)
+    {
+        return MBEDTLS_OID_AT_COUNTRY;
+    }
+    else if (strcmp(fieldname, "ST") == 0)
+    {
+        return MBEDTLS_OID_AT_STATE;
+    }
+    else if (strcmp(fieldname, "LOCALITY") == 0)
+    {
+        return MBEDTLS_OID_AT_LOCALITY;
+    }
+    else if (strcmp(fieldname, "O") == 0)
+    {
+        return MBEDTLS_OID_AT_ORGANIZATION;
+    }
+    else if (strcmp(fieldname, "OU") == 0)
+    {
+        return MBEDTLS_OID_AT_ORG_UNIT;
+    }
+    else if (strcmp(fieldname, "CN") == 0)
+    {
+        return MBEDTLS_OID_AT_CN;
+    }
+    else if (strcmp(fieldname, "GN") == 0)
+    {
+        return MBEDTLS_OID_AT_GIVEN_NAME;
+    }
+    else if (strcmp(fieldname, "SN") == 0)
+    {
+        return MBEDTLS_OID_AT_SUR_NAME;
+    }
+    else if (strcmp(fieldname, "initials") == 0)
+    {
+        return MBEDTLS_OID_AT_INITIALS;
+    }
+    else if (strcmp(fieldname, "pseudonym") == 0)
+    {
+        return MBEDTLS_OID_AT_PSEUDONYM;
+    }
+    else if (strcmp(fieldname, "title") == 0)
+    {
+        return MBEDTLS_OID_AT_TITLE;
+    }
+    else if (strcmp(fieldname, "generationQualifier") == 0)
+    {
+        return MBEDTLS_OID_AT_GENERATION_QUALIFIER;
+    }
+    else if (strcmp(fieldname, "postalAddress") == 0)
+    {
+        return MBEDTLS_OID_AT_POSTAL_ADDRESS;
+    }
+    else if (strcmp(fieldname, "postalCode") == 0)
+    {
+        return MBEDTLS_OID_AT_POSTAL_CODE;
+    }
+    else if (strcmp(fieldname, "emailAddress") == 0)
+    {
+        return MBEDTLS_OID_PKCS9_EMAIL;
+    }
+    else if (strcmp(fieldname, "uid") == 0)
+    {
+        return MBEDTLS_OID_AT_UNIQUE_IDENTIFIER;
+    }
+    else if (strcmp(fieldname, "dnQualifier") == 0)
+    {
+        return MBEDTLS_OID_AT_DN_QUALIFIER;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+static bool
+asn1_buf_is_cstr_compatible(const mbedtls_asn1_buf *asn1_buf)
+{
+    if (!(asn1_buf->tag == MBEDTLS_ASN1_UTF8_STRING || asn1_buf->tag == MBEDTLS_ASN1_PRINTABLE_STRING
+          || asn1_buf->tag == MBEDTLS_ASN1_IA5_STRING))
+    {
+        return false;
+    }
+    for (size_t i = 0; i < asn1_buf->len; i++)
+    {
+        if (asn1_buf->p[i] == '\0')
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
 result_t
 backend_x509_get_username(char *cn, size_t cn_len, char *x509_username_field, mbedtls_x509_crt *cert)
 {
-    mbedtls_x509_name *name;
+    ASSERT(cn != NULL && cn_len > 0 && cert != NULL);
 
-    ASSERT(cn != NULL);
-
-    name = &cert->subject;
-
-    /* Find common name */
-    while (name != NULL)
+    if (x509_username_field == NULL)
     {
-        if (0 == memcmp(name->oid.p, MBEDTLS_OID_AT_CN, MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_CN)))
+        goto fail;
+    }
+
+    if (strcmp(x509_username_field, "serialNumber") == 0)
+    {
+        if (cn_len < 2)
         {
-            break;
+            goto fail;
+        }
+        cn[0] = '0';
+        cn[1] = 'x';
+        size_t cn_index = 2;
+        bool leading_zeros = true;
+        for (size_t i = 0; i < cert->serial.len; i++)
+        {
+            uint8_t serial_byte = cert->serial.p[i];
+            if (leading_zeros && serial_byte == 0)
+            {
+                continue;
+            }
+            leading_zeros = false;
+            if (cn_index > cn_len - 3)
+            {
+                goto fail;
+            }
+            snprintf(&cn[cn_index], cn_len - cn_index, "%02X", serial_byte);
+            cn_index += 2;
+        }
+        return SUCCESS;
+    }
+
+    const char *field_oid = fieldname_to_oid(x509_username_field);
+    if (field_oid == NULL)
+    {
+        goto fail;
+    }
+
+    /* Find field_oid in the subject name. */
+    mbedtls_x509_name *name = NULL;
+    mbedtls_x509_name *next = &cert->subject;
+    while (next != NULL)
+    {
+        if (strlen(field_oid) == next->oid.len
+            && 0 == memcmp(next->oid.p, field_oid, next->oid.len))
+        {
+            name = next;
         }
 
-        name = name->next;
+        next = next->next;
     }
 
     /* Not found, return an error if this is the peer's certificate */
     if (name == NULL)
     {
-        return FAILURE;
+        goto fail;
     }
 
-    /* Found, extract CN */
-    if (cn_len > name->val.len)
+    if (!asn1_buf_is_cstr_compatible(&name->val))
     {
-        memcpy(cn, name->val.p, name->val.len);
-        cn[name->val.len] = '\0';
+        goto fail;
     }
-    else
+
+    /* Check that we have room in the buffer, including the terminating '/0' byte. */
+    if (cn_len <= name->val.len)
     {
-        memcpy(cn, name->val.p, cn_len);
-        cn[cn_len - 1] = '\0';
+        goto fail;
     }
+
+    memcpy(cn, name->val.p, name->val.len);
+    cn[name->val.len] = '\0';
 
     return SUCCESS;
+
+fail:
+    cn[0] = '\0';
+    return FAILURE;
 }
+
+#if MBEDTLS_VERSION_NUMBER >= 0x04000000
+/* Mbed TLS 4 has no function to print the certificate serial number and does
+ * not expose the bignum functions anymore. So in order to write the serial
+ * number as a decimal string, we implement bignum % 10 and bignum / 10. */
+static char
+bignum_mod_10(const uint8_t *bignum, size_t bignum_length)
+{
+    int result = 0;
+    for (size_t i = 0; i < bignum_length; i++)
+    {
+        result = (result * 256) % 10;
+        result = (result + bignum[i]) % 10;
+    }
+    return (char)result;
+}
+
+/* Divide bignum by 10 rounded down, in place. */
+static void
+bignum_div_10(uint8_t *bignum, size_t *bignum_length)
+{
+    /*
+     * Some intuition for the algorithm below:
+     *
+     * We want to calculate
+     *
+     *     (bignum[0] * 256^n + bignum[1] * 256^(n-1) + ... + bignum[n]) / 10.
+     *
+     * Let remainder = bignum[0] % 10 and carry = remainder * 256.
+     * Then we can write the above as
+     *
+     *     (bignum[0] / 10) * 256^n
+     *       + ((carry + bignum[1]) * 256^(n-1) + ... + bignum[n]) / 10.
+     *
+     * So now we have the first byte of our result. The second byte will be
+     * (carry + bignum[1]) / 10. Note that this fits into one byte because
+     * 0 <= remainder < 10. We calculate the next remainder and carry as
+     * remainder = (carry + bignum[1]) % 10 and carry = remainder * 256 and
+     * move on to the next byte until we are done.
+     */
+    size_t new_length = 0;
+    int carry = 0;
+    for (size_t i = 0; i < *bignum_length; i++)
+    {
+        uint8_t next_byte = (uint8_t)((bignum[i] + carry) / 10);
+        int remainder = (bignum[i] + carry) % 10;
+        carry = remainder * 256;
+
+        /* Write the byte unless it's a leading zero. */
+        if (new_length != 0 || next_byte != 0)
+        {
+            bignum[new_length++] = next_byte;
+        }
+    }
+    *bignum_length = new_length;
+}
+
+/* Write the decimal representation of bignum to out, if enough space is available.
+ * Returns the number of bytes needed in out, or 0 on error. To calculate the
+ * necessary buffer size, the function can be called with out = NULL. */
+static size_t
+write_bignum(char *out, size_t out_size, const uint8_t *bignum, size_t bignum_length)
+{
+    if (bignum_length == 0)
+    {
+        /* We want out to be "0". */
+        if (out != NULL)
+        {
+            if (out_size >= 2)
+            {
+                out[0] = '0';
+                out[1] = '\0';
+            }
+            else if (out_size > 0)
+            {
+                out[0] = '\0';
+            }
+        }
+        return 2;
+    }
+
+    uint8_t *bignum_copy = malloc(bignum_length);
+    if (bignum_copy == NULL)
+    {
+        return 0;
+    }
+    memcpy(bignum_copy, bignum, bignum_length);
+
+    size_t bytes_needed = 0;
+    size_t bytes_written = 0;
+    while (bignum_length > 0)
+    {
+        /* We're writing the digits in reverse order. We put them in the right order later. */
+        char digit = bignum_mod_10(bignum_copy, bignum_length);
+        if (out != NULL && bytes_written < out_size - 1)
+        {
+            out[bytes_written++] = '0' + (char)digit;
+        }
+        bytes_needed += 1;
+        bignum_div_10(bignum_copy, &bignum_length);
+    }
+
+    if (out != NULL)
+    {
+        if (bytes_written == bytes_needed)
+        {
+            /* We had space for all digits. Now reverse them. */
+            for (size_t i = 0; i < bytes_written / 2; i++)
+            {
+                char tmp = out[i];
+                out[i] = out[bytes_written - 1 - i];
+                out[bytes_written - 1 - i] = tmp;
+            }
+            out[bytes_written] = '\0';
+        }
+        else if (out_size > 0)
+        {
+            out[0] = '\0';
+        }
+    }
+    bytes_needed += 1;
+
+    free(bignum_copy);
+    return bytes_needed;
+}
+#endif /* MBEDTLS_VERSION_NUMBER >= 0x04000000 */
 
 char *
 backend_x509_get_serial(mbedtls_x509_crt *cert, struct gc_arena *gc)
 {
     char *buf = NULL;
     size_t buflen = 0;
+
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     mbedtls_mpi serial_mpi = { 0 };
 
     /* Transform asn1 integer serial into mbed TLS MPI */
@@ -198,6 +475,21 @@ backend_x509_get_serial(mbedtls_x509_crt *cert, struct gc_arena *gc)
 end:
     mbedtls_mpi_free(&serial_mpi);
     return buf;
+#else
+    buflen = write_bignum(NULL, 0, cert->serial.p, cert->serial.len);
+    if (buflen == 0)
+    {
+        msg(M_WARN, "Failed to write serial to string.");
+        return NULL;
+    }
+    buf = gc_malloc(buflen, true, gc);
+    if (write_bignum(buf, buflen, cert->serial.p, cert->serial.len) != buflen)
+    {
+        msg(M_WARN, "Failed to write serial to string.");
+        return NULL;
+    }
+    return buf;
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 }
 
 char *
@@ -229,7 +521,7 @@ backend_x509_write_pem(openvpn_x509_cert_t *cert, const char *filename)
      * headers and footer */
     struct buffer pem = alloc_buf_gc(cert->raw.len * 3 + 100, &gc);
 
-    struct buffer der = {};
+    struct buffer der = { 0 };
     buf_set_read(&der, cert->raw.p, cert->raw.len);
 
     if (!crypto_pem_encode("CERTIFICATE", &pem, &der, &gc))
@@ -318,22 +610,11 @@ do_setenv_x509(struct env_set *es, const char *name, char *value, int depth)
 static char *
 asn1_buf_to_c_string(const mbedtls_asn1_buf *orig, struct gc_arena *gc)
 {
-    size_t i;
     char *val;
 
-    if (!(orig->tag == MBEDTLS_ASN1_UTF8_STRING || orig->tag == MBEDTLS_ASN1_PRINTABLE_STRING
-          || orig->tag == MBEDTLS_ASN1_IA5_STRING))
+    if (!asn1_buf_is_cstr_compatible(orig))
     {
-        /* Only support C-string compatible types */
-        return string_alloc("ERROR: unsupported ASN.1 string type", gc);
-    }
-
-    for (i = 0; i < orig->len; ++i)
-    {
-        if (orig->p[i] == '\0')
-        {
-            return string_alloc("ERROR: embedded null value", gc);
-        }
+        return string_alloc("ERROR: Unsupported string type or embedded null bytes.", gc);
     }
     val = gc_malloc(orig->len + 1, false, gc);
     memcpy(val, orig->p, orig->len);
@@ -483,7 +764,7 @@ x509_verify_ns_cert_type(mbedtls_x509_crt *cert, const int usage)
 }
 
 result_t
-x509_verify_cert_ku(mbedtls_x509_crt *cert, const unsigned *const expected_ku, int expected_len)
+x509_verify_cert_ku(mbedtls_x509_crt *cert, const unsigned int *const expected_ku, size_t expected_len)
 {
     msg(D_HANDSHAKE, "Validating certificate key usage");
 
@@ -572,7 +853,7 @@ bool
 tls_verify_crl_missing(const struct tls_options *opt)
 {
     if (opt->crl_file && !(opt->ssl_flags & SSLF_CRL_VERIFY_DIR)
-        && (opt->ssl_ctx.crl == NULL || opt->ssl_ctx.crl->version == 0))
+        && (opt->ssl_ctx->crl == NULL || opt->ssl_ctx->crl->version == 0))
     {
         return true;
     }

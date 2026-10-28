@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -234,7 +234,8 @@ struct route_list
 
     struct route_special_addr spec;
     struct route_gateway_info rgi;
-    unsigned int flags; /* RG_x flags */
+    struct route_gateway_info ngi; /* net_gateway */
+    unsigned int flags;            /* RG_x flags */
     struct route_ipv4 *routes;
     struct gc_arena gc;
 };
@@ -249,7 +250,8 @@ struct route_ipv6_list
     int default_metric;
 
     struct route_ipv6_gateway_info rgi6;
-    unsigned int flags; /* RG_x flags, see route_option_list */
+    struct route_ipv6_gateway_info ngi6; /* net_gateway_ipv6 */
+    unsigned int flags;                  /* RG_x flags, see route_option_list */
     struct route_ipv6 *routes_ipv6;
     struct gc_arena gc;
 };

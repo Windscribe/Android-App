@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -89,29 +89,47 @@ struct link_socket_info
     const char *ipchange_command;
     const struct plugin_list *plugins;
     bool remote_float;
-    int proto;       /* Protocol (PROTO_x defined below) */
+    uint8_t proto;   /* Protocol (PROTO_x defined below) */
     sa_family_t af;  /* Address family like AF_INET, AF_INET6 or AF_UNSPEC*/
     bool bind_ipv6_only;
     int mtu_changed; /* Set to true when mtu value is changed */
 };
 
-/*
- * Used to extract packets encapsulated in streams into a buffer,
- * in this case IP packets embedded in a TCP stream.
+/**
+ * struct used to extract packets encapsulated in streams into a buffer,
+ * in this case OpenVPN packets (data or control) embedded in a TCP stream.
+ *
+ * This struct is used to packetise the TCP stream into the
+ * OpenVPN packet. Each OpenVPN packet has a two-byte header determining
+ * the length of the packet.
  */
 struct stream_buf
 {
+    /* Buffer to hold the initial buffer that will be used to reset buf */
     struct buffer buf_init;
+
+    /** buffer holding the excess bytes that are not part of the
+     *  packet. */
     struct buffer residual;
+
+    /** Maximum length of a packet that we accept */
     int maxlen;
+
+    /** The buffer in buf contains a full packet without a header. Any
+     * extra data is in residual */
     bool residual_fully_formed;
 
+    /** Holds the data of the current packet. This might be a partial packet */
     struct buffer buf;
-    struct buffer next;
-    int len;    /* -1 if not yet known */
 
-    bool error; /* if true, fatal TCP error has occurred,
-                 *  requiring that connection be restarted */
+    /** -1 if not yet known. Otherwise holds the length of the
+     *   packet. If >= 0, buf is already moved past the initial
+     *  size header */
+    int len;
+
+    /** if true, a fatal TCP error has occurred,
+     *  requiring that connection be restarted */
+    bool error;
 #if PORT_SHARE
 #define PS_DISABLED 0
 #define PS_ENABLED  1
@@ -189,14 +207,15 @@ struct link_socket
     int mtu; /* OS discovered MTU, or 0 if unknown */
 
 #define SF_USE_IP_PKTINFO    (1 << 0)
-#define SF_TCP_NODELAY       (1 << 1)
+#define SF_TCP_NODELAY       (1 << 1) /* unused: flag always enabled */
 #define SF_PORT_SHARE        (1 << 2)
 #define SF_HOST_RANDOMIZE    (1 << 3)
 #define SF_GETADDRINFO_DGRAM (1 << 4)
 #define SF_DCO_WIN           (1 << 5)
 #define SF_PREPEND_SA        (1 << 6)
-#define SF_TCP_SPLITRESET    (1 << 7)
-#define SF_UDP_STUFFING      (1 << 8)
+#define SF_PKTINFO_COPY_IIF  (1 << 7)
+#define SF_TCP_SPLITRESET    (1 << 8)
+#define SF_UDP_STUFFING      (1 << 9)
     unsigned int sockflags;
     int mark;
     const char *bind_dev;
@@ -293,9 +312,38 @@ SocketHandleSetInvalError(sockethandle_t sh)
     sh.is_handle ? SetLastError(ERROR_INVALID_FUNCTION) : WSASetLastError(WSAEINVAL);
 }
 
+/* winsock(2).h uses slightly different types so to avoid conversion
+   errors we wrap these functions on Windows */
+
+static inline int
+openvpn_select(socket_descriptor_t nfds, fd_set *readfds, fd_set *writefds,
+               fd_set *exceptfds, struct timeval *timeout)
+{
+    (void)nfds; /* first argument ignored on Windows */
+    return select(0, readfds, writefds, exceptfds, timeout);
+}
+
+static inline ssize_t
+openvpn_send(socket_descriptor_t sockfd, const void *buf, size_t len, int flags)
+{
+    ASSERT(len <= INT_MAX);
+    return send(sockfd, buf, (int)len, flags);
+}
+
+static inline int
+openvpn_bind(socket_descriptor_t sockfd, const struct sockaddr *addr, size_t addrlen)
+{
+    ASSERT(addrlen <= INT_MAX);
+    return bind(sockfd, addr, (int)addrlen);
+}
+
 #else /* ifdef _WIN32 */
 
 #define openvpn_close_socket(s) close(s)
+#define openvpn_select(nfds, readfds, writefds, exceptfds, timeout) \
+    select(nfds, readfds, writefds, exceptfds, timeout)
+#define openvpn_send(sockfd, buf, len, flags) send(sockfd, buf, len, flags)
+#define openvpn_bind(sockfd, addr, addrlen)   bind(sockfd, addr, addrlen)
 
 #endif /* ifdef _WIN32 */
 
@@ -343,8 +391,6 @@ void set_actual_address(struct link_socket_actual *actual, struct addrinfo *ai);
 void link_socket_bad_outgoing_addr(void);
 
 void setenv_trusted(struct env_set *es, const struct link_socket_info *info);
-
-bool link_socket_update_flags(struct link_socket *sock, unsigned int sockflags);
 
 void link_socket_update_buffer_sizes(struct link_socket *sock, int rcvbuf, int sndbuf);
 
@@ -500,14 +546,24 @@ link_socket_set_outgoing_addr(struct link_socket_info *info, const struct link_s
     }
 }
 
-bool stream_buf_read_setup_dowork(struct link_socket *sock);
+/**
+ * Will try to check if the buffers in stream form a
+ * full packet. Will return true if further reads are
+ * required and false otherwise. (full packet is ready)
+ *
+ * With UDP we always return true as there is no reassembly.
+ *
+ * @param sb    the stream buffer that should be worked on
+ * @return      true if more reads are required.
+ */
+bool stream_buf_read_setup_dowork(struct stream_buf *sb);
 
 static inline bool
 stream_buf_read_setup(struct link_socket *sock)
 {
     if (link_socket_connection_oriented(sock))
     {
-        return stream_buf_read_setup_dowork(sock);
+        return stream_buf_read_setup_dowork(&sock->stream_buf);
     }
     else
     {
@@ -679,9 +735,6 @@ link_socket_write_udp(struct link_socket *sock, struct buffer *buf, struct link_
 #ifndef P_OPCODE_SHIFT
 #define P_OPCODE_SHIFT 3
 #endif
-#ifndef P_ACK_V1
-#define P_ACK_V1                       5     /* acknowledgement for packets received */
-#endif
     int rand_bytes(uint8_t *output, int len);
 
 #define STUFFING_LEN_MAX 900
@@ -689,20 +742,20 @@ link_socket_write_udp(struct link_socket *sock, struct buffer *buf, struct link_
 
     uint8_t opcode = *BPTR(buf) >> P_OPCODE_SHIFT;
 
-
     if (sock->sockflags & SF_UDP_STUFFING
         && (opcode == P_CONTROL_HARD_RESET_CLIENT_V2
             || opcode == P_CONTROL_HARD_RESET_CLIENT_V3
             || opcode == P_CONTROL_HARD_RESET_SERVER_V2))
     {
         uint16_t stuffing_len, stuffing_num;
-        rand_bytes((uint8_t*)&stuffing_len, sizeof(stuffing_len));
-        rand_bytes((uint8_t*)&stuffing_num, sizeof(stuffing_num));
+        rand_bytes((uint8_t *)&stuffing_len, sizeof(stuffing_len));
+        rand_bytes((uint8_t *)&stuffing_num, sizeof(stuffing_num));
         stuffing_num = (stuffing_num % (STUFFING_NUM_MAX - 10)) + 10;
 
-        uint8_t stuffing_data[STUFFING_LEN_MAX] = {0};
+        uint8_t stuffing_data[STUFFING_LEN_MAX] = { 0 };
 
-        for (int i=0; i<stuffing_num; i++) {
+        for (int i = 0; i < stuffing_num; i++)
+        {
             stuffing_len = (stuffing_len % (STUFFING_LEN_MAX - 200)) + 200;
             rand_bytes(stuffing_data, sizeof(stuffing_data));
             struct buffer stuffing_buf = alloc_buf(STUFFING_LEN_MAX);
@@ -714,8 +767,6 @@ link_socket_write_udp(struct link_socket *sock, struct buffer *buf, struct link_
 #endif
             free_buf(&stuffing_buf);
         }
-
-
     }
 
 #ifdef _WIN32

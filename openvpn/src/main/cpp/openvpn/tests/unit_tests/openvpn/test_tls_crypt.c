@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2016-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2016-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -100,6 +100,27 @@ int
 __wrap_parse_line(const char *line, char **p, const int n, const char *file, const int line_num,
                   msglvl_t msglevel, struct gc_arena *gc)
 {
+    if (strcmp(line, "/usr/bin/true") == 0)
+    {
+        p[0] = "/usr/bin/true";
+        return 1;
+    }
+    if (strcmp(line, "/usr/bin/false") == 0)
+    {
+        p[0] = "/usr/bin/false";
+        return 1;
+    }
+    if (strcmp(line, "/bin/true") == 0)
+    {
+        p[0] = "/bin/true";
+        return 1;
+    }
+    if (strcmp(line, "/bin/false") == 0)
+    {
+        p[0] = "/bin/false";
+        return 1;
+    }
+
     p[0] = PATH1 PATH2;
     p[1] = PARAM1;
     p[2] = PARAM2;
@@ -110,8 +131,8 @@ bool
 __wrap_buffer_write_file(const char *filename, const struct buffer *buf)
 {
     const char *pem = BSTR(buf);
-    check_expected(filename);
-    check_expected(pem);
+    check_expected_ptr(filename);
+    check_expected_ptr(pem);
 
     return mock_type(bool);
 }
@@ -119,7 +140,7 @@ __wrap_buffer_write_file(const char *filename, const struct buffer *buf)
 struct buffer
 __wrap_buffer_read_from_file(const char *filename, struct gc_arena *gc)
 {
-    check_expected(filename);
+    check_expected_ptr(filename);
 
     const char *pem_str = mock_ptr_type(const char *);
     struct buffer ret = alloc_buf_gc(strlen(pem_str) + 1, gc);
@@ -458,6 +479,10 @@ test_tls_crypt_v2_setup(void **state)
 static int
 test_tls_crypt_v2_teardown(void **state)
 {
+    /* Ensure that if we modified now by using update_time, it is back to the
+     * 0 state for any other test that relies on it. */
+    now = 0;
+
     struct test_tls_crypt_v2_context *ctx = (struct test_tls_crypt_v2_context *)*state;
 
     free_key_ctx_bi(&ctx->server_keys);
@@ -518,7 +543,16 @@ tls_crypt_v2_wrap_unwrap_max_metadata(void **state)
         .mode = TLS_WRAP_CRYPT,
         .tls_crypt_v2_server_key = ctx->server_keys.encrypt,
     };
-    assert_true(tls_crypt_v2_extract_client_key(&ctx->wkc, &wrap_ctx, NULL, true));
+
+    /* a buffer that only contains the wrapped key should fail */
+    assert_false(tls_crypt_v2_extract_client_key(&ctx->wkc, &wrap_ctx, NULL));
+
+    /* add a opcode in front of the key to make it valid to extract */
+    struct buffer wkcop = alloc_buf_gc(buf_len(&ctx->wkc) + 1, &ctx->gc);
+    buf_write_u8(&wkcop, 0x50);
+    buf_copy(&wkcop, &ctx->wkc);
+    assert_true(tls_crypt_v2_extract_client_key(&wkcop, &wrap_ctx, NULL));
+
     tls_wrap_free(&wrap_ctx);
 }
 
@@ -587,6 +621,155 @@ tls_crypt_v2_wrap_unwrap_dst_too_small(void **state)
     const struct key2 zero = { 0 };
     assert_memory_equal(&unwrapped_client_key2, &zero, sizeof(zero));
     assert_int_equal(0, BLEN(&ctx->unwrapped_metadata));
+}
+
+static struct buffer
+create_metadata_days_ago(struct gc_arena *gc, int days_ago)
+{
+    struct buffer metadata = alloc_buf_gc(1 + sizeof(int64_t), gc);
+
+    assert_int_not_equal(now, 0);
+
+    int64_t create_time = now - (days_ago * 24 * 60 * 60);
+    assert_true(create_time > 0);
+
+    int64_t timestamp = htonll((uint64_t)create_time);
+    ASSERT(buf_write(&metadata, &TLS_CRYPT_METADATA_TYPE_TIMESTAMP, 1));
+    ASSERT(buf_write(&metadata, &timestamp, sizeof(timestamp)));
+
+    return metadata;
+}
+
+/**
+ * Creates a minimal buffer that allows tls_crypt_v2_extract_client_key
+ * to extract the client key. This will add metadata with a tls-crypt key
+ * created with the given days_ago.
+ */
+static struct buffer
+create_client_key_input(struct test_tls_crypt_v2_context *ctx, int days_ago)
+{
+    struct buffer metadata = create_metadata_days_ago(&ctx->gc, days_ago);
+
+    buf_reset_len(&ctx->wkc);
+    assert_true(tls_crypt_v2_wrap_client_key(&ctx->wkc, &ctx->client_key2, &metadata,
+                                             &ctx->server_keys.encrypt, &ctx->gc));
+
+    /* add a opcode in front of the key to make it valid to extract */
+    struct buffer pseudo_packet = alloc_buf_gc(buf_len(&ctx->wkc) + 1, &ctx->gc);
+
+    buf_write_u8(&pseudo_packet, 0x50);
+    buf_copy(&pseudo_packet, &ctx->wkc);
+
+    return pseudo_packet;
+}
+
+/**
+ * Check that unwrapping an invalid key fails as expected and does not
+ * leave extra memory around (via ASAN)
+ */
+static void
+tls_crypt_v2_wrap_unwrap_invalid(void **state)
+{
+    struct test_tls_crypt_v2_context *ctx = (struct test_tls_crypt_v2_context *)*state;
+
+    struct tls_wrap_ctx wrap_ctx = {
+        .mode = TLS_WRAP_CRYPT,
+        .tls_crypt_v2_server_key = ctx->server_keys.encrypt,
+    };
+
+    update_time();
+    struct buffer tmp = create_client_key_input(ctx, 12);
+
+    /* Make the wrapped key invalid by flipping a few bits */
+    buf_bptr(&tmp)[buf_len(&tmp) - 20] ^= 0x55;
+
+    assert_false(tls_crypt_v2_extract_client_key(&tmp, &wrap_ctx, NULL));
+    tls_wrap_free(&wrap_ctx);
+}
+
+
+static void
+tls_crypt_v2_unwrap_checks(void **state)
+{
+    update_time();
+
+    struct test_tls_crypt_v2_context *ctx = *state;
+
+
+    struct tls_wrap_ctx wrap_ctx = {
+        .mode = TLS_WRAP_CRYPT,
+        .tls_crypt_v2_server_key = ctx->server_keys.encrypt,
+    };
+
+    struct tls_options tls_options = {
+        .tls_crypt_v2_max_age = 30
+    };
+
+
+    struct buffer tmp = create_client_key_input(ctx, 29);
+    assert_true(tls_crypt_v2_extract_client_key(&tmp, &wrap_ctx, &tls_options));
+    tls_wrap_free(&wrap_ctx);
+
+#ifndef _WIN32
+    /* Use /bin/true as verify script */
+    script_security_set(2);
+    tls_options.tls_crypt_v2_verify_script = "/usr/bin/true";
+    /* Some Linux system only have /bin/true */
+    if (access(tls_options.tls_crypt_v2_verify_script, X_OK) != 0)
+    {
+        tls_options.tls_crypt_v2_verify_script = "/bin/true";
+    }
+
+    tls_options.tmp_dir = "/tmp";
+
+    /* Since we override rand_bytes the tmpfile name is non-random as well.
+     * Build the expected name via the same code path as
+     * platform_create_temp_file() */
+    char non_random_tmpfile[128];
+    snprintf(non_random_tmpfile, sizeof(non_random_tmpfile),
+             PACKAGE "_tls_crypt_v2_metadata__%08" PRIx64 "%08" PRIx64 ".tmp",
+             get_random(), get_random());
+    const char *tmpfile_path = platform_gen_path(tls_options.tmp_dir, non_random_tmpfile, &ctx->gc);
+    unlink(tmpfile_path);
+
+    expect_string(__wrap_buffer_write_file, filename, tmpfile_path);
+
+    /* We do not write the first byte (type) to the file but rather to a
+     * metadata_type environment variable */
+    struct buffer expected_metadata = create_metadata_days_ago(&ctx->gc, 29);
+    buf_advance(&expected_metadata, 1);
+
+    expect_memory(__wrap_buffer_write_file, pem, buf_bptr(&expected_metadata), buf_len(&expected_metadata));
+    will_return(__wrap_buffer_write_file, true);
+
+    tmp = create_client_key_input(ctx, 29);
+    assert_true(tls_crypt_v2_extract_client_key(&tmp, &wrap_ctx, &tls_options));
+    tls_wrap_free(&wrap_ctx);
+
+    tls_options.tls_crypt_v2_verify_script = "/usr/bin/false";
+    /* Some Linux system only have /bin/false */
+    if (access(tls_options.tls_crypt_v2_verify_script, X_OK) != 0)
+    {
+        tls_options.tls_crypt_v2_verify_script = "/bin/false";
+    }
+
+    expect_string(__wrap_buffer_write_file, filename, tmpfile_path);
+    expect_memory(__wrap_buffer_write_file, pem, buf_bptr(&expected_metadata), buf_len(&expected_metadata));
+    will_return(__wrap_buffer_write_file, true);
+
+    tmp = create_client_key_input(ctx, 29);
+    assert_false(tls_crypt_v2_extract_client_key(&tmp, &wrap_ctx, &tls_options));
+    tls_wrap_free(&wrap_ctx);
+
+    tls_options.tls_crypt_v2_verify_script = NULL;
+#endif
+
+    /* An outdated time should fail */
+    tmp = create_client_key_input(ctx, 31);
+    assert_false(tls_crypt_v2_extract_client_key(&tmp, &wrap_ctx, &tls_options));
+
+    script_security_set(0);
+    tls_wrap_free(&wrap_ctx);
 }
 
 static void
@@ -666,6 +849,10 @@ main(void)
                                         test_tls_crypt_v2_teardown),
         cmocka_unit_test_setup_teardown(tls_crypt_v2_wrap_unwrap_dst_too_small,
                                         test_tls_crypt_v2_setup, test_tls_crypt_v2_teardown),
+        cmocka_unit_test_setup_teardown(tls_crypt_v2_wrap_unwrap_invalid,
+                                        test_tls_crypt_v2_setup, test_tls_crypt_v2_teardown),
+        cmocka_unit_test_setup_teardown(tls_crypt_v2_unwrap_checks,
+                                        test_tls_crypt_v2_setup, test_tls_crypt_v2_teardown),
         cmocka_unit_test_setup_teardown(test_tls_crypt_secure_reneg_key, test_tls_crypt_setup,
                                         test_tls_crypt_teardown),
         cmocka_unit_test(test_tls_crypt_v2_write_server_key_file),
@@ -673,15 +860,5 @@ main(void)
         cmocka_unit_test(test_tls_crypt_v2_write_client_key_file_metadata),
     };
 
-#if defined(ENABLE_CRYPTO_OPENSSL)
-    OpenSSL_add_all_algorithms();
-#endif
-
-    int ret = cmocka_run_group_tests_name("tls-crypt tests", tests, NULL, NULL);
-
-#if defined(ENABLE_CRYPTO_OPENSSL)
-    EVP_cleanup();
-#endif
-
-    return ret;
+    return cmocka_run_group_tests_name("tls-crypt tests", tests, NULL, NULL);
 }

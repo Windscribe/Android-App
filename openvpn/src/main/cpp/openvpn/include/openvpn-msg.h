@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2013-2025 Heiko Hund <heiko.hund@sophos.com>
+ *  Copyright (C) 2013-2026 Heiko Hund <heiko.hund@sophos.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -109,7 +109,7 @@ typedef struct
 
 typedef enum
 {
-    nrpt_dnssec
+    nrpt_dnssec = 1 << 0,
 } nrpt_flags_t;
 
 #define NRPT_ADDR_NUM  8  /* Max. number of addresses */

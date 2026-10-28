@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -72,8 +72,6 @@ tunnel_point_to_point(struct context *c)
     /* main event loop */
     while (true)
     {
-        perf_push(PERF_EVENT_LOOP);
-
         /* process timers, TLS, etc. */
         pre_select(c);
         P2P_CHECK_SIG();
@@ -85,15 +83,12 @@ tunnel_point_to_point(struct context *c)
         /* timeout? */
         if (c->c2.event_set_status == ES_TIMEOUT)
         {
-            perf_pop();
             continue;
         }
 
         /* process the I/O which triggered select */
         process_io(c, c->c2.link_sockets[0]);
         P2P_CHECK_SIG();
-
-        perf_pop();
     }
 
     persist_client_stats(c);
@@ -207,7 +202,7 @@ openvpn_main(int argc, char *argv[])
 #endif
 
             /* initialize options to default state */
-            init_options(&c.options, true);
+            init_options(&c.options);
 
             /* parse command line options, and read configuration file */
             parse_argv(&c.options, argc, argv, M_USAGE, OPT_P_DEFAULT, NULL, c.es);
@@ -263,8 +258,9 @@ openvpn_main(int argc, char *argv[])
             pre_setup(&c.options);
 
             /* test crypto? */
-            if (do_test_crypto(&c.options))
+            if (c.options.test_crypto)
             {
+                do_test_crypto(&c);
                 break;
             }
 

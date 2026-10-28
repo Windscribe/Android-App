@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -97,6 +97,13 @@ openvpn_encrypt_aead(struct buffer *buf, struct buffer work, struct crypto_optio
         /* IV starts with packet id to make the IV unique for packet */
         if (use_epoch_data_format)
         {
+            /* Note this does not check aead_usage_limit but can overstep it by
+             * a few extra blocks in one extra write. This is not affecting the
+             * security margin as these extra blocks are on a completely
+             * different order of magnitude than the security margin.
+             * The next iteration/call to epoch_check_send_iterate will
+             * iterate the epoch
+             */
             if (!packet_id_write_epoch(&opt->packet_id.send, ctx->epoch, &iv_buffer))
             {
                 msg(D_CRYPT_ERRORS, "ENCRYPT ERROR: packet ID roll over");
@@ -152,14 +159,14 @@ openvpn_encrypt_aead(struct buffer *buf, struct buffer work, struct crypto_optio
     ASSERT(cipher_ctx_update(ctx->cipher, BEND(&work), &outlen, BPTR(buf), BLEN(buf)));
     ASSERT(buf_inc_len(&work, outlen));
 
-    /* update number of plaintext blocks encrypted. Use the (x + (n-1))/n trick
-     * to round up the result to the number of blocks used */
-    const int blocksize = AEAD_LIMIT_BLOCKSIZE;
-    opt->key_ctx_bi.encrypt.plaintext_blocks += (outlen + (blocksize - 1)) / blocksize;
-
     /* Flush the encryption buffer */
     ASSERT(cipher_ctx_final(ctx->cipher, BEND(&work), &outlen));
     ASSERT(buf_inc_len(&work, outlen));
+
+    /* update number of plaintext blocks encrypted. Use the (x + (n-1))/n trick
+     * to round up the result to the number of blocks used */
+    const int blocksize = AEAD_LIMIT_BLOCKSIZE;
+    opt->key_ctx_bi.encrypt.plaintext_blocks += (BLEN(&work) + (blocksize - 1)) / blocksize;
 
     /* if the tag is at end the end, allocate it now */
     if (use_epoch_data_format)
@@ -580,11 +587,10 @@ openvpn_decrypt_aead(struct buffer *buf, struct buffer work, struct crypto_optio
         goto error_exit;
     }
 
-
     /* update number of plaintext blocks decrypted. Use the (x + (n-1))/n trick
      * to round up the result to the number of blocks used. */
     const int blocksize = AEAD_LIMIT_BLOCKSIZE;
-    opt->key_ctx_bi.decrypt.plaintext_blocks += (outlen + (blocksize - 1)) / blocksize;
+    opt->key_ctx_bi.decrypt.plaintext_blocks += (BLEN(&work) + (blocksize - 1)) / blocksize;
 
     *buf = work;
 
@@ -857,7 +863,7 @@ warn_insecure_key_type(const char *ciphername)
             " bit (%d bit).  This allows attacks like SWEET32.  Mitigate by "
             "using a --cipher with a larger block size (e.g. AES-256-CBC). "
             "Support for these insecure ciphers will be removed in "
-            "OpenVPN 2.7.",
+            "OpenVPN 2.8.",
             ciphername, cipher_kt_block_size(ciphername) * 8);
     }
 }
@@ -1319,6 +1325,18 @@ crypto_read_openvpn_key(const struct key_type *key_type, struct key_ctx_bi *ctx,
     secure_memzero(&key2, sizeof(key2));
 }
 
+void
+generate_test_crypto_random_key(const struct key_type *key_type, struct key_ctx_bi *ctx,
+                                const char *key_name)
+{
+    struct key2 key2;
+    key2.n = 2;
+    generate_key_random(&key2.keys[0]);
+    generate_key_random(&key2.keys[1]);
+    init_key_ctx_bi(ctx, &key2, KEY_DIRECTION_BIDIRECTIONAL, key_type, key_name);
+}
+
+
 /* header and footer for static key file */
 static const char static_key_head[] = "-----BEGIN OpenVPN Static key V1-----";
 static const char static_key_foot[] = "-----END OpenVPN Static key V1-----";
@@ -1455,9 +1473,9 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
                     hex_byte[hb_index++] = c;
                     if (hb_index == 2)
                     {
-                        uint8_t u;
-                        ASSERT(sscanf((const char *)hex_byte, "%" SCNx8, &u) == 1);
-                        *out++ = u;
+                        unsigned int u;
+                        ASSERT(sscanf((const char *)hex_byte, "%2x", &u) == 1);
+                        *out++ = (uint8_t)u;
                         hb_index = 0;
                         if (++count == keylen)
                         {
@@ -1713,11 +1731,12 @@ prng_bytes(uint8_t *output, int len)
     ASSERT(rand_bytes(output, len));
 }
 
-/* an analogue to the random() function, but use prng_bytes */
-long int
+/* an analogue to the random() function, but use prng_bytes and
+ * also int64_t instead of long to avoid LLP64 vs LP64 */
+int64_t
 get_random(void)
 {
-    long int l;
+    int64_t l;
     prng_bytes((unsigned char *)&l, sizeof(l));
     if (l < 0)
     {

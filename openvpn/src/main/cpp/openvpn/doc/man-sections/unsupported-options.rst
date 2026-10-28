@@ -6,8 +6,19 @@ Options listed in this section have been removed from OpenVPN and are no
 longer supported
 
 --client-cert-not-required
-  Removed in OpenVPN 2.5.  This should be replaxed with
+  Removed in OpenVPN 2.5.  This should be replaced with
   ``--verify-client-cert none``.
+
+--fast-io
+  Ignored since OpenVPN 2.7. This option became broken due to changes
+  to the event loop.
+
+--http-proxy-retry
+  Removed in OpenVPN 2.4.  All retries are controlled by ``--max-connect-retry``.
+
+--http-proxy-timeout
+  Removed in OpenVPN 2.4.  Connection timeout is controlled by
+  ``--connect-timeout``.
 
 --ifconfig-pool-linear
   Removed in OpenVPN 2.5.  This should be replaced with ``--topology p2p``.
@@ -20,6 +31,9 @@ longer supported
 --management-client-pf
   Removed in OpenVPN 2.6.  The built-in packet filtering (pf) functionality
   has been removed.
+
+--max-routes
+  Removed in OpenVPN 2.4.  The limit was removed.
 
 --ncp-disable
   Removed in OpenVPN 2.6.  This option mainly served a role as debug option
@@ -34,14 +48,20 @@ longer supported
   VPN tunnel security.  Previously we claimed to have removed this in
   OpenVPN 2.5, but this wasn't actually the case.
 
---ns-cert-type
-  Removed in OpenVPN 2.5.  The ``nsCertType`` field is no longer supported
-  in recent SSL/TLS libraries.  If your certificates does not include *key
-  usage* and *extended key usage* fields, they must be upgraded and the
-  ``--remote-cert-tls`` option should be used instead.
-
 --prng
   Removed in OpenVPN 2.6.  We now always use the PRNG of the SSL library.
 
 --persist-key
   Ignored since OpenVPN 2.7. Keys are now always persisted across restarts.
+
+--opt-verify
+  Removed in OpenVPN 2.7.  This option does not make sense anymore as option
+  strings may not match due to the introduction of parameters negotiation.
+
+--socks-proxy-retry
+  Removed in OpenVPN 2.4.  All retries are controlled by ``--max-connect-retry``.
+
+--windows-driver
+  Removed in OpenVPN 2.7. OpenVPN will always use ovpn-dco as the default
+  driver on Windows. It will fall back to tap-windows6 if options are used
+  that are incompatible with ovpn-dco.

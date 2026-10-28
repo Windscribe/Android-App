@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2016-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2016-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -535,7 +535,7 @@ crypto_test_hkdf_expand_testa3(void **state)
                         0x1d, 0x6f, 0x64, 0x8b, 0xdf, 0x96, 0x59, 0x67, 0x76, 0xaf, 0xdb,
                         0x63, 0x77, 0xac, 0x43, 0x4c, 0x1c, 0x29, 0x3c, 0xcb, 0x04 };
 
-    uint8_t info[] = {};
+    uint8_t info[] = { 0 };
 
     int L = 42;
     uint8_t okm[42] = { 0x8d, 0xa4, 0xe7, 0x75, 0xa5, 0x63, 0xc1, 0x8f, 0x71, 0x5f, 0x80,
@@ -870,6 +870,35 @@ crypto_test_epoch_key_overflow(void **state)
 }
 
 void
+crypto_test_epoch_edge(void **state)
+{
+    struct epoch_test_state *data = *state;
+    struct crypto_options *co = &data->co;
+
+    for (uint16_t i = 1; i <= 13; i++)
+    {
+        uint16_t current_epoch = co->key_ctx_bi.decrypt.epoch;
+        uint16_t target_epoch = current_epoch + i;
+
+        struct key_ctx *decrypt_key = epoch_lookup_decrypt_key(co, target_epoch);
+        assert_non_null(decrypt_key);
+
+        assert_int_equal(decrypt_key->epoch, target_epoch);
+
+        epoch_replace_update_recv_key(co, target_epoch);
+
+        assert_int_equal(co->key_ctx_bi.decrypt.epoch, target_epoch);
+    }
+
+    /* Check that 14 is not valid anymnore */
+    uint16_t current_epoch = co->key_ctx_bi.decrypt.epoch;
+    uint16_t target_epoch = current_epoch + 14;
+
+    struct key_ctx *decrypt_key = epoch_lookup_decrypt_key(co, target_epoch);
+    assert_null(decrypt_key);
+}
+
+void
 epoch_test_derive_data_key(void **state)
 {
     struct epoch_key e17 = { .epoch = 17, .epoch_key = { 19, 12 } };
@@ -928,18 +957,11 @@ main(void)
         cmocka_unit_test_prestate_setup_teardown(crypto_test_epoch_key_overflow,
                                                  crypto_test_epoch_setup,
                                                  crypto_test_epoch_teardown, &prestate_num32),
+        cmocka_unit_test_prestate_setup_teardown(crypto_test_epoch_edge,
+                                                 crypto_test_epoch_setup,
+                                                 crypto_test_epoch_teardown, &prestate_num13),
         cmocka_unit_test(epoch_test_derive_data_key)
     };
 
-#if defined(ENABLE_CRYPTO_OPENSSL)
-    OpenSSL_add_all_algorithms();
-#endif
-
-    int ret = cmocka_run_group_tests_name("crypto tests", tests, NULL, NULL);
-
-#if defined(ENABLE_CRYPTO_OPENSSL)
-    EVP_cleanup();
-#endif
-
-    return ret;
+    return cmocka_run_group_tests_name("crypto tests", tests, NULL, NULL);
 }

@@ -5,9 +5,9 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
- *  Copyright (C) 2008-2025 David Sommerseth <dazo@eurephia.org>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2008-2026 David Sommerseth <dazo@eurephia.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -47,7 +47,6 @@
 #include "misc.h"
 #include "fdmisc.h"
 #include "interval.h"
-#include "perf.h"
 #include "status.h"
 #include "gremlin.h"
 #include "pkcs11.h"
@@ -95,6 +94,14 @@ show_tls_performance_stats(void)
 #define INCR_ERROR
 
 #endif /* ifdef MEASURE_TLS_HANDSHAKE_STATS */
+
+/* forward decleration since tls_process needs this function prototype */
+static void
+check_session_buf_not_used(struct buffer *to_link, struct tls_session *session);
+
+static void
+check_keystate_buf_not_used(struct buffer *to_link, const struct key_state *ks);
+
 
 /**
  * Limit the reneg_bytes value when using a small-block (<128 bytes) cipher.
@@ -180,21 +187,16 @@ tls_init_control_channel_frame_parameters(struct frame *frame, int tls_mtu)
     frame->tun_mtu = max_int(frame->tun_mtu, TLS_CHANNEL_MTU_MIN);
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 /**
  * calculate the maximum overhead that control channel frames have
  * This includes header, op code and everything apart from the
  * payload itself. This method is a bit pessimistic and might give higher
  * overhead than we actually have */
-static int
+static size_t
 calc_control_channel_frame_overhead(const struct tls_session *session)
 {
     const struct key_state *ks = &session->key[KS_PRIMARY];
-    int overhead = 0;
+    size_t overhead = 0;
 
     /* opcode */
     overhead += 1;
@@ -226,10 +228,6 @@ calc_control_channel_frame_overhead(const struct tls_session *session)
 
     return overhead;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 void
 init_ssl_lib(void)
@@ -300,13 +298,18 @@ enable_auth_user_pass(void)
 }
 
 void
-auth_user_pass_setup(const char *auth_file, bool is_inline, const struct static_challenge_info *sci)
+auth_user_pass_setup(const char *auth_file, bool is_inline, bool username_only,
+                     const struct static_challenge_info *sci)
 {
     unsigned int flags = GET_USER_PASS_MANAGEMENT;
 
     if (is_inline)
     {
         flags |= GET_USER_PASS_INLINE_CREDS;
+    }
+    if (username_only)
+    {
+        flags |= GET_USER_PASS_USERNAME_ONLY;
     }
 
     if (!auth_user_pass.defined && !auth_token.defined)
@@ -517,17 +520,18 @@ tls_ctx_reload_crl(struct tls_root_ctx *ssl_ctx, const char *crl_file, bool crl_
  * Initialize SSL context.
  * All files are in PEM format.
  */
-void
-init_ssl(const struct options *options, struct tls_root_ctx *new_ctx, bool in_chroot)
+struct tls_root_ctx *
+init_ssl(const struct options *options, bool in_chroot)
 {
-    ASSERT(NULL != new_ctx);
-
     tls_clear_error();
 
     if (key_is_external(options))
     {
         load_xkey_provider();
     }
+
+    struct tls_root_ctx *new_ctx;
+    ALLOC_OBJ_CLEAR(new_ctx, struct tls_root_ctx);
 
     if (options->tls_server)
     {
@@ -674,12 +678,13 @@ init_ssl(const struct options *options, struct tls_root_ctx *new_ctx, bool in_ch
 #endif
 
     tls_clear_error();
-    return;
+    return new_ctx;
 
 err:
     tls_clear_error();
     tls_ctx_free(new_ctx);
-    return;
+    free(new_ctx);
+    return NULL;
 }
 
 /*
@@ -831,7 +836,7 @@ key_state_init(struct tls_session *session, struct key_state *ks)
      * Build TLS object that reads/writes ciphertext
      * to/from memory BIOs.
      */
-    key_state_ssl_init(&ks->ks_ssl, &session->opt->ssl_ctx, session->opt->server, session);
+    key_state_ssl_init(&ks->ks_ssl, session->opt->ssl_ctx, session->opt->server, session);
 
     /* Set control-channel initiation mode */
     ks->initial_opcode = session->initial_opcode;
@@ -882,11 +887,12 @@ key_state_init(struct tls_session *session, struct key_state *ks)
 
     /*
      * Attempt CRL reload before TLS negotiation. Won't be performed if
-     * the file was not modified since the last reload
+     * the file was not modified since the last reload. This affects
+     * all instances (all instances share the same context).
      */
     if (session->opt->crl_file && !(session->opt->ssl_flags & SSLF_CRL_VERIFY_DIR))
     {
-        tls_ctx_reload_crl(&session->opt->ssl_ctx, session->opt->crl_file,
+        tls_ctx_reload_crl(session->opt->ssl_ctx, session->opt->crl_file,
                            session->opt->crl_file_inline);
     }
 }
@@ -904,10 +910,15 @@ key_state_init(struct tls_session *session, struct key_state *ks)
  *                       cleaned up.
  * @param clear        - Whether the memory allocated for the \a ks object
  *                       should be overwritten with 0s.
+ *
+ * @param to_link      - if not NULL, check that the buffer does not contain
+ *                       any pointer to one of the internal structs of ks
  */
 static void
-key_state_free(struct key_state *ks, bool clear)
+key_state_free(struct key_state *ks, bool clear, struct buffer *to_link)
 {
+    check_keystate_buf_not_used(to_link, ks);
+
     ks->state = S_UNDEF;
 
     key_state_ssl_free(&ks->ks_ssl);
@@ -1051,11 +1062,14 @@ tls_session_init(struct tls_multi *multi, struct tls_session *session)
  *                       object should be overwritten with 0s. This
  *                       implicitly sets many states to 0/false,
  *                       e.g. the validity of the keys in the structure
+ * @param to_link      - if not NULL, check that the buffer does not contain
+ *                       any pointer to one of the internal structs of ks
  *
  */
 static void
-tls_session_free(struct tls_session *session, bool clear)
+tls_session_free(struct tls_session *session, bool clear, struct buffer *to_link)
 {
+    check_session_buf_not_used(to_link, session);
     tls_wrap_free(&session->tls_wrap);
     tls_wrap_free(&session->tls_wrap_reneg);
 
@@ -1064,7 +1078,7 @@ tls_session_free(struct tls_session *session, bool clear)
         /* we don't need clear=true for this call since
          * the structs are part of session and get cleared
          * as part of session */
-        key_state_free(&session->key[i], false);
+        key_state_free(&session->key[i], false, to_link);
     }
 
     free(session->common_name);
@@ -1083,14 +1097,16 @@ tls_session_free(struct tls_session *session, bool clear)
 
 
 static void
-move_session(struct tls_multi *multi, int dest, int src, bool reinit_src)
+move_session(struct tls_multi *multi, int dest, int src, bool reinit_src,
+             struct buffer *to_link)
 {
+    check_session_buf_not_used(to_link, &multi->session[dest]);
     msg(D_TLS_DEBUG_LOW, "TLS: move_session: dest=%s src=%s reinit_src=%d",
         session_index_name(dest), session_index_name(src), reinit_src);
     ASSERT(src != dest);
     ASSERT(src >= 0 && src < TM_SIZE);
     ASSERT(dest >= 0 && dest < TM_SIZE);
-    tls_session_free(&multi->session[dest], false);
+    tls_session_free(&multi->session[dest], false, to_link);
     multi->session[dest] = multi->session[src];
 
     if (reinit_src)
@@ -1106,9 +1122,9 @@ move_session(struct tls_multi *multi, int dest, int src, bool reinit_src)
 }
 
 static void
-reset_session(struct tls_multi *multi, struct tls_session *session)
+reset_session(struct tls_multi *multi, struct tls_session *session, struct buffer *to_link)
 {
-    tls_session_free(session, false);
+    tls_session_free(session, false, to_link);
     tls_session_init(multi, session);
 }
 
@@ -1117,22 +1133,17 @@ reset_session(struct tls_multi *multi, struct tls_session *session)
  * called again.
  */
 static inline void
-compute_earliest_wakeup(interval_t *earliest, interval_t seconds_from_now)
+compute_earliest_wakeup(interval_t *earliest, time_t seconds_from_now)
 {
     if (seconds_from_now < *earliest)
     {
-        *earliest = seconds_from_now;
+        *earliest = (interval_t)seconds_from_now;
     }
     if (*earliest < 0)
     {
         *earliest = 0;
     }
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
 
 /*
  * Return true if "lame duck" or retiring key has expired and can
@@ -1266,7 +1277,7 @@ tls_multi_free(struct tls_multi *multi, bool clear)
 
     for (int i = 0; i < TM_SIZE; ++i)
     {
-        tls_session_free(&multi->session[i], false);
+        tls_session_free(&multi->session[i], false, NULL);
     }
 
     if (clear)
@@ -1345,10 +1356,14 @@ static void
 init_epoch_keys(struct key_state *ks, struct tls_multi *multi, const struct key_type *key_type,
                 bool server, struct key2 *key2)
 {
-    /* For now we hardcode this to be 16 for the software based data channel
+    /* For now we hardcode this to be 4 for the software based data channel
      * DCO based implementations/HW implementation might adjust this number
-     * based on their expected speed */
-    const int future_key_count = 16;
+     * based on their expected speed.
+     *
+     * One epoch lasts 910 GiB with 128 byte packets or 78s at 100 GBit/s.
+     * (respectively 1011 GiB and 86s with 1280 byte packets).
+     */
+    const uint8_t future_key_count = 4;
 
     int key_direction = server ? KEY_DIRECTION_INVERSE : KEY_DIRECTION_NORMAL;
     struct key_direction_state kds;
@@ -1380,7 +1395,22 @@ init_epoch_keys(struct key_state *ks, struct tls_multi *multi, const struct key_
     secure_memzero(&e1_recv, sizeof(e1_recv));
 }
 
-static void
+/**
+ * Outcome of generating the data channel keys of a session.
+ *
+ * \c KEY_GEN_DCO_DESYNC is kept distinct from \c KEY_GEN_FAILED because it
+ * means userspace and kernel disagree about the DCO peer: the session cannot
+ * recover on its own and the connection has to be restarted, while any other
+ * failure only invalidates the affected key state.
+ */
+enum key_gen_status
+{
+    KEY_GEN_OK,         /**< keys were generated and installed */
+    KEY_GEN_FAILED,     /**< generation failed, invalidate the key state */
+    KEY_GEN_DCO_DESYNC, /**< the DCO peer is gone from the kernel */
+};
+
+static enum key_gen_status
 init_key_contexts(struct key_state *ks, struct tls_multi *multi, const struct key_type *key_type,
                   bool server, struct key2 *key2, bool dco_enabled)
 {
@@ -1399,7 +1429,16 @@ init_key_contexts(struct key_state *ks, struct tls_multi *multi, const struct ke
         int ret = init_key_dco_bi(multi, ks, key2, key_direction, key_type->cipher, server);
         if (ret < 0)
         {
-            msg(M_FATAL, "Impossible to install key material in DCO: %s", strerror(-ret));
+            /* This normally means the DCO peer is gone from the kernel while
+             * userspace still believes it exists. Do not take the whole
+             * process down over a single peer: report the desync so that the
+             * connection is restarted and the peer re-created from scratch */
+            msg(M_WARN,
+                "Impossible to install key material in DCO: %s. The underlying "
+                "DCO peer may have been deleted from the kernel without "
+                "notifying userspace. Restarting the session.",
+                strerror(-ret));
+            return KEY_GEN_DCO_DESYNC;
         }
 
         /* encrypt/decrypt context are unused with DCO */
@@ -1411,10 +1450,14 @@ init_key_contexts(struct key_state *ks, struct tls_multi *multi, const struct ke
     {
         if (!cipher_kt_mode_aead(key_type->cipher))
         {
-            msg(M_FATAL,
-                "AEAD cipher (currently %s) "
+            /* The pulled options are validated in do_deferred_options(), so
+             * reaching this point means a code path escaped that check. Fail
+             * the session instead of the whole process */
+            msg(D_TLS_ERRORS,
+                "TLS Error: AEAD cipher (currently %s) "
                 "required for epoch data format.",
                 cipher_kt_name(key_type->cipher));
+            return KEY_GEN_FAILED;
         }
         init_epoch_keys(ks, multi, key_type, server, key2);
     }
@@ -1422,6 +1465,8 @@ init_key_contexts(struct key_state *ks, struct tls_multi *multi, const struct ke
     {
         init_key_ctx_bi(key, key2, key_direction, key_type, "Data Channel");
     }
+
+    return KEY_GEN_OK;
 }
 
 static bool
@@ -1482,11 +1527,11 @@ generate_key_expansion_openvpn_prf(const struct tls_session *session, struct key
  * Using source entropy from local and remote hosts, mix into
  * master key.
  */
-static bool
+static enum key_gen_status
 generate_key_expansion(struct tls_multi *multi, struct key_state *ks, struct tls_session *session)
 {
     struct key_ctx_bi *key = &ks->crypto_options.key_ctx_bi;
-    bool ret = false;
+    enum key_gen_status ret = KEY_GEN_FAILED;
     struct key2 key2;
 
     if (key->initialized)
@@ -1531,8 +1576,8 @@ generate_key_expansion(struct tls_multi *multi, struct key_state *ks, struct tls
         }
     }
 
-    init_key_contexts(ks, multi, &session->opt->key_type, server, &key2, session->opt->dco_enabled);
-    ret = true;
+    ret = init_key_contexts(ks, multi, &session->opt->key_type, server, &key2,
+                            session->opt->dco_enabled);
 
 exit:
     secure_memzero(&key2, sizeof(key2));
@@ -1546,10 +1591,10 @@ exit:
  * This erases the source material used to generate the data channel keys, and
  * can thus be called only once per session.
  */
-bool
+static enum key_gen_status
 tls_session_generate_data_channel_keys(struct tls_multi *multi, struct tls_session *session)
 {
-    bool ret = false;
+    enum key_gen_status ret = KEY_GEN_FAILED;
     struct key_state *ks = &session->key[KS_PRIMARY]; /* primary key */
 
     if (ks->authenticated <= KS_AUTH_FALSE)
@@ -1560,7 +1605,8 @@ tls_session_generate_data_channel_keys(struct tls_multi *multi, struct tls_sessi
 
     ks->crypto_options.flags = session->opt->crypto_flags;
 
-    if (!generate_key_expansion(multi, ks, session))
+    ret = generate_key_expansion(multi, ks, session);
+    if (ret != KEY_GEN_OK)
     {
         msg(D_TLS_ERRORS, "TLS Error: generate_key_expansion failed");
         goto cleanup;
@@ -1572,7 +1618,6 @@ tls_session_generate_data_channel_keys(struct tls_multi *multi, struct tls_sessi
     /* set the state of the keys for the session to generated */
     ks->state = S_GENERATED_KEYS;
 
-    ret = true;
 cleanup:
     secure_memzero(ks->key_src, sizeof(*ks->key_src));
     return ret;
@@ -1630,9 +1675,9 @@ tls_session_update_crypto_params_do_work(struct tls_multi *multi, struct tls_ses
 
     if (dco_enabled(options))
     {
-        /* dco_set_peer() must be called if either keepalive or
-         * mssfix are set to update in-kernel config */
-        if (options->ping_send_timeout || frame->mss_fix)
+        /* dco_set_peer() must be called if either keepalive, ping, ping-restart,
+         * ping-exit or mssfix are set to update in-kernel config */
+        if (options->ping_send_timeout || options->ping_rec_timeout || frame->mss_fix)
         {
             int ret = dco_set_peer(dco, multi->dco_peer_id, options->ping_send_timeout,
                                    options->ping_rec_timeout, frame->mss_fix);
@@ -1644,7 +1689,10 @@ tls_session_update_crypto_params_do_work(struct tls_multi *multi, struct tls_ses
             }
         }
     }
-    return tls_session_generate_data_channel_keys(multi, session);
+    /* A DCO desync is reported as a plain failure here: every caller of this
+     * function already turns a failure into a SIGUSR1, which is exactly the
+     * recovery a desync needs */
+    return tls_session_generate_data_channel_keys(multi, session) == KEY_GEN_OK;
 }
 
 bool
@@ -1761,13 +1809,13 @@ flush_payload_buffer(struct key_state *ks)
  * active key.
  */
 static void
-key_state_soft_reset(struct tls_session *session)
+key_state_soft_reset(struct tls_session *session, struct buffer *to_link)
 {
     struct key_state *ks = &session->key[KS_PRIMARY];        /* primary key */
     struct key_state *ks_lame = &session->key[KS_LAME_DUCK]; /* retiring key */
 
     ks->must_die = now + session->opt->transition_window;    /* remaining lifetime of old key */
-    key_state_free(ks_lame, false);
+    key_state_free(ks_lame, false, to_link);
     *ks_lame = *ks;
 
     key_state_init(session, ks);
@@ -1778,7 +1826,7 @@ key_state_soft_reset(struct tls_session *session)
 void
 tls_session_soft_reset(struct tls_multi *tls_multi)
 {
-    key_state_soft_reset(&tls_multi->session[TM_ACTIVE]);
+    key_state_soft_reset(&tls_multi->session[TM_ACTIVE], NULL);
 }
 
 /*
@@ -1798,12 +1846,13 @@ write_empty_string(struct buffer *buf)
 static bool
 write_string(struct buffer *buf, const char *str, const int maxlen)
 {
-    const int len = strlen(str) + 1;
-    if (len < 1 || (maxlen >= 0 && len > maxlen))
+    const size_t len = strlen(str) + 1;
+    const size_t real_maxlen = (maxlen >= 0 && maxlen <= UINT16_MAX) ? (size_t)maxlen : UINT16_MAX;
+    if (len > real_maxlen)
     {
         return false;
     }
-    if (!buf_write_u16(buf, len))
+    if (!buf_write_u16(buf, (uint16_t)len))
     {
         return false;
     }
@@ -2110,10 +2159,12 @@ key_method_2_write(struct buffer *buf, struct tls_multi *multi, struct tls_sessi
     {
 #ifdef ENABLE_MANAGEMENT
         auth_user_pass_setup(session->opt->auth_user_pass_file,
-                             session->opt->auth_user_pass_file_inline, session->opt->sci);
+                             session->opt->auth_user_pass_file_inline,
+                             session->opt->auth_user_pass_username_only, session->opt->sci);
 #else
         auth_user_pass_setup(session->opt->auth_user_pass_file,
-                             session->opt->auth_user_pass_file_inline, NULL);
+                             session->opt->auth_user_pass_file_inline,
+                             session->opt->auth_user_pass_username_only, NULL);
 #endif
         struct user_pass *up = &auth_user_pass;
 
@@ -2129,10 +2180,12 @@ key_method_2_write(struct buffer *buf, struct tls_multi *multi, struct tls_sessi
 
         if (!write_string(buf, up->username, -1))
         {
+            msg(M_WARN, "WARNING: Failed to write auth username to TLS buffer");
             goto error;
         }
         else if (!write_string(buf, up->password, -1))
         {
+            msg(M_WARN, "WARNING: Failed to write auth password to TLS buffer");
             goto error;
         }
         /* save username for auth-token which may get pushed later */
@@ -2183,15 +2236,15 @@ export_user_keying_material(struct tls_session *session)
 {
     if (session->opt->ekm_size > 0)
     {
-        unsigned int size = session->opt->ekm_size;
+        const size_t size = session->opt->ekm_size;
         struct gc_arena gc = gc_new();
 
-        unsigned char *ekm = gc_malloc(session->opt->ekm_size, true, &gc);
+        unsigned char *ekm = gc_malloc(size, true, &gc);
         if (key_state_export_keying_material(session, session->opt->ekm_label,
                                              session->opt->ekm_label_size, ekm,
                                              session->opt->ekm_size))
         {
-            unsigned int len = (size * 2) + 2;
+            const size_t len = (size * 2) + 2;
 
             const char *key = format_hex_ex(ekm, size, len, 0, NULL, &gc);
             setenv_str(session->opt->es, "exported_keying_material", key);
@@ -2344,13 +2397,6 @@ key_method_2_read(struct buffer *buf, struct tls_multi *multi, struct tls_sessio
 #endif
 
         options_warning(options, remote_options);
-
-        if (session->opt->ssl_flags & SSLF_OPT_VERIFY)
-        {
-            msg(D_TLS_ERRORS,
-                "Option inconsistency warnings triggering disconnect due to --opt-verify");
-            ks->authenticated = KS_AUTH_FALSE;
-        }
     }
 
     buf_clear(buf);
@@ -2529,7 +2575,8 @@ session_skip_to_pre_start(struct tls_session *session, struct tls_pre_decrypt_st
  * Parses the TLVs (type, length, value) in the early negotiation
  */
 static bool
-parse_early_negotiation_tlvs(struct buffer *buf, struct key_state *ks)
+parse_early_negotiation_tlvs(struct buffer *buf, const struct tls_session *session,
+                             struct key_state *ks)
 {
     while (buf->len > 0)
     {
@@ -2538,9 +2585,9 @@ parse_early_negotiation_tlvs(struct buffer *buf, struct key_state *ks)
             goto error;
         }
         /* read type */
-        uint16_t type = buf_read_u16(buf);
-        uint16_t len = buf_read_u16(buf);
-        if (buf_len(buf) < len)
+        int type = buf_read_u16(buf);
+        int len = buf_read_u16(buf);
+        if (type < 0 || len < 0 || buf_len(buf) < len)
         {
             goto error;
         }
@@ -2552,11 +2599,21 @@ parse_early_negotiation_tlvs(struct buffer *buf, struct key_state *ks)
                 {
                     goto error;
                 }
-                uint16_t flags = buf_read_u16(buf);
+                int flags = buf_read_u16(buf);
 
                 if (flags & EARLY_NEG_FLAG_RESEND_WKC)
                 {
-                    ks->crypto_options.flags |= CO_RESEND_WKC;
+                    /* Only accept the EARLY_NEG_FLAG_RESEND_WKC flag
+                     * from the server if we are configured with tls-crypt-v2 */
+                    if (session->tls_wrap.tls_crypt_v2_wkc)
+                    {
+                        ks->crypto_options.flags |= CO_RESEND_WKC;
+                    }
+                    else
+                    {
+                        msg(D_TLS_ERRORS, "TLS Error: peer asked us to resend the wrapped "
+                                          "client key, but this is not a tls-crypt-v2 client");
+                    }
                 }
                 break;
 
@@ -2651,7 +2708,7 @@ write_outgoing_tls_ciphertext(struct tls_session *session, bool *continue_tls_pr
     int max_pkt_len = min_int(TLS_CHANNEL_BUF_SIZE, session->opt->frame.tun_mtu);
 
     /* Subtract overhead */
-    max_pkt_len -= calc_control_channel_frame_overhead(session);
+    max_pkt_len -= (int)calc_control_channel_frame_overhead(session);
 
     /* calculate total available length for outgoing tls ciphertext */
     int maxlen = max_pkt_len * rel_avail;
@@ -2723,8 +2780,15 @@ write_outgoing_tls_ciphertext(struct tls_session *session, bool *continue_tls_pr
 
 static bool
 check_outgoing_ciphertext(struct key_state *ks, struct tls_session *session,
-                          bool *continue_tls_process)
+                          struct buffer *to_link, bool *continue_tls_process)
 {
+    if (to_link->len)
+    {
+        dmsg(D_TLS_DEBUG,
+             "Deferring outgoing ciphertext, previous packet not written out yet");
+        return true;
+    }
+
     /* Outgoing Ciphertext to reliable buffer */
     if (ks->state >= S_START)
     {
@@ -2806,7 +2870,6 @@ tls_process_state(struct tls_multi *multi, struct tls_session *session, struct b
         *to_link = b;
         dmsg(D_TLS_DEBUG, "Reliable -> TCP/UDP");
 
-        /* Send multiple reset packets for UDP stuffing */
         if (session->opt->tcp_split_reset
             && (opcode == P_CONTROL_HARD_RESET_CLIENT_V2
                 || opcode == P_CONTROL_HARD_RESET_CLIENT_V3))
@@ -2823,7 +2886,8 @@ tls_process_state(struct tls_multi *multi, struct tls_session *session, struct b
                 usleep(5000);
 #endif
                 struct buffer b2 = *buf;
-                write_control_auth(session, ks, &b2, to_link_addr, opcode, CONTROL_SEND_ACK_MAX, true);
+                write_control_auth(session, ks, &b2, to_link_addr, opcode, CONTROL_SEND_ACK_MAX,
+                                   true);
                 *to_link = b2;
             }
         }
@@ -2854,7 +2918,7 @@ tls_process_state(struct tls_multi *multi, struct tls_session *session, struct b
          * contains early protocol negotiation */
         if (entry->packet_id == 0 && is_hard_reset_method2(entry->opcode))
         {
-            if (!parse_early_negotiation_tlvs(&entry->buf, ks))
+            if (!parse_early_negotiation_tlvs(&entry->buf, session, ks))
             {
                 goto error;
             }
@@ -2926,7 +2990,7 @@ tls_process_state(struct tls_multi *multi, struct tls_session *session, struct b
             dmsg(D_TLS_DEBUG, "Outgoing Plaintext -> TLS");
         }
     }
-    if (!check_outgoing_ciphertext(ks, session, &continue_tls_process))
+    if (!check_outgoing_ciphertext(ks, session, to_link, &continue_tls_process))
     {
         goto error;
     }
@@ -2938,7 +3002,7 @@ error:
     /* Shut down the TLS session but do a last read from the TLS
      * object to be able to read potential TLS alerts */
     key_state_ssl_shutdown(&ks->ks_ssl);
-    check_outgoing_ciphertext(ks, session, &continue_tls_process);
+    check_outgoing_ciphertext(ks, session, to_link, &continue_tls_process);
 
     /* Put ourselves in the pre error state that will only send out the
      * control channel packets but nothing else */
@@ -3062,13 +3126,13 @@ tls_process(struct tls_multi *multi, struct tls_session *session, struct buffer 
             session->opt->aead_usage_limit,
             ks->crypto_options.key_ctx_bi.decrypt.plaintext_blocks + ks->n_packets,
             session->opt->aead_usage_limit);
-        key_state_soft_reset(session);
+        key_state_soft_reset(session, to_link);
     }
 
     /* Kill lame duck key transition_window seconds after primary key negotiation */
     if (lame_duck_must_die(session, wakeup))
     {
-        key_state_free(ks_lame, true);
+        key_state_free(ks_lame, true, to_link);
         msg(D_TLS_DEBUG_LOW, "TLS: tls_process: killed expiring key");
     }
 
@@ -3161,6 +3225,55 @@ tls_process(struct tls_multi *multi, struct tls_session *session, struct buffer 
     return false;
 }
 
+static void
+check_keystate_buf_not_used(struct buffer *to_link, const struct key_state *ks)
+{
+    if (ks->state == S_UNDEF || !to_link || !to_link->data)
+    {
+        return;
+    }
+
+    uint8_t *dataptr = to_link->data;
+
+    /* we don't expect send_reliable to be NULL when state is
+     * not S_UNDEF, but people have reported crashes nonetheless,
+     * therefore we better catch this event, report and exit.
+     */
+    if (!ks->send_reliable)
+    {
+        msg(M_FATAL,
+            "ERROR: ks.send_reliable (key-id %d), is NULL "
+            "while key state is %s. Exiting.",
+            ks->key_id, state_name(ks->state));
+    }
+
+    for (int j = 0; j < ks->send_reliable->size; j++)
+    {
+        if (ks->send_reliable->array[j].buf.data == dataptr)
+        {
+            msg(M_INFO,
+                "Warning buffer of freed TLS session is still in"
+                " use (key-id %d, ks.send_reliable->array[%d])",
+                ks->key_id, j);
+
+            goto used;
+        }
+    }
+
+    if (ks->ack_write_buf.data == dataptr)
+    {
+        msg(M_INFO, "Warning buffer of freed TLS session is still in use "
+                    "(ks.ack_write_buf, key-id %d)",
+            ks->key_id);
+
+        goto used;
+    }
+    return;
+
+used:
+    to_link->len = 0;
+    to_link->data = 0;
+}
 
 /**
  * This is a safe guard function to double check that a buffer from a session is
@@ -3172,11 +3285,11 @@ tls_process(struct tls_multi *multi, struct tls_session *session, struct buffer 
 static void
 check_session_buf_not_used(struct buffer *to_link, struct tls_session *session)
 {
-    uint8_t *dataptr = to_link->data;
-    if (!dataptr)
+    if (!to_link || !to_link->data)
     {
         return;
     }
+    const uint8_t *dataptr = to_link->data;
 
     /* Checks buffers in tls_wrap */
     if (session->tls_wrap.work.data == dataptr)
@@ -3185,39 +3298,17 @@ check_session_buf_not_used(struct buffer *to_link, struct tls_session *session)
                     "still in use (tls_wrap.work.data)");
         goto used;
     }
+    if (session->tls_wrap_reneg.work.data == dataptr)
+    {
+        msg(M_INFO, "Warning buffer of freed TLS session is "
+                    "still in use (tls_wrap_reneg.work.data)");
+        goto used;
+    }
 
     for (int i = 0; i < KS_SIZE; i++)
     {
-        struct key_state *ks = &session->key[i];
-        if (ks->state == S_UNDEF)
-        {
-            continue;
-        }
-
-        /* we don't expect send_reliable to be NULL when state is
-         * not S_UNDEF, but people have reported crashes nonetheless,
-         * therefore we better catch this event, report and exit.
-         */
-        if (!ks->send_reliable)
-        {
-            msg(M_FATAL,
-                "ERROR: session->key[%d]->send_reliable is NULL "
-                "while key state is %s. Exiting.",
-                i, state_name(ks->state));
-        }
-
-        for (int j = 0; j < ks->send_reliable->size; j++)
-        {
-            if (ks->send_reliable->array[j].buf.data == dataptr)
-            {
-                msg(M_INFO,
-                    "Warning buffer of freed TLS session is still in"
-                    " use (session->key[%d].send_reliable->array[%d])",
-                    i, j);
-
-                goto used;
-            }
-        }
+        const struct key_state *ks = &session->key[i];
+        check_keystate_buf_not_used(to_link, ks);
     }
     return;
 
@@ -3241,8 +3332,9 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
     struct gc_arena gc = gc_new();
     int active = TLSMP_INACTIVE;
     bool error = false;
-
-    perf_push(PERF_TLS_MULTI_PROCESS);
+    /* kept separate from 'active' on purpose: a restart request must not be
+     * overwritten by a later TLSMP_ACTIVE/TLSMP_RECONNECT assignment */
+    bool restart = false;
 
     tls_clear_error();
 
@@ -3313,12 +3405,11 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
                 if (i == TM_ACTIVE && ks_lame->state >= S_GENERATED_KEYS
                     && !multi->opt.single_session)
                 {
-                    move_session(multi, TM_LAME_DUCK, TM_ACTIVE, true);
+                    move_session(multi, TM_LAME_DUCK, TM_ACTIVE, true, to_link);
                 }
                 else
                 {
-                    check_session_buf_not_used(to_link, session);
-                    reset_session(multi, session);
+                    reset_session(multi, session, to_link);
                 }
             }
         }
@@ -3344,12 +3435,22 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
             /* Session is now fully authenticated.
              * tls_session_generate_data_channel_keys will move ks->state
              * from S_ACTIVE to S_GENERATED_KEYS */
-            if (!tls_session_generate_data_channel_keys(multi, session))
+            enum key_gen_status status = tls_session_generate_data_channel_keys(multi, session);
+            if (status != KEY_GEN_OK)
             {
                 msg(D_TLS_ERRORS, "TLS Error: generate_key_expansion failed");
                 ks->authenticated = KS_AUTH_FALSE;
                 key_state_ssl_shutdown(&ks->ks_ssl);
                 ks->state = S_ERROR_PRE;
+
+                /* Invalidating the key state is not enough to recover from a
+                 * DCO desync: the kernel peer has to be re-created, and the
+                 * key state we just invalidated will never be retried, so ask
+                 * for a restart right away */
+                if (status == KEY_GEN_DCO_DESYNC)
+                {
+                    restart = true;
+                }
             }
 
             /* Update auth token on the client if needed on renegotiation
@@ -3371,7 +3472,7 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
      */
     if (lame_duck_must_die(&multi->session[TM_LAME_DUCK], wakeup))
     {
-        tls_session_free(&multi->session[TM_LAME_DUCK], true);
+        tls_session_free(&multi->session[TM_LAME_DUCK], true, to_link);
         msg(D_TLS_DEBUG_LOW, "TLS: tls_multi_process: killed expiring key");
     }
 
@@ -3386,7 +3487,7 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
      */
     if (TLS_AUTHENTICATED(multi, &multi->session[TM_INITIAL].key[KS_PRIMARY]))
     {
-        move_session(multi, TM_ACTIVE, TM_INITIAL, true);
+        move_session(multi, TM_ACTIVE, TM_INITIAL, true, to_link);
         tas = tls_authentication_status(multi);
         msg(D_TLS_DEBUG_LOW,
             "TLS: tls_multi_process: initial untrusted "
@@ -3435,10 +3536,19 @@ nohard:
     }
 #endif
 
-    perf_pop();
     gc_free(&gc);
 
-    return (tas == TLS_AUTHENTICATION_FAILED) ? TLSMP_KILL : active;
+    /* strongest outcome wins: killing the session supersedes restarting it,
+     * and restarting supersedes whatever 'active' ended up being */
+    if (tas == TLS_AUTHENTICATION_FAILED)
+    {
+        return TLSMP_KILL;
+    }
+    if (restart)
+    {
+        return TLSMP_RESTART;
+    }
+    return active;
 }
 
 /**
@@ -3726,8 +3836,7 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
             goto error;
         }
 
-        if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id), from, session->opt,
-                               true))
+        if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id), from, session->opt))
         {
             goto error;
         }
@@ -3755,9 +3864,6 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
     }
     else
     {
-        struct tls_session *session = &multi->session[i];
-        struct key_state *ks = &session->key[KS_PRIMARY];
-
         /*
          * Packet must belong to an existing session.
          */
@@ -3768,6 +3874,8 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
             goto error;
         }
 
+        struct tls_session *session = &multi->session[i];
+        struct key_state *ks = &session->key[KS_PRIMARY];
         /*
          * Verify remote IP address
          */
@@ -3786,12 +3894,12 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
         if (op == P_CONTROL_SOFT_RESET_V1 && ks->state >= S_GENERATED_KEYS)
         {
             if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id), from,
-                                   session->opt, false))
+                                   session->opt))
             {
                 goto error;
             }
 
-            key_state_soft_reset(session);
+            key_state_soft_reset(session, NULL);
 
             dmsg(D_TLS_DEBUG, "TLS: received P_CONTROL_SOFT_RESET_V1 s=%d sid=%s", i,
                  session_id_print(&sid, &gc));
@@ -3815,8 +3923,8 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
                 do_burst = true;
             }
 
-            if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id), from,
-                                   session->opt, initial_packet))
+            if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id),
+                                   from, session->opt))
             {
                 /* if an initial packet in read_control_auth, we rather
                  * error out than anything else */
@@ -3908,8 +4016,22 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
         /* Extract the packet ID from the packet */
         if (reliable_ack_read_packet_id(buf, &id))
         {
+            /* A hard reset always is the first packet of a session, so it
+             * always must use packet id 0. Ignore it if it claims another id.
+             * In a specific existing bug these packets were replays of an
+             * already handled reset, so ignoring it is better than aborting
+             * the connection attempt.
+             */
+            if (is_hard_reset_method2(op) && id != 0)
+            {
+                msg(D_TLS_ERRORS,
+                    "TLS Error: received %s with packet id " packet_id_format
+                    " from %s -- 0 was expected, ignoring packet",
+                    packet_opcode_name(op), (packet_id_print_type)id,
+                    print_link_socket_actual(from, &gc));
+            }
             /* Avoid deadlock by rejecting packet that would de-sequentialize receive buffer */
-            if (reliable_wont_break_sequentiality(ks->rec_reliable, id))
+            else if (reliable_wont_break_sequentiality(ks->rec_reliable, id))
             {
                 if (reliable_not_replay(ks->rec_reliable, id))
                 {
@@ -4009,19 +4131,15 @@ void
 tls_prepend_opcode_v1(const struct tls_multi *multi, struct buffer *buf)
 {
     struct key_state *ks = multi->save_ks;
-    uint8_t op;
 
     msg(D_TLS_DEBUG, __func__);
 
     ASSERT(ks);
+    ASSERT(ks->key_id <= P_KEY_ID_MASK);
 
-    op = (P_DATA_V1 << P_OPCODE_SHIFT) | ks->key_id;
+    uint8_t op = (P_DATA_V1 << P_OPCODE_SHIFT) | (uint8_t)ks->key_id;
     ASSERT(buf_write_prepend(buf, &op, 1));
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 void
 tls_prepend_opcode_v2(const struct tls_multi *multi, struct buffer *buf)
@@ -4058,7 +4176,7 @@ tls_post_encrypt(struct tls_multi *multi, struct buffer *buf)
  */
 
 bool
-tls_send_payload(struct key_state *ks, const uint8_t *data, int size)
+tls_send_payload(struct key_state *ks, const uint8_t *data, size_t size)
 {
     bool ret = false;
 
@@ -4068,7 +4186,8 @@ tls_send_payload(struct key_state *ks, const uint8_t *data, int size)
 
     if (ks->state >= S_ACTIVE)
     {
-        if (key_state_write_plaintext_const(&ks->ks_ssl, data, size) == 1)
+        ASSERT(size <= INT_MAX);
+        if (key_state_write_plaintext_const(&ks->ks_ssl, data, (int)size) == 1)
         {
             ret = true;
         }
@@ -4079,7 +4198,7 @@ tls_send_payload(struct key_state *ks, const uint8_t *data, int size)
         {
             ks->paybuf = buffer_list_new();
         }
-        buffer_list_push_data(ks->paybuf, data, (size_t)size);
+        buffer_list_push_data(ks->paybuf, data, size);
         ret = true;
     }
 
@@ -4158,8 +4277,8 @@ show_available_tls_ciphers(const char *cipher_list, const char *cipher_list_tls1
     show_available_tls_ciphers_list(cipher_list, tls_cert_profile, false);
 
     printf("\n"
-           "Be aware that that whether a cipher suite in this list can actually work\n"
-           "depends on the specific setup of both peers. See the man page entries of\n"
+           "Note: Whether a cipher suite in this list can actually work depends\n"
+           "on the specific setup of both peers. See the man page entries of\n"
            "--tls-cipher and --show-tls for more details.\n\n");
 }
 

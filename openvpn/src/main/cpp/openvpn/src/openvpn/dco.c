@@ -5,9 +5,9 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2021-2025 Arne Schwabe <arne@rfc2549.org>
- *  Copyright (C) 2021-2025 Antonio Quartulli <a@unstable.cc>
- *  Copyright (C) 2021-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2021-2026 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2021-2026 Antonio Quartulli <a@unstable.cc>
+ *  Copyright (C) 2021-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -57,8 +57,8 @@ dco_install_key(struct tls_multi *multi, struct key_state *ks, const uint8_t *en
 
 {
     bool epoch = ks->crypto_options.flags & CO_EPOCH_DATA_KEY_FORMAT;
-    msg(D_DCO_DEBUG, "%s: peer_id=%d keyid=%d epoch=%d, currently %d keys installed", __func__,
-        multi->dco_peer_id, ks->key_id, multi->dco_keys_installed, epoch);
+    msg(D_DCO_DEBUG, "%s: peer_id=%d keyid=%d epoch=%d, currently %d keys installed",
+        __func__, multi->dco_peer_id, ks->key_id, epoch, multi->dco_keys_installed);
 
     /* Install a key in the PRIMARY slot only when no other key exist.
      * From that moment on, any new key will be installed in the SECONDARY
@@ -73,9 +73,12 @@ dco_install_key(struct tls_multi *multi, struct key_state *ks, const uint8_t *en
 
     int ret = dco_new_key(multi->dco, multi->dco_peer_id, ks->key_id, slot, encrypt_key, encrypt_iv,
                           decrypt_key, decrypt_iv, ciphername, epoch);
-    if ((ret == 0) && (multi->dco_keys_installed < 2))
+    if (ret == 0)
     {
-        multi->dco_keys_installed++;
+        if (multi->dco_keys_installed < 2)
+        {
+            multi->dco_keys_installed++;
+        }
         ks->dco_status =
             (slot == OVPN_KEY_SLOT_PRIMARY) ? DCO_INSTALLED_PRIMARY : DCO_INSTALLED_SECONDARY;
     }
@@ -166,7 +169,13 @@ dco_update_keys(dco_context_t *dco, struct tls_multi *multi)
     /* if we have a primary key, it must have been installed already (keys
      * are installed upon generation in the TLS code)
      */
-    ASSERT(primary->dco_status != DCO_NOT_INSTALLED);
+    if (primary->dco_status == DCO_NOT_INSTALLED)
+    {
+        msg(D_DCO, "DCO key state mismatch: selected primary key is not installed "
+                   "(peer_id=%d, key_id=%d, dco_keys_installed=%d)",
+            multi->dco_peer_id, primary->key_id, multi->dco_keys_installed);
+        return false;
+    }
 
     struct key_state *secondary = dco_get_secondary_key(multi, primary);
     /* if the current primary key was installed as secondary in DCO,
@@ -190,6 +199,14 @@ dco_update_keys(dco_context_t *dco, struct tls_multi *multi)
                 primary->key_id);
         }
 
+        if (secondary && secondary->dco_status != DCO_INSTALLED_PRIMARY)
+        {
+            msg(D_DCO, "DCO key state mismatch: expected old primary key is not installed as DCO primary before swap "
+                       "(peer_id=%d, new_primary_key_id=%d, old_primary_key_id=%d, old_primary_dco_status=%d, dco_keys_installed=%d)",
+                multi->dco_peer_id, primary->key_id, secondary->key_id, secondary->dco_status, multi->dco_keys_installed);
+            return false;
+        }
+
         int ret = dco_swap_keys(dco, multi->dco_peer_id);
         if (ret < 0)
         {
@@ -200,7 +217,6 @@ dco_update_keys(dco_context_t *dco, struct tls_multi *multi)
         primary->dco_status = DCO_INSTALLED_PRIMARY;
         if (secondary)
         {
-            ASSERT(secondary->dco_status == DCO_INSTALLED_PRIMARY);
             secondary->dco_status = DCO_INSTALLED_SECONDARY;
         }
     }
@@ -376,9 +392,10 @@ dco_check_startup_option(msglvl_t msglevel, const struct options *o)
          * don't need to have the net_ctx percolate all the way here
          */
         int ret = net_iface_type(NULL, o->dev, iftype);
-        if ((ret == 0) && (strcmp(iftype, "ovpn-dco") != 0))
+        if ((ret == 0) && (strcmp(iftype, "ovpn") != 0))
         {
-            msg(msglevel, "Interface %s exists and is non-DCO. Disabling data channel offload",
+            msg(msglevel, "Interface %s exists and is not using the "
+                          "ovpn DCO driver. Disabling data channel offload",
                 o->dev);
             return false;
         }
@@ -470,6 +487,18 @@ dco_check_option(msglvl_t msglevel, const struct options *o)
             msg(msglevel,
                 "Note: cipher '%s' in --data-ciphers is not supported "
                 "by ovpn-dco, disabling data channel offload.",
+                token);
+            gc_free(&gc);
+            return false;
+        }
+        /* FreeBSD supports none as cipher type but requires auth none to be
+         * be also enabled */
+        if (strcmp(token, "none") == 0 && strcmp(o->authname, "none") != 0)
+        {
+            msg(msglevel,
+                "Note: cipher '%s' in --data-ciphers is only supported "
+                "with --auth=none by ovpn-dco, disabling data channel "
+                "offload.",
                 token);
             gc_free(&gc);
             return false;
@@ -664,6 +693,14 @@ dco_install_iroute(struct multi_context *m, struct multi_instance *mi, struct mr
         return;
     }
 
+#if defined(_WIN32)
+    if (addr->type & MR_ONLINK_DCO_ADDR)
+    {
+        /* Windows does not need these extra routes, so we ignore/skip them */
+        return;
+    }
+#endif
+
     struct context *c = &mi->context;
     if (addrtype == MR_ADDR_IPV6)
     {
@@ -671,8 +708,14 @@ dco_install_iroute(struct multi_context *m, struct multi_instance *mi, struct mr
         dco_win_add_iroute_ipv6(&c->c1.tuntap->dco, addr->v6.addr, addr->netbits,
                                 c->c2.tls_multi->peer_id);
 #else
+        const struct in6_addr *gateway = &mi->context.c2.push_ifconfig_ipv6_local;
+        if (addr->type & MR_ONLINK_DCO_ADDR)
+        {
+            gateway = NULL;
+        }
+
         net_route_v6_add(&m->top.net_ctx, &addr->v6.addr, addr->netbits,
-                         &mi->context.c2.push_ifconfig_ipv6_local, c->c1.tuntap->actual_name, 0,
+                         gateway, c->c1.tuntap->actual_name, 0,
                          DCO_IROUTE_METRIC);
 #endif
     }
@@ -683,7 +726,13 @@ dco_install_iroute(struct multi_context *m, struct multi_instance *mi, struct mr
                                 c->c2.tls_multi->peer_id);
 #else
         in_addr_t dest = htonl(addr->v4.addr);
-        net_route_v4_add(&m->top.net_ctx, &dest, addr->netbits, &mi->context.c2.push_ifconfig_local,
+        const in_addr_t *gateway = &mi->context.c2.push_ifconfig_local;
+        if (addr->type & MR_ONLINK_DCO_ADDR)
+        {
+            gateway = NULL;
+        }
+
+        net_route_v4_add(&m->top.net_ctx, &dest, addr->netbits, gateway,
                          c->c1.tuntap->actual_name, 0, DCO_IROUTE_METRIC);
 #endif
     }
@@ -691,43 +740,68 @@ dco_install_iroute(struct multi_context *m, struct multi_instance *mi, struct mr
 }
 
 void
-dco_delete_iroutes(struct multi_context *m, struct multi_instance *mi)
+dco_delete_iroutes(openvpn_net_ctx_t *net_ctx, const struct context *c)
 {
 #if defined(TARGET_LINUX) || defined(TARGET_FREEBSD) || defined(_WIN32)
-    if (!dco_enabled(&m->top.options))
+    if (!dco_enabled(&c->options))
     {
         return;
     }
-    ASSERT(TUNNEL_TYPE(mi->context.c1.tuntap) == DEV_TYPE_TUN);
+    ASSERT(TUNNEL_TYPE(c->c1.tuntap) == DEV_TYPE_TUN);
 
-    struct context *c = &mi->context;
+    msg(D_DCO, "DCO: attempt removing iroutes from system table");
 
-    if (mi->context.c2.push_ifconfig_defined)
+    if (c->c2.push_ifconfig_defined)
     {
         for (const struct iroute *ir = c->options.iroutes; ir; ir = ir->next)
         {
 #if defined(_WIN32)
             dco_win_del_iroute_ipv4(&c->c1.tuntap->dco, htonl(ir->network), ir->netbits);
 #else
-            net_route_v4_del(&m->top.net_ctx, &ir->network, ir->netbits,
-                             &mi->context.c2.push_ifconfig_local, c->c1.tuntap->actual_name, 0,
+            net_route_v4_del(net_ctx, &ir->network, ir->netbits,
+                             &c->c2.push_ifconfig_local, c->c1.tuntap->actual_name, 0,
                              DCO_IROUTE_METRIC);
 #endif
         }
+
+#if !defined(_WIN32)
+        /* Check if we added a host route as the assigned client IP address was
+         * not in the on link scope defined by --ifconfig */
+        in_addr_t ifconfig_local = c->c2.push_ifconfig_local;
+
+        if (multi_check_push_ifconfig_extra_route(&c->options, htonl(ifconfig_local)))
+        {
+            /* On windows we do not install these routes, so we also do not need to delete them */
+            net_route_v4_del(net_ctx, &ifconfig_local, 32, NULL,
+                             c->c1.tuntap->actual_name, 0, DCO_IROUTE_METRIC);
+        }
+#endif
     }
 
-    if (mi->context.c2.push_ifconfig_ipv6_defined)
+    if (c->c2.push_ifconfig_ipv6_defined)
     {
         for (const struct iroute_ipv6 *ir6 = c->options.iroutes_ipv6; ir6; ir6 = ir6->next)
         {
 #if defined(_WIN32)
             dco_win_del_iroute_ipv6(&c->c1.tuntap->dco, ir6->network, ir6->netbits);
 #else
-            net_route_v6_del(&m->top.net_ctx, &ir6->network, ir6->netbits,
-                             &mi->context.c2.push_ifconfig_ipv6_local, c->c1.tuntap->actual_name, 0,
+            net_route_v6_del(net_ctx, &ir6->network, ir6->netbits,
+                             &c->c2.push_ifconfig_ipv6_local, c->c1.tuntap->actual_name, 0,
                              DCO_IROUTE_METRIC);
 #endif
         }
+
+        /* Checked if we added a host route as the assigned client IP address was
+         * outside the --ifconfig-ipv6 tun interface config */
+#if !defined(_WIN32)
+        const struct in6_addr *dest = &c->c2.push_ifconfig_ipv6_local;
+        if (multi_check_push_ifconfig_ipv6_extra_route(&c->options, dest))
+        {
+            /* On windows we do not install these routes, so we also do not need to delete them */
+            net_route_v6_del(net_ctx, dest, 128, NULL,
+                             c->c1.tuntap->actual_name, 0, DCO_IROUTE_METRIC);
+        }
+#endif
     }
 #endif /* if defined(TARGET_LINUX) || defined(TARGET_FREEBSD) || defined(_WIN32) */
 }

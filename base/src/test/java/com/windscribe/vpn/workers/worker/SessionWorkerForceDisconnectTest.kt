@@ -137,7 +137,7 @@ class SessionWorkerForceDisconnectTest {
 
             assertNotNull(result.outputData.getString("data"))
             coVerifyOrder {
-                serverListRepository.update()
+                serverListRepository.update(any())
                 reconnectAfterRefresh.run()
             }
         }
@@ -160,7 +160,7 @@ class SessionWorkerForceDisconnectTest {
             buildWorker().doWork()
 
             coVerify(exactly = 1) { reconnectAfterRefresh.run() }
-            coVerify(exactly = 0) { serverListRepository.update() }
+            coVerify(exactly = 0) { serverListRepository.update(any()) }
         }
 
     @Test
@@ -176,7 +176,7 @@ class SessionWorkerForceDisconnectTest {
                     ),
                 )
             arrangeSession(response)
-            coEvery { serverListRepository.update() } throws IllegalStateException("no network")
+            coEvery { serverListRepository.update(any()) } throws IllegalStateException("no network")
 
             buildWorker().doWork()
 
@@ -200,6 +200,6 @@ class SessionWorkerForceDisconnectTest {
             val result = buildWorker().doWork()
 
             assertNotNull(result.outputData.getString("data"))
-            coVerify(exactly = 0) { serverListRepository.update() }
+            coVerify(exactly = 0) { serverListRepository.update(any()) }
         }
 }

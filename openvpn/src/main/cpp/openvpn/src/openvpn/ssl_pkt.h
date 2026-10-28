@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -207,12 +207,10 @@ void write_control_auth(struct tls_session *session, struct key_state *ks, struc
  * @param ctx               control channel security context
  * @param from              incoming link socket address
  * @param opt               tls options struct for the session
- * @param initial_packet    whether this is the initial packet for the connection
  * @return                  if the packet was successfully processed
  */
 bool read_control_auth(struct buffer *buf, struct tls_wrap_ctx *ctx,
-                       const struct link_socket_actual *from, const struct tls_options *opt,
-                       bool initial_packet);
+                       const struct link_socket_actual *from, const struct tls_options *opt);
 
 
 /**

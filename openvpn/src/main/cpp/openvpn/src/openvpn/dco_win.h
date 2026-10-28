@@ -1,8 +1,8 @@
 /*
  *  Interface to ovpn-win-dco networking code
  *
- *  Copyright (C) 2020-2025 Arne Schwabe <arne@rfc2549.org>
- *  Copyright (C) 2020-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2020-2026 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2020-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -54,9 +54,6 @@ struct dco_context
     int dco_message_type;
     int dco_del_peer_reason;
     struct sockaddr_storage dco_float_peer_ss;
-
-    uint64_t dco_read_bytes;
-    uint64_t dco_write_bytes;
 
     struct context *c;
 };

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2016-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2016-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -324,6 +324,197 @@ test_copy_acks_to_lru(void **state)
     assert_memory_equal(mru_ack.packet_id, expected_ack.packet_id, sizeof(expected_ack.packet_id));
 }
 
+static void
+test_packet_id_window(void **state)
+{
+    struct reliable rel = { 0 };
+    rel.packet_id = 1;
+
+    assert_true(validate_packet_id_window(&rel, 0));
+
+    /* packet id 1 is outside the window as it is the *next* packet id */
+    assert_false(validate_packet_id_window(&rel, 1));
+
+    /* wrapped around packet id, "-2" */
+    assert_true(validate_packet_id_window(&rel, 0xFFFFFFFD));
+
+    /* wrapped around packet id, "-10" */
+    assert_true(validate_packet_id_window(&rel, 0xFFFFFFF6));
+
+    /* wrapped around packet id, "-11" */
+    assert_false(validate_packet_id_window(&rel, 0xFFFFFFF5));
+    assert_false(validate_packet_id_window(&rel, 0x80000000));
+
+    rel.packet_id = 0x80000000;
+
+    /* near the signed/usigned integer area */
+    assert_false(validate_packet_id_window(&rel, 0x80000001));
+    assert_true(validate_packet_id_window(&rel, 0x7fffffff));
+    assert_true(validate_packet_id_window(&rel, 0x7ffffff5));
+    assert_false(validate_packet_id_window(&rel, 0x7ffffff4));
+
+    rel.packet_id = 0xFFFFFFFD;
+    assert_false(validate_packet_id_window(&rel, 0xFFFFFFFD));
+    assert_false(validate_packet_id_window(&rel, 0));
+    assert_false(validate_packet_id_window(&rel, 1));
+    assert_false(validate_packet_id_window(&rel, 0xFFFFFFFE));
+    assert_false(validate_packet_id_window(&rel, 0xFFFFFFFF));
+    assert_true(validate_packet_id_window(&rel, 0xFFFFFFF3));
+    assert_true(validate_packet_id_window(&rel, 0xFFFFFFF2));
+    assert_false(validate_packet_id_window(&rel, 0xFFFFFFF1));
+
+    rel.packet_id = 500;
+    assert_false(validate_packet_id_window(&rel, 501));
+    assert_true(validate_packet_id_window(&rel, 497));
+    assert_true(validate_packet_id_window(&rel, 500 - (RELIABLE_CAPACITY - 1)));
+    assert_false(validate_packet_id_window(&rel, 500 - RELIABLE_CAPACITY));
+}
+
+
+/* The fix keeps the timeout well below this; the broken code grows past it.
+ * A plain number, so the test builds with or without the fix. */
+#define SANE_TIMEOUT_BOUND (10 * 1000 * 1000)
+
+static struct reliable *
+test_reliable_new(void)
+{
+    struct reliable *rel = malloc(sizeof(struct reliable));
+    assert_non_null(rel);
+    /* reliable_init() zeroes everything, so each test only sets the
+     * fields it actually needs. */
+    reliable_init(rel, 100, 50, 8, false);
+    rel->initial_timeout = 2;
+    return rel;
+}
+
+/*
+ * Each retransmit doubles the timeout. If a peer keeps forcing retransmits,
+ * the broken code doubles it forever: after about 30 rounds it overflows and
+ * turns zero or negative, and then the packet is resent nonstop (the flood).
+ * The fix caps the doubling. This test forces many retransmits and checks the
+ * timeout never overflows or grows without limit.
+ */
+static void
+test_reliable_backoff_is_bounded(void **state)
+{
+    (void)state;
+    now = 1000;
+
+    struct reliable *rel = test_reliable_new();
+
+    struct reliable_entry *e = &rel->array[0];
+    e->active = true;
+    e->packet_id = 1;
+    e->timeout = rel->initial_timeout;
+    rel->packet_id = 2;
+
+    for (int i = 0; i < 40; ++i)
+    {
+        /* make the packet due for a fast retransmit */
+        e->n_acks = N_ACK_RETRANSMIT;
+
+        int opcode;
+        struct buffer *buf = reliable_send(rel, &opcode);
+        /* our one active packet is the one picked to send */
+        assert_ptr_equal(buf, &e->buf);
+
+        /* a zero or negative timeout would resend with no delay (the flood) */
+        assert_true(e->timeout > 0);
+        /* the timeout must stop growing, not double forever */
+        assert_true(e->timeout <= SANE_TIMEOUT_BOUND);
+    }
+
+    reliable_free(rel);
+}
+
+/*
+ * An ACK should only count if it is for a packet we actually sent. If the
+ * broken code accepts ACKs for packets that were never sent, a peer can force
+ * early retransmits at will (which then feeds the timeout overflow above).
+ * These two cases send such bogus ACKs and check they are ignored.
+ */
+static void
+test_reliable_purge_ignores_forged_acks(void **state)
+{
+    (void)state;
+
+    /* Case (a): an ACK for pid 0x40000000, which we never sent (we only sent
+     * 0 and 1). The old "e->packet_id < pid" check treats it as newer and
+     * counts it. It should be ignored. */
+    {
+        struct reliable *rel = test_reliable_new();
+        struct reliable_entry *e = &rel->array[0];
+        e->active = true;
+        e->packet_id = 1;
+        rel->packet_id = 2; /* only pids 0 and 1 were ever sent */
+
+        struct reliable_ack ack = { .len = 1, .packet_id = { 0x40000000 } };
+        reliable_send_purge(rel, &ack);
+
+        /* the bogus ACK must not be counted */
+        assert_int_equal(e->n_acks, 0);
+        /* and must not drop our real packet */
+        assert_true(e->active);
+        reliable_free(rel);
+    }
+
+    /* Case (b): an ACK for pid 0xFFFFFFFF. It is inside the send window, so
+     * it passes the window check, but ids wrap around and 0xFFFFFFFF is really
+     * older than our pid 1. A plain "<" thinks it is newer and counts it; the
+     * wraparound-aware comparison must not. */
+    {
+        struct reliable *rel = test_reliable_new();
+        struct reliable_entry *e = &rel->array[0];
+        e->active = true;
+        e->packet_id = 1;
+        rel->packet_id = 2;
+
+        struct reliable_ack ack = { .len = 1, .packet_id = { 0xFFFFFFFF } };
+        reliable_send_purge(rel, &ack);
+
+        /* the bogus ACK must not be counted */
+        assert_int_equal(e->n_acks, 0);
+        /* and must not drop our real packet */
+        assert_true(e->active);
+        reliable_free(rel);
+    }
+}
+
+/*
+ * Sanity check: a real ACK must still work. Acknowledging a higher packet
+ * should drop that packet and count once towards resending the older one.
+ * The fix must not break this.
+ */
+static void
+test_reliable_purge_legitimate_ack(void **state)
+{
+    (void)state;
+
+    struct reliable *rel = test_reliable_new();
+
+    struct reliable_entry *e0 = &rel->array[0];
+    e0->active = true;
+    e0->packet_id = 1;
+
+    struct reliable_entry *e1 = &rel->array[1];
+    e1->active = true;
+    e1->packet_id = 2;
+
+    rel->packet_id = 3; /* pids 0,1,2 sent; 1 and 2 still waiting */
+
+    struct reliable_ack ack = { .len = 1, .packet_id = { 2 } };
+    reliable_send_purge(rel, &ack);
+
+    /* packet 2 was acked, so it is dropped */
+    assert_false(e1->active);
+    /* packet 1 is older, so it gets one ACK towards an early resend */
+    assert_int_equal(e0->n_acks, 1);
+    /* packet 1 was not acked, so it stays */
+    assert_true(e0->active);
+
+    reliable_free(rel);
+}
+
 int
 main(void)
 {
@@ -345,7 +536,11 @@ main(void)
                                         test_packet_id_write_teardown),
 
         cmocka_unit_test(test_get_num_output_sequenced_available),
-        cmocka_unit_test(test_copy_acks_to_lru)
+        cmocka_unit_test(test_copy_acks_to_lru),
+        cmocka_unit_test(test_packet_id_window),
+        cmocka_unit_test(test_reliable_backoff_is_bounded),
+        cmocka_unit_test(test_reliable_purge_ignores_forged_acks),
+        cmocka_unit_test(test_reliable_purge_legitimate_ack)
 
     };
 

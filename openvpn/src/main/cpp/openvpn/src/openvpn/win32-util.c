@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -45,6 +45,76 @@ wide_string(const char *utf8, struct gc_arena *gc)
     return ucs16;
 }
 
+/* special to cmd.exe, which CreateProcess() uses to run .bat/.cmd (VU#123335) */
+#define CMD_QUOTE_TRIGGERS " &|<>^%()!"
+
+static bool
+argv_element_needs_quotes(const char *str)
+{
+    for (const char *c = str; *c != '\0'; ++c)
+    {
+        if (strchr(CMD_QUOTE_TRIGGERS, *c) != NULL)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+WCHAR *
+wide_cmd_line(const struct argv *a, struct gc_arena *gc)
+{
+    size_t nchars = 1;
+    size_t maxlen = 0;
+    size_t i;
+    struct buffer buf;
+    char *work = NULL;
+
+    if (!a)
+    {
+        return NULL;
+    }
+
+    for (i = 0; i < a->argc; ++i)
+    {
+        const char *arg = a->argv[i];
+        const size_t len = strlen(arg);
+        nchars += len + 3;
+        if (len > maxlen)
+        {
+            maxlen = len;
+        }
+    }
+
+    work = gc_malloc(maxlen + 1, false, gc);
+    check_malloc_return(work);
+    buf = alloc_buf_gc(nchars, gc);
+
+    for (i = 0; i < a->argc; ++i)
+    {
+        const char *arg = a->argv[i];
+        strcpy(work, arg);
+        /* cmd.exe expands %VAR% and !VAR! even inside quotes, so a value like
+         * %X509_0_O% could turn back into a quote and start a new command.
+         * Replace those along with the double quotes and CRLF. */
+        string_mod(work, CC_PRINT, CC_DOUBLE_QUOTE | CC_CRLF | CC_PERCENT | CC_EXCLAMATION, '_');
+        if (i)
+        {
+            buf_printf(&buf, " ");
+        }
+        if (argv_element_needs_quotes(work))
+        {
+            buf_printf(&buf, "\"%s\"", work);
+        }
+        else
+        {
+            buf_printf(&buf, "%s", work);
+        }
+    }
+
+    return wide_string(BSTR(&buf), gc);
+}
+
 char *
 utf16to8(const wchar_t *utf16, struct gc_arena *gc)
 {
@@ -68,8 +138,7 @@ utf16to8(const wchar_t *utf16, struct gc_arena *gc)
  * CON, PRN, AUX, NUL, COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9,
  * LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, LPT9, and CLOCK$
  *
- * See: http://msdn.microsoft.com/en-us/library/aa365247.aspx
- *  and http://msdn.microsoft.com/en-us/library/86k9f82k(VS.80).aspx
+ * See: https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
  */
 
 static bool
@@ -168,4 +237,31 @@ win_get_tempdir(void)
     WideCharToMultiByte(CP_UTF8, 0, wtmpdir, -1, tmpdir, sizeof(tmpdir), NULL, NULL);
     return tmpdir;
 }
+
+bool
+win_path_in_dir(const WCHAR *path, const WCHAR *dir)
+{
+    size_t dir_len = wcslen(dir);
+    /* dir_len <= 1 guards the dir[dir_len - 1] access below and rejects a
+     * degenerate single-character directory (a normalized absolute path is
+     * always longer). */
+    if (dir_len <= 1 || wcsnicmp(dir, path, dir_len) != 0)
+    {
+        return false;
+    }
+
+    /* A plain prefix match is not sufficient: if dir is "C:\foo" then
+     * "C:\foo_evil\bar.dll" shares the prefix but is not inside "C:\foo".
+     * Require that the matched prefix ends on a path separator, i.e. either
+     * dir already ends with a separator or the character following the prefix
+     * in path is one. */
+    if (dir[dir_len - 1] == L'\\' || dir[dir_len - 1] == L'/')
+    {
+        return true;
+    }
+
+    WCHAR next = path[dir_len];
+    return next == L'\\' || next == L'/';
+}
+
 #endif /* _WIN32 */

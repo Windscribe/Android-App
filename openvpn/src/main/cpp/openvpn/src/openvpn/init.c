@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -44,7 +44,6 @@
 #include "ps.h"
 #include "lladdr.h"
 #include "ping.h"
-#include "mstats.h"
 #include "ssl_verify.h"
 #include "ssl_ncp.h"
 #include "tls_crypt.h"
@@ -72,13 +71,13 @@ static void do_init_first_time(struct context *c);
 
 static bool do_deferred_p2p_ncp(struct context *c);
 
-void
+static void
 context_clear(struct context *c)
 {
     CLEAR(*c);
 }
 
-void
+static void
 context_clear_1(struct context *c)
 {
     CLEAR(c->c1);
@@ -656,10 +655,10 @@ init_query_passwords(const struct context *c)
         enable_auth_user_pass();
 #ifdef ENABLE_MANAGEMENT
         auth_user_pass_setup(c->options.auth_user_pass_file, c->options.auth_user_pass_file_inline,
-                             &c->options.sc_info);
+                             c->options.auth_user_pass_username_only, &c->options.sc_info);
 #else
         auth_user_pass_setup(c->options.auth_user_pass_file, c->options.auth_user_pass_file_inline,
-                             NULL);
+                             c->options.auth_user_pass_username_only, NULL);
 #endif
     }
 }
@@ -906,22 +905,6 @@ init_static(void)
         gc_free(&gc);
     }
     return false;
-#endif
-
-#ifdef MSTATS_TEST
-    {
-        int i;
-        mstats_open("/dev/shm/mstats.dat");
-        for (i = 0; i < 30; ++i)
-        {
-            mmap_stats->n_clients += 1;
-            mmap_stats->link_write_bytes += 8;
-            mmap_stats->link_read_bytes += 16;
-            sleep(1);
-        }
-        mstats_close();
-        return false;
-    }
 #endif
 
     return true;
@@ -1233,13 +1216,6 @@ do_uid_gid_chroot(struct context *c, bool no_delay)
             }
         }
 
-#ifdef ENABLE_MEMSTATS
-        if (c->first_time && c->options.memstats_fn)
-        {
-            mstats_open(c->options.memstats_fn);
-        }
-#endif
-
 #ifdef ENABLE_SELINUX
         /* Apply a SELinux context in order to restrict what OpenVPN can do
          * to _only_ what it is supposed to do after initialization is complete
@@ -1523,7 +1499,7 @@ do_init_route_ipv6_list(const struct options *options, struct route_ipv6_list *r
 
     /* redirect (IPv6) gateway to VPN?  if yes, add a few more specifics
      */
-    if (options->routes_ipv6->flags & RG_REROUTE_GW)
+    if (options->routes_ipv6->flags & RG_REROUTE_GW && options->ifconfig_ipv6_local)
     {
         char *opt_list[] = { "::/3", "2000::/4", "3000::/4", "fc00::/7", NULL };
         int i;
@@ -1569,7 +1545,7 @@ initialization_sequence_completed(struct context *c, const unsigned int flags)
 #else
 #ifdef ENABLE_SYSTEMD
         sd_notifyf(0, "STATUS=Failed to start up: %s With Errors\nERRNO=1", message);
-#endif /* HAVE_SYSTEMD_SD_DAEMON_H */
+#endif
         msg(M_INFO, "%s With Errors", message);
 #endif
     }
@@ -2664,15 +2640,6 @@ do_deferred_options(struct context *c, const unsigned int found, const bool is_u
         }
     }
 
-    if (found & OPT_P_SOCKFLAGS)
-    {
-        msg(D_PUSH, "OPTIONS IMPORT: --socket-flags option modified");
-        for (int i = 0; i < c->c1.link_sockets_num; i++)
-        {
-            link_socket_update_flags(c->c2.link_sockets[i], c->options.sockflags);
-        }
-    }
-
     if (found & OPT_P_PERSIST)
     {
         msg(D_PUSH, "OPTIONS IMPORT: --persist options modified");
@@ -2728,13 +2695,25 @@ do_deferred_options(struct context *c, const unsigned int found, const bool is_u
 
     /* Ensure that for epoch data format is only enabled if also data v2
      * is enabled */
-    bool epoch_data = (c->options.imported_protocol_flags & CO_EPOCH_DATA_KEY_FORMAT);
-    bool datav2_enabled = (c->options.peer_id >= 0 && c->options.peer_id < MAX_PEER_ID);
+    bool epoch_data = c->options.imported_protocol_flags & CO_EPOCH_DATA_KEY_FORMAT;
+    bool datav2_enabled = c->options.use_peer_id && c->options.peer_id < MAX_PEER_ID;
 
     if (epoch_data && !datav2_enabled)
     {
         msg(D_PUSH_ERRORS, "OPTIONS ERROR: Epoch key data format tag requires "
                            "data v2 (peer-id) to be enabled.");
+        return false;
+    }
+
+    /* The epoch data format is defined for AEAD ciphers only. A peer may push
+     * the tag along with a non-AEAD cipher, so this has to be checked here
+     * rather than trusted */
+    if (epoch_data && !cipher_kt_mode_aead(c->options.ciphername))
+    {
+        msg(D_PUSH_ERRORS,
+            "OPTIONS ERROR: Epoch key data format tag requires an AEAD "
+            "cipher, but '%s' was negotiated.",
+            c->options.ciphername);
         return false;
     }
 
@@ -2951,7 +2930,7 @@ frame_finalize_options(struct context *c, const struct options *o)
     headroom += 4;
 
     /* socks proxy header */
-    headroom += 10;
+    headroom += SOCKS_UDPv4_HEADROOM;
 
     /* compression header and fragment header (part of the encrypted payload) */
     headroom += 1 + 1;
@@ -2988,9 +2967,10 @@ static void
 key_schedule_free(struct key_schedule *ks, bool free_ssl_ctx)
 {
     free_key_ctx_bi(&ks->static_key);
-    if (tls_ctx_initialised(&ks->ssl_ctx) && free_ssl_ctx)
+    if (tls_ctx_initialised(ks->ssl_ctx) && free_ssl_ctx)
     {
-        tls_ctx_free(&ks->ssl_ctx);
+        tls_ctx_free(ks->ssl_ctx);
+        free(ks->ssl_ctx);
         free_key_ctx(&ks->auth_token_key);
     }
     CLEAR(*ks);
@@ -3019,6 +2999,34 @@ init_crypto_pre(struct context *c, const unsigned int flags)
         rand_ctx_enable_prediction_resistance();
     }
 #endif
+}
+
+
+static void
+do_init_crypto_test(struct context *c)
+{
+    const struct options *options = &c->options;
+    ASSERT(options->test_crypto);
+
+    init_crypto_pre(c, 0);
+
+    c->c2.crypto_options.flags |= CO_PACKET_ID_LONG_FORM;
+
+    /* Initialize packet ID tracking */
+    packet_id_init(&c->c2.crypto_options.packet_id, options->replay_window, options->replay_time,
+                   "STATIC", 0);
+
+    ASSERT(!key_ctx_bi_defined(&c->c1.ks.static_key));
+
+    /* Init cipher and hash algorithm */
+    init_key_type(&c->c1.ks.key_type, options->ciphername, options->authname,
+                  options->test_crypto, true);
+
+    generate_test_crypto_random_key(&c->c1.ks.key_type, &c->c1.ks.static_key,
+                                    "test crypto key");
+
+    /* Get key schedule */
+    c->c2.crypto_options.key_ctx_bi = c->c1.ks.static_key;
 }
 
 /*
@@ -3145,14 +3153,15 @@ do_init_crypto_tls_c1(struct context *c)
 {
     const struct options *options = &c->options;
 
-    if (!tls_ctx_initialised(&c->c1.ks.ssl_ctx))
+    if (!tls_ctx_initialised(c->c1.ks.ssl_ctx))
     {
         /*
          * Initialize the OpenSSL library's global
          * SSL context.
          */
-        init_ssl(options, &(c->c1.ks.ssl_ctx), c->c0 && c->c0->uid_gid_chroot_set);
-        if (!tls_ctx_initialised(&c->c1.ks.ssl_ctx))
+        ASSERT(NULL == c->c1.ks.ssl_ctx);
+        c->c1.ks.ssl_ctx = init_ssl(options, c->c0 && c->c0->uid_gid_chroot_set);
+        if (!tls_ctx_initialised(c->c1.ks.ssl_ctx))
         {
             switch (auth_retry_get())
             {
@@ -3332,11 +3341,12 @@ do_init_crypto_tls(struct context *c, const unsigned int flags)
         to.data_epoch_supported = true;
     }
 
-    to.tcp_split_reset = !!(options->sockflags & SF_TCP_SPLITRESET && options->ce.proto != PROTO_UDP);
+    to.tcp_split_reset =
+        !!(options->sockflags & SF_TCP_SPLITRESET && options->ce.proto != PROTO_UDP);
 
     /* should we not xmit any packets until we get an initial
      * response from client? */
-    if (to.server && c->mode == CM_CHILD_TCP)
+    if (to.server && (c->mode == CM_CHILD_TCP || (c->mode == CM_P2P && options->ce.proto == PROTO_TCP_SERVER)))
     {
         to.xmit_hold = true;
     }
@@ -3354,11 +3364,7 @@ do_init_crypto_tls(struct context *c, const unsigned int flags)
     to.verify_hash_algo = options->verify_hash_algo;
     to.verify_hash_depth = options->verify_hash_depth;
     to.verify_hash_no_ca = options->verify_hash_no_ca;
-#ifdef ENABLE_X509ALTUSERNAME
     memcpy(to.x509_username_field, options->x509_username_field, sizeof(to.x509_username_field));
-#else
-    to.x509_username_field[0] = X509_USERNAME_FIELD_DEFAULT;
-#endif
     to.es = c->c2.es;
     to.net_ctx = &c->net_ctx;
 
@@ -3383,6 +3389,7 @@ do_init_crypto_tls(struct context *c, const unsigned int flags)
     }
     to.auth_user_pass_file = options->auth_user_pass_file;
     to.auth_user_pass_file_inline = options->auth_user_pass_file_inline;
+    to.auth_user_pass_username_only = options->auth_user_pass_username_only;
     to.auth_token_generate = options->auth_token_generate;
     to.auth_token_lifetime = options->auth_token_lifetime;
     to.auth_token_renewal = options->auth_token_renewal;
@@ -3444,6 +3451,7 @@ do_init_crypto_tls(struct context *c, const unsigned int flags)
         {
             to.tls_wrap.tls_crypt_v2_server_key = c->c1.ks.tls_crypt_v2_server_key;
             to.tls_crypt_v2_verify_script = c->options.tls_crypt_v2_verify_script;
+            to.tls_crypt_v2_max_age = c->options.tls_crypt_v2_max_age;
             if (options->ce.tls_crypt_v2_force_cookie)
             {
                 to.tls_wrap.opt.flags |= CO_FORCE_TLSCRYPTV2_COOKIE;
@@ -4164,34 +4172,6 @@ do_env_set_destroy(struct context *c)
     }
 }
 
-/*
- * Fast I/O setup.  Fast I/O is an optimization which only works
- * if all of the following are true:
- *
- * (1) The platform is not Windows
- * (2) --proto udp is enabled
- * (3) --shaper is disabled
- */
-static void
-do_setup_fast_io(struct context *c)
-{
-    if (c->options.fast_io)
-    {
-#ifdef _WIN32
-        msg(M_INFO, "NOTE: --fast-io is disabled since we are running on Windows");
-#else
-        if (c->options.shaper)
-        {
-            msg(M_INFO, "NOTE: --fast-io is disabled since we are using --shaper");
-        }
-        else
-        {
-            c->c2.fast_io = true;
-        }
-#endif
-    }
-}
-
 static void
 do_signal_on_tls_errors(struct context *c)
 {
@@ -4456,32 +4436,9 @@ persist_client_stats(struct context *c)
 }
 
 /*
- * Initialize a tunnel instance, handle pre and post-init
- * signal settings.
- */
-void
-init_instance_handle_signals(struct context *c, const struct env_set *env, const unsigned int flags)
-{
-    pre_init_signal_catch();
-    init_instance(c, env, flags);
-    post_init_signal_catch();
-
-    /*
-     * This is done so that signals thrown during
-     * initialization can bring us back to
-     * a management hold.
-     */
-    if (IS_SIG(c))
-    {
-        remap_signal(c);
-        uninit_management_callback();
-    }
-}
-
-/*
  * Initialize a tunnel instance.
  */
-void
+static void
 init_instance(struct context *c, const struct env_set *env, const unsigned int flags)
 {
     const struct options *options = &c->options;
@@ -4560,12 +4517,6 @@ init_instance(struct context *c, const struct env_set *env, const unsigned int f
         open_plugins(c, false, OPENVPN_PLUGIN_INIT_PRE_DAEMON);
     }
 #endif
-
-    /* should we enable fast I/O? */
-    if (c->mode == CM_P2P || c->mode == CM_TOP)
-    {
-        do_setup_fast_io(c);
-    }
 
     /* should we throw a signal on TLS errors? */
     do_signal_on_tls_errors(c);
@@ -4768,6 +4719,29 @@ sig:
     }
     close_context(c, -1, flags);
     return;
+}
+
+/*
+ * Initialize a tunnel instance, handle pre and post-init
+ * signal settings.
+ */
+void
+init_instance_handle_signals(struct context *c, const struct env_set *env, const unsigned int flags)
+{
+    pre_init_signal_catch();
+    init_instance(c, env, flags);
+    post_init_signal_catch();
+
+    /*
+     * This is done so that signals thrown during
+     * initialization can bring us back to
+     * a management hold.
+     */
+    if (IS_SIG(c))
+    {
+        remap_signal(c);
+        uninit_management_callback();
+    }
 }
 
 /*
@@ -5060,17 +5034,18 @@ remove_pid_file(void)
  * Do a loopback test
  * on the crypto subsystem.
  */
-static void *
-test_crypto_thread(void *arg)
+void
+do_test_crypto(struct context *c)
 {
-    struct context *c = (struct context *)arg;
+    /* print version number */
+    msg(M_INFO, "%s", title_string);
     const struct options *options = &c->options;
 
     ASSERT(options->test_crypto);
     init_verb_mute(c, IVM_LEVEL_1);
     context_init_1(c);
     next_connection_entry(c);
-    do_init_crypto_static(c, 0);
+    do_init_crypto_test(c);
 
     frame_finalize_options(c, options);
 
@@ -5080,25 +5055,4 @@ test_crypto_thread(void *arg)
     packet_id_free(&c->c2.crypto_options.packet_id);
 
     context_gc_free(c);
-    return NULL;
-}
-
-bool
-do_test_crypto(const struct options *o)
-{
-    if (o->test_crypto)
-    {
-        struct context c;
-
-        /* print version number */
-        msg(M_INFO, "%s", title_string);
-
-        context_clear(&c);
-        c.options = *o;
-        options_detach(&c.options);
-        c.first_time = true;
-        test_crypto_thread((void *)&c);
-        return true;
-    }
-    return false;
 }

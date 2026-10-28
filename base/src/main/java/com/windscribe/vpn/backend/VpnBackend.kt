@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.backend
 
+import android.R.attr.startDelay
 import com.windscribe.common.tunnel.EngineProfile
 import com.windscribe.common.tunnel.IpNetwork
 import com.windscribe.common.tunnel.StopReason
@@ -14,6 +15,7 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.tunnel.VpnServiceGate
 import com.windscribe.vpn.backend.tunnel.WindscribeVpnService
@@ -217,8 +219,20 @@ abstract class VpnBackend(
      *
      * The bridge leg is allowed only when the tunnel terminates on a Windscribe node; a custom config
      * has no node bridge, so asking for one costs a session token request that can only fail.
+     *
+     * Skipped entirely for an emergency connect: that tunnel is the only way to reach the API at
+     * all, so a failed test would tear down the session the user is connecting to recover.
      */
     fun testConnectivity() {
+        if (stateManager.emergencyConnect) {
+            vpnLogger.debug("Emergency connect: skipping connectivity test.")
+            connectionJob?.cancel()
+            connectivityTestJob?.cancel()
+            connectivityTestJob = null
+            preferencesHelper.userIP = null
+            connectivityTestPassed(null)
+            return
+        }
         if (connectivityTestJob?.isActive == true) {
             vpnLogger.debug("Connectivity test already running, skipping new test.")
             return
@@ -299,8 +313,8 @@ abstract class VpnBackend(
         }
     }
 
-    open fun connectivityTestPassed(ip: String) {
-        vpnLogger.debug("Connectivity test successful: $ip")
+    open fun connectivityTestPassed(ip: String?) {
+        vpnLogger.debug("Connection ready: ip=$ip")
         sessionWasEstablished = true
         updateState(VPNState(VPNState.Status.Connected, ip = ip))
         mainScope.launch {
@@ -378,7 +392,8 @@ abstract class VpnBackend(
      */
     private fun configureBridgeAPI() {
         wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
-            bridgeAPI.setCurrentNodeId(preferencesHelper.selectedNodeId)
+            val cacheable = preferencesHelper.selectedProtocol == PreferencesKeyConstants.PROTO_WIRE_GUARD
+            bridgeAPI.setCurrentNodeId(if (cacheable) preferencesHelper.selectedNodeId else 0)
             bridgeAPI.setIgnoreSslErrors(false)
             bridgeAPI.setConnectedState(true)
         }

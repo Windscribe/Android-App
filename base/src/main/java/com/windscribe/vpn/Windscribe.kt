@@ -259,7 +259,7 @@ open class Windscribe : MultiDexApplication() {
                 if (applicationInterface.isTV) "android-tv" else "android",
                 WindUtilities.getVersionName(),
                 preference.deviceUuid ?: "",
-                "2.6.0",
+                ExtraConstants.OPENVPN_VERSION,
                 "4",
                 BuildConfig.DEV,
                 systemLanguageCode,

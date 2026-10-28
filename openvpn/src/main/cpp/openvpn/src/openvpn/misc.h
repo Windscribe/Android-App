@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -47,6 +47,9 @@ const char **make_extended_arg_array(char **p, bool is_inline, struct gc_arena *
 /*
  * Get and store a username/password
  */
+
+/* tag for blank username/password */
+static const char blank_up[] = "[[BLANK]]";
 
 struct user_pass
 {
@@ -123,6 +126,8 @@ struct static_challenge_info
 #define GET_USER_PASS_INLINE_CREDS            (1 << 10)
 /** indicates password and response should be concatenated */
 #define GET_USER_PASS_STATIC_CHALLENGE_CONCAT (1 << 11)
+/** indicate that only username should be prompted for auth-user-pass */
+#define GET_USER_PASS_USERNAME_ONLY           (1 << 12)
 
 /**
  * Retrieves the user credentials from various sources depending on the flags.

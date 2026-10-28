@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -245,14 +245,6 @@ assert_failed(const char *filename, int line, const char *condition)
 #endif
     ;
 
-/* Poor-man's static_assert() for when not supplied by assert.h, taken from
- * Linux's sys/cdefs.h under GPLv2 */
-#ifndef static_assert
-#define static_assert(expr, diagnostic)            \
-    extern int (*__OpenVPN_static_assert_function( \
-        void))[!!sizeof(struct { int __error_if_negative : (expr) ? 2 : -1; })]
-#endif
-
 /* Inline functions */
 
 static inline bool
@@ -307,11 +299,11 @@ void reset_check_status(void);
 
 void set_check_status(unsigned int info_level, unsigned int verbose_level);
 
-void x_check_status(int status, const char *description, struct link_socket *sock,
+void x_check_status(ssize_t status, const char *description, struct link_socket *sock,
                     struct tuntap *tt);
 
 static inline void
-check_status(int status, const char *description, struct link_socket *sock, struct tuntap *tt)
+check_status(ssize_t status, const char *description, struct link_socket *sock, struct tuntap *tt)
 {
     if (status < 0 || check_debug_level(x_cs_verbose_level))
     {

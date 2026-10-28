@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -31,6 +31,7 @@
 #include "error.h"
 #include "fdmisc.h"
 #include "options.h"
+#include "base64.h"
 #include "sig.h"
 #include "event.h"
 #include "otime.h"
@@ -58,8 +59,18 @@
 #define MANAGEMENT_ECHO_FLAGS 0
 #endif
 
-/* tag for blank username/password */
-static const char blank_up[] = "[[BLANK]]";
+/*
+ * Management client versions indicating feature support in client.
+ * Append new values as needed but do not change exisiting ones.
+ */
+enum mcv
+{
+    MCV_DEFAULT = 1,
+    MCV_PKSIGN = 2,
+    MCV_PKSIGN_ALG = 3,
+    MCV_USERNAME_ONLY = 4,
+    MCV_MULTILINE_PASSWORD = 5,
+};
 
 struct management *management; /* GLOBAL */
 
@@ -96,6 +107,8 @@ man_help(void)
     msg(M_CLIENT, "                         where action is reply string.");
     msg(M_CLIENT, "net                    : (Windows only) Show network info and routing table.");
     msg(M_CLIENT, "password type p        : Enter password p for a queried OpenVPN password.");
+    msg(M_CLIENT, "password type          : (version >=5) Enter password base64-encoded on");
+    msg(M_CLIENT, "                         subsequent lines followed by END.");
     msg(M_CLIENT, "remote type [host port] : Override remote directive, type=ACCEPT|MOD|SKIP.");
     msg(M_CLIENT, "remote-entry-count     : Get number of available remote entries.");
     msg(M_CLIENT, "remote-entry-get  i|all [j]: Get remote entry at index = i to to j-1 or all.");
@@ -206,11 +219,6 @@ man_password_needed(struct management *man)
     return man->settings.up.defined && !man->connection.password_verified;
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 static void
 man_check_password(struct management *man, const char *line)
 {
@@ -220,7 +228,8 @@ man_check_password(struct management *man, const char *line)
          * the attacker choice, it should not give any indication of the real
          * password length, use + 1 to include the NUL byte that terminates the
          * string*/
-        size_t compare_len = min_uint(strlen(line) + 1, sizeof(man->settings.up.password));
+        size_t compare_len =
+            min_size(strlen(line) + 1, sizeof(man->settings.up.password));
         if (memcmp_constant_time(line, man->settings.up.password, compare_len) == 0)
         {
             man->connection.password_verified = true;
@@ -240,10 +249,6 @@ man_check_password(struct management *man, const char *line)
         }
     }
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 static void
 man_update_io_state(struct management *man)
@@ -608,14 +613,14 @@ man_kill(struct management *man, const char *victim)
             if (status)
             {
                 const int port = atoi(p3);
-                const int proto = (streq(p1, "tcp"))   ? PROTO_TCP_SERVER
-                                  : (streq(p1, "udp")) ? PROTO_UDP
-                                                       : PROTO_NONE;
+                const uint8_t proto = (streq(p1, "tcp"))   ? PROTO_TCP_SERVER
+                                      : (streq(p1, "udp")) ? PROTO_UDP
+                                                           : PROTO_NONE;
 
-                if ((port > 0 && port < 65536) && (proto != PROTO_NONE))
+                if ((port > 0 && port <= UINT16_MAX) && (proto != PROTO_NONE))
                 {
                     n_killed = (*man->persist.callback.kill_by_addr)(man->persist.callback.arg,
-                                                                     addr, port, proto);
+                                                                     addr, (uint16_t)port, proto);
                     if (n_killed > 0)
                     {
                         msg(M_CLIENT, "SUCCESS: %d client(s) at address %s:%s:%d killed", n_killed,
@@ -737,6 +742,13 @@ man_up_finalize(struct management *man)
 {
     switch (man->connection.up_query_mode)
     {
+        case UP_QUERY_USERNAME:
+            if (strlen(man->connection.up_query.username))
+            {
+                man->connection.up_query.defined = true;
+            }
+            break;
+
         case UP_QUERY_USER_PASS:
             if (!strlen(man->connection.up_query.username))
             {
@@ -791,7 +803,9 @@ static void
 man_query_username(struct management *man, const char *type, const char *string)
 {
     const bool needed =
-        ((man->connection.up_query_mode == UP_QUERY_USER_PASS) && man->connection.up_query_type);
+        ((man->connection.up_query_mode == UP_QUERY_USER_PASS
+          || man->connection.up_query_mode == UP_QUERY_USERNAME)
+         && man->connection.up_query_type);
     man_query_user_pass(man, type, string, needed, "username", man->connection.up_query.username,
                         USER_PASS_LEN);
 }
@@ -1009,6 +1023,41 @@ in_extra_reset(struct man_connection *mc, const int mode)
     }
 }
 
+/**
+ * Enter multi-line base64 mode for receiving a password that exceeds the
+ * single-line parameter size limit. The management client sends:
+ *
+ *  password TYPE
+ *  <base64-encoded password line 1>
+ *  <base64-encoded password line 2>
+ *  ...
+ *  END
+ *
+ * @param man           The management interface struct
+ * @param type          The type of password being entered (e.g. "Auth", "Private Key", etc)
+ */
+static void
+man_query_password_base64(struct management *man, const char *type)
+{
+    const bool needed = ((man->connection.up_query_mode == UP_QUERY_PASS
+                          || man->connection.up_query_mode == UP_QUERY_USER_PASS)
+                         && man->connection.up_query_type);
+    if (!needed)
+    {
+        msg(M_CLIENT, "ERROR: no password is currently needed at this time");
+        return;
+    }
+    if (!man->connection.up_query_type || !streq(man->connection.up_query_type, type))
+    {
+        msg(M_CLIENT, "ERROR: password of type '%s' entered, but we need one of type '%s'",
+            type, man->connection.up_query_type);
+        return;
+    }
+    struct man_connection *mc = &man->connection;
+    mc->in_extra_cmd = IEC_PASSWORD;
+    in_extra_reset(mc, IER_NEW);
+}
+
 static void
 in_extra_dispatch(struct management *man)
 {
@@ -1042,6 +1091,41 @@ in_extra_dispatch(struct management *man)
             man->connection.ext_cert_input = man->connection.in_extra;
             man->connection.in_extra = NULL;
             return;
+
+        case IEC_PASSWORD:
+        {
+            char decoded[USER_PASS_LEN];
+            CLEAR(decoded);
+
+            buffer_list_aggregate(man->connection.in_extra,
+                                  OPENVPN_BASE64_LENGTH(USER_PASS_LEN) + 1024);
+            struct buffer *buf = buffer_list_peek(man->connection.in_extra);
+
+            if (buf && BLEN(buf) > 0)
+            {
+                if (OPENVPN_BASE64_DECODED_LENGTH(BLEN(buf)) >= USER_PASS_LEN)
+                {
+                    msg(M_CLIENT, "ERROR: password too long");
+                    buf_clear(buf);
+                    break;
+                }
+                int len = openvpn_base64_decode(BSTR(buf), decoded,
+                                                USER_PASS_LEN - 1);
+                if (len < 0)
+                {
+                    msg(M_CLIENT, "ERROR: could not base64-decode password");
+                    buf_clear(buf);
+                    break;
+                }
+                decoded[len] = '\0';
+                buf_clear(buf);
+            }
+
+            man_query_password(man, man->connection.up_query_type,
+                               decoded);
+            secure_memzero(decoded, sizeof(decoded));
+            break;
+        }
     }
     in_extra_reset(&man->connection, IER_RESET);
 }
@@ -1341,6 +1425,15 @@ set_client_version(struct management *man, const char *version)
     if (version)
     {
         man->connection.client_version = atoi(version);
+        /* Until MCV_PKSIGN_ALG, we missed to respond to this command. Acknowledge only if version is newer */
+        if (man->connection.client_version > MCV_PKSIGN_ALG)
+        {
+            msg(M_CLIENT, "SUCCESS: Management client version set to %d", man->connection.client_version);
+        }
+    }
+    else
+    {
+        msg(M_CLIENT, "ERROR: Invalid value specified for management client version");
     }
 }
 
@@ -1579,9 +1672,20 @@ man_dispatch_command(struct management *man, struct status_output *so, const cha
     }
     else if (streq(p[0], "password"))
     {
-        if (man_need(man, p, 2, 0))
+        if (man_need(man, p, 1, MN_AT_LEAST))
         {
-            man_query_password(man, p[1], p[2]);
+            if (p[2])
+            {
+                man_query_password(man, p[1], p[2]);
+            }
+            else if (man->connection.client_version >= MCV_MULTILINE_PASSWORD)
+            {
+                man_query_password_base64(man, p[1]);
+            }
+            else
+            {
+                msg(M_CLIENT, "ERROR: the 'password' command requires 2 parameters");
+            }
         }
     }
     else if (streq(p[0], "forget-passwords"))
@@ -2081,13 +2185,14 @@ man_reset_client_socket(struct management *man, const bool exiting)
     }
     if (!exiting)
     {
-        if (man->settings.flags & MF_FORGET_DISCONNECT)
+        if (man->settings.flags & MF_FORGET_DISCONNECT && !man_password_needed(man))
         {
+            msg(D_MANAGEMENT, "MANAGEMENT: Reset authentication on disconnect");
             ssl_purge_auth(false);
             (void)ssl_clean_auth_token();
         }
 
-        if (man->settings.flags & MF_SIGNAL)
+        if (man->settings.flags & MF_SIGNAL && !man_password_needed(man))
         {
             int mysig = man_mod_signal(man, SIGUSR1);
             if (mysig >= 0)
@@ -2315,19 +2420,14 @@ managment_android_persisttun_action(struct management *man)
 
 #endif /* ifdef TARGET_ANDROID */
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
-static int
+static ssize_t
 man_read(struct management *man)
 {
     /*
      * read command line from socket
      */
     unsigned char buf[256];
-    int len = 0;
+    ssize_t len = 0;
 
 #ifdef TARGET_ANDROID
     int fd;
@@ -2348,7 +2448,7 @@ man_read(struct management *man)
     {
         bool processed_command = false;
 
-        ASSERT(len <= (int)sizeof(buf));
+        ASSERT(len <= (ssize_t)sizeof(buf));
         command_line_add(man->connection.in, buf, (size_t)len);
 
         /*
@@ -2414,11 +2514,11 @@ man_read(struct management *man)
     return len;
 }
 
-static int
+static ssize_t
 man_write(struct management *man)
 {
     const int size_hint = 1024;
-    int sent = 0;
+    ssize_t sent = 0;
     const struct buffer *buf;
 
     buffer_list_aggregate(man->connection.out, size_hint);
@@ -2435,7 +2535,9 @@ man_write(struct management *man)
         }
         else
 #endif
+        {
             sent = send(man->connection.sd_cli, (const void *)BPTR(buf), len, MSG_NOSIGNAL);
+        }
         if (sent >= 0)
         {
             buffer_list_advance(man->connection.out, sent);
@@ -2456,10 +2558,6 @@ man_write(struct management *man)
 
     return sent;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 static void
 man_connection_clear(struct man_connection *mc)
@@ -2661,7 +2759,7 @@ man_connection_init(struct management *man)
             man->connection.es = event_set_init(&maxevents, EVENT_METHOD_FAST);
         }
 
-        man->connection.client_version = 1; /* default version */
+        man->connection.client_version = MCV_DEFAULT; /* default version */
 
         /*
          * Listen/connect socket
@@ -3222,8 +3320,7 @@ management_io(struct management *man)
 
                 if (net_events & FD_WRITE)
                 {
-                    int status;
-                    status = man_write(man);
+                    ssize_t status = man_write(man);
                     if (status < 0 && WSAGetLastError() == WSAEWOULDBLOCK)
                     {
                         net_event_win32_clear_selected_events(&man->connection.ne32, FD_WRITE);
@@ -3553,6 +3650,12 @@ management_query_user_pass(struct management *man, struct user_pass *up, const c
             prefix = "PASSWORD";
             alert_type = "password";
         }
+        else if ((man->connection.client_version >= MCV_USERNAME_ONLY) && (flags & GET_USER_PASS_USERNAME_ONLY))
+        {
+            up_query_mode = UP_QUERY_USERNAME;
+            prefix = "PASSWORD";
+            alert_type = "username";
+        }
         else
         {
             up_query_mode = UP_QUERY_USER_PASS;
@@ -3782,14 +3885,14 @@ management_query_pk_sig(struct management *man, const char *b64_data, const char
     const char *desc = "pk-sign";
     struct buffer buf_data = alloc_buf(strlen(b64_data) + strlen(algorithm) + 20);
 
-    if (man->connection.client_version <= 1)
+    if (man->connection.client_version <= MCV_DEFAULT)
     {
         prompt = "RSA_SIGN";
         desc = "rsa-sign";
     }
 
     buf_write(&buf_data, b64_data, (int)strlen(b64_data));
-    if (man->connection.client_version > 2)
+    if (man->connection.client_version >= MCV_PKSIGN_ALG)
     {
         buf_write(&buf_data, ",", (int)strlen(","));
         buf_write(&buf_data, algorithm, (int)strlen(algorithm));
@@ -4184,16 +4287,14 @@ management_check_bytecount_client(struct context *c, struct management *man, str
 }
 
 void
-management_check_bytecount_server(struct multi_context *multi)
+management_check_bytecount_server(struct multi_context *multi, struct timeval *timeval)
 {
     if (!(management->persist.callback.flags & MCF_SERVER))
     {
         return;
     }
 
-    struct timeval null;
-    CLEAR(null);
-    if (event_timeout_trigger(&management->connection.bytecount_update_interval, &null, ETT_DEFAULT))
+    if (event_timeout_trigger(&management->connection.bytecount_update_interval, timeval, ETT_DEFAULT))
     {
         /* fetch counters from dco */
         if (dco_enabled(&multi->top.options))

@@ -179,7 +179,7 @@ ntlm_phase_1(const struct http_proxy_info *p, struct gc_arena *gc)
     struct buffer out = alloc_buf_gc(96, gc);
     /* try a minimal NTLM handshake
      *
-     * http://davenport.sourceforge.net/ntlm.html
+     * https://davenport.sourceforge.net/ntlm.html
      *
      * This message contains only the NTLMSSP signature,
      * the NTLM message type,
@@ -195,7 +195,7 @@ ntlm_phase_3(const struct http_proxy_info *p, const char *phase_2, struct gc_are
 {
     /* NTLM handshake
      *
-     * http://davenport.sourceforge.net/ntlm.html
+     * https://davenport.sourceforge.net/ntlm.html
      *
      */
 
@@ -218,7 +218,7 @@ ntlm_phase_3(const struct http_proxy_info *p, const char *phase_2, struct gc_are
 
     char domain[128];
     char username[128];
-    char *separator;
+    const char *separator;
 
     ASSERT(strlen(p->up.username) > 0);
     ASSERT(strlen(p->up.password) > 0);
@@ -317,7 +317,7 @@ ntlm_phase_3(const struct http_proxy_info *p, const char *phase_2, struct gc_are
     if ((flags & 0x00800000) == 0x00800000)
     {
         tib_len = buf2[0x28]; /* Get Target Information block size */
-        if (tib_len + 0x1c + 16 > sizeof(ntlmv2_response))
+        if (tib_len + 0x1c + 16 >= sizeof(ntlmv2_response))
         {
             msg(M_WARN, "NTLM: target information buffer too long for response (len=%d)", tib_len);
             return NULL;

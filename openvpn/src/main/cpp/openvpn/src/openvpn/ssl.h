@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -144,7 +144,7 @@ void free_ssl_lib(void);
  * Build master SSL context object that serves for the whole of OpenVPN
  * instantiation
  */
-void init_ssl(const struct options *options, struct tls_root_ctx *ctx, bool in_chroot);
+struct tls_root_ctx *init_ssl(const struct options *options, bool in_chroot);
 
 /** @addtogroup control_processor
  *  @{ */
@@ -231,6 +231,8 @@ void tls_multi_free(struct tls_multi *multi, bool clear);
 #define TLSMP_ACTIVE    1
 #define TLSMP_KILL      2
 #define TLSMP_RECONNECT 3
+/** the session cannot recover on its own and has to be restarted */
+#define TLSMP_RESTART   4
 
 /*
  * Called by the top-level event loop.
@@ -389,7 +391,7 @@ void enable_auth_user_pass(void);
  * credentials stored in the file, however, if is_inline is true then auth_file
  * contains the username/password inline.
  */
-void auth_user_pass_setup(const char *auth_file, bool is_inline,
+void auth_user_pass_setup(const char *auth_file, bool is_inline, bool username_only,
                           const struct static_challenge_info *sc_info);
 
 /*
@@ -426,7 +428,7 @@ void ssl_put_auth_challenge(const char *cr_str);
 /*
  * Send a payload over the TLS control channel
  */
-bool tls_send_payload(struct key_state *ks, const uint8_t *data, int size);
+bool tls_send_payload(struct key_state *ks, const uint8_t *data, size_t size);
 
 /*
  * Receive a payload through the TLS control channel
@@ -480,9 +482,9 @@ tls_wrap_free(struct tls_wrap_ctx *tls_wrap)
     if (tls_wrap->cleanup_key_ctx)
     {
         free_key_ctx_bi(&tls_wrap->opt.key_ctx_bi);
+        tls_wrap->cleanup_key_ctx = false;
     }
 
-    free_buf(&tls_wrap->tls_crypt_v2_metadata);
     free_buf(&tls_wrap->work);
     secure_memzero(&tls_wrap->original_wrap_keydata, sizeof(tls_wrap->original_wrap_keydata));
 }
@@ -553,15 +555,6 @@ bool is_hard_reset_method2(int op);
  */
 void show_available_tls_ciphers(const char *cipher_list, const char *cipher_list_tls13,
                                 const char *tls_cert_profile);
-
-
-/**
- * Generate data channel keys for the supplied TLS session.
- *
- * This erases the source material used to generate the data channel keys, and
- * can thus be called only once per session.
- */
-bool tls_session_generate_data_channel_keys(struct tls_multi *multi, struct tls_session *session);
 
 void tls_session_soft_reset(struct tls_multi *multi);
 

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -63,6 +63,7 @@ struct security_attributes
 {
     SECURITY_ATTRIBUTES sa;
     SECURITY_DESCRIPTOR sd;
+    PACL dacl;
 };
 
 #define HANDLE_DEFINED(h) ((h) != NULL && (h) != INVALID_HANDLE_VALUE)
@@ -262,6 +263,11 @@ void semaphore_close(struct semaphore *s);
  *
  * It seems you can't run more than one instance
  * of netsh on the same machine at the same time.
+ *
+ * Its DACL is restricted to the creating user to prevent an unprivileged
+ * local user from starving it and DoS'ing running instances. This means
+ * different user accounts running OpenVPN directly, not via the interactive
+ * service, will make all but the first user's instances exit.
  */
 
 extern struct semaphore netcmd_semaphore;
@@ -301,12 +307,14 @@ bool win_wfp_uninit(const NET_IFINDEX index, const HANDLE msg_channel);
  */
 const char *win32_version_string(struct gc_arena *gc);
 
-/*
- * Send the |size| bytes in buffer |data| to the interactive service |pipe|
- * and read the result in |ack|. Returns false on communication error.
- * The string in |context| is used to prefix error messages.
+/**
+ * Send the \p size bytes in buffer \p data to the interactive service \p pipe
+ * and read the result in \p ack.
+ * The string in \p context is used to prefix error messages.
+ *
+ * @return true on success, false on communication error
  */
-bool send_msg_iservice(HANDLE pipe, const void *data, size_t size, ack_message_t *ack,
+bool send_msg_iservice(HANDLE pipe, const void *data, DWORD size, ack_message_t *ack,
                        const char *context);
 
 /*
@@ -350,7 +358,7 @@ bool plugin_in_trusted_dir(const WCHAR *plugin_path);
  * - len   number of bytes to encrypt -- must be a multiple of
  *         CRYPTPROTECTMEMORY_BLOCK_SIZE = 16
  */
-bool protect_buffer_win32(char *buf, size_t len);
+bool protect_buffer_win32(char *buf, DWORD len);
 
 /**
  * Decrypt a previously encrypted region of memory using CryptUnProtectMemory()
@@ -360,7 +368,7 @@ bool protect_buffer_win32(char *buf, size_t len);
  * - len   number of bytes to encrypt -- must be a multiple of
  *         CRYPTPROTECTMEMORY_BLOCK_SIZE = 16
  */
-bool unprotect_buffer_win32(char *buf, size_t len);
+bool unprotect_buffer_win32(char *buf, DWORD len);
 
 #endif /* ifndef OPENVPN_WIN32_H */
 #endif /* ifdef _WIN32 */

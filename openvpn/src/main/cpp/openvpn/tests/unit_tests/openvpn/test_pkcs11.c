@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2023-2025 Selva Nair <selva.nair@gmail.com>
+ *  Copyright (C) 2023-2026 Selva Nair <selva.nair@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by the
@@ -142,13 +142,13 @@ void
 init_cert_data(void)
 {
     struct test_cert certs_local[] = {
-        { cert1, key1, cname1, "OVPN TEST CA1", "OVPN Test Cert 1", { 0 }, NULL },
-        { cert2, key2, cname2, "OVPN TEST CA2", "OVPN Test Cert 2", { 0 }, NULL },
-        { cert3, key3, cname3, "OVPN TEST CA1", "OVPN Test Cert 3", { 0 }, NULL },
-        { cert4, key4, cname4, "OVPN TEST CA2", "OVPN Test Cert 4", { 0 }, NULL },
+        { cert1, privkey1, cname1, "OVPN TEST CA1", "OVPN Test Cert 1", { 0 }, NULL },
+        { cert2, privkey2, cname2, "OVPN TEST CA2", "OVPN Test Cert 2", { 0 }, NULL },
+        { cert3, privkey3, cname3, "OVPN TEST CA1", "OVPN Test Cert 3", { 0 }, NULL },
+        { cert4, privkey4, cname4, "OVPN TEST CA2", "OVPN Test Cert 4", { 0 }, NULL },
         { 0 }
     };
-    assert(sizeof(certs_local) == sizeof(certs));
+    assert_int_equal(sizeof(certs_local), sizeof(certs));
     memcpy(certs, certs_local, sizeof(certs_local));
 }
 
@@ -320,7 +320,7 @@ setup_pkcs11(void **state)
     /* set default propq as we do in ssl_openssl.c */
     EVP_set_default_properties(tls_libctx, "?provider!=ovpn.xkey");
 #endif
-    pkcs11_initialize(true, 0); /* protected auth enabled, pin-cache = 0 */
+    pkcs11_initialize(true, 60); /* protected auth enabled, pin-cache = 60s */
     pkcs11_addProvider(SOFTHSM2_MODULE_PATH, false, 0, false);
     return 0;
 }
@@ -411,7 +411,7 @@ static void
 test_tls_ctx_use_pkcs11(void **state)
 {
     (void)state;
-    struct tls_root_ctx tls_ctx = {};
+    struct tls_root_ctx tls_ctx = { 0 };
     uint8_t sha1[HASHSIZE];
     for (struct test_cert *c = certs; c->cert; c++)
     {

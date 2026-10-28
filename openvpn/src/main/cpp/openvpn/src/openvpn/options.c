@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2008-2025 David Sommerseth <dazo@eurephia.org>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2008-2026 David Sommerseth <dazo@eurephia.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -23,7 +23,7 @@
 
 /*
  * 2004-01-28: Added Socks5 proxy support
- *   (Christof Meerwald, http://cmeerw.org)
+ *   (Christof Meerwald, https://cmeerw.org)
  */
 
 #ifdef HAVE_CONFIG_H
@@ -62,6 +62,7 @@
 #include "options_util.h"
 #include "tun_afunix.h"
 #include "domain_helper.h"
+#include "mbuf.h"
 
 #include <ctype.h>
 
@@ -175,6 +176,7 @@ static const char usage_message[] =
     "--resolv-retry n: If hostname resolve fails for --remote, retry\n"
     "                  resolve for n seconds before failing (disabled by default).\n"
     "                  Set n=\"infinite\" to retry indefinitely.\n"
+    "--preresolve    : Resolve configured --remote, --local, and proxy hostnames at startup.\n"
     "--float         : Allow remote to change its IP address/port, such as through\n"
     "                  DHCP (this is the default if --remote is not used).\n"
     "--ipchange cmd  : Run command cmd on remote ip address initial\n"
@@ -188,7 +190,8 @@ static const char usage_message[] =
     " or --socks-proxy"
     " is used).\n"
     "--nobind        : Do not bind to local address and port.\n"
-    "--dev tunX|tapX : tun/tap device (X can be omitted for dynamic device.\n"
+    "--dev tunX|tapX : tun/tap device (X can be omitted for dynamic device).\n"
+    "                  Defaults to \"tun\" if neither --dev nor --dev-type is given.\n"
     "--dev-type dt   : Which device type are we using? (dt = tun or tap) Use\n"
     "                  this option only if the tun/tap device used with --dev\n"
     "                  does not begin with \"tun\" or \"tap\".\n"
@@ -285,7 +288,6 @@ static const char usage_message[] =
 #if ENABLE_IP_PKTINFO
     "--multihome     : Configure a multi-homed UDP server.\n"
 #endif
-    "--fast-io       : Optimize TUN/TAP/UDP writes.\n"
     "--remap-usr1 s  : On SIGUSR1 signals, remap signal (s='SIGHUP' or 'SIGTERM').\n"
     "--persist-tun   : Keep tun/tap device open across SIGUSR1 or --ping-restart.\n"
     "--persist-remote-ip : Keep remote IP address across SIGUSR1 or --ping-restart.\n"
@@ -315,7 +317,7 @@ static const char usage_message[] =
     "                  or --fragment max value, whichever is lower.\n"
     "--sndbuf size   : Set the TCP/UDP send buffer size.\n"
     "--rcvbuf size   : Set the TCP/UDP receive buffer size.\n"
-#if defined(TARGET_LINUX) && HAVE_DECL_SO_MARK
+#if defined(TARGET_LINUX)
     "--mark value    : Mark encrypted packets being sent with value. The mark value\n"
     "                  can be matched in policy routing and packetfilter rules.\n"
     "--bind-dev dev  : Bind to the given device when making connection to a peer or\n"
@@ -323,9 +325,6 @@ static const char usage_message[] =
     "                  via a VRF present on the system.\n"
 #endif
     "--txqueuelen n  : Set the tun/tap TX queue length to n (Linux only).\n"
-#ifdef ENABLE_MEMSTATS
-    "--memstats file : Write live usage stats to memory mapped binary file.\n"
-#endif
     "--mlock         : Disable Paging -- ensures key material and tunnel\n"
     "                  data will never be written to disk.\n"
     "--up cmd        : Run command cmd after successful tun device open.\n"
@@ -475,12 +474,8 @@ static const char usage_message[] =
     "                  OTP based two-factor auth mechanisms are in use and\n"
     "                  --reneg-* options are enabled. Optionally a lifetime in seconds\n"
     "                  for generated tokens can be set.\n"
-    "--opt-verify    : (DEPRECATED) Clients that connect with options that are incompatible\n"
-    "                  with those of the server will be disconnected.\n"
     "--auth-user-pass-optional : Allow connections by clients that don't\n"
     "                  specify a username/password.\n"
-    "--no-name-remapping : (DEPRECATED) Allow Common Name and X509 Subject to include\n"
-    "                      any printable character.\n"
     "--client-to-client : Internally route client-to-client traffic.\n"
     "--duplicate-cn  : Allow multiple clients with the same common name to\n"
     "                  concurrently connect.\n"
@@ -493,8 +488,8 @@ static const char usage_message[] =
     "                  virtual address table to v.\n"
     "--bcast-buffers n : Allocate n broadcast buffers.\n"
     "--tcp-queue-limit n : Maximum number of queued TCP output packets.\n"
-    "--tcp-nodelay   : Macro that sets TCP_NODELAY socket flag on the server\n"
-    "                  as well as pushes it to connecting clients.\n"
+    "--tcp-nodelay   : In server mode, push TCP_NODELAY to clients (it is\n"
+    "                  enabled by default on the local socket).\n"
     "--learn-address cmd : Run command cmd to validate client virtual addresses.\n"
     "--connect-freq n s : Allow a maximum of n new connections per s seconds.\n"
     "--connect-freq-initial n s : Allow a maximum of n replies for initial connections attempts per s seconds.\n"
@@ -518,7 +513,8 @@ static const char usage_message[] =
     "                  up is a file containing the username on the first line,\n"
     "                  and a password on the second. If either the password or both\n"
     "                  the username and the password are omitted OpenVPN will prompt\n"
-    "                  for them from console.\n"
+    "                  for them from console. If [up] is 'username-only', only username\n"
+    "                  will be prompted for from console or management interface.\n"
     "--pull           : Accept certain config file options from the peer as if they\n"
     "                  were part of the local config file.  Must be specified\n"
     "                  when connecting to a '--mode server' remote host.\n"
@@ -602,8 +598,6 @@ static const char usage_message[] =
 #ifndef ENABLE_CRYPTO_MBEDTLS
     "--pkcs12 file   : PKCS#12 file containing local private key, local certificate\n"
     "                  and optionally the root CA certificate.\n"
-#endif
-#ifdef ENABLE_X509ALTUSERNAME
     "--x509-username-field : Field in x509 certificate containing the username.\n"
     "                        Default is CN in the Subject field.\n"
 #endif
@@ -618,7 +612,9 @@ static const char usage_message[] =
     "                : Use --show-tls to see a list of supported TLS ciphers (suites).\n"
     "--tls-cert-profile p : Set the allowed certificate crypto algorithm profile\n"
     "                  (default=legacy).\n"
+#ifndef ENABLE_CRYPTO_MBEDTLS
     "--providers l   : A list l of OpenSSL providers to load.\n"
+#endif
     "--tls-timeout n : Packet retransmit timeout on TLS control channel\n"
     "                  if no ACK from remote within n seconds (default=%d).\n"
     "--reneg-bytes n : Renegotiate data chan. key after n bytes sent and recvd.\n"
@@ -653,6 +649,8 @@ static const char usage_message[] =
     "                  fresh tls-crypt-v2 server key, and store to keyfile\n"
     "--tls-crypt-v2-verify cmd : Run command cmd to verify the metadata of the\n"
     "                  client-supplied tls-crypt-v2 client key\n"
+    "--tls-crypt-v2-max-age n : Only accept tls-crypt-v2 client keys that have a\n"
+    "                  timestamp which is at most n days old.\n"
     "--askpass [file]: Get PEM password from controlling tty before we daemonize.\n"
     "--auth-nocache  : Don't cache --askpass or --auth-user-pass passwords.\n"
     "--crl-verify crl ['dir']: Check peer certificate against a CRL.\n"
@@ -771,7 +769,7 @@ static const char usage_message[] =
     "                         (for use with --tls-auth or --tls-crypt)."
 #ifdef ENABLE_FEATURE_TUN_PERSIST
     "\n"
-    "Tun/tap config mode (available with linux 2.4+):\n"
+    "Tun/tap config mode:\n"
     "--mktun         : Create a persistent tunnel.\n"
     "--rmtun         : Remove a persistent tunnel.\n"
     "--dev tunX|tapX : tun/tap device\n"
@@ -804,16 +802,14 @@ static const char usage_message[] =
  * will be set to 0.
  */
 void
-init_options(struct options *o, const bool init_gc)
+init_options(struct options *o)
 {
     CLEAR(*o);
-    if (init_gc)
-    {
-        gc_init(&o->gc);
-        gc_init(&o->dns_options.gc);
-        o->gc_owned = true;
-    }
+    gc_init(&o->gc);
+    gc_init(&o->dns_options.gc);
+
     o->mode = MODE_POINT_TO_POINT;
+    o->dev = "tun";
     o->topology = TOP_UNDEF;
     o->ce.proto = PROTO_UDP;
     o->ce.af = AF_UNSPEC;
@@ -864,8 +860,6 @@ init_options(struct options *o, const bool init_gc)
 #endif
     o->vlan_accept = VLAN_ALL;
     o->vlan_pvid = 1;
-    o->real_hash_size = 256;
-    o->virtual_hash_size = 256;
     o->n_bcast_buf = 256;
     o->tcp_queue_limit = 64;
     o->max_clients = 1024;
@@ -890,9 +884,7 @@ init_options(struct options *o, const bool init_gc)
     o->transition_window = 3600;
     o->tls_cert_profile = NULL;
     o->ecdh_curve = NULL;
-#ifdef ENABLE_X509ALTUSERNAME
     o->x509_username_field[0] = X509_USERNAME_FIELD_DEFAULT;
-#endif
 #ifdef ENABLE_PKCS11
     o->pkcs11_pin_cache_period = -1;
 #endif /* ENABLE_PKCS11 */
@@ -942,11 +934,9 @@ uninit_options(struct options *o)
     {
         CLEAR(*o->remote_list);
     }
-    if (o->gc_owned)
-    {
-        gc_free(&o->gc);
-        gc_free(&o->dns_options.gc);
-    }
+
+    gc_free(&o->gc);
+    gc_free(&o->dns_options.gc);
 }
 
 #ifndef ENABLE_SMALL
@@ -1153,19 +1143,11 @@ get_ipv6_addr_no_netbits(const char *addr, struct gc_arena *gc)
 static bool
 ipv6_addr_safe_hexplusbits(const char *ipv6_prefix_spec)
 {
-    struct in6_addr t_addr;
-    unsigned int t_bits;
-
-    return get_ipv6_addr(ipv6_prefix_spec, &t_addr, &t_bits, M_WARN);
+    return get_ipv6_addr(ipv6_prefix_spec, NULL, NULL, M_WARN);
 }
 
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 static char *
-string_substitute(const char *src, int from, int to, struct gc_arena *gc)
+string_substitute(const char *src, char from, char to, struct gc_arena *gc)
 {
     char *ret = (char *)gc_malloc(strlen(src) + 1, true, gc);
     char *dest = ret;
@@ -1322,7 +1304,7 @@ show_tuntap_options(const struct tuntap_options *o)
     SHOW_BOOL(dhcp_pre_release);
     SHOW_STR(domain);
     SHOW_STR(netbios_scope);
-    SHOW_INT(netbios_node_type);
+    SHOW_UNSIGNED(netbios_node_type);
     SHOW_BOOL(disable_nbt);
 
     show_dhcp_option_addrs("DNS", o->dns, o->dns_len);
@@ -1564,7 +1546,18 @@ show_http_proxy_options(const struct http_proxy_options *o)
 void
 options_detach(struct options *o)
 {
+    /* The options struct carries two gc_arena's (one generic and one specific
+     * to the DNS settings), which the by-value options
+     * copy in inherit_context_child()/inherit_context_top() shares with the
+     * source.
+     *
+     * Detach both (i.e. re-initialize them), otherwise child's call of
+     * gc_free() (or context teardown) would free allocations the source
+     * context still references, leading to a use-after-free (and subsequent
+     * double-free).
+     */
     gc_detach(&o->gc);
+    gc_detach(&o->dns_options.gc);
     o->routes = NULL;
     o->client_nat = NULL;
     clone_push_list(o);
@@ -1795,12 +1788,10 @@ show_settings(const struct options *o)
     SHOW_BOOL(occ);
     SHOW_INT(rcvbuf);
     SHOW_INT(sndbuf);
-#if defined(TARGET_LINUX) && HAVE_DECL_SO_MARK
+#if defined(TARGET_LINUX)
     SHOW_INT(mark);
 #endif
     SHOW_INT(sockflags);
-
-    SHOW_BOOL(fast_io);
 
     SHOW_INT(comp.alg);
     SHOW_INT(comp.flags);
@@ -2286,13 +2277,9 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
     int dev = DEV_TYPE_UNDEF;
     bool pull = false;
 
-    init_options(&defaults, true);
+    init_options(&defaults);
 
-    if (options->test_crypto)
-    {
-        notnull(options->shared_secret_file, "key file (--secret)");
-    }
-    else
+    if (!options->test_crypto)
     {
         notnull(options->dev, "TUN/TAP device (--dev)");
     }
@@ -2532,8 +2519,13 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
             msg(M_USAGE, USAGE_VALID_SERVER_PROTOS);
         }
 #if PORT_SHARE
+        bool has_tcp = false;
+        for (int i = 0; i < ce->local_list->len && !has_tcp; i++)
+        {
+            has_tcp = (ce->local_list->array[i]->proto == PROTO_TCP_SERVER);
+        }
         if ((options->port_share_host || options->port_share_port)
-            && (ce->proto != PROTO_TCP_SERVER))
+            && !has_tcp)
         {
             msg(M_USAGE, "--port-share only works in TCP server mode "
                          "(--proto values of tcp-server, tcp4-server, or tcp6-server)");
@@ -2641,6 +2633,13 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
             MUST_BE_UNDEF(vlan_accept, "vlan-accept");
             MUST_BE_UNDEF(vlan_pvid, "vlan-pvid");
         }
+
+        if (options->server_flags & SF_TCP_NODELAY_HELPER)
+        {
+            msg(M_INFO, "NOTE: TCP_NODELAY is always enabled locally; "
+                        "--tcp-nodelay is now only useful to push the flag to "
+                        "clients older than 2.7.6.");
+        }
     }
     else
     {
@@ -2669,12 +2668,9 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
                       "verify-client-cert");
         MUST_BE_FALSE(options->ssl_flags & SSLF_USERNAME_AS_COMMON_NAME, "username-as-common-name");
         MUST_BE_FALSE(options->ssl_flags & SSLF_AUTH_USER_PASS_OPTIONAL, "auth-user-pass-optional");
-        MUST_BE_FALSE(options->ssl_flags & SSLF_OPT_VERIFY, "opt-verify");
         if (options->server_flags & SF_TCP_NODELAY_HELPER)
         {
-            msg(M_WARN, "WARNING: setting tcp-nodelay on the client side will not "
-                        "affect the server. To have TCP_NODELAY in both direction use "
-                        "tcp-nodelay in the server configuration instead.");
+            msg(M_WARN, "DEPRECATED OPTION: --tcp-nodelay is always enabled on clients");
         }
         MUST_BE_UNDEF(auth_user_pass_verify_script, "auth-user-pass-verify");
         MUST_BE_UNDEF(auth_token_generate, "auth-gen-token");
@@ -2690,6 +2686,13 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
         MUST_BE_UNDEF(vlan_accept, "vlan-accept");
         MUST_BE_UNDEF(vlan_pvid, "vlan-pvid");
         MUST_BE_UNDEF(force_key_material_export, "force-key-material-export");
+
+        if (options->push_list.head)
+        {
+            msg(M_WARN, "Note: Using --push without --mode server is an "
+                        "unsupported configuration. Negotiation of OpenVPN "
+                        "features is expected to fail.");
+        }
     }
 
     /*
@@ -2700,7 +2703,7 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
         msg(M_USAGE, "specify only one of --tls-server, --tls-client, or --secret");
     }
 
-    if (!options->tls_server && !options->tls_client)
+    if (!options->tls_server && !options->tls_client && !options->test_crypto)
     {
         msglvl_t msglevel = M_USAGE;
         if (options->allow_deprecated_insecure_static_crypto)
@@ -3143,6 +3146,9 @@ pre_connect_save(struct options *o)
         o->pre_connect->client_nat_defined = true;
     }
 
+    o->pre_connect->ifconfig_local = o->ifconfig_local;
+    o->pre_connect->ifconfig_ipv6_local = o->ifconfig_ipv6_local;
+
     o->pre_connect->route_default_gateway = o->route_default_gateway;
     o->pre_connect->route_ipv6_default_gateway = o->route_ipv6_default_gateway;
 
@@ -3193,6 +3199,9 @@ pre_connect_restore(struct options *o, struct gc_arena *gc)
             o->routes_ipv6 = NULL;
         }
 
+        o->ifconfig_local = pp->ifconfig_local;
+        o->ifconfig_ipv6_local = pp->ifconfig_ipv6_local;
+
         o->route_default_gateway = pp->route_default_gateway;
         o->route_ipv6_default_gateway = pp->route_ipv6_default_gateway;
 
@@ -3227,6 +3236,7 @@ pre_connect_restore(struct options *o, struct gc_arena *gc)
 
     o->push_continuation = 0;
     o->push_option_types_found = 0;
+    o->push_update_options_found = 0;
     o->imported_protocol_flags = 0;
 }
 
@@ -3311,11 +3321,22 @@ options_postprocess_verify(const struct options *o)
 
     dns_options_verify(M_FATAL, &o->dns_options);
 
-    if (dco_enabled(o) && o->enable_c2c)
+    if (dco_enabled(o))
     {
-        msg(M_WARN, "Note: --client-to-client has no effect when using data "
-                    "channel offload: packets are always sent to the VPN "
-                    "interface and then routed based on the system routing table");
+        if (o->enable_c2c)
+        {
+            msg(M_WARN, "Note: --client-to-client has no effect when using data "
+                        "channel offload: packets are always sent to the VPN "
+                        "interface and then routed based on the system routing table");
+        }
+
+        if (o->renegotiate_bytes > 0 || o->renegotiate_packets)
+        {
+            msg(M_WARN, "Note: '--reneg-bytes' and '--reneg-pkts' are not supported "
+                        "by data channel offload; automatic key renegotiation "
+                        "mechanisms are sufficient for modern ciphers. "
+                        "Ignoring these options.");
+        }
     }
 }
 
@@ -3741,6 +3762,22 @@ dhcp_options_postprocess_dns(struct options *o, struct env_set *es)
     gc_free(&gc);
 }
 #endif /* if defined(_WIN32) || defined(TARGET_ANDROID) */
+/**
+ * Sets the internal hash maps sizes according to the max_clients
+ *
+ */
+static void
+helper_hashmap_sizes(struct options *o)
+{
+    if (!o->real_hash_size)
+    {
+        o->real_hash_size = 4 * o->max_clients;
+    }
+    if (!o->virtual_hash_size)
+    {
+        o->virtual_hash_size = 4 * o->max_clients;
+    }
+}
 
 static void
 options_postprocess_mutate(struct options *o, struct env_set *es)
@@ -3755,6 +3792,11 @@ options_postprocess_mutate(struct options *o, struct env_set *es)
     helper_setdefault_topology(o);
     helper_keepalive(o);
     helper_tcp_nodelay(o);
+
+    if (o->mode == MODE_SERVER)
+    {
+        helper_hashmap_sizes(o);
+    }
 
     options_postprocess_setdefault_ncpciphers(o);
     options_set_backwards_compatible_options(o);
@@ -3887,16 +3929,7 @@ options_postprocess_mutate(struct options *o, struct env_set *es)
     }
     else
     {
-        if (o->windows_driver == DRIVER_DCO)
-        {
-            msg(M_WARN,
-                "Option --windows-driver ovpn-dco is ignored because Data Channel Offload is disabled");
-            o->windows_driver = WINDOWS_DRIVER_TAP_WINDOWS6;
-        }
-        else if (o->windows_driver == WINDOWS_DRIVER_UNSPECIFIED)
-        {
-            o->windows_driver = WINDOWS_DRIVER_TAP_WINDOWS6;
-        }
+        o->windows_driver = WINDOWS_DRIVER_TAP_WINDOWS6;
     }
 #else  /* _WIN32 */
     if (dco_enabled(o) && o->dev_node)
@@ -3933,6 +3966,12 @@ options_postprocess_mutate(struct options *o, struct env_set *es)
     {
         o->auth_token_renewal = o->renegotiate_seconds;
     }
+#if ENABLE_MANAGEMENT
+    if (o->auth_user_pass_username_only && o->sc_info.challenge_text)
+    {
+        msg(M_USAGE, "'auth-user-pass username-only' cannot be used with static challenge");
+    }
+#endif
     pre_connect_save(o);
 }
 
@@ -4850,7 +4889,7 @@ usage(void)
 #else
 
     struct options o;
-    init_options(&o, true);
+    init_options(&o);
 
     fprintf(fp, usage_message, title_string, o.ce.connect_retry_seconds,
             o.ce.connect_retry_seconds_max, o.ce.local_port, o.ce.remote_port, TUN_MTU_DEFAULT,
@@ -4915,7 +4954,7 @@ usage_version(void)
 #endif
     show_dco_version(M_INFO | M_NOPREFIX);
     msg(M_INFO | M_NOPREFIX, "Originally developed by James Yonan");
-    msg(M_INFO | M_NOPREFIX, "Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>");
+    msg(M_INFO | M_NOPREFIX, "Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>");
 #ifndef ENABLE_SMALL
 #ifdef CONFIGURE_DEFINES
     msg(M_INFO | M_NOPREFIX, "Compile time defines: %s", CONFIGURE_DEFINES);
@@ -5181,12 +5220,12 @@ remove_option(struct context *c, struct options *options, char *p[], bool is_inl
         memset(o->ntp, 0, sizeof(o->ntp));
         o->nbdd_len = 0;
         memset(o->nbdd, 0, sizeof(o->nbdd));
-        while (o->domain_search_list_len-- > 0)
-        {
-            o->domain_search_list[o->domain_search_list_len] = NULL;
-        }
+        o->domain_search_list_len = 0;
+        CLEAR(o->domain_search_list);
         o->disable_nbt = 0;
         o->dhcp_options = 0;
+        CLEAR(options->dns_options.from_dhcp);
+
 #if defined(TARGET_ANDROID)
         o->http_proxy_port = 0;
         o->http_proxy = NULL;
@@ -5391,14 +5430,14 @@ void
 update_option(struct context *c, struct options *options, char *p[], bool is_inline,
               const char *file, int line, const int level, const msglvl_t msglevel,
               const unsigned int permission_mask, unsigned int *option_types_found,
-              struct env_set *es, unsigned int *update_options_found)
+              struct env_set *es)
 {
     const bool pull_mode = BOOL_CAST(permission_mask & OPT_P_PULL_MODE);
     ASSERT(MAX_PARMS >= 7);
 
     if (streq(p[0], "route") && p[1] && !p[5])
     {
-        if (!(*update_options_found & OPT_P_U_ROUTE))
+        if (!(options->push_update_options_found & OPT_P_U_ROUTE))
         {
             VERIFY_PERMISSION(OPT_P_ROUTE);
             if (!check_route_option(options, p, msglevel, pull_mode))
@@ -5411,12 +5450,12 @@ update_option(struct context *c, struct options *options, char *p[], bool is_inl
                                  es, &c->net_ctx);
                 RESET_OPTION_ROUTES(options->routes, routes);
             }
-            *update_options_found |= OPT_P_U_ROUTE;
+            options->push_update_options_found |= OPT_P_U_ROUTE;
         }
     }
     else if (streq(p[0], "route-ipv6") && p[1] && !p[4])
     {
-        if (!(*update_options_found & OPT_P_U_ROUTE6))
+        if (!(options->push_update_options_found & OPT_P_U_ROUTE6))
         {
             VERIFY_PERMISSION(OPT_P_ROUTE);
             if (!check_route6_option(options, p, msglevel, pull_mode))
@@ -5429,12 +5468,12 @@ update_option(struct context *c, struct options *options, char *p[], bool is_inl
                                  ROUTE_OPTION_FLAGS(&c->options), es, &c->net_ctx);
                 RESET_OPTION_ROUTES(options->routes_ipv6, routes_ipv6);
             }
-            *update_options_found |= OPT_P_U_ROUTE6;
+            options->push_update_options_found |= OPT_P_U_ROUTE6;
         }
     }
     else if (streq(p[0], "redirect-gateway") || streq(p[0], "redirect-private"))
     {
-        if (!(*update_options_found & OPT_P_U_REDIR_GATEWAY))
+        if (!(options->push_update_options_found & OPT_P_U_REDIR_GATEWAY))
         {
             VERIFY_PERMISSION(OPT_P_ROUTE);
             if (options->routes)
@@ -5447,12 +5486,12 @@ update_option(struct context *c, struct options *options, char *p[], bool is_inl
             }
             env_set_del(es, "route_redirect_gateway_ipv4");
             env_set_del(es, "route_redirect_gateway_ipv6");
-            *update_options_found |= OPT_P_U_REDIR_GATEWAY;
+            options->push_update_options_found |= OPT_P_U_REDIR_GATEWAY;
         }
     }
     else if (streq(p[0], "dns") && p[1])
     {
-        if (!(*update_options_found & OPT_P_U_DNS))
+        if (!(options->push_update_options_found & OPT_P_U_DNS))
         {
             VERIFY_PERMISSION(OPT_P_DHCPDNS);
             if (!check_dns_option(options, p, msglevel, pull_mode))
@@ -5461,13 +5500,13 @@ update_option(struct context *c, struct options *options, char *p[], bool is_inl
             }
             gc_free(&options->dns_options.gc);
             CLEAR(options->dns_options);
-            *update_options_found |= OPT_P_U_DNS;
+            options->push_update_options_found |= OPT_P_U_DNS;
         }
     }
 #if defined(_WIN32) || defined(TARGET_ANDROID)
     else if (streq(p[0], "dhcp-option") && p[1] && !p[3])
     {
-        if (!(*update_options_found & OPT_P_U_DHCP))
+        if (!(options->push_update_options_found & OPT_P_U_DHCP))
         {
             struct tuntap_options *o = &options->tuntap_options;
             VERIFY_PERMISSION(OPT_P_DHCPDNS);
@@ -5485,10 +5524,8 @@ update_option(struct context *c, struct options *options, char *p[], bool is_inl
             CLEAR(o->ntp);
             o->nbdd_len = 0;
             CLEAR(o->nbdd);
-            while (o->domain_search_list_len-- > 0)
-            {
-                o->domain_search_list[o->domain_search_list_len] = NULL;
-            }
+            o->domain_search_list_len = 0;
+            CLEAR(o->domain_search_list);
             o->disable_nbt = 0;
             o->dhcp_options = 0;
 
@@ -5497,17 +5534,17 @@ update_option(struct context *c, struct options *options, char *p[], bool is_inl
             o->http_proxy_port = 0;
             o->http_proxy = NULL;
 #endif
-            *update_options_found |= OPT_P_U_DHCP;
+            options->push_update_options_found |= OPT_P_U_DHCP;
         }
     }
 #else  /* if defined(_WIN32) || defined(TARGET_ANDROID) */
     else if (streq(p[0], "dhcp-option") && p[1] && !p[3])
     {
-        if (!(*update_options_found & OPT_P_U_DHCP))
+        if (!(options->push_update_options_found & OPT_P_U_DHCP))
         {
             VERIFY_PERMISSION(OPT_P_DHCPDNS);
             delete_all_dhcp_fo(options, &es->list);
-            *update_options_found |= OPT_P_U_DHCP;
+            options->push_update_options_found |= OPT_P_U_DHCP;
         }
     }
 #endif /* if defined(_WIN32) || defined(TARGET_ANDROID) */
@@ -6005,7 +6042,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
             struct options sub;
             struct connection_entry *e;
 
-            init_options(&sub, true);
+            init_options(&sub);
             sub.ce = options->ce;
             read_config_string("[CONNECTION-OPTIONS]", &sub, p[1], msglevel, OPT_P_CONNECTION,
                                option_types_found, es);
@@ -6309,23 +6346,24 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
         options->log = true;
         redirect_stdout_stderr(p[1], true);
     }
-#ifdef ENABLE_MEMSTATS
-    else if (streq(p[0], "memstats") && p[1] && !p[2])
-    {
-        VERIFY_PERMISSION(OPT_P_GENERAL);
-        options->memstats_fn = p[1];
-    }
-#endif
     else if (streq(p[0], "mlock") && !p[1])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
         options->mlock = true;
     }
 #if ENABLE_IP_PKTINFO
-    else if (streq(p[0], "multihome") && !p[1])
+    else if (streq(p[0], "multihome") && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
         options->sockflags |= SF_USE_IP_PKTINFO;
+        if (p[1] && streq(p[1], "same-interface"))
+        {
+            options->sockflags |= SF_PKTINFO_COPY_IIF;
+        }
+        else if (p[1])
+        {
+            msg(msglevel, "Unknown parameter to --multihome: %s", p[1]);
+        }
     }
 #endif
     else if (streq(p[0], "verb") && p[1] && !p[2])
@@ -6401,35 +6439,31 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "tun-mtu") && p[1] && !p[3])
     {
         VERIFY_PERMISSION(OPT_P_PUSH_MTU | OPT_P_CONNECTION);
-        options->ce.tun_mtu = positive_atoi(p[1], msglevel);
-        options->ce.tun_mtu_defined = true;
-        if (p[2])
+        if (atoi_constrained(p[1], &options->ce.tun_mtu, "tun-mtu", TUN_MTU_MIN, TUN_MTU_MAX, msglevel))
         {
-            options->ce.occ_mtu = positive_atoi(p[2], msglevel);
-        }
-        else
-        {
-            options->ce.occ_mtu = 0;
+            options->ce.tun_mtu_defined = true;
+            if (p[2])
+            {
+                atoi_constrained(p[2], &options->ce.occ_mtu, "tun-mtu occ-mtu", TUN_MTU_MIN, TUN_MTU_MAX, msglevel);
+            }
+            else
+            {
+                options->ce.occ_mtu = 0;
+            }
         }
     }
     else if (streq(p[0], "tun-mtu-max") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_MTU | OPT_P_CONNECTION);
-        int max_mtu = positive_atoi(p[1], msglevel);
-        if (max_mtu < 68 || max_mtu > 65536)
-        {
-            msg(msglevel, "--tun-mtu-max value '%s' is invalid", p[1]);
-        }
-        else
-        {
-            options->ce.tun_mtu_max = max_mtu;
-        }
+        atoi_constrained(p[1], &options->ce.tun_mtu_max, p[0], TUN_MTU_MAX_MIN, TUN_MTU_MAX, msglevel);
     }
     else if (streq(p[0], "tun-mtu-extra") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_MTU | OPT_P_CONNECTION);
-        options->ce.tun_mtu_extra = positive_atoi(p[1], msglevel);
-        options->ce.tun_mtu_extra_defined = true;
+        if (atoi_constrained(p[1], &options->ce.tun_mtu_extra, p[0], 0, TUN_MTU_MAX, msglevel))
+        {
+            options->ce.tun_mtu_extra_defined = true;
+        }
     }
     else if (streq(p[0], "max-packet-size") && p[1] && !p[2])
     {
@@ -6461,11 +6495,8 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "fragment") && p[1] && !p[3])
     {
         VERIFY_PERMISSION(OPT_P_MTU | OPT_P_CONNECTION);
-        options->ce.fragment = positive_atoi(p[1], msglevel);
-
-        if (options->ce.fragment < 68)
+        if (!atoi_constrained(p[1], &options->ce.fragment, p[0], 68, INT_MAX, msglevel))
         {
-            msg(msglevel, "--fragment needs to be at least 68");
             goto err;
         }
 
@@ -6506,7 +6537,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     }
     else if (streq(p[0], "mark") && p[1] && !p[2])
     {
-#if defined(TARGET_LINUX) && HAVE_DECL_SO_MARK
+#if defined(TARGET_LINUX)
         VERIFY_PERMISSION(OPT_P_GENERAL);
         options->mark = atoi_warn(p[1], msglevel);
 #endif
@@ -6517,11 +6548,9 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
         VERIFY_PERMISSION(OPT_P_SOCKFLAGS);
         for (j = 1; j < MAX_PARMS && p[j]; ++j)
         {
-            if (streq(p[j], "TCP_NODELAY"))
-            {
-                options->sockflags |= SF_TCP_NODELAY;
-            }
-            else
+            /* TCP_NODELAY is enabled by default; the flag is still accepted
+             * for backwards compatibility but no longer has any effect */
+            if (!streq(p[j], "TCP_NODELAY"))
             {
                 msg(msglevel, "unknown socket flag: %s", p[j]);
             }
@@ -6590,7 +6619,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "fast-io") && !p[1])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
-        options->fast_io = true;
+        msg(M_WARN, "DEPRECATED OPTION: --fast-io option ignored.");
     }
     else if (streq(p[0], "inactive") && p[1] && !p[3])
     {
@@ -6698,19 +6727,10 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
         ho->auth_file_up = p[1];
         ho->inline_creds = is_inline;
     }
-    else if (streq(p[0], "http-proxy-retry") || streq(p[0], "socks-proxy-retry"))
+    else if (streq(p[0], "http-proxy-retry") || streq(p[0], "socks-proxy-retry") || streq(p[0], "http-proxy-timeout"))
     {
         VERIFY_PERMISSION(OPT_P_GENERAL | OPT_P_CONNECTION);
-        msg(M_WARN, "DEPRECATED OPTION: http-proxy-retry and socks-proxy-retry: "
-                    "In OpenVPN 2.4 proxy connection retries are handled like regular connections. "
-                    "Use connect-retry-max 1 to get a similar behavior as before.");
-    }
-    else if (streq(p[0], "http-proxy-timeout") && p[1] && !p[2])
-    {
-        VERIFY_PERMISSION(OPT_P_GENERAL | OPT_P_CONNECTION);
-        msg(M_WARN,
-            "DEPRECATED OPTION: http-proxy-timeout: In OpenVPN 2.4 the timeout until a connection to a "
-            "server is established is managed with a single timeout set by connect-timeout");
+        msg(M_WARN, "DEPRECATED OPTION: %s option ignored.", p[0]);
     }
     else if (streq(p[0], "http-proxy-option") && p[1] && !p[4])
     {
@@ -6780,24 +6800,29 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "keepalive") && p[1] && p[2] && !p[3])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
-        options->keepalive_ping = atoi_warn(p[1], msglevel);
-        options->keepalive_timeout = atoi_warn(p[2], msglevel);
+        atoi_constrained(p[1], &options->keepalive_ping, "keepalive ping",
+                         1, PING_TIMEOUT_MAX, msglevel);
+        atoi_constrained(p[2], &options->keepalive_timeout, "keepalive timeout",
+                         1, PING_TIMEOUT_MAX, msglevel);
     }
     else if (streq(p[0], "ping") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_TIMER);
-        options->ping_send_timeout = positive_atoi(p[1], msglevel);
+        atoi_constrained(p[1], &options->ping_send_timeout, p[0],
+                         0, PING_TIMEOUT_MAX, msglevel);
     }
     else if (streq(p[0], "ping-exit") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_TIMER);
-        options->ping_rec_timeout = positive_atoi(p[1], msglevel);
+        atoi_constrained(p[1], &options->ping_rec_timeout, p[0],
+                         0, PING_TIMEOUT_MAX, msglevel);
         options->ping_rec_timeout_action = PING_EXIT;
     }
     else if (streq(p[0], "ping-restart") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_TIMER);
-        options->ping_rec_timeout = positive_atoi(p[1], msglevel);
+        atoi_constrained(p[1], &options->ping_rec_timeout, p[0],
+                         0, PING_TIMEOUT_MAX, msglevel);
         options->ping_rec_timeout_action = PING_RESTART;
     }
     else if (streq(p[0], "ping-timer-rem") && !p[1])
@@ -6825,7 +6850,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "persist-key") && !p[1])
     {
         VERIFY_PERMISSION(OPT_P_PERSIST);
-        msg(M_WARN, "DEPRECATED: --persist-key option ignored. "
+        msg(M_WARN, "DEPRECATED OPTION: --persist-key option ignored. "
                     "Keys are now always persisted across restarts. ");
     }
     else if (streq(p[0], "persist-local-ip") && !p[1])
@@ -6874,10 +6899,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     }
     else if (streq(p[0], "max-routes") && !p[2])
     {
-        msg(M_WARN, "DEPRECATED OPTION: --max-routes option ignored. "
-                    "The number of routes is unlimited as of OpenVPN 2.4. "
-                    "This option will be removed in a future version, "
-                    "please remove it from your configuration.");
+        msg(M_WARN, "DEPRECATED OPTION: --max-routes option ignored.");
     }
     else if (streq(p[0], "route-gateway") && p[1] && !p[2])
     {
@@ -7025,10 +7047,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
             }
             else if (streq(p[j], "def1"))
             {
-#ifndef TARGET_ANDROID
-                /* Android always uses 0.0.0.0/0, so silently ignore the flag */
                 options->routes->flags |= RG_DEF1;
-#endif
             }
             else if (streq(p[j], "bypass-dhcp"))
             {
@@ -7142,12 +7161,14 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
         VERIFY_PERMISSION(OPT_P_GENERAL | OPT_P_CONNECTION);
         if (p[1])
         {
-            int mssfix = positive_atoi(p[1], msglevel);
-            /* can be 0, but otherwise it needs to be high enough so we can
-             * substract room for headers. */
-            if (mssfix != 0 && (mssfix < TLS_CHANNEL_MTU_MIN || mssfix > UINT16_MAX))
+            int mssfix;
+            if (!atoi_constrained(p[1], &mssfix, p[0], 0, UINT16_MAX, msglevel))
             {
-                msg(msglevel, "--mssfix value '%s' is invalid", p[1]);
+                goto err;
+            }
+            if (mssfix != 0 && mssfix < TLS_CHANNEL_MTU_MIN)
+            {
+                msg(msglevel, "mssfix needs to be >= %d, not %d", TLS_CHANNEL_MTU_MIN, mssfix);
                 goto err;
             }
 
@@ -7400,7 +7421,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "max-routes-per-client") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_INHERIT);
-        options->max_routes_per_client = max_int(positive_atoi(p[1], msglevel), 1);
+        atoi_constrained(p[1], &options->max_routes_per_client, p[0], 1, INT_MAX, msglevel);
     }
     else if (streq(p[0], "client-cert-not-required") && !p[1])
     {
@@ -7446,9 +7467,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "opt-verify") && !p[1])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
-        msg(M_INFO, "DEPRECATION: opt-verify is deprecated and will be removed "
-                    "in OpenVPN 2.7");
-        options->ssl_flags |= SSLF_OPT_VERIFY;
+        msg(M_INFO, "DEPRECATED OPTION: --opt-verify was removed in OpenVPN 2.7.");
     }
     else if (streq(p[0], "auth-user-pass-verify") && p[1])
     {
@@ -7568,7 +7587,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "bcast-buffers") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
-        atoi_constrained(p[1], &options->n_bcast_buf, p[0], 1, INT_MAX, msglevel);
+        atoi_constrained(p[1], &options->n_bcast_buf, p[0], 1, MBUF_SIZE_MAX, msglevel);
     }
     else if (streq(p[0], "tcp-queue-limit") && p[1] && !p[2])
     {
@@ -7769,7 +7788,13 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "auth-user-pass") && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL | OPT_P_INLINE);
-        if (p[1])
+        options->auth_user_pass_username_only = false;
+        if (p[1] && streq(p[1], "username-only"))
+        {
+            options->auth_user_pass_username_only = true;
+            options->auth_user_pass_file = "stdin";
+        }
+        else if (p[1])
         {
             options->auth_user_pass_file = p[1];
             options->auth_user_pass_file_inline = is_inline;
@@ -7931,7 +7956,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
         }
         else
         {
-            if (streq(dns->updown, DEFAULT_DNS_UPDOWN))
+            if (dns->updown && streq(dns->updown, DEFAULT_DNS_UPDOWN))
             {
                 /* Unset the default command to prevent warnings */
                 dns->updown = NULL;
@@ -8015,7 +8040,7 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
                 msg(msglevel, "--dhcp-option NBT: parameter (%d) must be 1, 2, 4, or 8", t);
                 goto err;
             }
-            o->netbios_node_type = t;
+            o->netbios_node_type = (uint8_t)t;
             o->dhcp_options |= DHCP_OPTIONS_DHCP_REQUIRED;
         }
         else if (streq(p[1], "WINS") && p[2] && !p[3])
@@ -8969,7 +8994,14 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "tls-timeout") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_TLS_PARMS);
-        options->tls_timeout = positive_atoi(p[1], msglevel);
+        /* Constrain the timeout to not have problems with
+         * RELIABLE_MAX_TIMEOUT_SHIFT creating an overflow. 65k seconds
+         * timeout is already way too much anyway */
+        if (!atoi_constrained(p[1], &options->tls_timeout, "tls-timeout", 1,
+                              RELIABLE_MAX_INITIAL_TIMEOUT, msglevel))
+        {
+            goto err;
+        }
     }
     else if (streq(p[0], "reneg-bytes") && p[1] && !p[2])
     {
@@ -9090,12 +9122,19 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
         VERIFY_PERMISSION(OPT_P_GENERAL);
         options->tls_crypt_v2_verify_script = p[1];
     }
+    else if (streq(p[0], "tls-crypt-v2-max-age") && p[1])
+    {
+        VERIFY_PERMISSION(OPT_P_GENERAL);
+        if (!atoi_constrained(p[1], &options->tls_crypt_v2_max_age, "tls-crypt-v2-max-age", 1, INT_MAX, msglevel))
+        {
+            goto err;
+        }
+    }
     else if (streq(p[0], "x509-track") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
         x509_track_add(&options->x509_track, p[1], msglevel, &options->gc);
     }
-#ifdef ENABLE_X509ALTUSERNAME
     else if (streq(p[0], "x509-username-field") && p[1])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
@@ -9110,7 +9149,6 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
             options->x509_username_field[j - 1] = p[j];
         }
     }
-#endif /* ENABLE_X509ALTUSERNAME */
 #ifdef ENABLE_PKCS11
     else if (streq(p[0], "show-pkcs11-ids") && !p[3])
     {
@@ -9229,8 +9267,6 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     }
     else if (streq(p[0], "keying-material-exporter") && p[1] && p[2])
     {
-        int ekm_length = positive_atoi(p[2], msglevel);
-
         VERIFY_PERMISSION(OPT_P_GENERAL);
 
         if (strncmp(p[1], "EXPORTER", 8))
@@ -9244,14 +9280,14 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
             msg(msglevel,
                 "Keying material exporter label must not be '" EXPORT_KEY_DATA_LABEL "'.");
         }
-        if (ekm_length < 16 || ekm_length > 4095)
+
+        if (!atoi_constrained(p[2], &options->keying_material_exporter_length,
+                              p[0], 16, 4095, msglevel))
         {
-            msg(msglevel, "Invalid keying material exporter length");
             goto err;
         }
 
         options->keying_material_exporter_label = p[1];
-        options->keying_material_exporter_length = ekm_length;
     }
     else if (streq(p[0], "allow-recursive-routing") && !p[1])
     {
@@ -9286,15 +9322,14 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     }
     else if (streq(p[0], "vlan-pvid") && p[1] && !p[2])
     {
+        int vlan_pvid;
         VERIFY_PERMISSION(OPT_P_GENERAL | OPT_P_INSTANCE);
-        options->vlan_pvid = positive_atoi(p[1], msglevel);
-        if (options->vlan_pvid < OPENVPN_8021Q_MIN_VID
-            || options->vlan_pvid > OPENVPN_8021Q_MAX_VID)
+        if (!atoi_constrained(p[1], &vlan_pvid, p[0],
+                              OPENVPN_8021Q_MIN_VID, OPENVPN_8021Q_MAX_VID, msglevel))
         {
-            msg(msglevel, "the parameter of --vlan-pvid parameters must be >= %u and <= %u",
-                OPENVPN_8021Q_MIN_VID, OPENVPN_8021Q_MAX_VID);
             goto err;
         }
+        options->vlan_pvid = (uint16_t)vlan_pvid;
     }
     else
     {
@@ -9325,10 +9360,6 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
 err:
     gc_free(&gc);
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 bool
 has_udp_in_local_list(const struct options *options)

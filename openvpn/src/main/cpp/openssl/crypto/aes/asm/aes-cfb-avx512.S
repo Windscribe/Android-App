@@ -80,8 +80,8 @@ ossl_aes_cfb128_vaes_enc:
 	andb	$0x0F,%al
 
 	leaq	(%r11,%r8,1),%r11
-	vmovdqu8	(%r11),%xmm0
-	vmovdqu8	(%rdi),%xmm1
+	vmovdqu8	(%r11),%xmm0{%k1}{z}
+	vmovdqu8	(%rdi),%xmm1{%k1}{z}
 	vpxor	%xmm0,%xmm1,%xmm2
 	vmovdqu8	%xmm2,(%rsi){%k1}
 	vmovdqu8	%xmm2,(%r11){%k1}
@@ -305,8 +305,8 @@ ossl_aes_cfb128_vaes_dec:
 	andb	$0x0F,%al
 
 	leaq	(%r11,%r8,1),%r11
-	vmovdqu8	(%r11),%xmm0
-	vmovdqu8	(%rdi),%xmm1
+	vmovdqu8	(%r11),%xmm0{%k1}{z}
+	vmovdqu8	(%rdi),%xmm1{%k1}{z}
 	vpxor	%xmm0,%xmm1,%xmm2
 	vmovdqu8	%xmm2,(%rsi){%k1}
 	vmovdqu8	%xmm1,(%r11){%k1}

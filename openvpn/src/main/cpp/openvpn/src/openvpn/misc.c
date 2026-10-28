@@ -5,9 +5,9 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *  Copyright (C) 2014-2015 David Sommerseth <davids@redhat.com>
- *  Copyright (C) 2016-2025 David Sommerseth <davids@openvpn.net>
+ *  Copyright (C) 2016-2026 David Sommerseth <davids@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -215,7 +215,6 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
         {
             msg(M_WARN, "Note: previous '%s' credentials failed", prefix);
         }
-
 #ifdef ENABLE_MANAGEMENT
         /*
          * Get username/password from management interface?
@@ -239,8 +238,7 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
                 struct buffer user_prompt = alloc_buf_gc(128, &gc);
 
                 buf_printf(&user_prompt, "NEED-OK|%s|%s:", prefix, up->username);
-                if (!query_user_SINGLE(BSTR(&user_prompt), BLEN(&user_prompt), up->password,
-                                       USER_PASS_LEN, false))
+                if (!query_user_SINGLE(BSTR(&user_prompt), up->password, USER_PASS_LEN, false))
                 {
                     msg(M_FATAL, "ERROR: could not read %s ok-confirmation from stdin", prefix);
                 }
@@ -307,24 +305,6 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
                 {
                     strncpy(up->password, password_buf, USER_PASS_LEN);
                 }
-                /* The auth-file does not have the password: get both username
-                 * and password from the management interface if possible.
-                 * Otherwise set to read password from console.
-                 */
-#if defined(ENABLE_MANAGEMENT)
-                else if (management && (flags & GET_USER_PASS_MANAGEMENT)
-                         && management_query_user_pass_enabled(management))
-                {
-                    msg(D_LOW,
-                        "No password found in %s authfile '%s'. Querying the management interface",
-                        prefix, auth_file);
-                    if (!auth_user_pass_mgmt(up, prefix, flags, auth_challenge))
-                    {
-                        fclose(fp);
-                        return false;
-                    }
-                }
-#endif
                 else
                 {
                     password_from_stdin = 1;
@@ -350,7 +330,24 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
         if (username_from_stdin || password_from_stdin || response_from_stdin)
         {
 #ifdef ENABLE_MANAGEMENT
-            if (auth_challenge && (flags & GET_USER_PASS_DYNAMIC_CHALLENGE) && response_from_stdin)
+            /* If management-query-passwords is true, we could be here because
+             * of no password present in auth-file or inline. In that case
+             * query via the management interface instead of stdin/console.
+             */
+            if (management && (flags & GET_USER_PASS_MANAGEMENT)
+                && management_query_user_pass_enabled(management)
+                && password_from_stdin
+                && !(flags & GET_USER_PASS_USERNAME_ONLY))
+            {
+                msg(D_LOW,
+                    "No '%s' password found in authfile or inline. Querying the management interface",
+                    prefix);
+                if (!auth_user_pass_mgmt(up, prefix, flags, auth_challenge))
+                {
+                    return false;
+                }
+            }
+            else if (auth_challenge && (flags & GET_USER_PASS_DYNAMIC_CHALLENGE) && response_from_stdin)
             {
                 struct auth_challenge_info *ac = parse_auth_challenge(auth_challenge, &gc);
                 if (ac)
@@ -362,7 +359,7 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
                     buf_printf(&challenge, "CHALLENGE: %s", ac->challenge_text);
                     buf_set_write(&packed_resp, (uint8_t *)up->password, USER_PASS_LEN);
 
-                    if (!query_user_SINGLE(BSTR(&challenge), BLEN(&challenge), response,
+                    if (!query_user_SINGLE(BSTR(&challenge), response,
                                            USER_PASS_LEN, BOOL_CAST(ac->flags & CR_ECHO)))
                     {
                         msg(M_FATAL, "ERROR: could not read challenge response from stdin");
@@ -387,14 +384,12 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
 
                 if (username_from_stdin && !(flags & GET_USER_PASS_PASSWORD_ONLY))
                 {
-                    query_user_add(BSTR(&user_prompt), BLEN(&user_prompt), up->username,
-                                   USER_PASS_LEN, true);
+                    query_user_add(BSTR(&user_prompt), up->username, USER_PASS_LEN, true);
                 }
 
-                if (password_from_stdin)
+                if (password_from_stdin && !(flags & GET_USER_PASS_USERNAME_ONLY))
                 {
-                    query_user_add(BSTR(&pass_prompt), BLEN(&pass_prompt), up->password,
-                                   USER_PASS_LEN, false);
+                    query_user_add(BSTR(&pass_prompt), up->password, USER_PASS_LEN, false);
                 }
 
                 if (!query_user_exec())
@@ -421,8 +416,7 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
                     challenge = alloc_buf_gc(14 + strlen(auth_challenge), &gc);
                     buf_printf(&challenge, "CHALLENGE: %s", auth_challenge);
 
-                    if (!query_user_SINGLE(BSTR(&challenge), BLEN(&challenge), response,
-                                           USER_PASS_LEN,
+                    if (!query_user_SINGLE(BSTR(&challenge), response, USER_PASS_LEN,
                                            BOOL_CAST(flags & GET_USER_PASS_STATIC_CHALLENGE_ECHO)))
                     {
                         msg(M_FATAL, "ERROR: could not retrieve static challenge response");
@@ -453,6 +447,12 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
                 }
 #endif /* ifdef ENABLE_MANAGEMENT */
             }
+        }
+
+        /* Use tag for blank password if we are not prompting for one */
+        if (flags & GET_USER_PASS_USERNAME_ONLY)
+        {
+            strncpy(up->password, blank_up, sizeof(up->password));
         }
 
         string_mod(up->username, CC_PRINT, CC_CRLF, 0);

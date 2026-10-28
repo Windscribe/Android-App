@@ -667,6 +667,10 @@ function import() {
 
   ls -l util
   ${PERL_EXE} "-I." "-Iutil/perl" "-Mconfigdata" "-MOpenSSL::paramnames" "util/dofile.pl" "-oMakefile" providers/implementations/include/prov/blake2_params.inc.in > providers/implementations/include/prov/blake2_params.inc
+  ${PERL_EXE} "-I." "-Iutil/perl" "-Mconfigdata" "-MOpenSSL::paramnames" "util/dofile.pl" "-oMakefile" providers/implementations/keymgmt/keymgmtcommon.inc.in > providers/implementations/keymgmt/keymgmtcommon.inc
+  ${PERL_EXE} "-I." "-Iutil/perl" "-Mconfigdata" "-MOpenSSL::paramnames" "util/dofile.pl" "-oMakefile" providers/implementations/kem/mlx_kem.inc.in > providers/implementations/kem/mlx_kem.inc
+  ${PERL_EXE} "-I." "-Iutil/perl" "-Mconfigdata" "-MOpenSSL::paramnames" "util/dofile.pl" "-oMakefile" providers/implementations/signature/lms_signature.inc.in > providers/implementations/signature/lms_signature.inc
+  ${PERL_EXE} "-I." "-Iutil/perl" "-Mconfigdata" "-MOpenSSL::paramnames" "util/dofile.pl" "-oMakefile" providers/implementations/signature/mac_legacy_sig.inc.in > providers/implementations/signature/mac_legacy_sig.inc
 
 
   cd ..

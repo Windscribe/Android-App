@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -60,6 +60,5 @@
  * event loop function is called to drive the event processing.  The
  * following implementations are available:
  * - Client mode using UDP or TCP: \c tunnel_point_to_point()
- * - Server mode using UDP: \c tunnel_server_udp()
- * - Server mode using TCP: \c tunnel_server_tcp()
+ * - Server mode using UDP or TCP: \c tunnel_server()
  */

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -30,10 +30,6 @@
  * to wait for.
  */
 #define BASE_N_EVENTS 5
-
-void context_clear(struct context *c);
-
-void context_clear_1(struct context *c);
 
 void context_clear_2(struct context *c);
 
@@ -64,8 +60,6 @@ void pre_setup(const struct options *options);
 void init_instance_handle_signals(struct context *c, const struct env_set *env,
                                   const unsigned int flags);
 
-void init_instance(struct context *c, const struct env_set *env, const unsigned int flags);
-
 /**
  * Query for private key and auth-user-pass username/passwords.
  */
@@ -77,7 +71,7 @@ bool do_route(const struct options *options, struct route_list *route_list,
 
 void close_instance(struct context *c);
 
-bool do_test_crypto(const struct options *o);
+void do_test_crypto(struct context *o);
 
 void context_gc_free(struct context *c);
 

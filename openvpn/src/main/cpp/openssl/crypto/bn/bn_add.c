@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2026 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -97,6 +97,8 @@ int BN_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
         return 0;
 
     r->top = max;
+    if (max == 0)
+        goto end;
 
     ap = a->d;
     bp = b->d;
@@ -116,6 +118,7 @@ int BN_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
     *rp = carry;
     r->top += (int)carry;
 
+end:
     r->neg = 0;
     bn_check_top(r);
     return 1;
@@ -135,13 +138,16 @@ int BN_usub(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
     min = b->top;
     dif = max - min;
 
-    if (dif < 0) {              /* hmm... should not be happening */
+    if (dif < 0) { /* hmm... should not be happening */
         ERR_raise(ERR_LIB_BN, BN_R_ARG2_LT_ARG3);
         return 0;
     }
 
     if (bn_wexpand(r, max) == NULL)
         return 0;
+
+    if (max == 0)
+        goto end;
 
     ap = a->d;
     bp = b->d;
@@ -162,10 +168,10 @@ int BN_usub(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
     while (max && *--rp == 0)
         max--;
 
+end:
     r->top = max;
     r->neg = 0;
     bn_pollute(r);
 
     return 1;
 }
-

@@ -2,7 +2,7 @@
  *  openvpnmsica -- Custom Action DLL to provide OpenVPN-specific support to MSI packages
  *                  https://community.openvpn.net/openvpn/wiki/OpenVPNMSICA
  *
- *  Copyright (C) 2018-2025 Simon Rozman <simon@rozman.si>
+ *  Copyright (C) 2018-2026 Simon Rozman <simon@rozman.si>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -308,7 +308,8 @@ cleanup_pAdapterList:
 }
 
 
-UINT __stdcall FindSystemInfo(_In_ MSIHANDLE hInstall)
+UINT __stdcall
+FindSystemInfo(_In_ MSIHANDLE hInstall)
 {
 #ifdef DLLEXP_EXPORT
 #pragma comment(linker, DLLEXP_EXPORT)
@@ -335,7 +336,8 @@ UINT __stdcall FindSystemInfo(_In_ MSIHANDLE hInstall)
 }
 
 
-UINT __stdcall CloseOpenVPNGUI(_In_ MSIHANDLE hInstall)
+UINT __stdcall
+CloseOpenVPNGUI(_In_ MSIHANDLE hInstall)
 {
 #ifdef DLLEXP_EXPORT
 #pragma comment(linker, DLLEXP_EXPORT)
@@ -359,7 +361,8 @@ UINT __stdcall CloseOpenVPNGUI(_In_ MSIHANDLE hInstall)
 }
 
 
-UINT __stdcall StartOpenVPNGUI(_In_ MSIHANDLE hInstall)
+UINT __stdcall
+StartOpenVPNGUI(_In_ MSIHANDLE hInstall)
 {
 #ifdef DLLEXP_EXPORT
 #pragma comment(linker, DLLEXP_EXPORT)
@@ -610,7 +613,7 @@ schedule_adapter_delete(_Inout_ struct msica_arg_seq *seq,
                 msica_arg_seq_add_tail(seq, szArgument);
             }
 
-            iTicks += MSICA_ADAPTER_TICK_SIZE;
+            *iTicks += MSICA_ADAPTER_TICK_SIZE;
             break; /* Adapter names are unique. There should be no other adapter with this name. */
         }
     }
@@ -620,7 +623,8 @@ schedule_adapter_delete(_Inout_ struct msica_arg_seq *seq,
 }
 
 
-UINT __stdcall EvaluateTUNTAPAdapters(_In_ MSIHANDLE hInstall)
+UINT __stdcall
+EvaluateTUNTAPAdapters(_In_ MSIHANDLE hInstall)
 {
 #ifdef DLLEXP_EXPORT
 #pragma comment(linker, DLLEXP_EXPORT)
@@ -963,7 +967,8 @@ CreateRebootFile(_In_z_ LPCWSTR szTmpDir)
     }
 }
 
-UINT __stdcall ProcessDeferredAction(_In_ MSIHANDLE hInstall)
+UINT __stdcall
+ProcessDeferredAction(_In_ MSIHANDLE hInstall)
 {
 #ifdef DLLEXP_EXPORT
 #pragma comment(linker, DLLEXP_EXPORT)
@@ -1166,7 +1171,8 @@ cleanup_CoInitialize:
     return uiResult;
 }
 
-UINT __stdcall CheckAndScheduleReboot(_In_ MSIHANDLE hInstall)
+UINT __stdcall
+CheckAndScheduleReboot(_In_ MSIHANDLE hInstall)
 {
 #ifdef DLLEXP_EXPORT
 #pragma comment(linker, DLLEXP_EXPORT)

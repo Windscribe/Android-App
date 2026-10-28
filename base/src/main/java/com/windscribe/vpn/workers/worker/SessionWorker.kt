@@ -176,7 +176,7 @@ class SessionWorker
             }
             return try {
                 if (serverListStale) {
-                    serverListRepository.update()
+                    serverListRepository.update(response.serverInventory)
                 }
                 if (accountChanged) {
                     connectionDataRepository.update()
