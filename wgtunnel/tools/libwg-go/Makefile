@@ -11,8 +11,8 @@ NDK_GO_ARCH_MAP_arm := arm
 NDK_GO_ARCH_MAP_arm64 := arm64
 NDK_GO_ARCH_MAP_mips := mipsx
 NDK_GO_ARCH_MAP_mips64 := mips64x
-CD_TAG := 1.5.8
-CD_COMMIT := 01f0c0a6a8344d489d17522cbd6124fd086f3f4b
+CD_TAG := 1.5.9
+CD_COMMIT := df5104dff15574f71dc08642343846d0c89ea41f
 comma := ,
 CLANG_FLAGS := --target=$(TARGET) --sysroot=$(SYSROOT)
 export CGO_CFLAGS := $(CLANG_FLAGS) $(subst -mthumb,-marm,$(CFLAGS))

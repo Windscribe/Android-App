@@ -11,7 +11,7 @@ replace github.com/rs/zerolog => github.com/Windscribe/zerolog v0.0.0-2024120613
 replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771
 
 require (
-	github.com/Control-D-Inc/ctrld v1.5.9-0.20261022132454-01f0c0a6a834
+	github.com/Control-D-Inc/ctrld v1.5.9
 	github.com/Windscribe/wstunnel v1.0.7
 	github.com/amnezia-vpn/amneziawg-go v0.2.19
 	github.com/spf13/cobra v1.9.1
