@@ -16,6 +16,54 @@ extern bool StartProxy(struct go_string listenAddress, struct go_string remoteAd
 extern go_int GetPrimaryListenerSocketFd();
 extern void Stop();
 
+/* The Go dialer calls ws_protect_socket between socket() and connect(), from a thread the JVM
+ * has never seen. FindClass resolves app classes only through the caller's class loader, and a
+ * Go thread has none, so the class and method are looked up here — on the loading thread — and
+ * kept as a global ref. */
+static JavaVM *ws_vm;
+static jclass ws_class;
+static jmethodID ws_protect_mid;
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    JNIEnv *env;
+    ws_vm = vm;
+    if ((*vm)->GetEnv(vm, (void **)&env, JNI_VERSION_1_6) != JNI_OK)
+        return JNI_VERSION_1_6;
+    jclass local = (*env)->FindClass(env, "com/windscribe/vpn/backend/openvpn/WSTunnelLib");
+    if (local) {
+        ws_class = (*env)->NewGlobalRef(env, local);
+        (*env)->DeleteLocalRef(env, local);
+        ws_protect_mid = (*env)->GetStaticMethodID(env, ws_class, "protectSocket", "(I)Z");
+    }
+    /* WireGuard shares this library and does not need any of the above, so a failed lookup must
+     * not fail the load. */
+    if ((*env)->ExceptionCheck(env))
+        (*env)->ExceptionClear(env);
+    return JNI_VERSION_1_6;
+}
+
+int ws_protect_socket(int fd) {
+    JNIEnv *env;
+    jboolean protectedOk;
+    int attached = 0;
+
+    if (!ws_vm || !ws_class || !ws_protect_mid)
+        return 0;
+    if ((*ws_vm)->GetEnv(ws_vm, (void **)&env, JNI_VERSION_1_6) != JNI_OK) {
+        if ((*ws_vm)->AttachCurrentThread(ws_vm, &env, NULL) != JNI_OK)
+            return 0;
+        attached = 1;
+    }
+    protectedOk = (*env)->CallStaticBooleanMethod(env, ws_class, ws_protect_mid, (jint)fd);
+    if ((*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionClear(env);
+        protectedOk = JNI_FALSE;
+    }
+    if (attached)
+        (*ws_vm)->DetachCurrentThread(ws_vm);
+    return protectedOk == JNI_TRUE;
+}
+
 JNIEXPORT void JNICALL
 Java_com_windscribe_vpn_backend_openvpn_WSTunnelLib_initialise(JNIEnv* env, jobject thiz, jboolean development, jstring logPath) {
     const char *logPath_str = (*env)->GetStringUTFChars(env, logPath, 0);
