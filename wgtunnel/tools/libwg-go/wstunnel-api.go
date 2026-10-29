@@ -56,7 +56,9 @@ func StartProxy(listenAddress string, remoteAddress string, tunnelType int, mtu 
 	cli.Logger.Infof("Starting proxy with listenAddress: %s remoteAddress %s tunnelType: %d mtu %d", listenAddress, remoteAddress, tunnelType, mtu)
 	err := cli.NewHTTPClient(listenAddress, remoteAddress, tunnelType, mtu, func(fd int) {
 		primaryListenerSocketFd = fd
-		cli.Logger.Info("Socket ready to protect.")
+		if !protectSocket(fd) {
+			cli.Logger.Warnf("Host could not protect socket %d; it will be routed into the tunnel.", fd)
+		}
 	}, cli.Channel, extraPadding, tlsServerName).Run()
 	if err != nil {
 		return false
