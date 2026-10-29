@@ -7,7 +7,6 @@ import com.windscribe.vpn.commonutils.Ext.maskMiddle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,7 +23,6 @@ class ProxyTunnelManager(
 
     /** Lazy so libwg-go loads on the proxy coroutine rather than when the backend is built. */
     private val tunnelLib by lazy { WSTunnelLib() }
-    private var protectJob: Job? = null
 
     fun startProxyTunnel(
         ip: String,
@@ -36,6 +34,11 @@ class ProxyTunnelManager(
             if (proxyJob?.isActive == true) {
                 logger.debug("Previous Stunnel job is still running. Waiting for it to finish.")
                 proxyJob?.join()
+            }
+            WSTunnelLib.setProtector { fd ->
+                vpnBackend.protect(fd).also {
+                    logger.debug("Protecting WSTunnel socket fd $fd: $it")
+                }
             }
             proxyJob =
                 scope.launch {
@@ -65,18 +68,6 @@ class ProxyTunnelManager(
                     }
                     logger.debug("Exiting tunnel proxy.")
                 }
-            protectJob =
-                scope.launch {
-                    logger.debug("Running protect.")
-                    delay(1500)
-                    while (tunnelLib.socketFd() == -1) {
-                        delay(100)
-                    }
-                    val socketFd = tunnelLib.socketFd()
-                    logger.debug("Protecting WSTunnel Socket Fd: $socketFd")
-                    vpnBackend.protect(socketFd)
-                    logger.debug("Exiting protect.")
-                }
         }
     }
 
@@ -93,7 +84,7 @@ class ProxyTunnelManager(
      */
     fun stopProxyTunnel() {
         logger.debug("Stopping proxy.")
-        protectJob?.cancel()
+        WSTunnelLib.setProtector(null)
         scope.launch(Dispatchers.IO) {
             runCatching { tunnelLib.stop() }
                 .onFailure { logger.debug("Proxy stop failed: ${it.message}") }

@@ -1,5 +1,6 @@
 package com.windscribe.vpn.backend.openvpn
 
+import androidx.annotation.Keep
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.wireguard.android.backend.GoBackend
 
@@ -32,4 +33,22 @@ class WSTunnelLib {
     external fun socketFd(): Int
 
     external fun stop()
+
+    companion object {
+        @Volatile
+        private var protector: ((Int) -> Boolean)? = null
+
+        /** Set before [startProxy], cleared once the proxy is stopped. */
+        fun setProtector(block: ((Int) -> Boolean)?) {
+            protector = block
+        }
+
+        /**
+         * Called from the Go dialer between `socket()` and `connect()`. Blocking the dialer until
+         * this returns is the point: `protect()` does not reroute a socket that already connected.
+         */
+        @Keep
+        @JvmStatic
+        fun protectSocket(fd: Int): Boolean = protector?.invoke(fd) == true
+    }
 }

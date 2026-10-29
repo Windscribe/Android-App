@@ -48,6 +48,8 @@ import com.wireguard.config.Peer
 import de.blinkt.openvpn.core.ConfigParser
 import org.slf4j.LoggerFactory
 import org.strongswan.android.data.VpnProfile
+import org.strongswan.android.data.VpnProfile.FLAGS_DISABLE_CRL
+import org.strongswan.android.data.VpnProfile.FLAGS_DISABLE_OCSP
 import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_DISABLE
 import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_EXCLUDE
 import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_ONLY
@@ -133,6 +135,9 @@ class VPNProfileCreator
             profile.ikeProposal = "aes256gcm16-sha256-ecp384"
             profile.remoteId = vpnParameters.hostName
             profile.vpnType = VpnType.fromIdentifier("ikev2-eap")
+            // Let's Encrypt's sharded CRLs carry a critical issuingDistributionPoint, which
+            // strongSwan cannot parse, so revocation never yields a status on any version.
+            profile.flags = FLAGS_DISABLE_CRL or FLAGS_DISABLE_OCSP
             if (preferencesHelper.isKeepAliveModeAuto) {
                 profile.natKeepAlive = 20
             } else {
