@@ -181,7 +181,7 @@
     <string name="let_s_do_it">Laten we het doen</string>
     <string name="open_settings">Instellingen openen</string>
     <string name="gps_spoofing_setup">GPS-spoofing instellen</string>
-    <string name="gps_spoofing_setup_explain">1. Open Instellingen, zoek „Over telefoon” en tik 7 keer op het buildnummer om „Ontwikkelaarsopties” te ontgrendelen.
+    <string name="gps_spoofing_setup_explain">1. Open Instellingen, zoek Over telefoon en tik 7 keer op het buildnummer om Ontwikkelaarsopties te ontgrendelen.
 
 2. Kies in Ontwikkelaarsopties Windscribe als de Mock-locatie-app.</string>
     <string name="you_are_done">Klaar!</string>
