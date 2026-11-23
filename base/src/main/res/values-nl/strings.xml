@@ -103,7 +103,7 @@
     <string name="auto_detecting">Automatisch detecteren …</string>
     <string name="decoy_traffic">Decoy‑verkeer</string>
     <string name="decoy_traffic_mode">Modus decoy‑verkeer</string>
-    <string name="decoy_traffic_warning">Dit is een experimentele functie die probeert aanvallen door middel van verkeerscorrelatie op vijandige netwerken tegen te gaan.</string>
+    <string name="decoy_traffic_warning">Dit is een experimentele functie die probeert verkeer-c correlatie‑aanvallen op vijandige netwerken tegen te gaan. Wanneer ingeschakeld, genereert de app willekeurige activiteit over de tunnel, en uploadt en downloadt willekeurige data op gekozen intervallen.</string>
     <string name="i_understand">Ik begrijp het</string>
     <string name="decoy_caution_description">Dit kan veel data verbruiken, dus zorg dat je deze functie niet aan laat staan tenzij je het echt nodig hebt en een ruim datalimiet hebt. Deze functie garandeert geen veiligheid, gebruik op eigen risico.</string>
     <string name="caution">Voorzichtig</string>
@@ -188,7 +188,7 @@
     <string name="gps_spoofing_success">Je GPS‑locatie wordt dezelfde als je VPN locatie.</string>
     <string name="gps_spoofing_not_set">GPS-spoofing kon niet worden ingeschakeld</string>
     <string name="gps_spoofing_error">Probeer de handleiding opnieuw te volgen om het te activeren.</string>
-    <string name="add_email">E-mail toevoegen</string>
+    <string name="add_email">E-mailadres toevoegen</string>
     <string name="unlimited_data">Onbeperkte data</string>
     <string name="preferences">Voorkeuren</string>
     <string name="optional">(Optioneel)</string>
@@ -470,7 +470,7 @@ de laatst gekozen locatie.</string>
     <string name="the_protocol_you_ve_chosen_has_failed_to_connect_windscribe_will_attempt_to_reconnect_using_the_first_protocol_below">Het protocol dat je hebt gekozen is niet verbonden. Windscribe zal proberen opnieuw te verbinden met het eerste protocol hieronder.</string>
     <string name="protocol_change">Protocol wijzigen</string>
     <string name="protocol_change_description">Snel opnieuw verbinden met een ander protocol.</string>
-    <string name="please_confirm_email_first">Bevestig eerst je e‑mail.</string>
+    <string name="please_confirm_email_first">Bevestig eerst je e-mailadres.</string>
     <string name="share_invite_link">Deel uitnodigingslink</string>
     <string name="share_windscribe_with_a_friend">Deel Windscribe met een vriend!</string>
     <string name="first_reason_to_use_share">Jullie krijgen beiden elke maand extra 1 GB wanneer hij/zij zich aanmeldt.</string>
