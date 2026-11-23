@@ -91,7 +91,7 @@
     <string name="preferred_protocol">Voorkeursprotocol</string>
     <string name="protocol">Protocol</string>
     <string name="port">Poort</string>
-    <string name="connection_automatic">Auto</string>
+    <string name="connection_automatic">Automatisch</string>
     <string name="connection_manual">Handmatig</string>
     <string name="go_to_settings">Ga naar instellingen</string>
     <string name="always_on_not_supported">Deze functie vereist Android‑versie 7.0+</string>
@@ -103,7 +103,7 @@
     <string name="auto_detecting">Automatisch detecteren …</string>
     <string name="decoy_traffic">Decoy‑verkeer</string>
     <string name="decoy_traffic_mode">Modus decoy‑verkeer</string>
-    <string name="decoy_traffic_warning">Dit is een experimentele functie die probeert verkeer-c correlatie‑aanvallen op vijandige netwerken tegen te gaan. Wanneer ingeschakeld, genereert de app willekeurige activiteit over de tunnel, en uploadt en downloadt willekeurige data op gekozen intervallen.</string>
+    <string name="decoy_traffic_warning">Dit is een experimentele functie die probeert aanvallen door middel van verkeerscorrelatie op vijandige netwerken tegen te gaan.</string>
     <string name="i_understand">Ik begrijp het</string>
     <string name="decoy_caution_description">Dit kan veel data verbruiken, dus zorg dat je deze functie niet aan laat staan tenzij je het echt nodig hebt en een ruim datalimiet hebt. Deze functie garandeert geen veiligheid, gebruik op eigen risico.</string>
     <string name="caution">Voorzichtig</string>
@@ -178,7 +178,7 @@
     <string name="never_ask_again">Ga weg</string>
     <string name="rate_message">Geniet je van Windscribe? Zeker wel. Beoordeel ons in de Play Store, en we zullen je lang liefhebben.</string>
     <string name="gps_spoofing_explain">Deze functie vereist dat je Android‑instellingen wijzigt. Volg de volgende stappen om het te activeren.</string>
-    <string name="let_s_do_it">Laten we het doen</string>
+    <string name="let_s_do_it">Beginnen</string>
     <string name="open_settings">Instellingen openen</string>
     <string name="gps_spoofing_setup">GPS-spoofing instellen</string>
     <string name="gps_spoofing_setup_explain">1. Open Instellingen, zoek Over telefoon en tik 7 keer op het buildnummer om Ontwikkelaarsopties te ontgrendelen.
@@ -289,7 +289,7 @@
     <string name="loading_network_list">Netwerklijst laden\nEven geduld…</string>
     <string name="no_saved_network_list">Geen opgeslagen netwerklijst!</string>
     <string name="network_options">Netwerkopties</string>
-    <string name="auto_secure">Auto-secure</string>
+    <string name="auto_secure">Automatisch beveiligen</string>
     <string name="auto_secure_description">Windscribe zal automatisch worden ingeschakeld wanneer je verbinding maakt met dit netwerk.</string>
     <string name="auto_start_on_boot">Automatisch verbinden bij opstarten</string>
     <string name="enable_start_on_boot">Start bij opstarten inschakelen</string>
@@ -475,8 +475,8 @@ de laatst gekozen locatie.</string>
     <string name="share_windscribe_with_a_friend">Deel Windscribe met een vriend!</string>
     <string name="first_reason_to_use_share">Jullie krijgen beiden elke maand extra 1 GB wanneer hij/zij zich aanmeldt.</string>
     <string name="if_they_go_pro_you_ll_go_pro_to">Als zij Pro worden, word jij ook Pro!</string>
-    <string name="referee_must_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">De referent moet zijn/haar e‑mail bevestigen zodat de bovenstaande voordelen op jouw account van toepassing zijn.</string>
-    <string name="you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer">Je moet je e‑mail bevestigen zodat de bovenstaande voordelen voor jou en de verwijzer gelden.</string>
+    <string name="referee_must_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">De referent moet zijn/haar e-mailadres bevestigen zodat de bovenstaande voordelen op jouw account van toepassing zijn.</string>
+    <string name="you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer">Je moet je e-mailadres bevestigen zodat de bovenstaande voordelen voor jou en de verwijzer gelden.</string>
     <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">De referent moet bij het aanmelden jouw gebruikersnaam opgeven en zijn/haar e‑mail bevestigen zodat de bovenstaande voordelen op jouw account van toepassing zijn.</string>
     <string name="if_you_go_pro_they_ll_go_pro_too">Als jij Pro wordt, worden zij ook Pro!</string>
     <string name="protocol_change_is_not_available_for_custom_config">Protocolwissel is niet beschikbaar voor aangepaste configuraties.</string>
@@ -499,13 +499,13 @@ de laatst gekozen locatie.</string>
     <string name="refer_for_data">Verwijs voor data</string>
     <string name="email_confirmation_sent_successfully">E‑mailbevestiging succesvol verzonden.</string>
     <string name="error_sending_email">Fout bij het verzenden van de e‑mail.</string>
-    <string name="added_email_successfully">E‑mail succesvol toegevoegd.</string>
+    <string name="added_email_successfully">E-mailadres succesvol toegevoegd.</string>
     <string name="file_path_will_show_here">Bestandspad wordt hier weergegeven</string>
     <string name="reddit">Reddit</string>
     <string name="discord">Discord</string>
     <string name="app_requires_background_location_permission">App vereist toestemming voor locatie op de achtergrond om Wi‑Fi‑SSID\'s te benaderen op Android 11+. Als je deze functie wilt gebruiken, druk op OK en selecteer "Altijd toestaan" in het toestemmingsdialoog.</string>
     <string name="error">"Fout "</string>
-    <string name="auto">Auto</string>
+    <string name="auto">Automatisch</string>
     <string name="manual">Handmatig</string>
     <string name="technical">Technisch</string>
     <string name="sales">Verkoop</string>
@@ -609,7 +609,7 @@ Je locatiegegevens blijven op je apparaat en worden uitsluitend gebruikt voor de
     <string name="apply_voucher_code">Vouchercode toepassen op je account.</string>
     <string name="voucher_code_is_applied">Vouchercode succesvol toegepast.</string>
     <string name="voucher_code_is_invalid">Voucher is ongeldig of verlopen.</string>
-    <string name="confirmed_email_required">Bevestigde e‑mail is vereist.</string>
+    <string name="confirmed_email_required">Bevestigd e-mailadres is vereist.</string>
     <string name="voucher_code_used_already">Vouchercode is al gebruikt.</string>
     <string name="power_whitelist_title">Batterijoptimalisatie uitschakelen</string>
     <string name="power_whitelist_summary">Verwijder Windscribe uit de batterijoptimalisatie‑instellingen om een stabiele verbinding te behouden. Dit zorgt voor ononderbroken service voor IKEv2‑verbindingen.</string>
