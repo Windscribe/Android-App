@@ -445,7 +445,7 @@ de laatst gekozen locatie.</string>
     <string name="notification_stats_description">Toon verkeersstatistieken in de melding.</string>
     <string name="location_load_description">Toon de belasting van een locatie. Een kleinere cirkelboog betekent minder belasting (gebruik).</string>
     <string name="haptic_feedback_description">Fysieke reacties (trilling) op gebruikersacties</string>
-    <string name="connection_mode_description">Kies automatisch het VPN-protocol, of selecteer er handmatig één. OPMERKING: „Voorkeursprotocol” overschrijft deze instelling.</string>
+    <string name="connection_mode_description">Kies automatisch het VPN-protocol, of selecteer er handmatig één. OPMERKING: Voorkeursprotocol overschrijft deze instelling.</string>
     <string name="packet_size_description">Kies of Windscribe de MTU voor je verbinding bepaalt, of handmatig wilt overschrijven.</string>
     <string name="allow_lan_description">Kies of toegang tot bronnen op hetzelfde netwerk (zoals bestandsservers, printers, mediaboxen, enz.) toegestaan moet worden terwijl je verbonden bent met Windscribe.</string>
     <string name="keep_alive_description">Stuurt regelmatig NAT‑keepalive‑pakketten naar de peer om de NAT‑sessie actief te houden, zodat de peer het apparaat kan bereiken (alleen IKEv2).</string>
