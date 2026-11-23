@@ -8,7 +8,7 @@
     <string name="password_empty">Leeg wachtwoord!</string>
     <string name="enter_username">Voer gebruikersnaam in</string>
     <string name="enter_password">Voer wachtwoord in</string>
-    <string name="enter_email">Voer e‑mail in</string>
+    <string name="enter_email">Voer e-mailadres in</string>
     <string name="password_too_short">Te kort!</string>
     <string name="login_credential_error">Er is iets mis met je gebruikersnaam of wachtwoord :(</string>
     <string name="sign_out">Afmelden</string>
@@ -53,7 +53,7 @@
     <string name="email_empty">Geen e-mailadres ingevoerd!</string>
     <string name="email">E‑mail</string>
     <string name="confirm_your_email">Bevestig je e‑mail</string>
-    <string name="confirm_email">E‑mail bevestigen</string>
+    <string name="confirm_email">E-mailadres bevestigen</string>
     <string name="resend_verification_email">Verificatie‑e‑mail opnieuw verzenden</string>
     <string name="change_email">E‑mail wijzigen</string>
     <string name="no_internet">GEEN INTERNET!</string>
@@ -74,8 +74,8 @@
     <string name="data_left">%1$.2f GB over</string>
     <string name="gb_month">- GB/maand</string>
     <string name="warning_no_email_pro_account">Voeg een e‑mail toe om je account te herstellen voor het geval je je wachtwoord vergeet.</string>
-    <string name="free_reason_to_confirm">Bevestig je e‑mail om 10 GB/maand te krijgen</string>
-    <string name="pro_reason_to_confirm">Bevestig je e‑mail om je account te beschermen</string>
+    <string name="free_reason_to_confirm">Bevestig je e-mailadres om 10 GB/maand te krijgen</string>
+    <string name="pro_reason_to_confirm">Bevestig je e-mailadres om je account te beschermen</string>
     <string name="connected">VERBONDEN</string>
     <string name="connected_lowercase">Verbonden</string>
     <string name="connecting">VERBINDEN </string>
@@ -126,7 +126,7 @@
     <string name="item_unavailable">Het gevraagde item is niet beschikbaar. \nNeem contact op met support via https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Factureringsservice niet beschikbaar. Controleer je netwerkverbinding en probeer het opnieuw!</string>
     <string name="unknown_billing_error">Onbekende fout. Neem contact op met support via https://windscribe.com/support!</string>
-    <string name="fatal_error">Kan geen verbinding maken met de factureringsservice…Controleer je netwerkverbinding!</string>
+    <string name="fatal_error">Kan geen verbinding maken met de factureringsservice. Controleer je netwerkverbinding!</string>
     <string name="play_store_generic_api_error">Onverwacht antwoord ontvangen van Play Store. Dit kan gebeuren door recent geannuleerde aankopen. Probeer later opnieuw.</string>
     <string name="unable_to_process_request">We konden je verzoek niet verwerken. Probeer het opnieuw!</string>
     <string name="play_store_updating">Play Store-update bezig! Probeer het nadat de update voltooid is.</string>
@@ -183,9 +183,9 @@
     <string name="gps_spoofing_setup">GPS-spoofing instellen</string>
     <string name="gps_spoofing_setup_explain">1. Open Instellingen, zoek „Over telefoon” en tik 7 keer op het buildnummer om „Ontwikkelaarsopties” te ontgrendelen.
 
-2. Kies in „Ontwikkelaarsopties” Windscribe als de „Mock-locatie-app”.</string>
+2. Kies in Ontwikkelaarsopties Windscribe als de Mock-locatie-app.</string>
     <string name="you_are_done">Klaar!</string>
-    <string name="gps_spoofing_success">Je GPS‑locatie wordt dezelfde als je VPN‑locatie.</string>
+    <string name="gps_spoofing_success">Je GPS‑locatie wordt dezelfde als je VPN locatie.</string>
     <string name="gps_spoofing_not_set">GPS-spoofing kon niet worden ingeschakeld</string>
     <string name="gps_spoofing_error">Probeer de handleiding opnieuw te volgen om het te activeren.</string>
     <string name="add_email">E-mail toevoegen</string>
@@ -225,8 +225,8 @@
     <string name="sending_log">Log verzenden…</string>
     <string name="export_log">Log exporteren</string>
     <string name="no_favourites">Geen favorieten</string>
-    <string name="no_custom_configs">Aangepaste configuraties stellen je in staat verbinding te maken met elke OpenVPN- of Wireguard-server. Voeg eenvoudig een geldig configuratiebestand toe en deze verschijnt in dit tabblad.</string>
-    <string name="add_profile">VPN-profiel toevoegen</string>
+    <string name="no_custom_configs">Aangepaste configuraties stellen je in staat verbinding te maken met elke OpenVPN of Wireguard server. Voeg eenvoudig een geldig configuratiebestand toe en deze verschijnt in dit tabblad.</string>
+    <string name="add_profile">VPN profiel toevoegen</string>
     <string name="add_static_ip">Statisch IP toevoegen</string>
     <string name="check_status">Status controleren</string>
     <string name="check_location_status">Locatiestatus controleren</string>
@@ -462,7 +462,7 @@ de laatst gekozen locatie.</string>
     <string name="sign_up">Account aanmaken</string>
     <string name="please_provide_email_first">Voer eerst een e-mailadres in.</string>
     <string name="set_as_preferred">Instellen als voorkeur</string>
-    <string name="set_this_protocol_as_preferred">„%s” instellen als voorkeursprotocol?</string>
+    <string name="set_this_protocol_as_preferred">%s instellen als voorkeursprotocol?</string>
     <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe zal dit protocol altijd gebruiken om te verbinden met dit netwerk in de toekomst om onderbrekingen te voorkomen.</string>
     <string name="well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened">We hebben ons best gedaan, maar we konden je niet verbinden met dit netwerk. Stuur ons je debuglog zodat we kunnen achterhalen wat er is gebeurd.</string>
     <string name="your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue">Je debuglog is ontvangen. Neem contact op met de ondersteuning als je hulp nodig hebt bij dit probleem.</string>
