@@ -1,3 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
 <resources>
     <string name="username_empty">Lege gebruikersnaam!</string>
     <string name="password_empty">Leeg wachtwoord!</string>
@@ -14,34 +19,38 @@
     <string name="small_password">Je wachtwoord moet minimaal 8 tekens bevatten (bijv. \"Hello1234\", \"Solyanka\").</string>
     <string name="common_password">Het ingevoerde wachtwoord wordt veel gebruikt en is niet veilig.</string>
     <string name="password_requirement">8 of meer tekens met minimaal één hoofdletter en één kleine letter (bijv. \"Hello1234\", \"Solyanka\").</string>
+    <string name="passwords_do_not_match">Wachtwoorden komen niet overeen</string>
     <string name="failed_network_alert">Je lijkt een zeer restrictief netwerk te gebruiken dat Windscribe blokkeert. Gebruik de functie \"Noodverbinding\" op het startscherm en probeer daarna opnieuw in te loggen of aan te melden. Als het niet lukt, neem dan contact met ons op.</string>
     <string name="failed_network_title">Restrictief netwerk gedetecteerd</string>
     <string name="fa_required_error">2FA-code is vereist</string>
     <string name="fa_invalid_error">Ongeldige 2FA-code</string>
     <string name="login">Inloggen</string>
     <string name="two_fa">2FA-code</string>
+    <string name="add_two_fa">2FA toevoegen</string>
     <string name="two_fa_description">Indien ingeschakeld, gebruik een authenticatie‑app om de code te genereren.</string>
+    <string name="two_fa_check_app_description">Controleer je authenticatie-app voor een eenmalige code.</string>
+    <string name="enter_two_fa_code">Voer 2FA-code in</string>
     <string name="forgot_password">Wachtwoord vergeten?</string>
     <string name="next">Doorgaan</string>
     <string name="sign_up_description">Bescherm je account, krijg toegang tot instellingen vanaf elk apparaat en krijg meer data.</string>
     <string name="choose_username">Kies gebruikersnaam</string>
     <string name="choose_password">Kies wachtwoord</string>
-    <string name="email_description"><![CDATA[Voor wachtwoordherstel, updates & alleen promoties. Geen spam]]></string>
+    <string name="email_description">Voor wachtwoordherstel, updates &amp; alleen promoties. Geen spam</string>
     <string name="sign_up_failed_network_alert">We hebben ons best gedaan, maar we konden je om een of andere reden niet aanmelden via dit netwerk.</string>
-    <string name="backup_api_end_point">Probeer back‑up‑API‑endpoint&#8230;</string>
-    <string name="signing_in">Aanmelden&#8230;</string>
-    <string name="signing_up">Registreren&#8230;</string>
-    <string name="getting_session">Sessie ophalen&#8230;</string>
-    <string name="getting_port_maps">Poortkaarten ophalen&#8230;</string>
-    <string name="getting_server_config">Serverconfiguratie ophalen&#8230;</string>
-    <string name="getting_server_credentials">Serverreferenties ophalen&#8230;</string>
-    <string name="getting_best_location">Beste locatie ophalen&#8230;</string>
-    <string name="getting_server_list">Serverlijst ophalen&#8230;</string>
-    <string name="preparing_your_dashboard">Dashboard voorbereiden&#8230;</string>
-    <string name="trying_static_endpoint">Statisch endpoint proberen&#8230;</string>
-    <string name="getting_reg_token">Registratietoken ophalen&#8230;</string>
-    <string name="invalid_email_format">Ongeldig e‑mail!</string>
-    <string name="email_empty">Lege e‑mail!</string>
+    <string name="backup_api_end_point">Probeer back‑up‑API‑endpoint…</string>
+    <string name="signing_in">Aanmelden…</string>
+    <string name="signing_up">Registreren…</string>
+    <string name="getting_session">Sessie ophalen…</string>
+    <string name="getting_port_maps">Poortkaarten ophalen…</string>
+    <string name="getting_server_config">Serverconfiguratie ophalen…</string>
+    <string name="getting_server_credentials">Serverreferenties ophalen…</string>
+    <string name="getting_best_location">Beste locatie ophalen…</string>
+    <string name="getting_server_list">Serverlijst ophalen…</string>
+    <string name="preparing_your_dashboard">Dashboard voorbereiden…</string>
+    <string name="trying_static_endpoint">Statisch endpoint proberen…</string>
+    <string name="getting_reg_token">Registratietoken ophalen…</string>
+    <string name="invalid_email_format">Ongeldig e-mailadres!</string>
+    <string name="email_empty">Geen e-mailadres ingevoerd!</string>
     <string name="email">E‑mail</string>
     <string name="confirm_your_email">Bevestig je e‑mail</string>
     <string name="confirm_email">E‑mail bevestigen</string>
@@ -53,6 +62,8 @@
     <string name="upgrade">UPGRADE</string>
     <string name="upgrade_case_normal">Upgrade</string>
     <string name="renew_plan">Plan vernieuwen</string>
+    <string name="subscription_payment_issue">Probleem met abonnementsbetaling</string>
+    <string name="subscription_payment_issue_description">Je abonnementsbetaling vereist aandacht. Open Google Play om je betaalmethode te controleren.</string>
     <string name="you_ve_been_downgraded_to_free_for_now">Je bent tijdelijk teruggezet naar een gratis plan</string>
     <string name="you_ve_violated_our_terms">Je account is uitgeschakeld wegens schending van onze voorwaarden</string>
     <string name="you_r_pro_plan_expired">Je Pro‑plan is verlopen!</string>
@@ -67,17 +78,17 @@
     <string name="pro_reason_to_confirm">Bevestig je e‑mail om je account te beschermen</string>
     <string name="connected">VERBONDEN</string>
     <string name="connected_lowercase">Verbonden</string>
-    <string name="connecting">VERBINDEN&#160;</string>
+    <string name="connecting">VERBINDEN </string>
     <string name="connecting_to">Verbinden met %s</string>
     <string name="connected_to">Verbonden met %s</string>
     <string name="disconnecting">VERBINDING VERBREKEN</string>
     <string name="disconnected">VERBROKEN</string>
-    <string name="tunnel_test_failed">CONNECTIVITEIT MISLUKT&#8230;</string>
-    <string name="checking_connectivity">Connectiviteit controleren&#8230;</string>
-    <string name="connectivity_test_failed">Connectiviteitstest mislukt&#8230;</string>
+    <string name="tunnel_test_failed">CONNECTIVITEIT MISLUKT…</string>
+    <string name="checking_connectivity">Connectiviteit controleren…</string>
+    <string name="connectivity_test_failed">Connectiviteitstest mislukt…</string>
     <string name="best_location">Beste locatie</string>
     <string name="connection_mode">Verbindingsmodus</string>
-    <string name="preferred_protocol">Voorkeurprotocol</string>
+    <string name="preferred_protocol">Voorkeursprotocol</string>
     <string name="protocol">Protocol</string>
     <string name="port">Poort</string>
     <string name="connection_automatic">Auto</string>
@@ -85,7 +96,7 @@
     <string name="go_to_settings">Ga naar instellingen</string>
     <string name="always_on_not_supported">Deze functie vereist Android‑versie 7.0+</string>
     <string name="packet_size">Pakketgrootte</string>
-    <string name="lan_by_pass">LAN‑verkeer toestaan</string>
+    <string name="lan_by_pass">LAN-verkeer toestaan</string>
     <string name="gps_spoofing">GPS-spoofing</string>
     <string name="natKeepAlive">IKE keepalive</string>
     <string name="keep_alive">Verbonden houden</string>
@@ -103,7 +114,7 @@
     <string name="a_la_carte_unlimited_plan">A la carte onbeperkt</string>
     <string name="expiry_date">Vervaldatum</string>
     <string name="reset_date">Resetdatum</string>
-    <string name="gb_per_month">&#160;GB/maand</string>
+    <string name="gb_per_month"> GB/maand</string>
     <string name="my_account">Account</string>
     <string name="cancel">Annuleren</string>
     <string name="edit_account">Account beheren</string>
@@ -115,7 +126,7 @@
     <string name="item_unavailable">Het gevraagde item is niet beschikbaar. \nNeem contact op met support via https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Factureringsservice niet beschikbaar. Controleer je netwerkverbinding en probeer het opnieuw!</string>
     <string name="unknown_billing_error">Onbekende fout. Neem contact op met support via https://windscribe.com/support!</string>
-    <string name="fatal_error">Kan geen verbinding maken met de factureringsservice&#8230;Controleer je netwerkverbinding!</string>
+    <string name="fatal_error">Kan geen verbinding maken met de factureringsservice…Controleer je netwerkverbinding!</string>
     <string name="play_store_generic_api_error">Onverwacht antwoord ontvangen van Play Store. Dit kan gebeuren door recent geannuleerde aankopen. Probeer later opnieuw.</string>
     <string name="unable_to_process_request">We konden je verzoek niet verwerken. Probeer het opnieuw!</string>
     <string name="play_store_updating">Play Store-update bezig! Probeer het nadat de update voltooid is.</string>
@@ -129,7 +140,29 @@
     <string name="state_assign_ip">IP‑adressen toewijzen</string>
     <string name="state_add_routes">Routes toevoegen</string>
     <string name="state_connected">Verbonden</string>
-    <string name="state_disconnected">Ontkoppelen</string>
+    <string name="state_disconnected">Verbinding verbroken</string>
+    <string name="notification_protocol_switch">Wachten op protocolwissel</string>
+    <string name="notification_reconnecting_to">Herverbinden met %1$s</string>
+    <string name="notification_reconnecting">Herverbinden</string>
+    <string name="notification_opted_out">Auto-secure is uitgeschakeld voor dit netwerk</string>
+    <string name="notification_opted_out_on">Auto-secure is uitgeschakeld voor %1$s</string>
+    <string name="notification_awaiting_session">Wachten op sessie-update</string>
+    <string name="notification_config_auth_failed">Authenticatie mislukt — controleer je configuratie</string>
+    <string name="notification_account_expired">Account verlopen — schakel Windscribe uit om internet te herstellen en upgrade vervolgens</string>
+    <string name="notification_account_banned">Account verbannen — schakel Windscribe uit om internet te herstellen</string>
+    <string name="notification_no_network">Geen netwerk — geen verbinding mogelijk</string>
+    <string name="notification_paused">Gepauzeerd — je verkeer is niet beschermd</string>
+    <string name="notification_waiting_for_secured">Niet verbonden — maakt automatisch verbinding</string>
+    <string name="notification_stood_down">Automatisch verbinden is uitgeschakeld voor dit netwerk</string>
+    <string name="notification_stood_down_on">Automatisch verbinden is uitgeschakeld voor %1$s</string>
+    <string name="notification_action_pause">Pauzeren</string>
+    <string name="notification_action_resume">Hervatten</string>
+    <string name="notification_action_connect">Verbinden</string>
+    <string name="notification_action_turn_off">Uitschakelen</string>
+    <string name="notification_action_retry">Opnieuw proberen</string>
+    <string name="notification_failed_to">Kon niet verbinden met %1$s</string>
+    <string name="notification_failed">Kon niet verbinden op dit netwerk</string>
+    <string name="notification_blocked">Kon niet verbinden — verkeer is geblokkeerd</string>
     <string name="state_reconnecting">Herverbinden</string>
     <string name="state_exiting">Afsluiten</string>
     <string name="state_noprocess">Niet actief</string>
@@ -146,17 +179,16 @@
     <string name="rate_message">Geniet je van Windscribe? Zeker wel. Beoordeel ons in de Play Store, en we zullen je lang liefhebben.</string>
     <string name="gps_spoofing_explain">Deze functie vereist dat je Android‑instellingen wijzigt. Volg de volgende stappen om het te activeren.</string>
     <string name="let_s_do_it">Laten we het doen</string>
-    <string name="unlock_developer_mode">Ontgrendel ontwikkelaarsopties</string>
-    <string name="unlock_developer_mode_explain">Open Instellingen en zoek naar de sectie “Over telefoon”. Zoek het build‑nummer onder “Software‑info” en tik er 7 keer op.</string>
     <string name="open_settings">Instellingen openen</string>
-    <string name="add_to_mock_location">Selecteer mock‑locatie‑app</string>
-    <string name="add_to_mock_location_explain">Na ontgrendeling, ga naar “Ontwikkelaarsopties” in Instellingen. Kies onder “Debuggen” Windscribe als “Mock‑locatie‑app”.</string>
-    <string name="add_to_mock_location_explain_android_12">Na ontgrendeling, ga naar “Ontwikkelaarsopties” in Instellingen. Kies onder “Locatie” Windscribe als “Mock‑locatie‑app”.</string>
+    <string name="gps_spoofing_setup">GPS-spoofing instellen</string>
+    <string name="gps_spoofing_setup_explain">1. Open Instellingen, zoek „Over telefoon” en tik 7 keer op het buildnummer om „Ontwikkelaarsopties” te ontgrendelen.
+
+2. Kies in „Ontwikkelaarsopties” Windscribe als de „Mock-locatie-app”.</string>
     <string name="you_are_done">Klaar!</string>
     <string name="gps_spoofing_success">Je GPS‑locatie wordt dezelfde als je VPN‑locatie.</string>
     <string name="gps_spoofing_not_set">GPS-spoofing kon niet worden ingeschakeld</string>
     <string name="gps_spoofing_error">Probeer de handleiding opnieuw te volgen om het te activeren.</string>
-</resources><string name="add_email">E-mail toevoegen</string>
+    <string name="add_email">E-mail toevoegen</string>
     <string name="unlimited_data">Onbeperkte data</string>
     <string name="preferences">Voorkeuren</string>
     <string name="optional">(Optioneel)</string>
@@ -176,7 +208,7 @@
     <string name="no_email_warning">Zonder e‑mail is je gratis account beperkt tot 2 GB/maand en kun je je wachtwoord niet opnieuw instellen.</string>
     <string name="get_started">Beginnen</string>
     <string name="error_try_again">Fout, probeer opnieuw!</string>
-    <string name="please_wait">Even geduld&#8230;</string>
+    <string name="please_wait">Even geduld…</string>
     <string name="resend">Opnieuw verzenden</string>
     <string name="loading">Laden..</string>
     <string name="retry">Opnieuw proberen</string>
@@ -217,7 +249,7 @@
     <string name="preference">Voorkeuren</string>
     <string name="logout_alert_description">Weet je zeker dat je wilt afmelden bij Windscribe?</string>
     <string name="sort_by">Locatievolgorde</string>
-    <string name="display_latency">Latency weergeven</string>
+    <string name="display_latency">Latentie weergeven</string>
     <string name="preferred_language">Taal</string>
     <string name="theme">Uiterlijk</string>
     <string name="show_timer_in_notifications">Notificatiestatistieken</string>
@@ -233,24 +265,37 @@
     <string name="feature_tunnel_mode_exclusive">Apps die hieronder zijn geselecteerd, gaan niet via Windscribe wanneer je verbonden bent</string>
     <string name="feature_tunnel_mode_inclusive">Apps die hieronder zijn geselecteerd, gaan wel via Windscribe wanneer je verbonden bent</string>
     <string name="apps">APPS</string>
+    <string name="domains_ips">IP- &amp; Hostnaamuitsluitingen</string>
+    <string name="domains_ips_description">Sluit IP-adressen, bereiken of hostnamen uit van de VPN-tunnel. App split-tunneling krijgt voorrang op deze regels.</string>
+    <string name="add_ip_domain">IP/domein toevoegen</string>
+    <string name="enter_ip_domain_hint">bijv. 192.168.1.1 of imgur.com</string>
+    <string name="ip_domain_added">IP/domein toegevoegd</string>
+    <string name="ip_domain_removed">IP/domein verwijderd</string>
+    <string name="invalid_ip_domain">Ongeldig IP-adres, bereik of hostnaam</string>
+    <string name="import_button">Importeren</string>
+    <string name="delete_all_button">Alles verwijderen</string>
+    <string name="no_excluded_ips_domains">Geen uitgesloten IP-adressen of domeinen</string>
+    <string name="delete_all_dialog_title">Alles verwijderen?</string>
+    <string name="delete_all_dialog_message">Weet je zeker dat je alle vermeldingen wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="delete_button">Verwijderen</string>
     <string name="always_on">Altijd‑aan VPN</string>
     <string name="always_on_warning">\"Altijd aan\" VPN laat Android de VPN-verbinding beheren en zorgt ervoor dat er geen data het apparaat verlaat tenzij de VPN-tunnel actief is.</string>
     <string name="always_on_setting">Android 10+ apparaten vereisen Altijd‑aan VPN om geconfigureerd te zijn zodat Windscribe bij het opstarten van het apparaat start.</string>
     <string name="forget_network">Netwerk vergeten</string>
     <string name="network_secured">Beveiligd</string>
     <string name="network_unsecured">Onbeveiligd</string>
-    <string name="preferred_protocol_description">Windscribe zal altijd dit protocol gebruiken voor verbinding met dit netwerk. Dit overschrijft globale verbindingsvoorkeuren.</string>
+    <string name="preferred_protocol_description">Windscribe gebruikt altijd dit protocol voor verbindingen via dit netwerk. Dit overschrijft de globale verbindingsvoorkeuren.</string>
     <string name="unknown">Onbekend netwerk</string>
-    <string name="loading_network_list">Netwerklijst laden\nEven geduld&#8230;</string>
+    <string name="loading_network_list">Netwerklijst laden\nEven geduld…</string>
     <string name="no_saved_network_list">Geen opgeslagen netwerklijst!</string>
     <string name="network_options">Netwerkopties</string>
-    <string name="auto_secure">Auto-beveiligen</string>
+    <string name="auto_secure">Auto-secure</string>
     <string name="auto_secure_description">Windscribe zal automatisch worden ingeschakeld wanneer je verbinding maakt met dit netwerk.</string>
     <string name="auto_start_on_boot">Automatisch verbinden bij opstarten</string>
     <string name="enable_start_on_boot">Start bij opstarten inschakelen</string>
     <string name="grant_permission">Toestemming verlenen</string>
     <string name="reason_for_location_permission">Windscribe heeft locatie‑toestemming nodig terwijl het op de achtergrond draait om de functie \"Network Whitelist\" te laten werken. Deze toestemming is vereist om wifi‑netwerknamen te kunnen lezen. De toestemming wordt uitsluitend voor deze functie en GPS‑spoofing gebruikt. Je locatiegegevens verlaten je apparaat niet en worden nergens anders voor gebruikt.</string>
-    <string name="location_permission_for_ssid">Locatie‑toestemming vereist om voorkeur‑protocols in te stellen en automatisch te verbinden.</string>
+    <string name="location_permission_for_ssid">Locatietoestemming is vereist om voorkeursprotocollen in te stellen en automatisch te verbinden.</string>
     <string name="disclaimer">Disclaimer</string>
     <string name="location_permission">Locatie‑toestemming</string>
     <string name="feature1">Servers op meer dan 100 locaties</string>
@@ -277,7 +322,6 @@
     <string name="update">Bijwerken</string>
     <string name="enter_credentials">Inloggegevens invoeren</string>
     <string name="connect">Verbinden</string>
-    <string name="config_title" translatable="false">Config Title</string>
     <string name="send_debug_log">Debuglog verzenden</string>
     <string name="send_ikev2_log">IKEv2-log verzenden</string>
     <string name="failed">MISLUKT</string>
@@ -303,11 +347,11 @@
     <string name="benefit_unlimited_data">Onbeperkte data</string>
     <string name="choose_plan">KIES PLAN</string>
     <string name="monthly">MAANDELIJK</string>
-    <string name="yearly">JAARLIJK - BESPaar 55%</string>
+    <string name="yearly">JAARLIJKS - BESPAAR 55%</string>
     <string name="upgrade_title">Je verdient meer dan beperkte privacy.</string>
     <string name="text_login">Inloggen</string>
     <string name="text_sign_up">Registreren</string>
-    <string name="sending_debug_log">Debuglog verzenden\nEven geduld&#8230;</string>
+    <string name="sending_debug_log">Debuglog verzenden\nEven geduld…</string>
     <string name="app_log_submitted">Bedankt! App‑log verzonden.</string>
     <string name="log_submission_failed">Fout bij verzenden logbestand!</string>
     <string name="add_your_email_address">Voeg je e‑mailadres toe voor het geval je je wachtwoord vergeet. We geven je er zelfs 10 GB voor.</string>
@@ -350,13 +394,17 @@
     <string name="confirm_email_title">E‑mail bevestigen</string>
     <string name="back_uppercase">Terug</string>
     <string name="Error">Fout</string>
+    <string name="note">Opmerking</string>
     <string name="text_account_set_up">Registreren</string>
     <string name="xpress_login">Lazy‑login</string>
-    <string name="web_login_description">Ga naar <b>https://windscribe.com/lazy</b> op elk apparaat en voer de onderstaande code in.</string>
-    <string name="app_login_description">Open de Windscribe Android‑app op je telefoon of tablet, ga naar Voorkeuren (linksboven), onder “Account” kies “Lazy‑login” en voer de onderstaande code in.</string>
+    <string name="scan_lazy_login_qr_code">Scan deze QR-code</string>
+    <string name="web_login_description">Scan de QR-code of voer de code in de Windscribe mobiele app in via <b>Account → Lazy Login</b>.</string>
     <string name="or">OF</string>
     <string name="generate_code">Code genereren</string>
+    <string name="app_login_manual_entry">Voer in op de mobiele app via <b>Account → Lazy Login</b></string>
+    <string name="manual_enter_code">Of voer deze code handmatig in:</string>
     <string name="manual_login">Handmatige login</string>
+    <string name="qr_generation_failed">Genereren van QR-code mislukt</string>
     <string name="keep_your_secrets">Bewaar je\ngeheimen.</string>
     <string name="reset_password_description">Ga naar windscribe.com om je wachtwoord te resetten</string>
     <string name="support_url">windscribe.com/support</string>
@@ -385,20 +433,19 @@
     <string name="ad_malware_blocker">De beste malware‑ en advertentie‑blocker die je ooit zult gebruiken. Serieus.</string>
     <string name="exclusive">Exclusief</string>
     <string name="inclusive">Inclusief</string>
-    <string name="explain_me" translatable="false">Explain me!</string>
     <string name="network_options_description">Windscribe verbreekt automatisch de verbinding wanneer je verbinding maakt met een onbeveiligd wifi‑netwerk.</string>
     <string name="auto_secure_new_networks">Nieuwe netwerken automatisch beveiligen</string>
     <string name="auto_secure_new_networks_description">Windscribe markeert elk nieuw netwerk als “Beveiligd” en schakelt het automatisch in wanneer je apparaat ermee verbinding maakt.</string>
     <string name="auto_secure_description_secondary">Automatisch verbinden met dit Wi‑Fi‑netwerk naar
 de laatst gekozen locatie.</string>
     <string name="preferred_protocol_description_secondary">Kies het beste protocol voor dit netwerk. Dit overschrijft alle globale verbindingsinstellingen.</string>
-    <string name="location_order_description">Rangschik de locatielijst in oplopende volgorde op alfabet, geografie of latency.</string>
-    <string name="latency_display_description">Geef latency weer als signaalsterktebalken of in milliseconden.</string>
+    <string name="location_order_description">Rangschik de locatielijst in oplopende volgorde op alfabet, geografie of latentie.</string>
+    <string name="latency_display_description">Toon latentie als signaalsterktebalken of in milliseconden.</string>
     <string name="language_description">Windscribe lokaliseren naar ondersteunde talen.</string>
     <string name="notification_stats_description">Toon verkeersstatistieken in de melding.</string>
     <string name="location_load_description">Toon de belasting van een locatie. Een kleinere cirkelboog betekent minder belasting (gebruik).</string>
     <string name="haptic_feedback_description">Fysieke reacties (trilling) op gebruikersacties</string>
-    <string name="connection_mode_description">Kies automatisch het VPN‑protocol, of selecteer er handmatig één. OPMERKING: \"Voorkeur‑protocol\" overschrijft deze instelling.</string>
+    <string name="connection_mode_description">Kies automatisch het VPN-protocol, of selecteer er handmatig één. OPMERKING: „Voorkeursprotocol” overschrijft deze instelling.</string>
     <string name="packet_size_description">Kies of Windscribe de MTU voor je verbinding bepaalt, of handmatig wilt overschrijven.</string>
     <string name="allow_lan_description">Kies of toegang tot bronnen op hetzelfde netwerk (zoals bestandsservers, printers, mediaboxen, enz.) toegestaan moet worden terwijl je verbonden bent met Windscribe.</string>
     <string name="keep_alive_description">Stuurt regelmatig NAT‑keepalive‑pakketten naar de peer om de NAT‑sessie actief te houden, zodat de peer het apparaat kan bereiken (alleen IKEv2).</string>
@@ -413,11 +460,10 @@ de laatst gekozen locatie.</string>
     <string name="second_reason_to_use_referral">Upgrade en jullie krijgen beiden Pro.</string>
     <string name="referred_by_someone">Door iemand verwezen?</string>
     <string name="sign_up">Account aanmaken</string>
-    <string name="please_provide_email_first">Voer eerst een e‑mail in.</string>
+    <string name="please_provide_email_first">Voer eerst een e-mailadres in.</string>
     <string name="set_as_preferred">Instellen als voorkeur</string>
-    <string name="set_this_protocol_as_preferred">Instellen \“%s\” als voorkeursprotocol?</string>
-    <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe zal dit protocol altijd gebruiken om te verbinden met dit netwerk in de toekomst om onderbrekingen te voorkomen.</string>    
-<resources>
+    <string name="set_this_protocol_as_preferred">„%s” instellen als voorkeursprotocol?</string>
+    <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe zal dit protocol altijd gebruiken om te verbinden met dit netwerk in de toekomst om onderbrekingen te voorkomen.</string>
     <string name="well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened">We hebben ons best gedaan, maar we konden je niet verbinden met dit netwerk. Stuur ons je debuglog zodat we kunnen achterhalen wat er is gebeurd.</string>
     <string name="your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue">Je debuglog is ontvangen. Neem contact op met de ondersteuning als je hulp nodig hebt bij dit probleem.</string>
     <string name="connection_failure">Verbindingsfout!</string>
@@ -457,7 +503,7 @@ de laatst gekozen locatie.</string>
     <string name="file_path_will_show_here">Bestandspad wordt hier weergegeven</string>
     <string name="reddit">Reddit</string>
     <string name="discord">Discord</string>
-    <string name="app_requires_background_location_permission">App vereist toestemming voor locatie op de achtergrond om Wi‑Fi‑SSID's te benaderen op Android 11+. Als je deze functie wilt gebruiken, druk op OK en selecteer "Altijd toestaan" in het toestemmingsdialoog.</string>
+    <string name="app_requires_background_location_permission">App vereist toestemming voor locatie op de achtergrond om Wi‑Fi‑SSID\'s te benaderen op Android 11+. Als je deze functie wilt gebruiken, druk op OK en selecteer "Altijd toestaan" in het toestemmingsdialoog.</string>
     <string name="error">"Fout "</string>
     <string name="auto">Auto</string>
     <string name="manual">Handmatig</string>
@@ -481,15 +527,71 @@ de laatst gekozen locatie.</string>
     <string name="failed_to_update_robert_rules">Bijwerken van Robert-regels mislukt.</string>
     <string name="successfully_updated_robert_rules">Robert-regels succesvol bijgewerkt.</string>
     <string name="share_app">App delen</string>
-    <string name="share_app_description">%s nodigt je uit om lid te worden van Windscribe. Geef hun gebruikersnaam op bij het aanmelden en jullie krijgen beiden 1 GB gratis data op jullie accounts. Als je Pro wordt, worden zij ook Pro!\n%s</string>
+    <string name="share_app_description">%1$s nodigt je uit om lid te worden van Windscribe. Geef hun gebruikersnaam op bij het aanmelden en jullie krijgen beiden 1 GB gratis data op jullie accounts. Als je Pro wordt, worden zij ook Pro!
+%2$s</string>
     <string name="allow_all_the_time_location_access_required">“Altijd toestaan” Locatietoegang vereist!</string>
     <string name="enable_location_access">Locatietoegang inschakelen</string>
     <string name="location_permission_required">Locatietoestemming vereist</string>
     <string name="foreground_location_permission_reason">Windscribe heeft locatietoestemming nodig om de functie "Netwerk‑whitelist" te laten werken. Deze toestemming is vereist om wifi‑netwerknamen te benaderen. Deze toestemming wordt uitsluitend gebruikt voor deze functie en voor GPS-spoofing. Je locatiegegevens verlaten je apparaat niet en worden voor niets anders gebruikt.</string>
     <string name="missing_location_permission">Locatietoestemming ontbreekt</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Locatietoestemming is vereist om deze functie te gebruiken. Ga naar app‑instellingen > Machtigingen > Locatie en selecteer Altijd toestaan.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Locatietoestemming is vereist om deze functie te gebruiken. Ga naar app-instellingen > Machtigingen > Locatie en selecteer Altijd toestaan.]]></string>
+    <string name="location_permission_disclosure_title">Toelichting locatietoestemming</string>
+    <string name="location_permission_disclosure_message">Lees het volgende voordat je deze toestemming verleent:
+
+Waarvoor we het gebruiken:
+• Toegang tot wifi-netwerknamen (SSID)
+• Inschakelen van de functie Netwerk-whitelist
+• GPS-spoofingfunctionaliteit
+
+Wat we NIET doen:
+• Je fysieke locatie volgen
+• GPS-coördinaten verzamelen
+• Gegevens delen met derden
+• Gegevens van je apparaat verzenden
+
+Je locatiegegevens blijven op je apparaat en worden uitsluitend gebruikt voor de bovenstaande functies.</string>
+    <string name="background_location_permission_disclosure_message">Lees het volgende voordat je toestemming geeft voor achtergrondlocatie:
+
+Waarvoor we het gebruiken:
+• Toegang tot wifi-netwerknamen terwijl de app op de achtergrond draait
+• Inschakelen van de functie Netwerk-whitelist
+• GPS-spoofingfunctionaliteit
+
+Wat we NIET doen:
+• Je fysieke locatie volgen
+• GPS-coördinaten verzamelen
+• Gegevens delen met derden
+• Gegevens van je apparaat verzenden
+
+Je locatiegegevens blijven op je apparaat en worden uitsluitend gebruikt voor de bovenstaande functies.</string>
     <string name="anti_censorship">Censuur omzeilen</string>
+    <string name="anti_censorship_settings">Instellingen censuurbestrijding</string>
+    <string name="anti_censorship_screen_title">Censuurbestrijding</string>
+    <string name="anti_censorship_screen_description">Deze opties kunnen de prestaties verminderen. Schakel ze alleen in als Windscribe niet normaal verbindt.</string>
     <string name="anti_censorship_explainer">Maak verbinding met de VPN zelfs in vijandige omgevingen</string>
+    <string name="protocol_tweaks">Protocol-tweaks</string>
+    <string name="protocol_tweaks_description">Wijzigingen op protocolniveau voor WireGuard-, OpenVPN- en Stealth-protocollen.</string>
+    <string name="extra_tls_padding">Grote TLS</string>
+    <string name="extra_tls_padding_description">Vergroot TLS-pakketten kunstmatig, helpt in sommige gevallen om censuur te omzeilen</string>
+    <string name="server_routing">Server-routing</string>
+    <string name="server_routing_description">Verhoogt de latentie, maar vergroot de kans om verbinding te maken.</string>
+    <string name="regular">Regulier</string>
+    <string name="alternate">Alternatief</string>
+    <string name="amnezia_preset">Configuratie</string>
+    <string name="amnezia_preset_description">Kies een vooraf ingestelde configuratie voor censuurbestrijding</string>
+    <string name="amnezia_preset_russian_quick">Russisch Snel (Geen rommel)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="tls_server_name">Aangepast SNI-domein</string>
+    <string name="tls_server_name_description">Deze instelling is alleen van toepassing op Stealth- en WSTunnel-protocollen</string>
+    <string name="tls_server_name_hint">www.voorbeeld.com</string>
+    <string name="ipv6_mode">IP-versie</string>
+    <string name="ipv6_mode_description">Kies welke IP-versie gebruikt moet worden voor VPN-verbindingen.</string>
+    <string name="ip_stack">IP-stack</string>
+    <string name="ip_stack_description">Configureer de IP-stack voor VPN-verbindingen.</string>
+    <string name="egress">Egress (alleen WireGuard)</string>
+    <string name="ingress">Ingress</string>
+    <string name="ip_stack_egress">IP-stack - Egress</string>
+    <string name="ipv4_only">Alleen IPv4</string>
     <string name="auto_connect">Automatisch verbinden</string>
     <string name="auto_connect_explainer">Verbindt met de laatst gebruikte locatie bij het starten van de app of bij het verbinden met een netwerk.</string>
     <string name="save">Opslaan</string>
@@ -542,7 +644,7 @@ de laatst gekozen locatie.</string>
     <string name="charged_every_month">maandelijks in rekening gebracht</string>
     <string name="charged_every_12_months">elke 12 maanden in rekening gebracht</string>
     <string name="continue_with_google">Doorgaan met Google</string>
-    <string name="continue_with_apple">Doorgaan met Apple</string> 
+    <string name="continue_with_apple">Doorgaan met Apple</string>
     <string name="look_and_feel">Uiterlijk &amp; gevoel</string>
     <string name="when_disconnected">Wanneer losgekoppeld</string>
     <string name="when_connected">Wanneer verbonden</string>
@@ -560,15 +662,64 @@ de laatst gekozen locatie.</string>
     <string name="export_locations">Exporteren</string>
     <string name="import_locations">Importeren</string>
     <string name="reset">Resetten</string>
-    <string name="no_static_ip">Geen statische IP's</string>
+    <string name="no_static_ip">Geen statische IP\'s</string>
     <string name="unblock_full_access">Volledige toegang tot Windscribe ontgrendelen</string>
     <string name="go_pro_for_unlimited_everything">Ga Pro voor onbeperkt alles</string>
     <string name="custom_configs">Aangepaste configuraties</string>
     <string name="slide_puzzle_piece_into_place">Sleep het linker puzzelstuk op zijn plaats</string>
     <string name="complete_puzzle_to_continue">Voltooi puzzel om door te gaan</string>
+    <string name="captcha_enter_code">Typ de hierboven getoonde code</string>
+    <string name="captcha_code_hint">CAPTCHA-code</string>
+    <string name="captcha_art_description">CAPTCHA-code weergegeven als afbeelding. Gebruik Vernieuwen voor een nieuwe code.</string>
+    <string name="captcha_puzzle_background">CAPTCHA-puzzel. Sleep het puzzelstuk in de opening.</string>
+    <string name="captcha_puzzle_piece">Puzzelstuk</string>
+    <string name="captcha_move_piece_left">Beweeg puzzelstuk naar links</string>
+    <string name="captcha_move_piece_right">Beweeg puzzelstuk naar rechts</string>
+    <string name="captcha_refresh">CAPTCHA vernieuwen</string>
+    <string name="captcha_refreshing">Nieuwe CAPTCHA-code laden</string>
+    <string name="captcha_verify">Verifiëren</string>
+    <string name="captcha_unavailable">CAPTCHA kon niet worden geladen. Probeer het opnieuw.</string>
+    <string name="accessibility_vpn_connection">VPN-verbinding</string>
+    <string name="accessibility_status_connected">Verbonden</string>
+    <string name="accessibility_status_connected_split_routing">Verbonden, split-tunneling ingeschakeld</string>
+    <string name="accessibility_status_connecting">Verbinden</string>
+    <string name="accessibility_status_disconnected">Verbinding verbroken</string>
+    <string name="accessibility_status_paused">Gepauzeerd, je verkeer is niet beschermd</string>
+    <string name="accessibility_status_blocked">Geblokkeerd, je internet is uitgeschakeld totdat je Windscribe uitschakelt</string>
     <string name="none">Geen</string>
     <string name="free">Gratis</string>
     <string name="upgrade_to_pro">Upgrade naar Pro</string>
     <string name="aggressive_rekeying">Aggressieve sleutelrotatie</string>
     <string name="aggressive_rekeying_description">Quantum‑veilige WireGuard‑PSK-rotatie bij elke nieuwe serververbinding</string>
+    <string name="manual_connection_mode_failed_title">Handmatige verbindingsmodus mislukt</string>
+    <string name="manual_connection_mode_failed_description">We konden geen verbinding maken via dit netwerk. De automatische verbindingsmodus wordt aanbevolen voor het beste resultaat. Schakelen naar automatische modus?</string>
+    <string name="switch_to_auto">Schakelen naar Auto</string>
+    <string name="reset_password">Wachtwoord opnieuw instellen</string>
+    <string name="password_reset_email_sent">Als je tijdens de registratie een e-mailadres hebt opgegeven, ontvang je binnenkort een link om je wachtwoord opnieuw in te stellen. Controleer ook je spambox.</string>
+    <string name="app_icon">App-pictogram</string>
+    <string name="app_icon_description">Kies een ander app-pictogram voor nog meer privacy</string>
+    <string name="configuration">Configuratie</string>
+    <string name="standard">Standaard</string>
+    <string name="hashed">Gehasht</string>
+    <string name="hash">Hash</string>
+    <string name="account_hash">Accounthash</string>
+    <string name="enter_account_hash_or_upload">Accounthash invoeren of uploaden</string>
+    <string name="account_hash_description">Dit is je unieke accounthash. Bewaar deze op een veilige plek, je hebt hem nodig om in te loggen.</string>
+    <string name="confirm_password">Wachtwoord bevestigen</string>
+    <string name="enter_email_address">E-mailadres invoeren</string>
+    <string name="got_voucher_code">Heb je een vouchercode?</string>
+    <string name="account_hash_backup_confirmation">Ik heb mijn accounthash veilig opgeslagen en begrijp dat Windscribe mijn account niet kan helpen herstellen als ik deze verlies.</string>
+    <string name="already_have_account_log_in">Heb je al een account? Log in</string>
+    <string name="update_available">Update beschikbaar</string>
+    <string name="update_available_message">Windscribe-versie %s is nu beschikbaar.</string>
+    <string name="update_available_message_generic">Er is een nieuwe versie van Windscribe beschikbaar.</string>
+    <string name="update_now">Nu bijwerken</string>
+    <string name="update_later">Later bijwerken</string>
+    <string name="force_upgrade_title">Update vereist</string>
+    <string name="force_upgrade_message">Deze versie van Windscribe wordt niet langer ondersteund. Werk de app bij om hem te blijven gebruiken.</string>
+    <string name="force_upgrade_message_with_version">Deze versie van Windscribe wordt niet langer ondersteund. Werk bij naar %s om de app te blijven gebruiken.</string>
+    <string name="security_notice">Beveiligingswaarschuwing</string>
+    <string name="encryption_unavailable_warning">Je apparaat ondersteunt geen versleutelde opslag van inloggegevens. Sessietokens en VPN-sleutels worden opgeslagen met verminderde beveiliging.
+
+Vermijd voor maximale beveiliging het gebruik van dit apparaat op onbetrouwbare netwerken of als het geroot is.</string>
 </resources>
