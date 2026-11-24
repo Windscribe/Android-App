@@ -647,8 +647,9 @@ class VPNProfileCreator
             }
             if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
                 builder.setMtu(preferencesHelper.packetSize)
+            } else if (mPreferencesHelper.isProtocolTweaksEnabled) {
+                builder.setMtu(1280)
             }
-            // Ipv6 hates small MTU.
             if (preferencesHelper.isDecoyTrafficOn && preferencesHelper.ipv6Mode == PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY) {
                 builder.setMtu(100)
             }
@@ -680,7 +681,7 @@ class VPNProfileCreator
                     builder.setJunkPacketMinSize(preset.jMin)
                 }
                 if (preset.jMax != 0) {
-                    builder.setJunkPacketMaxSize(preset.jMax)
+                    builder.setJunkPacketMaxSize(maxOf(preset.jMin, preset.jMax))
                 }
                 if (preset.s1 != 0) {
                     builder.setInitPacketJunkSize(preset.s1)
