@@ -44,7 +44,7 @@ class ProxyTunnelManager(
                 scope.launch {
                     val mtu =
                         if (appContext.preference.isPackageSizeModeAuto) {
-                            1500
+                            1280
                         } else {
                             appContext.preference.packetSize.toLong()
                         }
